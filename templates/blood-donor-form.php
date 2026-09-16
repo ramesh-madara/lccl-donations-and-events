@@ -79,7 +79,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-first-name"
 					name="first_name"
 					value="<?php echo esc_attr( $val( 'first_name' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Amal', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
 					autocomplete="given-name"
 					maxlength="100"
 					required
@@ -99,7 +99,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-last-name"
 					name="last_name"
 					value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'Doe', 'lccl-de' ); ?>"
 					autocomplete="family-name"
 					maxlength="100"
 					required
