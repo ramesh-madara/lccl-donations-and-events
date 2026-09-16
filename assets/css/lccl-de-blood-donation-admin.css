@@ -18,7 +18,7 @@
 	box-sizing: border-box;
 	width: 100%;
 	margin: 0;
-	padding: 0;
+	padding: 0 0 48px;
 	color: var(--lccl-bda-text);
 	color-scheme: light;
 	font-family: var(--lccl-bda-font);
