@@ -10,18 +10,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Install SSH Key
-        uses: webfactory/ssh-agent@v0.10.0
+        uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Add Server to Known Hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-
       - name: Deploy via Rsync
         run: |
-          rsync -avz --delete --exclude='.git/' --exclude='.github/' ./ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/lccl/public_html/wp-content/plugins/lccl-donations-and-events/
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --delete --exclude='.git/' --exclude='.github/' ./ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/lccl/public_html/wp-content/plugins/lccl-donations-and-events/
