@@ -29,6 +29,7 @@ class LCCL_DE_Admin_Programs {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'redirect_legacy' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
+		add_action( 'wp_ajax_lccl_de_program_tab', array( __CLASS__, 'ajax_tab' ) );
 	}
 
 	/**
@@ -109,6 +110,24 @@ class LCCL_DE_Admin_Programs {
 			LCCL_DE_VERSION,
 			true
 		);
+
+		wp_enqueue_script(
+			'lccl-de-admin-programs',
+			LCCL_DE_URL . 'assets/js/lccl-de-admin-programs.js',
+			array( 'lccl-de-admin-notify' ),
+			LCCL_DE_VERSION,
+			true
+		);
+
+		wp_localize_script(
+			'lccl-de-admin-programs',
+			'lcclDePrograms',
+			array(
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'action'  => 'lccl_de_program_tab',
+				'nonce'   => wp_create_nonce( 'lccl_de_program_tab' ),
+			)
+		);
 	}
 
 	/**
@@ -133,32 +152,103 @@ class LCCL_DE_Admin_Programs {
 	 * Blood donation users + notifications.
 	 */
 	private static function render_blood() {
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'users'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$tab = self::requested_tab();
+		extract( self::tab_vars( $tab, true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		include LCCL_DE_PATH . 'templates/admin-program-blood.php';
+	}
+
+	/**
+	 * HTML for one workspace tab, used by the page and by AJAX.
+	 *
+	 * @param string $tab users|notifications.
+	 * @return string
+	 */
+	public static function tab_html( $tab ) {
+		$tab = 'notifications' === $tab ? 'notifications' : 'users';
+		extract( self::tab_vars( $tab, false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+
+		ob_start();
+		if ( 'notifications' === $tab ) {
+			include LCCL_DE_PATH . 'templates/admin-notifications.php';
+		} else {
+			include LCCL_DE_PATH . 'templates/admin-users.php';
+		}
+
+		return (string) ob_get_clean();
+	}
+
+	/**
+	 * Fetch a tab without reloading wp-admin.
+	 */
+	public static function ajax_tab() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to manage LCCL programs.', 'lccl-de' ) ), 403 );
+		}
+
+		check_ajax_referer( 'lccl_de_program_tab', 'nonce' );
+
+		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : 'users';
 		if ( 'notifications' !== $tab ) {
 			$tab = 'users';
 		}
 
-		$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$error   = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		wp_send_json_success(
+			array(
+				'tab'  => $tab,
+				'html' => self::tab_html( $tab ),
+			)
+		);
+	}
 
-		$action  = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : 'list'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$user_id = isset( $_GET['user_id'] ) ? (int) $_GET['user_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	/**
+	 * Current tab from the query string.
+	 *
+	 * @return string
+	 */
+	private static function requested_tab() {
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'users'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return 'notifications' === $tab ? 'notifications' : 'users';
+	}
+
+	/**
+	 * Variables the tab templates expect.
+	 *
+	 * @param string $tab      users|notifications.
+	 * @param bool   $from_get Read action/message from the request.
+	 * @return array
+	 */
+	private static function tab_vars( $tab, $from_get ) {
+		$action  = 'list';
+		$message = '';
+		$error   = '';
 		$edit    = null;
 
-		if ( 'users' === $tab && 'edit' === $action && $user_id ) {
-			$edit = LCCL_DE_Admin_Users::get_reviewer( $user_id );
-			if ( ! $edit ) {
-				$action = 'list';
-				$error  = __( 'That account is not a blood donation reviewer.', 'lccl-de' );
-				$message = 'error';
+		if ( $from_get ) {
+			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error   = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$action  = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : 'list'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$user_id = isset( $_GET['user_id'] ) ? (int) $_GET['user_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			if ( 'users' === $tab && 'edit' === $action && $user_id ) {
+				$edit = LCCL_DE_Admin_Users::get_reviewer( $user_id );
+				if ( ! $edit ) {
+					$action  = 'list';
+					$error   = __( 'That account is not a blood donation reviewer.', 'lccl-de' );
+					$message = 'error';
+				}
 			}
 		}
 
-		$settings = LCCL_DE_Settings::get();
-		$log      = LCCL_DE_Notify::log();
-		$smtp     = class_exists( 'WPMailSMTP\Core' ) || defined( 'WPMS_PLUGIN_VER' );
-
-		include LCCL_DE_PATH . 'templates/admin-program-blood.php';
+		return array(
+			'tab'      => $tab,
+			'action'   => $action,
+			'message'  => $message,
+			'error'    => $error,
+			'edit'     => $edit,
+			'settings' => LCCL_DE_Settings::get(),
+			'log'      => LCCL_DE_Notify::log(),
+			'smtp'     => class_exists( 'WPMailSMTP\Core' ) || defined( 'WPMS_PLUGIN_VER' ),
+		);
 	}
 
 	/**

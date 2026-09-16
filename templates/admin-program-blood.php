@@ -32,22 +32,38 @@ defined( 'ABSPATH' ) || exit;
 		</p>
 	</header>
 
-	<nav class="lccl-prog__tabs" aria-label="<?php esc_attr_e( 'Blood donation settings', 'lccl-de' ); ?>">
+	<nav class="lccl-prog__tabs" role="tablist" data-lccl-tabs aria-label="<?php esc_attr_e( 'Blood donation settings', 'lccl-de' ); ?>">
 		<a
 			class="lccl-prog__tab<?php echo 'users' === $tab ? ' is-current' : ''; ?>"
+			id="lccl-prog-tab-users"
 			href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>"
+			role="tab"
+			data-tab="users"
+			aria-selected="<?php echo 'users' === $tab ? 'true' : 'false'; ?>"
+			aria-controls="lccl-prog-tab-panel"
 		>
 			<?php esc_html_e( 'Users', 'lccl-de' ); ?>
 		</a>
 		<a
 			class="lccl-prog__tab<?php echo 'notifications' === $tab ? ' is-current' : ''; ?>"
+			id="lccl-prog-tab-notifications"
 			href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notifications' ) ) ); ?>"
+			role="tab"
+			data-tab="notifications"
+			aria-selected="<?php echo 'notifications' === $tab ? 'true' : 'false'; ?>"
+			aria-controls="lccl-prog-tab-panel"
 		>
 			<?php esc_html_e( 'Notifications', 'lccl-de' ); ?>
 		</a>
 	</nav>
 
-	<div class="lccl-prog__panel">
+	<div
+		class="lccl-prog__panel"
+		id="lccl-prog-tab-panel"
+		role="tabpanel"
+		data-lccl-tab-panel
+		aria-labelledby="<?php echo 'notifications' === $tab ? 'lccl-prog-tab-notifications' : 'lccl-prog-tab-users'; ?>"
+	>
 		<?php
 		if ( 'notifications' === $tab ) {
 			include LCCL_DE_PATH . 'templates/admin-notifications.php';

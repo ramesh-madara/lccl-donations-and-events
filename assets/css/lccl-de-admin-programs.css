@@ -142,42 +142,68 @@
 }
 
 .lccl-prog .lccl-prog__tabs {
-	display: inline-flex;
-	align-items: center;
-	gap: 2px;
-	margin: 0 0 22px;
-	padding: 4px;
-	border: 1px solid #ececec;
-	border-radius: 8px;
-	background: var(--lccl-prog-field);
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: 4px;
+	margin: 0;
+	padding: 0 10px;
+	border-bottom: 1px solid var(--lccl-prog-border);
 }
 
 .lccl-prog .lccl-prog__tab {
+	position: relative;
 	display: inline-flex;
 	align-items: center;
-	margin: 0;
-	padding: 8px 16px;
-	border: 0;
-	border-radius: 6px;
-	background: transparent;
+	margin: 0 0 -1px;
+	padding: 11px 20px 12px;
+	border: 1px solid transparent;
+	border-bottom: 0;
+	border-radius: 6px 6px 0 0;
+	background: var(--lccl-prog-field);
 	color: var(--lccl-prog-muted);
 	font-size: 14px;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.01em;
 	line-height: 1.2;
 	text-decoration: none;
-	transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+	transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
-.lccl-prog .lccl-prog__tab:hover {
+.lccl-prog .lccl-prog__tab:hover,
+.lccl-prog .lccl-prog__tab:focus {
+	background: #fafafa;
+	box-shadow: none;
 	color: var(--lccl-prog-heading);
-	background: rgba(255, 255, 255, 0.7);
+	outline: none;
 }
 
 .lccl-prog .lccl-prog__tab.is-current {
 	background: #ffffff;
-	box-shadow: 0 1px 2px rgba(51, 51, 51, 0.08);
+	border-color: var(--lccl-prog-border);
+	box-shadow: inset 0 2px 0 var(--lccl-prog-gold);
 	color: var(--lccl-prog-heading);
-	border-bottom: 0;
+}
+
+.lccl-prog .lccl-prog__panel {
+	margin: 0;
+	padding: 22px 20px 16px;
+	border: 1px solid var(--lccl-prog-border);
+	border-top: 0;
+	border-radius: 0 0 6px 6px;
+	background: #ffffff;
+}
+
+.lccl-prog .lccl-prog__panel.is-loading {
+	opacity: 0.55;
+	pointer-events: none;
+}
+
+.lccl-prog .lccl-prog__panel.is-loading::before {
+	content: "";
+	display: block;
+	height: 2px;
+	margin: -22px -20px 20px;
+	background: var(--lccl-prog-gold);
 }
 
 .lccl-prog .button,
@@ -243,10 +269,6 @@
 	border-color: #f9cd47;
 	color: #ffffff;
 	box-shadow: none;
-}
-
-.lccl-prog .lccl-prog__panel {
-	padding: 4px 0 8px;
 }
 
 .lccl-prog .lccl-prog__toolbar {
