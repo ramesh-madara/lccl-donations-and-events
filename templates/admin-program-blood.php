@@ -1,0 +1,59 @@
+<?php
+/**
+ * Blood donation workspace: users and notifications tabs.
+ *
+ * @package LCCL_Donations_And_Events
+ *
+ * @var string        $tab      users|notifications
+ * @var string        $action   list|add|edit
+ * @var string        $message  Flash code
+ * @var string        $error    Flash error
+ * @var WP_User|null  $edit     User being edited
+ * @var array         $settings Notification options
+ * @var array         $log      Send log
+ * @var bool          $smtp     Whether WP Mail SMTP is present
+ */
+
+defined( 'ABSPATH' ) || exit;
+?>
+<div class="wrap lccl-prog">
+	<p class="lccl-prog__back">
+		<a href="<?php echo esc_url( LCCL_DE_Admin_Programs::url() ); ?>"><?php esc_html_e( 'LCCL Programs', 'lccl-de' ); ?></a>
+	</p>
+
+	<header class="lccl-prog__hero lccl-prog__hero--compact">
+		<p class="lccl-prog__brand">LCCL</p>
+		<h1 class="lccl-prog__title"><?php esc_html_e( 'LCCL Blood Donation', 'lccl-de' ); ?></h1>
+		<p class="lccl-prog__lede">
+			<?php esc_html_e( 'Manage who can review registrations, and which emails and SMS go out after someone signs up.', 'lccl-de' ); ?>
+			<a class="lccl-prog__inline-link" href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>" target="_blank" rel="noopener noreferrer">
+				<?php esc_html_e( 'Open dashboard', 'lccl-de' ); ?>
+			</a>
+		</p>
+	</header>
+
+	<nav class="lccl-prog__tabs" aria-label="<?php esc_attr_e( 'Blood donation settings', 'lccl-de' ); ?>">
+		<a
+			class="lccl-prog__tab<?php echo 'users' === $tab ? ' is-current' : ''; ?>"
+			href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>"
+		>
+			<?php esc_html_e( 'Users', 'lccl-de' ); ?>
+		</a>
+		<a
+			class="lccl-prog__tab<?php echo 'notifications' === $tab ? ' is-current' : ''; ?>"
+			href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notifications' ) ) ); ?>"
+		>
+			<?php esc_html_e( 'Notifications', 'lccl-de' ); ?>
+		</a>
+	</nav>
+
+	<div class="lccl-prog__panel">
+		<?php
+		if ( 'notifications' === $tab ) {
+			include LCCL_DE_PATH . 'templates/admin-notifications.php';
+		} else {
+			include LCCL_DE_PATH . 'templates/admin-users.php';
+		}
+		?>
+	</div>
+</div>

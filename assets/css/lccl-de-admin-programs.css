@@ -1,0 +1,376 @@
+/*
+ * LCCL Programs hub and blood-donation workspace in wp-admin.
+ */
+
+.lccl-prog {
+	--lccl-prog-bg: #ffffff;
+	--lccl-prog-text: #555555;
+	--lccl-prog-heading: #333333;
+	--lccl-prog-muted: #6b6b6b;
+	--lccl-prog-field: #f7f7f7;
+	--lccl-prog-border: #c4c4c4;
+	--lccl-prog-gold: #f7c016;
+	--lccl-prog-gold-soft: #fff6d4;
+	--lccl-prog-font: "CooperHewitt-Book", "Segoe UI", sans-serif;
+
+	max-width: 1080px;
+	margin: 12px 0 40px;
+	color: var(--lccl-prog-text);
+	font-family: var(--lccl-prog-font);
+}
+
+.lccl-prog .lccl-prog__brand {
+	margin: 0 0 6px;
+	color: var(--lccl-prog-heading);
+	font-size: 12px;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+}
+
+.lccl-prog .lccl-prog__title {
+	margin: 0 0 8px;
+	color: var(--lccl-prog-heading);
+	font-size: 28px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	line-height: 1.25;
+}
+
+.lccl-prog .lccl-prog__lede {
+	margin: 0;
+	max-width: 46rem;
+	color: var(--lccl-prog-text);
+	font-size: 15px;
+	line-height: 1.55;
+}
+
+.lccl-prog .lccl-prog__hero {
+	margin: 0 0 28px;
+	padding: 8px 0 22px;
+	border-bottom: 1px solid var(--lccl-prog-border);
+}
+
+.lccl-prog .lccl-prog__hero--compact {
+	margin-bottom: 0;
+	padding-bottom: 18px;
+	border-bottom: 0;
+}
+
+.lccl-prog .lccl-prog__back {
+	margin: 0 0 14px;
+}
+
+.lccl-prog .lccl-prog__back a,
+.lccl-prog .lccl-prog__inline-link {
+	color: var(--lccl-prog-heading);
+	text-decoration: none;
+	border-bottom: 1px solid var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-prog__back a:hover,
+.lccl-prog .lccl-prog__inline-link:hover {
+	color: var(--lccl-prog-heading);
+	border-bottom-color: var(--lccl-prog-heading);
+}
+
+.lccl-prog .lccl-prog__inline-link {
+	margin-left: 8px;
+	white-space: nowrap;
+}
+
+.lccl-prog .lccl-prog__grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 20px;
+}
+
+.lccl-prog .lccl-prog__card {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	min-height: 188px;
+	padding: 22px 22px 20px;
+	border: 1px solid #f0d98a;
+	border-top: 6px solid var(--lccl-prog-gold);
+	border-radius: 4px;
+	background: linear-gradient(180deg, #fffbeb 0%, var(--lccl-prog-gold-soft) 22%, #ffffff 22%);
+	box-shadow: none;
+	color: var(--lccl-prog-text);
+	text-decoration: none;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lccl-prog .lccl-prog__card:hover,
+.lccl-prog .lccl-prog__card:focus {
+	border-color: var(--lccl-prog-gold);
+	box-shadow: 0 8px 24px rgba(51, 51, 51, 0.06);
+	color: var(--lccl-prog-text);
+}
+
+.lccl-prog .lccl-prog__card-kicker {
+	margin: 0 0 8px;
+	color: var(--lccl-prog-muted);
+	font-size: 12px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+}
+
+.lccl-prog .lccl-prog__card-title {
+	margin: 0 0 8px;
+	color: var(--lccl-prog-heading);
+	font-size: 22px;
+	line-height: 1.3;
+}
+
+.lccl-prog .lccl-prog__card-text {
+	flex: 1 1 auto;
+	margin: 0 0 18px;
+	color: var(--lccl-prog-text);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.lccl-prog .lccl-prog__card-go {
+	display: inline-block;
+	padding: 6px 0 0;
+	color: var(--lccl-prog-heading);
+	font-size: 13px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	border-top: 1px solid #f0d98a;
+	width: 100%;
+}
+
+.lccl-prog .lccl-prog__tabs {
+	display: flex;
+	gap: 4px;
+	margin: 0 0 18px;
+	padding: 0;
+	border-bottom: 1px solid var(--lccl-prog-border);
+}
+
+.lccl-prog .lccl-prog__tab {
+	display: inline-block;
+	margin: 0 4px -1px 0;
+	padding: 10px 16px 12px;
+	border: 0;
+	border-bottom: 3px solid transparent;
+	background: transparent;
+	color: var(--lccl-prog-muted);
+	font-size: 15px;
+	text-decoration: none;
+}
+
+.lccl-prog .lccl-prog__tab:hover {
+	color: var(--lccl-prog-heading);
+}
+
+.lccl-prog .lccl-prog__tab.is-current {
+	color: var(--lccl-prog-heading);
+	border-bottom-color: var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-prog__panel {
+	padding: 4px 0 8px;
+}
+
+.lccl-prog .lccl-prog__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	margin: 0 0 16px;
+}
+
+.lccl-prog .lccl-prog__toolbar p {
+	margin: 0;
+	max-width: 40rem;
+	color: var(--lccl-prog-muted);
+	font-size: 14px;
+}
+
+.lccl-prog .lccl-prog__section {
+	margin: 0 0 28px;
+}
+
+.lccl-prog .lccl-prog__section h2 {
+	margin: 0 0 8px;
+	color: var(--lccl-prog-heading);
+	font-size: 18px;
+	font-weight: 400;
+}
+
+.lccl-prog .lccl-prog__hint {
+	margin: 0 0 14px;
+	color: var(--lccl-prog-muted);
+	font-size: 13px;
+}
+
+.lccl-prog .lccl-prog__table {
+	width: 100%;
+	border: 1px solid var(--lccl-prog-border);
+	border-radius: 4px;
+	border-collapse: separate;
+	border-spacing: 0;
+	background: #fff;
+	overflow: hidden;
+}
+
+.lccl-prog .lccl-prog__table th,
+.lccl-prog .lccl-prog__table td {
+	padding: 12px 14px;
+	border-bottom: 1px solid #ececec;
+	color: var(--lccl-prog-text);
+	font-size: 14px;
+	text-align: left;
+}
+
+.lccl-prog .lccl-prog__table th {
+	background: var(--lccl-prog-field);
+	color: var(--lccl-prog-heading);
+	font-weight: 400;
+}
+
+.lccl-prog .lccl-prog__table tr:last-child td {
+	border-bottom: 0;
+}
+
+.lccl-prog .lccl-prog__table a {
+	color: var(--lccl-prog-heading);
+	text-decoration: none;
+	border-bottom: 1px solid transparent;
+}
+
+.lccl-prog .lccl-prog__table a:hover {
+	border-bottom-color: var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-prog__pill {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 999px;
+	background: var(--lccl-prog-field);
+	color: var(--lccl-prog-heading);
+	font-size: 12px;
+}
+
+.lccl-prog .lccl-prog__pill--yes {
+	background: var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-prog__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.lccl-prog .lccl-prog__actions form {
+	display: inline;
+	margin: 0;
+}
+
+.lccl-prog .lccl-prog__link-btn,
+.lccl-prog button.lccl-prog__link-btn {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--lccl-prog-heading);
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 13px;
+	text-decoration: none;
+	border-bottom: 1px solid var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-prog__link-btn--danger {
+	border-bottom-color: #c4c4c4;
+	color: #6b6b6b;
+}
+
+.lccl-prog input[type="text"],
+.lccl-prog input[type="email"],
+.lccl-prog input[type="password"],
+.lccl-prog .lccl-prog__input {
+	width: 100%;
+	max-width: 360px;
+	height: 40px;
+	margin: 0;
+	padding: 0 12px;
+	border: 1px solid var(--lccl-prog-border);
+	border-radius: 3px;
+	background: var(--lccl-prog-field);
+	box-shadow: none;
+	color: var(--lccl-prog-muted);
+	font-family: inherit;
+	font-size: 14px;
+}
+
+.lccl-prog input[type="text"]:focus,
+.lccl-prog input[type="email"]:focus,
+.lccl-prog input[type="password"]:focus {
+	border-color: var(--lccl-prog-heading);
+	outline: none;
+	box-shadow: none;
+}
+
+.lccl-prog .form-table th {
+	width: 180px;
+	padding: 16px 12px 16px 0;
+	color: var(--lccl-prog-heading);
+	font-weight: 400;
+}
+
+.lccl-prog .form-table td {
+	padding: 12px 0;
+}
+
+.lccl-prog .button.button-primary,
+.lccl-prog button.button-primary {
+	background: var(--lccl-prog-gold);
+	border-color: var(--lccl-prog-gold);
+	color: var(--lccl-prog-heading);
+	text-shadow: none;
+	box-shadow: none;
+}
+
+.lccl-prog .button.button-primary:hover,
+.lccl-prog button.button-primary:hover {
+	background: #e6b000;
+	border-color: #e6b000;
+	color: var(--lccl-prog-heading);
+}
+
+.lccl-prog .button {
+	border-radius: 3px;
+	font-family: inherit;
+}
+
+.lccl-prog .lccl-prog__check {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0 0 14px;
+	color: var(--lccl-prog-heading);
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1.45;
+}
+
+.lccl-prog .lccl-prog__check input {
+	margin-top: 3px;
+	accent-color: var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-de-admin-email-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin: 0 0 8px;
+}
+
+.lccl-prog .lccl-prog__log td {
+	font-size: 13px;
+	vertical-align: top;
+}

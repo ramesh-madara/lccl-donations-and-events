@@ -28,47 +28,10 @@ class LCCL_DE_Settings {
 	const NONCE = 'lccl_de_save_notify';
 
 	/**
-	 * Hook menu and save handler.
+	 * Hook save handler. The menu lives on LCCL Programs.
 	 */
 	public static function init() {
-		add_action( 'admin_menu', array( __CLASS__, 'menu' ), 11 );
 		add_action( 'admin_init', array( __CLASS__, 'handle_post' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
-	}
-
-	/**
-	 * Notifications submenu.
-	 */
-	public static function menu() {
-		add_submenu_page(
-			LCCL_DE_Admin_Users::PAGE,
-			__( 'Notifications', 'lccl-de' ),
-			__( 'Notifications', 'lccl-de' ),
-			'manage_options',
-			self::PAGE,
-			array( __CLASS__, 'render' )
-		);
-	}
-
-	/**
-	 * Assets for the add/remove email rows.
-	 *
-	 * @param string $hook Current admin page hook.
-	 */
-	public static function assets( $hook ) {
-		unset( $hook );
-
-		if ( empty( $_GET['page'] ) || self::PAGE !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return;
-		}
-
-		wp_enqueue_script(
-			'lccl-de-admin-notify',
-			LCCL_DE_URL . 'assets/js/lccl-de-admin-notify.js',
-			array(),
-			LCCL_DE_VERSION,
-			true
-		);
 	}
 
 	/**
@@ -264,7 +227,8 @@ class LCCL_DE_Settings {
 			return;
 		}
 
-		if ( empty( $_GET['page'] ) || self::PAGE !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( LCCL_DE_Admin_Programs::PAGE !== $page && self::PAGE !== $page ) {
 			return;
 		}
 
@@ -280,12 +244,11 @@ class LCCL_DE_Settings {
 			$ok = LCCL_DE_Notify::send_test( $to );
 
 			wp_safe_redirect(
-				add_query_arg(
+				LCCL_DE_Admin_Programs::blood_url(
 					array(
-						'page'    => self::PAGE,
+						'tab'     => 'notifications',
 						'message' => $ok ? 'test-ok' : 'test-fail',
-					),
-					admin_url( 'admin.php' )
+					)
 				)
 			);
 			exit;
@@ -300,30 +263,21 @@ class LCCL_DE_Settings {
 		self::save( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		wp_safe_redirect(
-			add_query_arg(
+			LCCL_DE_Admin_Programs::blood_url(
 				array(
-					'page'    => self::PAGE,
+					'tab'     => 'notifications',
 					'message' => 'saved',
-				),
-				admin_url( 'admin.php' )
+				)
 			)
 		);
 		exit;
 	}
 
 	/**
-	 * Settings screen.
+	 * Legacy renderer — the workspace now lives under LCCL Programs.
 	 */
 	public static function render() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage these settings.', 'lccl-de' ) );
-		}
-
-		$settings = self::get();
-		$message  = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$log      = LCCL_DE_Notify::log();
-		$smtp     = class_exists( 'WPMailSMTP\Core' ) || defined( 'WPMS_PLUGIN_VER' );
-
-		include LCCL_DE_PATH . 'templates/admin-notifications.php';
+		wp_safe_redirect( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notifications' ) ) );
+		exit;
 	}
 }

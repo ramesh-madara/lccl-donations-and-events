@@ -23,35 +23,10 @@ class LCCL_DE_Admin_Users {
 	const NONCE = 'lccl_de_manage_reviewer';
 
 	/**
-	 * Register the menu and POST handler.
+	 * Register the POST handler. The menu lives on LCCL Programs.
 	 */
 	public static function init() {
-		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'handle_post' ) );
-	}
-
-	/**
-	 * Top-level menu visible to site admins only.
-	 */
-	public static function menu() {
-		add_menu_page(
-			__( 'Blood Donation Users', 'lccl-de' ),
-			__( 'Blood Donation Users', 'lccl-de' ),
-			'manage_options',
-			self::PAGE,
-			array( __CLASS__, 'render' ),
-			'dashicons-groups',
-			26
-		);
-
-		add_submenu_page(
-			self::PAGE,
-			__( 'Reviewers', 'lccl-de' ),
-			__( 'Reviewers', 'lccl-de' ),
-			'manage_options',
-			self::PAGE,
-			array( __CLASS__, 'render' )
-		);
 	}
 
 	/**
@@ -66,7 +41,8 @@ class LCCL_DE_Admin_Users {
 			return;
 		}
 
-		if ( empty( $_GET['page'] ) || self::PAGE !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( LCCL_DE_Admin_Programs::PAGE !== $page && self::PAGE !== $page ) {
 			return;
 		}
 
@@ -86,13 +62,12 @@ class LCCL_DE_Admin_Users {
 			return;
 		}
 
-		$redirect = add_query_arg(
+		$redirect = LCCL_DE_Admin_Programs::blood_url(
 			array(
-				'page'    => self::PAGE,
+				'tab'     => 'users',
 				'message' => is_wp_error( $result ) ? 'error' : $result,
 				'error'   => is_wp_error( $result ) ? rawurlencode( $result->get_error_message() ) : false,
-			),
-			admin_url( 'admin.php' )
+			)
 		);
 
 		wp_safe_redirect( $redirect );
@@ -100,29 +75,11 @@ class LCCL_DE_Admin_Users {
 	}
 
 	/**
-	 * Render list, add, or edit.
+	 * Legacy renderer — the workspace now lives under LCCL Programs.
 	 */
 	public static function render() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage these users.', 'lccl-de' ) );
-		}
-
-		$action  = isset( $_GET['action'] ) ? sanitize_key( wp_unslash( $_GET['action'] ) ) : 'list'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$user_id = isset( $_GET['user_id'] ) ? (int) $_GET['user_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$edit    = null;
-
-		if ( 'edit' === $action && $user_id ) {
-			$edit = self::get_reviewer( $user_id );
-			if ( ! $edit ) {
-				$action = 'list';
-				echo '<div class="notice notice-error"><p>' . esc_html__( 'That account is not a blood donation reviewer.', 'lccl-de' ) . '</p></div>';
-			}
-		}
-
-		$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$error   = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-
-		include LCCL_DE_PATH . 'templates/admin-users.php';
+		wp_safe_redirect( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) );
+		exit;
 	}
 
 	/**
@@ -167,8 +124,8 @@ class LCCL_DE_Admin_Users {
 	 * @return string
 	 */
 	public static function url( $args = array() ) {
-		$args['page'] = self::PAGE;
-		return add_query_arg( $args, admin_url( 'admin.php' ) );
+		$args['tab'] = isset( $args['tab'] ) ? $args['tab'] : 'users';
+		return LCCL_DE_Admin_Programs::blood_url( $args );
 	}
 
 	/**
