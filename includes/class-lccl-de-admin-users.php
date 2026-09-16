@@ -43,6 +43,15 @@ class LCCL_DE_Admin_Users {
 			'dashicons-groups',
 			26
 		);
+
+		add_submenu_page(
+			self::PAGE,
+			__( 'Reviewers', 'lccl-de' ),
+			__( 'Reviewers', 'lccl-de' ),
+			'manage_options',
+			self::PAGE,
+			array( __CLASS__, 'render' )
+		);
 	}
 
 	/**

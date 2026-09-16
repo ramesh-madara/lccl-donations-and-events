@@ -74,10 +74,13 @@
 		var notifySelect = root.querySelector( '#lccl-bda-notify' );
 		var displayName = root.querySelector( '[data-display-name]' );
 		var dashLoader = root.querySelector( '[data-dash-loader]' );
+		var dashTitle = root.querySelector( '[data-dash-title]' );
 		var loginModal = root.querySelector( '[data-login-modal]' );
 		var forgotModal = root.querySelector( '[data-forgot-modal]' );
 		var detailModal = root.querySelector( '[data-detail-modal]' );
 		var tableModal = root.querySelector( '[data-table-modal]' );
+		var notifyModal = root.querySelector( '[data-notify-modal]' );
+		var notifyForm = root.querySelector( '[data-form="notifications"]' );
 
 		if ( districtSelect && cfg.districts ) {
 			cfg.districts.forEach( function ( name ) {
@@ -91,6 +94,7 @@
 		function expireSession() {
 			resetListState();
 			closeDetail();
+			showView( 'registrations' );
 			if ( displayName ) {
 				displayName.textContent = '';
 			}
@@ -133,6 +137,55 @@
 			forgotPanel.hidden = 'forgot' !== name;
 			dashPanel.hidden = 'dash' !== name;
 			root.setAttribute( 'data-logged-in', 'dash' === name ? '1' : '0' );
+		}
+
+		function showView( name ) {
+			var titles = {
+				registrations: 'Donor registrations',
+				notifications: 'Notifications'
+			};
+
+			root.querySelectorAll( '[data-view-panel]' ).forEach( function ( panel ) {
+				panel.hidden = panel.getAttribute( 'data-view-panel' ) !== name;
+			} );
+			root.querySelectorAll( '[data-view]' ).forEach( function ( btn ) {
+				btn.classList.toggle( 'is-current', btn.getAttribute( 'data-view' ) === name );
+			} );
+			if ( dashTitle ) {
+				dashTitle.textContent = titles[ name ] || titles.registrations;
+			}
+			if ( 'notifications' !== name ) {
+				showBanner( root.querySelector( '[data-notify-error]' ), '' );
+				showBanner( root.querySelector( '[data-notify-notice]' ), '' );
+			}
+			if ( 'notifications' === name ) {
+				closeDetail();
+				loadNotifications();
+			}
+		}
+
+		function applyNotifyForm( data ) {
+			if ( ! notifyForm || ! data ) {
+				return;
+			}
+			notifyForm.donor_sms.checked = !! parseInt( data.donor_sms, 10 );
+			notifyForm.donor_email.checked = !! parseInt( data.donor_email, 10 );
+			notifyForm.admin_email.checked = !! parseInt( data.admin_email, 10 );
+			notifyForm.admin_address.value = data.admin_address || '';
+		}
+
+		function loadNotifications() {
+			var error = root.querySelector( '[data-notify-error]' );
+			showBanner( error, '' );
+			setBusy( dashLoader, true );
+
+			return api( 'notifications' ).then( function ( data ) {
+				applyNotifyForm( data );
+			} ).catch( function ( err ) {
+				showBanner( error, err.message );
+			} ).then( function () {
+				setBusy( dashLoader, false );
+			} );
 		}
 
 		function currentPerPage() {
@@ -494,6 +547,7 @@
 					}
 					loginForm.reset();
 					showPanel( 'dash' );
+					showView( 'registrations' );
 					state.page = 1;
 					state.perPage = defaultPerPage;
 					if ( perPageSelect ) {
@@ -565,6 +619,7 @@
 				api( 'session', { method: 'DELETE' } ).then( function () {
 					resetListState();
 					closeDetail();
+					showView( 'registrations' );
 					if ( displayName ) {
 						displayName.textContent = '';
 					}
@@ -614,6 +669,44 @@
 					state.page = 1;
 					loadDonors( { closeDetail: true } );
 				}, 300 );
+			} );
+		}
+
+		root.querySelectorAll( '[data-view]' ).forEach( function ( btn ) {
+			btn.addEventListener( 'click', function () {
+				showView( btn.getAttribute( 'data-view' ) );
+			} );
+		} );
+
+		if ( notifyForm ) {
+			notifyForm.addEventListener( 'submit', function ( event ) {
+				event.preventDefault();
+				var error = root.querySelector( '[data-notify-error]' );
+				var notice = root.querySelector( '[data-notify-notice]' );
+				var button = notifyForm.querySelector( 'button[type="submit"]' );
+
+				showBanner( error, '' );
+				showBanner( notice, '' );
+				button.disabled = true;
+				setBusy( notifyModal, true );
+
+				api( 'notifications', {
+					method: 'POST',
+					body: JSON.stringify( {
+						donor_sms: notifyForm.donor_sms.checked ? 1 : 0,
+						donor_email: notifyForm.donor_email.checked ? 1 : 0,
+						admin_email: notifyForm.admin_email.checked ? 1 : 0,
+						admin_address: notifyForm.admin_address.value
+					} )
+				} ).then( function ( data ) {
+					applyNotifyForm( data );
+					showBanner( notice, data.message || 'Notification settings saved.' );
+				} ).catch( function ( err ) {
+					showBanner( error, err.message );
+				} ).then( function () {
+					button.disabled = false;
+					setBusy( notifyModal, false );
+				} );
 			} );
 		}
 

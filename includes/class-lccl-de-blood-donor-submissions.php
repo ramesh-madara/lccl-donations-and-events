@@ -128,6 +128,8 @@ class LCCL_DE_Blood_Donor_Submissions {
 			);
 		}
 
+		LCCL_DE_Notify::after_registration( $values, $inserted );
+
 		self::redirect_with_flash(
 			$redirect,
 			array(
