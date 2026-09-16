@@ -136,6 +136,12 @@ if ( $can_view && $user instanceof WP_User ) {
 					<option value="0"><?php esc_html_e( 'Notify: no', 'lccl-de' ); ?></option>
 				</select>
 			</div>
+			<div class="lccl-bda__field lccl-bda__field--clear">
+				<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
+				<button class="lccl-bda__clear" type="button" data-action="clear-filters">
+					<?php esc_html_e( 'Clear filters', 'lccl-de' ); ?>
+				</button>
+			</div>
 		</form>
 
 		<div class="lccl-bda__layout">

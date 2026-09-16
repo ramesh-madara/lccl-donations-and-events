@@ -723,6 +723,29 @@
 
 		var filterForm = root.querySelector( '[data-form="filters"]' );
 		var searchTimer = null;
+		var clearFiltersBtn = root.querySelector( '[data-action="clear-filters"]' );
+
+		function clearFilters() {
+			window.clearTimeout( searchTimer );
+			if ( searchInput ) {
+				searchInput.value = '';
+			}
+			if ( districtSelect ) {
+				districtSelect.value = '';
+			}
+			if ( notifySelect ) {
+				notifySelect.value = '';
+			}
+			state.page = 1;
+			loadDonors( { closeDetail: true } );
+		}
+
+		if ( clearFiltersBtn ) {
+			clearFiltersBtn.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+				clearFilters();
+			} );
+		}
 		if ( filterForm ) {
 			filterForm.addEventListener( 'submit', function ( event ) {
 				event.preventDefault();

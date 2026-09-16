@@ -171,6 +171,22 @@
 	text-transform: none;
 }
 
+.lccl-bda .lccl-bda__select,
+.lccl-bda select {
+	padding-right: 48px;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%236b6b6b' stroke-width='1.5' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+	background-position: right 20px center;
+	background-repeat: no-repeat;
+	background-size: 12px 8px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+.lccl-bda select::-ms-expand {
+	display: none;
+}
+
 .lccl-bda .lccl-bda__input:focus,
 .lccl-bda .lccl-bda__select:focus,
 .lccl-bda input:focus,
@@ -372,9 +388,49 @@
 
 .lccl-bda .lccl-bda__filters {
 	display: grid;
-	grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.8fr);
+	grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 0.8fr) auto;
+	align-items: stretch;
 	gap: 16px;
 	margin: 0 0 20px;
+}
+
+.lccl-bda .lccl-bda__field--clear {
+	display: flex;
+	flex-direction: column;
+}
+
+.lccl-bda .lccl-bda__clear,
+.lccl-bda button.lccl-bda__clear {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: auto;
+	height: 48px;
+	min-height: 48px;
+	max-height: 48px;
+	margin: 0;
+	padding: 0 18px;
+	border: 1px solid var(--lccl-bda-primary);
+	border-radius: 3px;
+	background-color: var(--lccl-bda-primary);
+	box-shadow: none;
+	color: #ffffff;
+	cursor: pointer;
+	font-family: var(--lccl-bda-font);
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: 0;
+	line-height: 1;
+	text-transform: none;
+	white-space: nowrap;
+}
+
+.lccl-bda .lccl-bda__clear:hover,
+.lccl-bda .lccl-bda__clear:focus {
+	background-color: #f9cd47;
+	border-color: #f9cd47;
+	color: #ffffff;
+	outline: none;
 }
 
 .lccl-bda .lccl-bda__field--grow {
@@ -781,7 +837,8 @@
 	min-width: 72px;
 	height: 36px;
 	margin: 0;
-	padding: 0 10px;
+	padding: 0 32px 0 10px;
+	background-position: right 12px center;
 	font-size: 14px;
 	line-height: 36px;
 }
