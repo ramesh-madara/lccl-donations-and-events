@@ -38,6 +38,11 @@ class LCCL_DE_Notify {
 	const TOKEN_TRANSIENT = 'lccl_de_dialog_sms_token';
 
 	/**
+	 * Option that stores recent send results for wp-admin.
+	 */
+	const LOG_OPTION = 'lccl_de_notify_log';
+
+	/**
 	 * Notify the donor and staff after a row is stored.
 	 *
 	 * Failures here must not undo the registration.
@@ -49,12 +54,64 @@ class LCCL_DE_Notify {
 		try {
 			if ( LCCL_DE_Settings::enabled( 'donor_sms' ) ) {
 				self::send_sms( $values, (int) $insert_id );
+			} else {
+				self::record(
+					array(
+						'kind'   => 'sms',
+						'ok'     => 0,
+						'to'     => isset( $values['phone'] ) ? (string) $values['phone'] : '',
+						'detail' => 'Skipped: donor SMS is turned off.',
+					)
+				);
 			}
 
 			self::send_emails( $values, (int) $insert_id );
-		} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-			// Registration is already stored; never surface a send failure.
+		} catch ( Exception $e ) {
+			self::record(
+				array(
+					'kind'   => 'error',
+					'ok'     => 0,
+					'detail' => $e->getMessage(),
+				)
+			);
 		}
+	}
+
+	/**
+	 * Send a test staff email from wp-admin.
+	 *
+	 * @param string $to Address.
+	 * @return bool
+	 */
+	public static function send_test( $to ) {
+		if ( ! is_email( $to ) ) {
+			self::record(
+				array(
+					'kind'   => 'test',
+					'ok'     => 0,
+					'to'     => (string) $to,
+					'detail' => 'No valid test address.',
+				)
+			);
+			return false;
+		}
+
+		return self::mail(
+			$to,
+			__( 'LCCL blood donation — test email', 'lccl-de' ),
+			'<html><body><p>This is a test from the LCCL Donations and Events plugin. If you received this, wp_mail is working on this server.</p></body></html>',
+			'test'
+		);
+	}
+
+	/**
+	 * Recent send results, newest first.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	public static function log() {
+		$log = get_option( self::LOG_OPTION, array() );
+		return is_array( $log ) ? $log : array();
 	}
 
 	/**
@@ -71,6 +128,14 @@ class LCCL_DE_Notify {
 
 		$token = self::dialog_token();
 		if ( '' === $token ) {
+			self::record(
+				array(
+					'kind'   => 'sms',
+					'ok'     => 0,
+					'to'     => $phone,
+					'detail' => 'Dialog login failed. No bearer token.',
+				)
+			);
 			return;
 		}
 
@@ -86,7 +151,7 @@ class LCCL_DE_Notify {
 			$bank
 		);
 
-		wp_remote_post(
+		$response = wp_remote_post(
 			self::DIALOG_SMS,
 			array(
 				'timeout' => 20,
@@ -105,6 +170,31 @@ class LCCL_DE_Notify {
 						),
 					)
 				),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			self::record(
+				array(
+					'kind'   => 'sms',
+					'ok'     => 0,
+					'to'     => $phone,
+					'detail' => $response->get_error_message(),
+				)
+			);
+			return;
+		}
+
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$ok   = is_array( $body ) && isset( $body['status'] ) && 'success' === $body['status'];
+
+		self::record(
+			array(
+				'kind'   => 'sms',
+				'ok'     => $ok ? 1 : 0,
+				'to'     => $phone,
+				'detail' => $ok ? 'Dialog accepted the SMS.' : 'HTTP ' . $code . ' ' . wp_remote_retrieve_body( $response ),
 			)
 		);
 	}
@@ -168,7 +258,25 @@ class LCCL_DE_Notify {
 			self::mail(
 				$donor_email,
 				__( 'Registration Successful', 'lccl-de' ),
-				self::donor_html( $name, $bank )
+				self::donor_html( $name, $bank ),
+				'donor'
+			);
+		} elseif ( LCCL_DE_Settings::enabled( 'donor_email' ) ) {
+			self::record(
+				array(
+					'kind'   => 'donor',
+					'ok'     => 0,
+					'detail' => 'Skipped: no valid donor email on the registration.',
+				)
+			);
+		} else {
+			self::record(
+				array(
+					'kind'   => 'donor',
+					'ok'     => 0,
+					'to'     => $donor_email,
+					'detail' => 'Skipped: donor email is turned off.',
+				)
 			);
 		}
 
@@ -178,42 +286,101 @@ class LCCL_DE_Notify {
 				self::mail(
 					$admin_emails,
 					sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $name ),
-					self::admin_html( $name, $values, $bank, $phone, $insert_id )
+					self::admin_html( $name, $values, $bank, $phone, $insert_id ),
+					'admin'
+				);
+			} else {
+				self::record(
+					array(
+						'kind'   => 'admin',
+						'ok'     => 0,
+						'detail' => 'Skipped: no admin email addresses are saved.',
+					)
 				);
 			}
+		} else {
+			self::record(
+				array(
+					'kind'   => 'admin',
+					'ok'     => 0,
+					'detail' => 'Skipped: admin email is turned off.',
+				)
+			);
 		}
 	}
 
 	/**
-	 * HTML mail with the same From as payment.colomboleads.org.
+	 * HTML mail. From address is left to WP Mail SMTP / WordPress.
 	 *
 	 * @param string|string[] $to      Recipient(s).
-	 * @param string $subject Subject.
-	 * @param string $html    Body.
+	 * @param string          $subject Subject.
+	 * @param string          $html    Body.
+	 * @param string          $kind    Log label.
+	 * @return bool
 	 */
-	private static function mail( $to, $subject, $html ) {
-		$from_email = static function () {
-			return 'noreply@colomboleads.org';
-		};
-		$from_name  = static function () {
-			return 'colomboleads';
+	private static function mail( $to, $subject, $html, $kind = 'email' ) {
+		$error     = null;
+		$on_failed = static function ( $wp_error ) use ( &$error ) {
+			$error = $wp_error;
 		};
 
-		add_filter( 'wp_mail_from', $from_email );
-		add_filter( 'wp_mail_from_name', $from_name );
+		add_action( 'wp_mail_failed', $on_failed );
 
-		wp_mail(
+		$sent = wp_mail(
 			$to,
 			$subject,
 			$html,
 			array(
 				'Content-Type: text/html; charset=UTF-8',
-				'From: colomboleads <noreply@colomboleads.org>',
 			)
 		);
 
-		remove_filter( 'wp_mail_from', $from_email );
-		remove_filter( 'wp_mail_from_name', $from_name );
+		remove_action( 'wp_mail_failed', $on_failed );
+
+		$to_label = is_array( $to ) ? implode( ', ', $to ) : (string) $to;
+		$detail   = $sent ? 'wp_mail returned true.' : 'wp_mail returned false.';
+		if ( $error instanceof WP_Error ) {
+			$detail = $error->get_error_message();
+			$data   = $error->get_error_data();
+			if ( is_array( $data ) && ! empty( $data['error_message'] ) ) {
+				$detail .= ' ' . $data['error_message'];
+			}
+		}
+
+		self::record(
+			array(
+				'kind'    => $kind,
+				'ok'      => $sent ? 1 : 0,
+				'to'      => $to_label,
+				'subject' => $subject,
+				'detail'  => $detail,
+			)
+		);
+
+		return (bool) $sent;
+	}
+
+	/**
+	 * Keep the newest send results.
+	 *
+	 * @param array $entry Log row.
+	 */
+	private static function record( array $entry ) {
+		$entry = wp_parse_args(
+			$entry,
+			array(
+				'at'      => time(),
+				'kind'    => 'email',
+				'ok'      => 0,
+				'to'      => '',
+				'subject' => '',
+				'detail'  => '',
+			)
+		);
+
+		$log = self::log();
+		array_unshift( $log, $entry );
+		update_option( self::LOG_OPTION, array_slice( $log, 0, 12 ), false );
 	}
 
 	/**

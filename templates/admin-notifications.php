@@ -87,4 +87,75 @@ defined( 'ABSPATH' ) || exit;
 			<button type="submit" class="button button-primary"><?php esc_html_e( 'Save notifications', 'lccl-de' ); ?></button>
 		</p>
 	</form>
+
+	<hr>
+
+	<h2><?php esc_html_e( 'Send a test email', 'lccl-de' ); ?></h2>
+	<p class="description">
+		<?php esc_html_e( 'This uses the same wp_mail path as a real registration. If this fails, live notifications will fail the same way.', 'lccl-de' ); ?>
+	</p>
+
+	<?php if ( 'test-ok' === $message ) : ?>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test email was accepted by WordPress. Check the inbox (and spam).', 'lccl-de' ); ?></p></div>
+	<?php elseif ( 'test-fail' === $message ) : ?>
+		<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Test email was not sent. See the log below for the server error.', 'lccl-de' ); ?></p></div>
+	<?php endif; ?>
+
+	<?php if ( ! empty( $smtp ) ) : ?>
+		<div class="notice notice-info">
+			<p>
+				<?php esc_html_e( 'WP Mail SMTP is active. Mail goes through that plugin, not PHP mail(). If the test fails, open WP Mail SMTP → Tools → Email Test as well, and confirm the From mailbox matches the SMTP login.', 'lccl-de' ); ?>
+			</p>
+		</div>
+	<?php endif; ?>
+
+	<form method="post" action="<?php echo esc_url( admin_url( 'admin.php?page=' . LCCL_DE_Settings::PAGE ) ); ?>" style="max-width: 640px;">
+		<?php wp_nonce_field( LCCL_DE_Settings::NONCE ); ?>
+		<input type="hidden" name="lccl_de_notify_test" value="1">
+		<p>
+			<label for="lccl-de-test-email"><?php esc_html_e( 'Send test to', 'lccl-de' ); ?></label><br>
+			<input
+				type="email"
+				class="regular-text"
+				id="lccl-de-test-email"
+				name="test_email"
+				value="<?php echo esc_attr( isset( $settings['admin_addresses'][0] ) ? $settings['admin_addresses'][0] : '' ); ?>"
+				required
+			>
+		</p>
+		<p>
+			<button type="submit" class="button"><?php esc_html_e( 'Send test email', 'lccl-de' ); ?></button>
+		</p>
+	</form>
+
+	<h2><?php esc_html_e( 'Recent send log', 'lccl-de' ); ?></h2>
+	<p class="description">
+		<?php esc_html_e( 'Newest first. A registration that shows a thank-you still writes a row here even if mail or SMS failed.', 'lccl-de' ); ?>
+	</p>
+	<?php if ( empty( $log ) ) : ?>
+		<p><?php esc_html_e( 'No sends recorded yet. Submit a test or a registration on this server.', 'lccl-de' ); ?></p>
+	<?php else : ?>
+		<table class="widefat striped" style="max-width: 960px;">
+			<thead>
+				<tr>
+					<th><?php esc_html_e( 'When', 'lccl-de' ); ?></th>
+					<th><?php esc_html_e( 'Type', 'lccl-de' ); ?></th>
+					<th><?php esc_html_e( 'Result', 'lccl-de' ); ?></th>
+					<th><?php esc_html_e( 'To', 'lccl-de' ); ?></th>
+					<th><?php esc_html_e( 'Detail', 'lccl-de' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $log as $row ) : ?>
+					<tr>
+						<td><?php echo esc_html( ! empty( $row['at'] ) ? wp_date( 'Y-m-d H:i:s', (int) $row['at'] ) : '—' ); ?></td>
+						<td><?php echo esc_html( isset( $row['kind'] ) ? $row['kind'] : '' ); ?></td>
+						<td><?php echo ! empty( $row['ok'] ) ? esc_html__( 'Sent', 'lccl-de' ) : esc_html__( 'Failed / skipped', 'lccl-de' ); ?></td>
+						<td><?php echo esc_html( isset( $row['to'] ) ? $row['to'] : '' ); ?></td>
+						<td><?php echo esc_html( isset( $row['detail'] ) ? $row['detail'] : '' ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
+	<?php endif; ?>
 </div>

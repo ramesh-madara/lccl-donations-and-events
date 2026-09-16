@@ -257,18 +257,41 @@ class LCCL_DE_Settings {
 	}
 
 	/**
-	 * Save toggles.
+	 * Save toggles or send a test email.
 	 */
 	public static function handle_post() {
 		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
-		if ( empty( $_POST['lccl_de_notify_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( empty( $_GET['page'] ) || self::PAGE !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return;
 		}
 
-		if ( empty( $_GET['page'] ) || self::PAGE !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( ! empty( $_POST['lccl_de_notify_test'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			check_admin_referer( self::NONCE );
+
+			$to = isset( $_POST['test_email'] ) ? sanitize_email( wp_unslash( $_POST['test_email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! is_email( $to ) ) {
+				$saved = self::admin_addresses();
+				$to    = isset( $saved[0] ) ? $saved[0] : '';
+			}
+
+			$ok = LCCL_DE_Notify::send_test( $to );
+
+			wp_safe_redirect(
+				add_query_arg(
+					array(
+						'page'    => self::PAGE,
+						'message' => $ok ? 'test-ok' : 'test-fail',
+					),
+					admin_url( 'admin.php' )
+				)
+			);
+			exit;
+		}
+
+		if ( empty( $_POST['lccl_de_notify_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
 
@@ -298,6 +321,8 @@ class LCCL_DE_Settings {
 
 		$settings = self::get();
 		$message  = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$log      = LCCL_DE_Notify::log();
+		$smtp     = class_exists( 'WPMailSMTP\Core' ) || defined( 'WPMS_PLUGIN_VER' );
 
 		include LCCL_DE_PATH . 'templates/admin-notifications.php';
 	}
