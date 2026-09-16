@@ -22,6 +22,8 @@
 		var panel = document.querySelector( '[data-lccl-tab-panel]' );
 		var cfg = window.lcclDePrograms;
 
+		var loader = document.querySelector( '[data-lccl-tab-loader]' );
+
 		if ( ! nav || ! panel || ! cfg ) {
 			return;
 		}
@@ -45,6 +47,20 @@
 			currentTab = tab;
 		}
 
+		function showLoader() {
+			if ( loader ) {
+				loader.hidden = false;
+			}
+			panel.setAttribute( 'aria-busy', 'true' );
+		}
+
+		function hideLoader() {
+			if ( loader ) {
+				loader.hidden = true;
+			}
+			panel.removeAttribute( 'aria-busy' );
+		}
+
 		function takePanel() {
 			var frag = document.createDocumentFragment();
 			while ( panel.firstChild ) {
@@ -61,8 +77,7 @@
 
 		function finish( tab, url, push ) {
 			setCurrent( tab );
-			panel.classList.remove( 'is-loading' );
-			panel.removeAttribute( 'aria-busy' );
+			hideLoader();
 			bindPanel();
 			if ( push && url && window.history && history.pushState ) {
 				history.pushState( { lcclTab: tab }, '', url );
@@ -82,9 +97,10 @@
 				return;
 			}
 
+			var fromTab = currentTab;
 			var id = ++requestId;
-			panel.classList.add( 'is-loading' );
-			panel.setAttribute( 'aria-busy', 'true' );
+			setCurrent( tab );
+			showLoader();
 
 			var body = new window.FormData();
 			body.append( 'action', cfg.action );
@@ -107,7 +123,7 @@
 						window.location.href = url;
 						return;
 					}
-					cache[ currentTab ] = takePanel();
+					cache[ fromTab ] = takePanel();
 					panel.innerHTML = json.data.html;
 					finish( tab, url, push );
 				} )
@@ -115,6 +131,8 @@
 					if ( id !== requestId ) {
 						return;
 					}
+					hideLoader();
+					setCurrent( fromTab );
 					window.location.href = url;
 				} );
 		}

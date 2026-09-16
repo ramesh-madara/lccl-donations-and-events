@@ -22,14 +22,21 @@ defined( 'ABSPATH' ) || exit;
 	</p>
 
 	<header class="lccl-prog__hero lccl-prog__hero--compact">
-		<p class="lccl-prog__brand">LCCL</p>
-		<h1 class="lccl-prog__title"><?php esc_html_e( 'LCCL Blood Donation', 'lccl-de' ); ?></h1>
-		<p class="lccl-prog__lede">
-			<?php esc_html_e( 'Manage who can review registrations, and which emails and SMS go out after someone signs up.', 'lccl-de' ); ?>
-			<a class="lccl-prog__inline-link" href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>" target="_blank" rel="noopener noreferrer">
-				<?php esc_html_e( 'Open dashboard', 'lccl-de' ); ?>
-			</a>
-		</p>
+		<div class="lccl-prog__hero-copy">
+			<p class="lccl-prog__brand">LCCL</p>
+			<h1 class="lccl-prog__title"><?php esc_html_e( 'LCCL Blood Donation', 'lccl-de' ); ?></h1>
+			<p class="lccl-prog__lede">
+				<?php esc_html_e( 'Manage who can review registrations, and which emails and SMS go out after someone signs up.', 'lccl-de' ); ?>
+			</p>
+		</div>
+		<a class="lccl-prog__dash-btn" href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>" target="_blank" rel="noopener noreferrer">
+			<?php esc_html_e( 'Open dashboard', 'lccl-de' ); ?>
+			<span class="lccl-prog__dash-btn-icon" aria-hidden="true">
+				<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M3 9.5 9.5 3M9.5 3H4.5M9.5 3v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</span>
+		</a>
 	</header>
 
 	<nav class="lccl-prog__tabs" role="tablist" data-lccl-tabs aria-label="<?php esc_attr_e( 'Blood donation settings', 'lccl-de' ); ?>">
@@ -57,19 +64,25 @@ defined( 'ABSPATH' ) || exit;
 		</a>
 	</nav>
 
-	<div
-		class="lccl-prog__panel"
-		id="lccl-prog-tab-panel"
-		role="tabpanel"
-		data-lccl-tab-panel
-		aria-labelledby="<?php echo 'notifications' === $tab ? 'lccl-prog-tab-notifications' : 'lccl-prog-tab-users'; ?>"
-	>
-		<?php
-		if ( 'notifications' === $tab ) {
-			include LCCL_DE_PATH . 'templates/admin-notifications.php';
-		} else {
-			include LCCL_DE_PATH . 'templates/admin-users.php';
-		}
-		?>
+	<div class="lccl-prog__stage">
+		<div
+			class="lccl-prog__panel"
+			id="lccl-prog-tab-panel"
+			role="tabpanel"
+			data-lccl-tab-panel
+			aria-labelledby="<?php echo 'notifications' === $tab ? 'lccl-prog-tab-notifications' : 'lccl-prog-tab-users'; ?>"
+		>
+			<?php
+			if ( 'notifications' === $tab ) {
+				include LCCL_DE_PATH . 'templates/admin-notifications.php';
+			} else {
+				include LCCL_DE_PATH . 'templates/admin-users.php';
+			}
+			?>
+		</div>
+		<div class="lccl-prog__panel-loader" data-lccl-tab-loader hidden>
+			<span class="lccl-prog__loader" aria-hidden="true"></span>
+			<span class="screen-reader-text"><?php esc_html_e( 'Loading', 'lccl-de' ); ?></span>
+		</div>
 	</div>
 </div>
