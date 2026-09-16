@@ -306,6 +306,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 						value="1"
 						<?php checked( (int) $val( 'notify_campaigns' ), 1 ); ?>
 					>
+					<span class="lccl-bdf__check" aria-hidden="true"></span>
 					<span><?php esc_html_e( 'Notify me about upcoming Lions blood donation campaigns', 'lccl-de' ); ?></span>
 				</label>
 			</div>
@@ -332,6 +333,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<?php checked( (int) $val( 'consent' ), 1 ); ?>
 					required
 				>
+				<span class="lccl-bdf__check" aria-hidden="true"></span>
 				<span>
 					<?php esc_html_e( 'I consent to Colombo LEADS collecting and using my personal information for the purposes stated above.', 'lccl-de' ); ?>
 					<span class="lccl-bdf__req">*</span>
