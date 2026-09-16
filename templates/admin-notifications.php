@@ -45,7 +45,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 		</label>
 
 		<p>
-			<label for="lccl-de-admin-address"><strong><?php esc_html_e( 'Admin email addresses', 'lccl-de' ); ?></strong></label>
+			<label for="lccl-de-admin-address"><strong><?php esc_html_e( 'Staff email addresses', 'lccl-de' ); ?></strong></label>
 		</p>
 		<div id="lccl-de-admin-emails">
 			<?php
