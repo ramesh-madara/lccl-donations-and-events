@@ -135,6 +135,7 @@
 		sync( false );
 
 		bindRequiredValidation( form, district, bank, isLocked, showNotice );
+		bindContactValidation( form );
 	}
 
 	function isFilled( field ) {
@@ -155,20 +156,177 @@
 		if ( wrap ) {
 			wrap.classList.toggle( 'lccl-bdf__field--invalid', invalid );
 		}
+		field.setAttribute( 'aria-invalid', invalid ? 'true' : 'false' );
+	}
+
+	function setNotice( form, name, message ) {
+		var el = form.querySelector( '[data-lccl-notice="' + name + '"]' );
+		if ( ! el ) {
+			return;
+		}
+		if ( message ) {
+			el.textContent = message;
+			el.hidden = false;
+		} else {
+			el.hidden = true;
+		}
+	}
+
+	function constrainPhone( value ) {
+		value = String( value || '' );
+		var typed = value.replace( /[^\d+]/g, '' );
+		var digits = typed.replace( /\D/g, '' );
+		var international = 0 === typed.indexOf( '+' ) || 0 === digits.indexOf( '94' );
+
+		if ( ! international ) {
+			return digits.substring( 0, 10 );
+		}
+
+		if ( '+' === typed ) {
+			return '+';
+		}
+
+		if ( 0 === typed.indexOf( '+9' ) && 0 !== typed.indexOf( '+94' ) ) {
+			return '+9' === typed ? '+9' : '+94';
+		}
+
+		if ( 0 === typed.indexOf( '+' ) && 0 !== typed.indexOf( '+9' ) ) {
+			return '+';
+		}
+
+		if ( 0 === digits.indexOf( '94' ) ) {
+			digits = digits.substring( 2 );
+		}
+		if ( 0 === digits.indexOf( '0' ) ) {
+			digits = digits.substring( 1 );
+		}
+
+		return '+94' + digits.substring( 0, 9 );
+	}
+
+	function isValidPhone( value ) {
+		var raw = String( value || '' ).replace( /^\s+|\s+$/g, '' );
+		if ( '' === raw ) {
+			return false;
+		}
+
+		var digits = raw.replace( /\D/g, '' );
+		var international = 0 === raw.indexOf( '+' ) || 0 === digits.indexOf( '94' );
+
+		if ( international ) {
+			if ( 0 === digits.indexOf( '94' ) ) {
+				digits = digits.substring( 2 );
+			}
+			if ( 0 === digits.indexOf( '0' ) ) {
+				digits = digits.substring( 1 );
+			}
+			return /^[1-9][0-9]{8}$/.test( digits );
+		}
+
+		return /^0[1-9][0-9]{8}$/.test( digits );
+	}
+
+	function isValidEmail( value ) {
+		value = String( value || '' ).replace( /^\s+|\s+$/g, '' );
+		if ( '' === value ) {
+			return true;
+		}
+		if ( value.length > 191 ) {
+			return false;
+		}
+		return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) && -1 === value.indexOf( '..' );
+	}
+
+	function syncPhoneMax( field ) {
+		field.setAttribute( 'maxlength', 0 === field.value.indexOf( '+' ) ? '12' : '10' );
+	}
+
+	function bindContactValidation( form ) {
+		var phone = form.querySelector( '[data-lccl-validate="phone"]' );
+		var email = form.querySelector( '[data-lccl-validate="email"]' );
+		var contactMethod = form.querySelector( '[name="contact_method"]' );
+
+		if ( phone ) {
+			syncPhoneMax( phone );
+			phone.addEventListener( 'input', function () {
+				var next = constrainPhone( phone.value );
+				if ( next !== phone.value ) {
+					phone.value = next;
+				}
+				syncPhoneMax( phone );
+				if ( isFilled( phone ) && isValidPhone( phone.value ) ) {
+					markField( phone, false );
+					setNotice( form, 'phone', '' );
+				}
+			} );
+			phone.addEventListener( 'blur', function () {
+				if ( ! isFilled( phone ) ) {
+					return;
+				}
+				var ok = isValidPhone( phone.value );
+				markField( phone, ! ok );
+				setNotice( form, 'phone', ok ? '' : phone.getAttribute( 'data-invalid-message' ) || '' );
+			} );
+		}
+
+		if ( email ) {
+			email.addEventListener( 'input', function () {
+				if ( isValidEmail( email.value ) && ( isFilled( email ) || ! contactMethod || 'email' !== contactMethod.value ) ) {
+					markField( email, false );
+					setNotice( form, 'email', '' );
+				}
+			} );
+			email.addEventListener( 'blur', function () {
+				validateEmailField( form, email, contactMethod, false );
+			} );
+		}
+
+		if ( contactMethod ) {
+			contactMethod.addEventListener( 'change', function () {
+				validateEmailField( form, email, contactMethod, false );
+			} );
+		}
+	}
+
+	function validateEmailField( form, email, contactMethod, requireIfEmpty ) {
+		if ( ! email ) {
+			return true;
+		}
+
+		var value = email.value.replace( /^\s+|\s+$/g, '' );
+		var needsEmail = contactMethod && 'email' === contactMethod.value;
+		var message = '';
+
+		if ( '' === value ) {
+			if ( needsEmail && requireIfEmpty ) {
+				message = email.getAttribute( 'data-required-message' ) || '';
+			}
+		} else if ( ! isValidEmail( value ) ) {
+			message = email.getAttribute( 'data-invalid-message' ) || '';
+		}
+
+		markField( email, '' !== message );
+		setNotice( form, 'email', message );
+		return '' === message;
 	}
 
 	function bindRequiredValidation( form, district, bank, isLocked, showNotice ) {
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
+		var phone = form.querySelector( '[data-lccl-validate="phone"]' );
+		var email = form.querySelector( '[data-lccl-validate="email"]' );
+		var contactMethod = form.querySelector( '[name="contact_method"]' );
 
 		form.addEventListener( 'submit', function ( event ) {
 			var required = form.querySelectorAll( '[required]' );
 			var firstInvalid = null;
+			var missingRequired = false;
 
 			Array.prototype.forEach.call( required, function ( field ) {
 				var invalid = ! isFilled( field );
 				markField( field, invalid );
 				if ( invalid && ! firstInvalid ) {
 					firstInvalid = field;
+					missingRequired = true;
 				}
 			} );
 
@@ -179,12 +337,27 @@
 				if ( ! firstInvalid ) {
 					firstInvalid = district || bank;
 				}
+				missingRequired = true;
+			}
+
+			if ( phone && isFilled( phone ) && ! isValidPhone( phone.value ) ) {
+				markField( phone, true );
+				setNotice( form, 'phone', phone.getAttribute( 'data-invalid-message' ) || '' );
+				if ( ! firstInvalid ) {
+					firstInvalid = phone;
+				}
+			} else if ( phone && isFilled( phone ) ) {
+				setNotice( form, 'phone', '' );
+			}
+
+			if ( ! validateEmailField( form, email, contactMethod, true ) && email && ! firstInvalid ) {
+				firstInvalid = email;
 			}
 
 			if ( firstInvalid ) {
 				event.preventDefault();
 				if ( banner ) {
-					banner.hidden = false;
+					banner.hidden = ! missingRequired;
 				}
 				firstInvalid.focus();
 				return;
@@ -196,15 +369,23 @@
 		} );
 
 		form.addEventListener( 'input', function ( event ) {
-			if ( event.target && event.target.hasAttribute( 'required' ) ) {
-				markField( event.target, ! isFilled( event.target ) );
+			if ( ! event.target || ! event.target.hasAttribute( 'required' ) ) {
+				return;
 			}
+			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) ) {
+				return;
+			}
+			markField( event.target, ! isFilled( event.target ) );
 		} );
 
 		form.addEventListener( 'change', function ( event ) {
-			if ( event.target && event.target.hasAttribute( 'required' ) ) {
-				markField( event.target, ! isFilled( event.target ) );
+			if ( ! event.target || ! event.target.hasAttribute( 'required' ) ) {
+				return;
 			}
+			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) ) {
+				return;
+			}
+			markField( event.target, ! isFilled( event.target ) );
 		} );
 	}
 

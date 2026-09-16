@@ -10,8 +10,9 @@
  *   field background        #f7f7f7
  *   field border            #c4c4c4
  *   white                   #ffffff
- *   primary gold            #f7c016  (accent, submit hover, success banner)
- *   dark gold               #c9a012  (submit default)
+ *   primary gold            #f7c016  (accent, submit default, success banner)
+ *   light gold              #f9cd47  (submit hover)
+ *   dark gold               #c9a012  (checked checkbox)
  */
 
 .lccl-bdf {
@@ -21,8 +22,10 @@
 	--lccl-bdf-field-text: #6b6b6b;
 	--lccl-bdf-field-bg: #f7f7f7;
 	--lccl-bdf-border: #c4c4c4;
+	--lccl-bdf-border-focus: #f7c016;
 	--lccl-bdf-gold-dark: #c9a012;
 	--lccl-bdf-gold-light: #f7c016;
+	--lccl-bdf-gold-hover: #f9cd47;
 	--lccl-bdf-required: #d0021b;
 	--lccl-bdf-primary: #f7c016;
 	--lccl-bdf-primary-soft: #fff6d4;
@@ -35,6 +38,7 @@
 	width: 100%;
 	margin: 0;
 	padding: var(--lccl-bdf-pad);
+	padding-bottom: 48px;
 	background-color: var(--lccl-bdf-bg);
 	color: var(--lccl-bdf-text);
 	color-scheme: light;
@@ -152,7 +156,7 @@
 .lccl-bdf input.lccl-bdf__input:focus-visible,
 .lccl-bdf select.lccl-bdf__select:focus,
 .lccl-bdf select.lccl-bdf__select:focus-visible {
-	border-color: var(--lccl-bdf-border);
+	border-color: var(--lccl-bdf-border-focus);
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-field-text);
 	box-shadow: none;
@@ -317,6 +321,7 @@
 
 .lccl-bdf .lccl-bdf__checkbox input[type="checkbox"]:focus,
 .lccl-bdf .lccl-bdf__checkbox input[type="checkbox"]:focus-visible {
+	border-color: var(--lccl-bdf-border-focus);
 	outline: none;
 	box-shadow: none;
 }
@@ -357,16 +362,16 @@
 	min-height: 44px;
 	margin: 26px 0 0;
 	padding: 11px 26px;
-	border: 1px solid var(--lccl-bdf-gold-dark);
+	border: 1px solid var(--lccl-bdf-gold-light);
 	border-radius: 3px;
-	background-color: var(--lccl-bdf-gold-dark);
+	background-color: var(--lccl-bdf-gold-light);
 	background-image: none;
 	box-shadow: none;
 	color: #ffffff;
 	cursor: pointer;
 	font-family: var(--lccl-bdf-font);
 	font-size: 16px;
-	font-weight: 400;
+	font-weight: 600;
 	letter-spacing: 0;
 	line-height: 1.4;
 	text-transform: none;
@@ -379,8 +384,8 @@
 .lccl-bdf button.lccl-bdf__submit:hover,
 .lccl-bdf button.lccl-bdf__submit:focus,
 .lccl-bdf button.lccl-bdf__submit:focus-visible {
-	border-color: var(--lccl-bdf-gold-light);
-	background-color: var(--lccl-bdf-gold-light);
+	border-color: var(--lccl-bdf-gold-hover);
+	background-color: var(--lccl-bdf-gold-hover);
 	color: #ffffff;
 	outline: none;
 	box-shadow: none;

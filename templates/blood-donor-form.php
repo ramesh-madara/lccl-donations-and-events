@@ -80,6 +80,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="first_name"
 					value="<?php echo esc_attr( $val( 'first_name' ) ); ?>"
 					autocomplete="given-name"
+					maxlength="100"
 					required
 				>
 				<?php if ( $err( 'first_name' ) ) : ?>
@@ -98,6 +99,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="last_name"
 					value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
 					autocomplete="family-name"
+					maxlength="100"
 					required
 				>
 				<?php if ( $err( 'last_name' ) ) : ?>
@@ -116,6 +118,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="address"
 					value="<?php echo esc_attr( $val( 'address' ) ); ?>"
 					autocomplete="street-address"
+					maxlength="255"
 					required
 				>
 				<?php if ( $err( 'address' ) ) : ?>
@@ -134,6 +137,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="city"
 					value="<?php echo esc_attr( $val( 'city' ) ); ?>"
 					autocomplete="address-level2"
+					maxlength="100"
 					required
 				>
 				<?php if ( $err( 'city' ) ) : ?>
@@ -153,6 +157,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					value="<?php echo esc_attr( $val( 'postal_code' ) ); ?>"
 					inputmode="numeric"
 					autocomplete="postal-code"
+					maxlength="20"
 				>
 			</div>
 
@@ -167,10 +172,17 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="email"
 					value="<?php echo esc_attr( $val( 'email' ) ); ?>"
 					autocomplete="email"
+					maxlength="191"
+					data-lccl-validate="email"
+					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::email_error_message() ); ?>"
+					data-required-message="<?php echo esc_attr( __( 'Please enter an email address so we can contact you by email.', 'lccl-de' ) ); ?>"
 				>
-				<?php if ( $err( 'email' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'email' ) ); ?></p>
-				<?php endif; ?>
+				<p
+					class="lccl-bdf__notice"
+					data-lccl-notice="email"
+					role="alert"
+					<?php echo $err( 'email' ) ? '' : 'hidden'; ?>
+				><?php echo $err( 'email' ) ? esc_html( $err( 'email' ) ) : ''; ?></p>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
@@ -186,11 +198,17 @@ $invalid = static function ( $key ) use ( $errors ) {
 					placeholder="+94 71 0000000"
 					inputmode="tel"
 					autocomplete="tel"
+					maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
+					data-lccl-validate="phone"
+					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
 					required
 				>
-				<?php if ( $err( 'phone' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'phone' ) ); ?></p>
-				<?php endif; ?>
+				<p
+					class="lccl-bdf__notice"
+					data-lccl-notice="phone"
+					role="alert"
+					<?php echo $err( 'phone' ) ? '' : 'hidden'; ?>
+				><?php echo $err( 'phone' ) ? esc_html( $err( 'phone' ) ) : ''; ?></p>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'district' ) ); ?>">

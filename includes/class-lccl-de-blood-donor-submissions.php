@@ -178,8 +178,8 @@ class LCCL_DE_Blood_Donor_Submissions {
 			'address'              => isset( $post['address'] ) ? sanitize_text_field( $post['address'] ) : '',
 			'city'                 => isset( $post['city'] ) ? sanitize_text_field( $post['city'] ) : '',
 			'postal_code'          => isset( $post['postal_code'] ) ? sanitize_text_field( $post['postal_code'] ) : '',
-			'email'                => isset( $post['email'] ) ? sanitize_email( $post['email'] ) : '',
-			'phone'                => isset( $post['phone'] ) ? sanitize_text_field( $post['phone'] ) : '',
+			'email'                => self::sanitize_email_field( isset( $post['email'] ) ? $post['email'] : '' ),
+			'phone'                => self::sanitize_phone_field( isset( $post['phone'] ) ? $post['phone'] : '' ),
 			'district'             => isset( $post['district'] ) ? sanitize_text_field( $post['district'] ) : '',
 			'blood_bank'           => isset( $post['blood_bank'] ) ? sanitize_text_field( $post['blood_bank'] ) : '',
 			'donation_preference'  => isset( $post['donation_preference'] ) ? sanitize_key( $post['donation_preference'] ) : '',
@@ -219,8 +219,14 @@ class LCCL_DE_Blood_Donor_Submissions {
 			$errors['consent'] = __( 'Please confirm that you consent to your information being used.', 'lccl-de' );
 		}
 
-		if ( '' !== $values['email'] && ! is_email( $values['email'] ) ) {
-			$errors['email'] = __( 'Please enter a valid email address, or leave it blank.', 'lccl-de' );
+		if ( '' !== $values['phone'] && ! self::is_valid_sl_phone( $values['phone'] ) ) {
+			$errors['phone'] = self::phone_error_message();
+		}
+
+		if ( '' !== $values['email'] && ! self::is_valid_email_field( $values['email'] ) ) {
+			$errors['email'] = self::email_error_message();
+		} elseif ( 'email' === $values['contact_method'] && '' === $values['email'] ) {
+			$errors['email'] = __( 'Please enter an email address so we can contact you by email.', 'lccl-de' );
 		}
 
 		$districts = LCCL_DE_Blood_Donor_Form::get_districts();
@@ -248,6 +254,154 @@ class LCCL_DE_Blood_Donor_Submissions {
 		}
 
 		return $errors;
+	}
+
+	/**
+	 * Message shown when the phone number is not a Sri Lankan format.
+	 *
+	 * @return string
+	 */
+	public static function phone_error_message() {
+		return __( 'Enter a Sri Lankan phone number: 10 digits, or +94 followed by 9 digits.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when the optional email is present but invalid.
+	 *
+	 * @return string
+	 */
+	public static function email_error_message() {
+		return __( 'Please enter a valid email address, or leave it blank.', 'lccl-de' );
+	}
+
+	/**
+	 * Keep a typed email for redisplay; only fully sanitise valid ones.
+	 *
+	 * @param string $email Raw posted email.
+	 * @return string
+	 */
+	public static function sanitize_email_field( $email ) {
+		$email = sanitize_text_field( $email );
+		if ( self::is_valid_email_field( $email ) ) {
+			return sanitize_email( $email );
+		}
+
+		return $email;
+	}
+
+	/**
+	 * Optional email: empty is allowed, otherwise RFC-shaped and within the column.
+	 *
+	 * @param string $email Sanitised email.
+	 * @return bool
+	 */
+	public static function is_valid_email_field( $email ) {
+		$email = trim( (string) $email );
+		if ( '' === $email ) {
+			return true;
+		}
+
+		if ( strlen( $email ) > 191 ) {
+			return false;
+		}
+
+		return (bool) is_email( $email );
+	}
+
+	/**
+	 * Normalise a valid Sri Lankan number; leave invalid input readable.
+	 *
+	 * @param string $phone Raw posted phone.
+	 * @return string
+	 */
+	public static function sanitize_phone_field( $phone ) {
+		$phone = sanitize_text_field( $phone );
+		if ( self::is_valid_sl_phone( $phone ) ) {
+			return self::normalize_sl_phone( $phone );
+		}
+
+		return $phone;
+	}
+
+	/**
+	 * Accept local 0XXXXXXXXX or international +94XXXXXXXXX / 94XXXXXXXXX.
+	 *
+	 * @param string $phone Posted or sanitised phone.
+	 * @return bool
+	 */
+	public static function is_valid_sl_phone( $phone ) {
+		$phone  = trim( (string) $phone );
+		$digits = preg_replace( '/\D+/', '', $phone );
+		if ( '' === $digits ) {
+			return false;
+		}
+
+		$international = ( 0 === strpos( $phone, '+' ) || 0 === strpos( $digits, '94' ) );
+		$national      = self::sl_national_number( $phone );
+
+		if ( $international ) {
+			return (bool) preg_match( '/^[1-9][0-9]{8}$/', $national );
+		}
+
+		return (bool) preg_match( '/^0[1-9][0-9]{8}$/', $digits );
+	}
+
+	/**
+	 * Store +94… when the donor used the country code, otherwise 0… .
+	 *
+	 * @param string $phone Valid phone.
+	 * @return string
+	 */
+	public static function normalize_sl_phone( $phone ) {
+		$national = self::sl_national_number( $phone );
+		if ( ! preg_match( '/^[1-9][0-9]{8}$/', $national ) ) {
+			return trim( (string) $phone );
+		}
+
+		$digits = preg_replace( '/\D+/', '', (string) $phone );
+		if ( 0 === strpos( ltrim( (string) $phone ), '+' ) || 0 === strpos( $digits, '94' ) ) {
+			return '+94' . $national;
+		}
+
+		return '0' . $national;
+	}
+
+	/**
+	 * Dialog MSISDN: 94 plus the 9-digit national number.
+	 *
+	 * @param string $phone Stored phone.
+	 * @return string
+	 */
+	public static function phone_to_msisdn( $phone ) {
+		$national = self::sl_national_number( $phone );
+		if ( preg_match( '/^[1-9][0-9]{8}$/', $national ) ) {
+			return '94' . $national;
+		}
+
+		return preg_replace( '/\s+/', '', (string) $phone );
+	}
+
+	/**
+	 * Nine-digit national number with trunk 0 and +94 stripped.
+	 *
+	 * @param string $phone Phone input.
+	 * @return string
+	 */
+	public static function sl_national_number( $phone ) {
+		$digits = preg_replace( '/\D+/', '', (string) $phone );
+		if ( '' === $digits ) {
+			return '';
+		}
+
+		if ( 0 === strpos( $digits, '94' ) && strlen( $digits ) > 2 ) {
+			$digits = substr( $digits, 2 );
+		}
+
+		if ( 0 === strpos( $digits, '0' ) ) {
+			$digits = substr( $digits, 1 );
+		}
+
+		return $digits;
 	}
 
 	/**

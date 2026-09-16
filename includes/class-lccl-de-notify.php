@@ -121,7 +121,7 @@ class LCCL_DE_Notify {
 	 * @param int   $insert_id Donor row ID.
 	 */
 	private static function send_sms( array $values, $insert_id ) {
-		$phone = isset( $values['phone'] ) ? preg_replace( '/\s+/', '', (string) $values['phone'] ) : '';
+		$phone = isset( $values['phone'] ) ? LCCL_DE_Blood_Donor_Submissions::phone_to_msisdn( $values['phone'] ) : '';
 		if ( '' === $phone ) {
 			return;
 		}
