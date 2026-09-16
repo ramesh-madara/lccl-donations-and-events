@@ -10,7 +10,7 @@
  *   field background        #f7f7f7
  *   field border            #c4c4c4
  *   white                   #ffffff
- *   primary gold            #f7c016  (success banner only)
+ *   primary gold            #f7c016  (accent, field focus, success banner)
  */
 
 .lccl-bdf {
@@ -20,7 +20,7 @@
 	--lccl-bdf-field-text: #6b6b6b;
 	--lccl-bdf-field-bg: #f7f7f7;
 	--lccl-bdf-border: #c4c4c4;
-	--lccl-bdf-border-focus: #333333;
+	--lccl-bdf-border-focus: #f7c016;
 	--lccl-bdf-required: #d0021b;
 	--lccl-bdf-primary: #f7c016;
 	--lccl-bdf-primary-soft: #fff6d4;
@@ -295,7 +295,12 @@
 	width: 16px;
 	height: 16px;
 	margin: 3px 0 0;
-	accent-color: var(--lccl-bdf-heading);
+	accent-color: var(--lccl-bdf-primary);
+}
+
+.lccl-bdf .lccl-bdf__checkbox input[type="checkbox"]:focus-visible {
+	outline: 2px solid var(--lccl-bdf-border-focus);
+	outline-offset: 2px;
 }
 
 /* Privacy and consent */

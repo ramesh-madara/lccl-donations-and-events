@@ -95,17 +95,9 @@ if ( $can_view && $user instanceof WP_User ) {
 			<div>
 				<p class="lccl-bda__brand">LCCL</p>
 				<h2 class="lccl-bda__title lccl-bda__title--inline">
-					<span data-dash-title><?php esc_html_e( 'Donor registrations', 'lccl-de' ); ?></span>
+					<?php esc_html_e( 'Donor registrations', 'lccl-de' ); ?>
 					<span class="lccl-bda__loader" data-dash-loader hidden aria-hidden="true"></span>
 				</h2>
-				<nav class="lccl-bda__nav" aria-label="<?php esc_attr_e( 'Admin sections', 'lccl-de' ); ?>">
-					<button class="lccl-bda__nav-btn is-current" type="button" data-view="registrations">
-						<?php esc_html_e( 'Registrations', 'lccl-de' ); ?>
-					</button>
-					<button class="lccl-bda__nav-btn" type="button" data-view="notifications">
-						<?php esc_html_e( 'Notifications', 'lccl-de' ); ?>
-					</button>
-				</nav>
 			</div>
 			<div class="lccl-bda__who">
 				<span data-display-name><?php echo esc_html( $display ); ?></span>
@@ -117,7 +109,6 @@ if ( $can_view && $user instanceof WP_User ) {
 
 		<p class="lccl-bda__banner lccl-bda__banner--error" data-dash-error hidden></p>
 
-		<div data-view-panel="registrations">
 		<form class="lccl-bda__filters" data-form="filters">
 			<div class="lccl-bda__field lccl-bda__field--grow">
 				<label class="lccl-bda__label" for="lccl-bda-search"><?php esc_html_e( 'Search', 'lccl-de' ); ?></label>
@@ -192,40 +183,5 @@ if ( $can_view && $user instanceof WP_User ) {
 				<dl class="lccl-bda__dl" data-detail-body></dl>
 			</aside>
 		</div>
-		</div>
-
-		<section class="lccl-bda__notify" data-view-panel="notifications" hidden>
-			<div class="lccl-bda__notify-card">
-				<div class="lccl-bda__modal" data-notify-modal hidden>
-					<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
-					<span class="lccl-bda__modal-label"><?php esc_html_e( 'Saving…', 'lccl-de' ); ?></span>
-				</div>
-				<p class="lccl-bda__lede">
-					<?php esc_html_e( 'These go out after someone submits the public registration form. Uncheck a row to stop that message. Saving a registration is never blocked if a send fails.', 'lccl-de' ); ?>
-				</p>
-				<p class="lccl-bda__banner lccl-bda__banner--error" data-notify-error hidden></p>
-				<p class="lccl-bda__banner lccl-bda__banner--success" data-notify-notice hidden></p>
-				<form class="lccl-bda__form" data-form="notifications">
-					<label class="lccl-bda__check">
-						<input type="checkbox" name="donor_sms" value="1">
-						<span><?php esc_html_e( 'Send an SMS to the person who registered (Dialog e-SMS).', 'lccl-de' ); ?></span>
-					</label>
-					<label class="lccl-bda__check">
-						<input type="checkbox" name="donor_email" value="1">
-						<span><?php esc_html_e( 'Email the person who registered, if they entered an email address.', 'lccl-de' ); ?></span>
-					</label>
-					<label class="lccl-bda__check">
-						<input type="checkbox" name="admin_email" value="1">
-						<span><?php esc_html_e( 'Email a staff copy when someone registers.', 'lccl-de' ); ?></span>
-					</label>
-					<div class="lccl-bda__field">
-						<p class="lccl-bda__label"><?php esc_html_e( 'Admin email addresses', 'lccl-de' ); ?></p>
-						<p class="lccl-bda__lede" data-admin-addresses></p>
-						<p class="lccl-bda__lede"><?php esc_html_e( 'Add or remove these addresses in wp-admin under LCCL Programs → LCCL Blood Donation → Notifications.', 'lccl-de' ); ?></p>
-					</div>
-					<button class="lccl-bda__button lccl-bda__button--inline" type="submit"><?php esc_html_e( 'Save notifications', 'lccl-de' ); ?></button>
-				</form>
-			</div>
-		</section>
 	</section>
 </div>

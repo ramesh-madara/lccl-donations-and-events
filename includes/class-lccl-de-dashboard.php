@@ -169,54 +169,6 @@ class LCCL_DE_Dashboard {
 				),
 			)
 		);
-
-		register_rest_route(
-			self::REST_NS,
-			'/notifications',
-			array(
-				array(
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => array( __CLASS__, 'rest_get_notifications' ),
-					'permission_callback' => array( __CLASS__, 'rest_can_view' ),
-				),
-				array(
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => array( __CLASS__, 'rest_save_notifications' ),
-					'permission_callback' => array( __CLASS__, 'rest_can_view' ),
-				),
-			)
-		);
-	}
-
-	/**
-	 * Current notification switches.
-	 *
-	 * @return WP_REST_Response
-	 */
-	public static function rest_get_notifications() {
-		$settings          = LCCL_DE_Settings::get();
-		$settings['nonce'] = wp_create_nonce( 'wp_rest' );
-
-		return new WP_REST_Response( $settings, 200 );
-	}
-
-	/**
-	 * Save notification switches from the frontend admin.
-	 *
-	 * @param WP_REST_Request $request Request.
-	 * @return WP_REST_Response
-	 */
-	public static function rest_save_notifications( WP_REST_Request $request ) {
-		$params = $request->get_json_params();
-		if ( ! is_array( $params ) ) {
-			$params = $request->get_params();
-		}
-
-		$saved            = LCCL_DE_Settings::save( $params );
-		$saved['nonce']   = wp_create_nonce( 'wp_rest' );
-		$saved['message'] = __( 'Notification settings saved.', 'lccl-de' );
-
-		return new WP_REST_Response( $saved, 200 );
 	}
 
 	/**

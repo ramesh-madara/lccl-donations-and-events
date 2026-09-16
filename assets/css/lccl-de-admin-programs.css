@@ -93,7 +93,7 @@
 	border: 1px solid #f0d98a;
 	border-top: 6px solid var(--lccl-prog-gold);
 	border-radius: 4px;
-	background: linear-gradient(180deg, #fffbeb 0%, var(--lccl-prog-gold-soft) 22%, #ffffff 22%);
+	background: linear-gradient(180deg, #fffbeb 0%, var(--lccl-prog-gold-soft) 17%, #ffffff 17%);
 	box-shadow: none;
 	color: var(--lccl-prog-text);
 	text-decoration: none;
