@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/lccl/public_html/wp-content/plugins/lccl-donations-and-events/
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R * $DEPLOYPATH
