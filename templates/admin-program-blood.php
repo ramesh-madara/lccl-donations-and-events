@@ -17,18 +17,18 @@
 defined( 'ABSPATH' ) || exit;
 ?>
 <div class="wrap lccl-prog">
-	<p class="lccl-prog__back">
+	<h1 class="screen-reader-text"><?php esc_html_e( 'Blood Donation', 'lccl-de' ); ?></h1>
+
+	<nav class="lccl-prog__crumbs" aria-label="<?php esc_attr_e( 'Breadcrumb', 'lccl-de' ); ?>">
 		<a href="<?php echo esc_url( LCCL_DE_Admin_Programs::url() ); ?>"><?php esc_html_e( 'LCCL Programs', 'lccl-de' ); ?></a>
-	</p>
+		<span class="lccl-prog__crumbs-sep" aria-hidden="true">/</span>
+		<span class="lccl-prog__crumbs-current"><?php esc_html_e( 'Blood Donation', 'lccl-de' ); ?></span>
+	</nav>
 
 	<header class="lccl-prog__hero lccl-prog__hero--compact">
-		<div class="lccl-prog__hero-copy">
-			<p class="lccl-prog__brand">LCCL</p>
-			<h1 class="lccl-prog__title"><?php esc_html_e( 'LCCL Blood Donation', 'lccl-de' ); ?></h1>
-			<p class="lccl-prog__lede">
-				<?php esc_html_e( 'Manage who can review registrations, and which emails and SMS go out after someone signs up.', 'lccl-de' ); ?>
-			</p>
-		</div>
+		<p class="lccl-prog__lede">
+			<?php esc_html_e( 'Manage who can review registrations, and which emails and SMS go out after someone signs up.', 'lccl-de' ); ?>
+		</p>
 		<a class="lccl-prog__dash-btn" href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>" target="_blank" rel="noopener noreferrer">
 			<?php esc_html_e( 'Open dashboard', 'lccl-de' ); ?>
 			<span class="lccl-prog__dash-btn-icon" aria-hidden="true">

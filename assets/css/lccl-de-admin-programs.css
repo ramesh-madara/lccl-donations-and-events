@@ -50,28 +50,51 @@
 	border-bottom: 1px solid var(--lccl-prog-border);
 }
 
-.lccl-prog .lccl-prog__hero--compact {
+.lccl-prog .lccl-prog__crumbs {
 	display: flex;
 	flex-wrap: wrap;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 16px 24px;
-	margin-bottom: 0;
-	padding-bottom: 18px;
-	border-bottom: 0;
+	align-items: center;
+	gap: 8px;
+	margin: 4px 0 14px;
+	color: var(--lccl-prog-muted);
+	font-size: 13px;
+	letter-spacing: 0.02em;
+	line-height: 1.4;
 }
 
-.lccl-prog .lccl-prog__hero-copy {
-	flex: 1 1 16rem;
-	min-width: 0;
+.lccl-prog .lccl-prog__crumbs a {
+	color: var(--lccl-prog-heading);
+	text-decoration: none;
+	border-bottom: 1px solid var(--lccl-prog-gold);
+}
+
+.lccl-prog .lccl-prog__crumbs a:hover,
+.lccl-prog .lccl-prog__crumbs a:focus {
+	color: var(--lccl-prog-heading);
+	border-bottom-color: var(--lccl-prog-heading);
+	box-shadow: none;
+}
+
+.lccl-prog .lccl-prog__crumbs-sep {
+	color: var(--lccl-prog-border);
+}
+
+.lccl-prog .lccl-prog__crumbs-current {
+	color: var(--lccl-prog-heading);
+}
+
+.lccl-prog .lccl-prog__hero--compact {
+	display: block;
+	margin-bottom: 0;
+	padding-bottom: 20px;
+	border-bottom: 0;
 }
 
 .lccl-prog .lccl-prog__dash-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	flex: 0 0 auto;
-	margin: 10px 0 0;
+	margin: 14px 0 0;
 	padding: 0 16px;
 	min-height: 36px;
 	border: 1px solid var(--lccl-prog-gold);
