@@ -133,6 +133,79 @@
 
 		// Preserve any server rendered selection on first load.
 		sync( false );
+
+		bindRequiredValidation( form, district, bank, isLocked, showNotice );
+	}
+
+	function isFilled( field ) {
+		if ( ! field ) {
+			return false;
+		}
+
+		if ( 'checkbox' === field.type ) {
+			return field.checked;
+		}
+
+		return '' !== field.value.replace( /^\s+|\s+$/g, '' );
+	}
+
+	function markField( field, invalid ) {
+		var wrap = field.closest( '.lccl-bdf__field' ) || field.closest( '.lccl-bdf__consent' );
+		field.classList.toggle( 'lccl-bdf__input--error', invalid );
+		if ( wrap ) {
+			wrap.classList.toggle( 'lccl-bdf__field--invalid', invalid );
+		}
+	}
+
+	function bindRequiredValidation( form, district, bank, isLocked, showNotice ) {
+		var banner = form.querySelector( '[data-lccl-notice="required"]' );
+
+		form.addEventListener( 'submit', function ( event ) {
+			var required = form.querySelectorAll( '[required]' );
+			var firstInvalid = null;
+
+			Array.prototype.forEach.call( required, function ( field ) {
+				var invalid = ! isFilled( field );
+				markField( field, invalid );
+				if ( invalid && ! firstInvalid ) {
+					firstInvalid = field;
+				}
+			} );
+
+			if ( bank && isLocked() ) {
+				event.preventDefault();
+				showNotice();
+				markField( bank, true );
+				if ( ! firstInvalid ) {
+					firstInvalid = district || bank;
+				}
+			}
+
+			if ( firstInvalid ) {
+				event.preventDefault();
+				if ( banner ) {
+					banner.hidden = false;
+				}
+				firstInvalid.focus();
+				return;
+			}
+
+			if ( banner ) {
+				banner.hidden = true;
+			}
+		} );
+
+		form.addEventListener( 'input', function ( event ) {
+			if ( event.target && event.target.hasAttribute( 'required' ) ) {
+				markField( event.target, ! isFilled( event.target ) );
+			}
+		} );
+
+		form.addEventListener( 'change', function ( event ) {
+			if ( event.target && event.target.hasAttribute( 'required' ) ) {
+				markField( event.target, ! isFilled( event.target ) );
+			}
+		} );
 	}
 
 	function init() {

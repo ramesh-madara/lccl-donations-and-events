@@ -367,9 +367,10 @@ class LCCL_DE_Blood_Donor_Form {
 			true
 		);
 
-		// Populated by the submission handler once persistence is wired up.
-		$values = array();
-		$errors = array();
+		$flash   = LCCL_DE_Blood_Donor_Submissions::consume_flash();
+		$values  = $flash['values'];
+		$errors  = $flash['errors'];
+		$success = ! empty( $flash['success'] );
 
 		ob_start();
 		include LCCL_DE_PATH . 'templates/blood-donor-form.php';

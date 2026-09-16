@@ -97,8 +97,13 @@ specific and break locally:
 
 The form currently renders on a scratch page at
 `http://lccl.local/blood-donor-form-test/` containing just
-`[lccl_blood_donor_form]`. Delete it whenever; recreate by adding the shortcode
-to any page.
+`[lccl_blood_donor_form]`. Submissions land in `4FN0Y_lccl_de_blood_donors`.
+Delete the page whenever; recreate by adding the shortcode to any page.
+
+The reviewer dashboard is created at
+`http://lccl.local/blood-donation-admin/` (`[lccl_blood_donation_admin]`).
+Site admins manage those accounts under **Blood Donation Users** in
+wp-admin. Exclude that page in W3 Total Cache on production.
 
 For a quick render check without a browser:
 

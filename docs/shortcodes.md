@@ -24,8 +24,9 @@ column or `.wpb_wrapper` it is dropped into.
 ### Fields
 
 Required fields are marked with a red asterisk and carry the HTML `required`
-attribute. These `name` values are the contract the submission handler and
-database schema will be built against, so avoid renaming them casually.
+attribute. Submit is blocked in the browser if any of them are empty, and
+again on the server. These `name` values match the columns in
+[database.md](database.md), so avoid renaming them casually.
 
 | Field name | Control | Required | Notes |
 | --- | --- | --- | --- |
@@ -41,8 +42,8 @@ database schema will be built against, so avoid renaming them casually.
 | `donation_preference` | select | no | Blood bank / campaign / either |
 | `donated_before` | select | no | Yes / no / not sure |
 | `contact_method` | select | yes | Phone / WhatsApp / SMS / email |
-| `notify_campaigns` | checkbox | no | Value `1` when ticked |
-| `consent` | checkbox | yes | Value `1`, privacy consent |
+| `notify_campaigns` | checkbox | no | Stored as boolean `tinyint(1)`: `1` ticked, `0` not |
+| `consent` | checkbox | yes | Stored as boolean `tinyint(1)`. Submit is rejected without it. |
 
 Every select starts with a blank `<option>` so no value is preselected.
 
@@ -75,26 +76,41 @@ LCCL_DE_Blood_Donor_Form::is_valid_blood_bank( $bank_key, $district );
 
 ### Security
 
-The form posts to itself and already includes a nonce:
+The form posts to `admin-post.php` with action
+`lccl_de_blood_donor_register` and already includes a nonce:
 
 ```php
 wp_nonce_field( 'lccl_de_blood_donor_register', 'lccl_de_nonce' );
 ```
 
-Verify it with `wp_verify_nonce( $_POST['lccl_de_nonce'], 'lccl_de_blood_donor_register' )`
-when the handler is written.
+`LCCL_DE_Blood_Donor_Submissions` verifies the nonce, rejects empty required
+fields, confirms option keys and the district/bank pairing, then inserts the
+row. `notify_campaigns` is stored as `0` or `1`.
 
 ### Repopulating after validation errors
 
-`templates/blood-donor-form.php` already accepts two variables from the
-render method:
+The render method consumes a one-time flash token from `?lccl_de=` and passes
+these into the template:
 
 - `$values` — previously submitted values keyed by field name
 - `$errors` — validation errors keyed by field name
+- `$success` — true after a saved registration
 
-`$values` is wired up and will repopulate inputs, selects, and checkboxes.
-`$errors` is passed but not yet displayed; error message markup still needs to
-be added when validation is implemented.
+Failed submits redisplay the form with values and field errors. A successful
+submit shows a thank-you banner and an empty form so refresh does not insert
+again.
+
+## `[lccl_blood_donation_admin]`
+
+Renders the reviewer login and donor dashboard. Created automatically on
+`/blood-donation-admin/`. No attributes. After first paint, session and
+donor data move over REST — see [admin.md](admin.md).
+
+```
+[lccl_blood_donation_admin]
+```
+
+`nocache_headers()` is sent whenever this shortcode renders.
 
 ## `[lccl_hello]`
 

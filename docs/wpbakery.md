@@ -36,6 +36,7 @@ Both appear in the builder under the **LCCL** category.
 | Element name | Shortcode base | Params |
 | --- | --- | --- |
 | LCCL Blood Donor Registration | `lccl_blood_donor_form` | `title`, `intro` |
+| LCCL Blood Donation Admin | `lccl_blood_donation_admin` | none |
 | LCCL Hello | `lccl_hello` | `title`, `message` |
 
 ## Adding another element

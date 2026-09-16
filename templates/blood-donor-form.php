@@ -4,9 +4,10 @@
  *
  * @package LCCL_Donations_And_Events
  *
- * @var array $atts   Shortcode attributes.
- * @var array $values Previously submitted values, keyed by field name.
- * @var array $errors Validation errors, keyed by field name.
+ * @var array $atts    Shortcode attributes.
+ * @var array $values  Previously submitted values, keyed by field name.
+ * @var array $errors  Validation errors, keyed by field name.
+ * @var bool  $success Whether the last submit succeeded.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -15,9 +16,40 @@ $form = 'LCCL_DE_Blood_Donor_Form';
 $val  = static function ( $key ) use ( $values ) {
 	return isset( $values[ $key ] ) ? $values[ $key ] : '';
 };
+$err  = static function ( $key ) use ( $errors ) {
+	return isset( $errors[ $key ] ) ? $errors[ $key ] : '';
+};
+$invalid = static function ( $key ) use ( $errors ) {
+	return isset( $errors[ $key ] ) ? ' lccl-bdf__field--invalid' : '';
+};
 ?>
 <div class="lccl-bdf">
-	<form class="lccl-bdf__form" method="post" novalidate>
+	<form
+		class="lccl-bdf__form"
+		method="post"
+		action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+		novalidate
+	>
+
+		<?php if ( ! empty( $success ) ) : ?>
+			<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status">
+				<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
+				<span class="lccl-bdf__banner-copy">
+					<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Thank you.', 'lccl-de' ); ?></strong>
+					<span class="lccl-bdf__banner-text"><?php esc_html_e( 'Your registration has been received.', 'lccl-de' ); ?></span>
+				</span>
+			</p>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $errors['form'] ) ) : ?>
+			<p class="lccl-bdf__banner lccl-bdf__banner--error" role="alert">
+				<?php echo esc_html( $errors['form'] ); ?>
+			</p>
+		<?php endif; ?>
+
+		<p class="lccl-bdf__banner lccl-bdf__banner--error" data-lccl-notice="required" role="alert" hidden>
+			<?php esc_html_e( 'Please fill in all required fields marked with an asterisk.', 'lccl-de' ); ?>
+		</p>
 
 		<header class="lccl-bdf__header">
 			<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
@@ -37,7 +69,7 @@ $val  = static function ( $key ) use ( $values ) {
 
 		<div class="lccl-bdf__grid">
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-first-name">
 					<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -50,9 +82,12 @@ $val  = static function ( $key ) use ( $values ) {
 					autocomplete="given-name"
 					required
 				>
+				<?php if ( $err( 'first_name' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'first_name' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-last-name">
 					<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -65,9 +100,12 @@ $val  = static function ( $key ) use ( $values ) {
 					autocomplete="family-name"
 					required
 				>
+				<?php if ( $err( 'last_name' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'last_name' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field lccl-bdf__field--full">
+			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'address' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-address">
 					<?php esc_html_e( 'Address', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -80,9 +118,12 @@ $val  = static function ( $key ) use ( $values ) {
 					autocomplete="street-address"
 					required
 				>
+				<?php if ( $err( 'address' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'address' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'city' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-city">
 					<?php esc_html_e( 'City', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -95,6 +136,9 @@ $val  = static function ( $key ) use ( $values ) {
 					autocomplete="address-level2"
 					required
 				>
+				<?php if ( $err( 'city' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'city' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
 			<div class="lccl-bdf__field">
@@ -112,7 +156,7 @@ $val  = static function ( $key ) use ( $values ) {
 				>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-email">
 					<?php esc_html_e( 'Email', 'lccl-de' ); ?>
 				</label>
@@ -124,9 +168,12 @@ $val  = static function ( $key ) use ( $values ) {
 					value="<?php echo esc_attr( $val( 'email' ) ); ?>"
 					autocomplete="email"
 				>
+				<?php if ( $err( 'email' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'email' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-phone">
 					<?php esc_html_e( 'Phone', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -141,9 +188,12 @@ $val  = static function ( $key ) use ( $values ) {
 					autocomplete="tel"
 					required
 				>
+				<?php if ( $err( 'phone' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'phone' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'district' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-district">
 					<?php esc_html_e( 'District', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -151,9 +201,12 @@ $val  = static function ( $key ) use ( $values ) {
 					<option value=""></option>
 					<?php $form::render_options( $form::get_districts(), $val( 'district' ) ); ?>
 				</select>
+				<?php if ( $err( 'district' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'district' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'blood_bank' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-blood-bank">
 					<?php esc_html_e( 'Preferred blood bank', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -188,9 +241,9 @@ $val  = static function ( $key ) use ( $values ) {
 					id="lccl-bdf-blood-bank-notice"
 					data-lccl-notice="blood_bank"
 					role="status"
-					hidden
+					<?php echo $err( 'blood_bank' ) ? '' : 'hidden'; ?>
 				>
-					<?php esc_html_e( 'Please choose your district first, then pick a blood bank.', 'lccl-de' ); ?>
+					<?php echo $err( 'blood_bank' ) ? esc_html( $err( 'blood_bank' ) ) : esc_html__( 'Please choose your district first, then pick a blood bank.', 'lccl-de' ); ?>
 				</p>
 			</div>
 
@@ -214,7 +267,7 @@ $val  = static function ( $key ) use ( $values ) {
 				</select>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'contact_method' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-contact-method">
 					<?php esc_html_e( 'Preferred Contact Method', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
@@ -222,6 +275,9 @@ $val  = static function ( $key ) use ( $values ) {
 					<option value=""></option>
 					<?php $form::render_options( $form::get_contact_methods(), $val( 'contact_method' ) ); ?>
 				</select>
+				<?php if ( $err( 'contact_method' ) ) : ?>
+					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'contact_method' ) ); ?></p>
+				<?php endif; ?>
 			</div>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full">
@@ -230,7 +286,7 @@ $val  = static function ( $key ) use ( $values ) {
 						type="checkbox"
 						name="notify_campaigns"
 						value="1"
-						<?php checked( $val( 'notify_campaigns' ), '1' ); ?>
+						<?php checked( (int) $val( 'notify_campaigns' ), 1 ); ?>
 					>
 					<span><?php esc_html_e( 'Notify me about upcoming Lions blood donation campaigns', 'lccl-de' ); ?></span>
 				</label>
@@ -250,12 +306,12 @@ $val  = static function ( $key ) use ( $values ) {
 				?>
 			</p>
 
-			<label class="lccl-bdf__checkbox">
+			<label class="lccl-bdf__checkbox<?php echo esc_attr( $invalid( 'consent' ) ); ?>">
 				<input
 					type="checkbox"
 					name="consent"
 					value="1"
-					<?php checked( $val( 'consent' ), '1' ); ?>
+					<?php checked( (int) $val( 'consent' ), 1 ); ?>
 					required
 				>
 				<span>
@@ -263,9 +319,19 @@ $val  = static function ( $key ) use ( $values ) {
 					<span class="lccl-bdf__req">*</span>
 				</span>
 			</label>
+			<?php if ( $err( 'consent' ) ) : ?>
+				<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'consent' ) ); ?></p>
+			<?php endif; ?>
 		</section>
 
-		<?php wp_nonce_field( 'lccl_de_blood_donor_register', 'lccl_de_nonce' ); ?>
+		<div class="lccl-bdf__hp" aria-hidden="true">
+			<label for="lccl-bdf-hp"><?php esc_html_e( 'Website', 'lccl-de' ); ?></label>
+			<input type="text" id="lccl-bdf-hp" name="lccl_de_hp" value="" tabindex="-1" autocomplete="off">
+		</div>
+
+		<input type="hidden" name="action" value="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::ACTION ); ?>">
+		<input type="hidden" name="redirect_to" value="<?php echo esc_url( get_permalink() ? get_permalink() : home_url( '/' ) ); ?>">
+		<?php wp_nonce_field( LCCL_DE_Blood_Donor_Submissions::ACTION, 'lccl_de_nonce' ); ?>
 
 		<button class="lccl-bdf__submit" type="submit">
 			<?php esc_html_e( 'Register', 'lccl-de' ); ?>

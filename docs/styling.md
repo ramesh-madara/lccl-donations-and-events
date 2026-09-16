@@ -34,6 +34,7 @@ the form stylesheet rather than left to inherit.
 | File | Component | Root class |
 | --- | --- | --- |
 | `assets/css/lccl-de-blood-donor-form.css` | Registration form | `.lccl-bdf` |
+| `assets/css/lccl-de-blood-donation-admin.css` | Reviewer login + dashboard | `.lccl-bda` |
 | `assets/css/lccl-de.css` | Hello card | `.lccl-de-card` |
 
 Two classes relate to the district dependency described in
@@ -44,6 +45,8 @@ Two classes relate to the district dependency described in
 - `.lccl-bdf__notice` — the inline prompt shown when someone tries to open the
   locked field. Uses `--lccl-bdf-required` and toggles via the `hidden`
   attribute.
+- `.lccl-bdf__banner--success` — confirmation after a saved registration. Gold
+  left bar, soft gold wash, and a check mark using `--lccl-bdf-primary`.
 
 Both are enqueued from inside their shortcode callback, so they only load on
 pages using that element. Versioning uses `LCCL_DE_VERSION` for cache busting —
@@ -55,7 +58,8 @@ All declared on `.lccl-bdf`. Override them in the theme or a WPBakery custom
 CSS box to retheme without touching the plugin.
 
 The defaults follow the Kalium construction child theme palette. Primary gold
-(`#f7c016`) is intentionally unused — a form does not need an accent colour.
+(`#f7c016`) is reserved for the success banner so a completed registration
+reads as a confirmation, not as another grey box.
 
 | Variable | Default | Maps to |
 | --- | --- | --- |
@@ -66,7 +70,9 @@ The defaults follow the Kalium construction child theme palette. Primary gold
 | `--lccl-bdf-field-bg` | `#f7f7f7` | Form field background |
 | `--lccl-bdf-border` | `#c4c4c4` | Form field border |
 | `--lccl-bdf-border-focus` | `#333333` | Dark, used for focus instead of gold |
-| `--lccl-bdf-required` | `#d0021b` | Required asterisks only — not in the site palette |
+| `--lccl-bdf-required` | `#d0021b` | Required asterisks and error banners |
+| `--lccl-bdf-primary` | `#f7c016` | Success banner accent |
+| `--lccl-bdf-primary-soft` | `#fff6d4` | Success banner wash |
 | `--lccl-bdf-font` | `"CooperHewitt-Book", sans-serif` | Site body face |
 | `--lccl-bdf-gap` | `22px` | Grid gap |
 | `--lccl-bdf-pad` | `0` | Form padding |

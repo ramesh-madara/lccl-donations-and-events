@@ -1,0 +1,378 @@
+<?php
+/**
+ * Blood donor registration persistence and POST handling.
+ *
+ * @package LCCL_Donations_And_Events
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Validates, stores, and flashes the result of a registration.
+ */
+class LCCL_DE_Blood_Donor_Submissions {
+
+	/**
+	 * admin-post.php action name. Must match the hidden field on the form.
+	 */
+	const ACTION = 'lccl_de_blood_donor_register';
+
+	/**
+	 * Query arg used to pass a flash token back to the form page.
+	 */
+	const FLASH_QUERY = 'lccl_de';
+
+	/**
+	 * Hook the public and logged-in POST handlers.
+	 */
+	public static function init() {
+		add_action( 'admin_post_nopriv_' . self::ACTION, array( __CLASS__, 'handle' ) );
+		add_action( 'admin_post_' . self::ACTION, array( __CLASS__, 'handle' ) );
+	}
+
+	/**
+	 * Consume a one-time flash payload for the current request.
+	 *
+	 * @return array{success:bool,values:array,errors:array}
+	 */
+	public static function consume_flash() {
+		$empty = array(
+			'success' => false,
+			'values'  => array(),
+			'errors'  => array(),
+		);
+
+		if ( empty( $_GET[ self::FLASH_QUERY ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return $empty;
+		}
+
+		$token = sanitize_key( wp_unslash( $_GET[ self::FLASH_QUERY ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		if ( '' === $token ) {
+			return $empty;
+		}
+
+		$flash = get_transient( self::flash_key( $token ) );
+		delete_transient( self::flash_key( $token ) );
+
+		if ( ! is_array( $flash ) ) {
+			return $empty;
+		}
+
+		return wp_parse_args( $flash, $empty );
+	}
+
+	/**
+	 * Handle a registration POST.
+	 */
+	public static function handle() {
+		$redirect = self::safe_redirect_url();
+
+		if ( ! isset( $_POST['lccl_de_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['lccl_de_nonce'] ) ), self::ACTION ) ) {
+			self::redirect_with_flash(
+				$redirect,
+				array(
+					'success' => false,
+					'values'  => array(),
+					'errors'  => array(
+						'form' => __( 'The form expired. Please try again.', 'lccl-de' ),
+					),
+				)
+			);
+		}
+
+		// Honeypot: bots fill hidden fields; humans never see this one.
+		// Honeypot: bots fill hidden fields. Name is not "company" so browsers
+		// do not autofill it and fake a successful registration.
+		if ( ! empty( $_POST['lccl_de_hp'] ) ) {
+			self::redirect_with_flash( $redirect, array( 'success' => true, 'values' => array(), 'errors' => array() ) );
+		}
+
+		if ( self::is_rate_limited() ) {
+			self::redirect_with_flash(
+				$redirect,
+				array(
+					'success' => false,
+					'values'  => array(),
+					'errors'  => array(
+						'form' => __( 'Too many attempts from this connection. Please wait a while and try again.', 'lccl-de' ),
+					),
+				)
+			);
+		}
+
+		$values = self::sanitize_request();
+		$errors = self::validate( $values );
+
+		if ( ! empty( $errors ) ) {
+			self::redirect_with_flash(
+				$redirect,
+				array(
+					'success' => false,
+					'values'  => $values,
+					'errors'  => $errors,
+				)
+			);
+		}
+
+		$inserted = self::insert( $values );
+		if ( ! $inserted ) {
+			self::redirect_with_flash(
+				$redirect,
+				array(
+					'success' => false,
+					'values'  => $values,
+					'errors'  => array(
+						'form' => __( 'The registration could not be saved. Please try again.', 'lccl-de' ),
+					),
+				)
+			);
+		}
+
+		self::redirect_with_flash(
+			$redirect,
+			array(
+				'success' => true,
+				'values'  => array(),
+				'errors'  => array(),
+			)
+		);
+	}
+
+	/**
+	 * Required field names, matching the asterisks on the form.
+	 *
+	 * @return array
+	 */
+	public static function required_fields() {
+		return array(
+			'first_name',
+			'last_name',
+			'address',
+			'city',
+			'phone',
+			'district',
+			'blood_bank',
+			'contact_method',
+			'consent',
+		);
+	}
+
+	/**
+	 * Pull and sanitise posted values.
+	 *
+	 * notify_campaigns is always a boolean: 1 if ticked, 0 if not.
+	 *
+	 * @return array
+	 */
+	public static function sanitize_request() {
+		$post = wp_unslash( $_POST );
+
+		$notify = ! empty( $post['notify_campaigns'] );
+		$consent = ! empty( $post['consent'] );
+
+		return array(
+			'first_name'           => isset( $post['first_name'] ) ? sanitize_text_field( $post['first_name'] ) : '',
+			'last_name'            => isset( $post['last_name'] ) ? sanitize_text_field( $post['last_name'] ) : '',
+			'address'              => isset( $post['address'] ) ? sanitize_text_field( $post['address'] ) : '',
+			'city'                 => isset( $post['city'] ) ? sanitize_text_field( $post['city'] ) : '',
+			'postal_code'          => isset( $post['postal_code'] ) ? sanitize_text_field( $post['postal_code'] ) : '',
+			'email'                => isset( $post['email'] ) ? sanitize_email( $post['email'] ) : '',
+			'phone'                => isset( $post['phone'] ) ? sanitize_text_field( $post['phone'] ) : '',
+			'district'             => isset( $post['district'] ) ? sanitize_text_field( $post['district'] ) : '',
+			'blood_bank'           => isset( $post['blood_bank'] ) ? sanitize_text_field( $post['blood_bank'] ) : '',
+			'donation_preference'  => isset( $post['donation_preference'] ) ? sanitize_key( $post['donation_preference'] ) : '',
+			'donated_before'       => isset( $post['donated_before'] ) ? sanitize_key( $post['donated_before'] ) : '',
+			'contact_method'       => isset( $post['contact_method'] ) ? sanitize_key( $post['contact_method'] ) : '',
+			'notify_campaigns'     => $notify ? 1 : 0,
+			'consent'              => $consent ? 1 : 0,
+		);
+	}
+
+	/**
+	 * Validate sanitised values. Returns field => message.
+	 *
+	 * @param array $values Sanitised input.
+	 * @return array
+	 */
+	public static function validate( array $values ) {
+		$errors   = array();
+		$required = array(
+			'first_name'     => __( 'Please enter your first name.', 'lccl-de' ),
+			'last_name'      => __( 'Please enter your last name.', 'lccl-de' ),
+			'address'        => __( 'Please enter your address.', 'lccl-de' ),
+			'city'           => __( 'Please enter your city.', 'lccl-de' ),
+			'phone'          => __( 'Please enter your phone number.', 'lccl-de' ),
+			'district'       => __( 'Please choose your district.', 'lccl-de' ),
+			'blood_bank'     => __( 'Please choose a blood bank.', 'lccl-de' ),
+			'contact_method' => __( 'Please choose a preferred contact method.', 'lccl-de' ),
+		);
+
+		foreach ( $required as $field => $message ) {
+			if ( '' === $values[ $field ] ) {
+				$errors[ $field ] = $message;
+			}
+		}
+
+		if ( empty( $values['consent'] ) ) {
+			$errors['consent'] = __( 'Please confirm that you consent to your information being used.', 'lccl-de' );
+		}
+
+		if ( '' !== $values['email'] && ! is_email( $values['email'] ) ) {
+			$errors['email'] = __( 'Please enter a valid email address, or leave it blank.', 'lccl-de' );
+		}
+
+		$districts = LCCL_DE_Blood_Donor_Form::get_districts();
+		if ( '' !== $values['district'] && ! array_key_exists( $values['district'], $districts ) ) {
+			$errors['district'] = __( 'Please choose a valid district.', 'lccl-de' );
+		}
+
+		if ( '' !== $values['blood_bank'] && '' !== $values['district'] && ! LCCL_DE_Blood_Donor_Form::is_valid_blood_bank( $values['blood_bank'], $values['district'] ) ) {
+			$errors['blood_bank'] = __( 'Please choose a blood bank in the selected district.', 'lccl-de' );
+		}
+
+		$preferences = LCCL_DE_Blood_Donor_Form::get_donation_preferences();
+		if ( '' !== $values['donation_preference'] && ! array_key_exists( $values['donation_preference'], $preferences ) ) {
+			$errors['donation_preference'] = __( 'Please choose a valid donation preference.', 'lccl-de' );
+		}
+
+		$history = LCCL_DE_Blood_Donor_Form::get_donation_history_options();
+		if ( '' !== $values['donated_before'] && ! array_key_exists( $values['donated_before'], $history ) ) {
+			$errors['donated_before'] = __( 'Please choose a valid option.', 'lccl-de' );
+		}
+
+		$methods = LCCL_DE_Blood_Donor_Form::get_contact_methods();
+		if ( '' !== $values['contact_method'] && ! array_key_exists( $values['contact_method'], $methods ) ) {
+			$errors['contact_method'] = __( 'Please choose a valid contact method.', 'lccl-de' );
+		}
+
+		return $errors;
+	}
+
+	/**
+	 * Insert a valid registration.
+	 *
+	 * @param array $values Sanitised, validated values.
+	 * @return int|false Insert ID or false.
+	 */
+	public static function insert( array $values ) {
+		global $wpdb;
+
+		$banks = LCCL_DE_Blood_Donor_Form::get_blood_banks( $values['district'] );
+		$label = isset( $banks[ $values['blood_bank'] ] ) ? $banks[ $values['blood_bank'] ] : '';
+
+		$result = $wpdb->insert(
+			LCCL_DE_Schema::blood_donors_table(),
+			array(
+				'first_name'           => $values['first_name'],
+				'last_name'            => $values['last_name'],
+				'address'              => $values['address'],
+				'city'                 => $values['city'],
+				'postal_code'          => '' !== $values['postal_code'] ? $values['postal_code'] : null,
+				'email'                => '' !== $values['email'] ? $values['email'] : null,
+				'phone'                => $values['phone'],
+				'district'             => $values['district'],
+				'blood_bank'           => $values['blood_bank'],
+				'blood_bank_label'     => $label,
+				'donation_preference'  => '' !== $values['donation_preference'] ? $values['donation_preference'] : null,
+				'donated_before'       => '' !== $values['donated_before'] ? $values['donated_before'] : null,
+				'contact_method'       => $values['contact_method'],
+				'notify_campaigns'     => (int) $values['notify_campaigns'],
+				'consent'              => 1,
+				'ip_address'           => self::request_ip(),
+				'created_at'           => current_time( 'mysql' ),
+			),
+			array(
+				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
+				'%s', '%s', '%s', '%d', '%d', '%s', '%s',
+			)
+		);
+
+		if ( false === $result ) {
+			return false;
+		}
+
+		return (int) $wpdb->insert_id;
+	}
+
+	/**
+	 * Transient key for a flash token.
+	 *
+	 * @param string $token Random token.
+	 * @return string
+	 */
+	private static function flash_key( $token ) {
+		return 'lccl_de_flash_' . $token;
+	}
+
+	/**
+	 * Store a flash payload and redirect back to the form.
+	 *
+	 * @param string $url   Safe redirect target.
+	 * @param array  $flash Payload.
+	 */
+	private static function redirect_with_flash( $url, array $flash ) {
+		$token = wp_generate_password( 12, false, false );
+		set_transient( self::flash_key( $token ), $flash, 10 * MINUTE_IN_SECONDS );
+
+		wp_safe_redirect( add_query_arg( self::FLASH_QUERY, $token, $url ) );
+		exit;
+	}
+
+	/**
+	 * Redirect target: the referring form page, or home.
+	 *
+	 * @return string
+	 */
+	private static function safe_redirect_url() {
+		if ( ! empty( $_POST['redirect_to'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$url = esc_url_raw( wp_unslash( $_POST['redirect_to'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		if ( ! empty( $_POST['_wp_http_referer'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$url = esc_url_raw( wp_unslash( $_POST['_wp_http_referer'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( $url ) {
+				return $url;
+			}
+		}
+
+		return home_url( '/' );
+	}
+
+	/**
+	 * Whether this IP has submitted too often recently.
+	 *
+	 * @return bool
+	 */
+	private static function is_rate_limited() {
+		$ip = self::request_ip();
+		if ( '' === $ip ) {
+			return false;
+		}
+
+		$key   = 'lccl_de_rl_' . md5( $ip );
+		$count = (int) get_transient( $key );
+		if ( $count >= 8 ) {
+			return true;
+		}
+
+		set_transient( $key, $count + 1, HOUR_IN_SECONDS );
+		return false;
+	}
+
+	/**
+	 * Sanitised remote address, IPv4 or IPv6.
+	 *
+	 * @return string
+	 */
+	private static function request_ip() {
+		if ( empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			return '';
+		}
+
+		$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		return filter_var( $ip, FILTER_VALIDATE_IP ) ? $ip : '';
+	}
+}

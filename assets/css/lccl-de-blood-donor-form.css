@@ -10,7 +10,7 @@
  *   field background        #f7f7f7
  *   field border            #c4c4c4
  *   white                   #ffffff
- * Primary gold (#f7c016) is intentionally unused here.
+ *   primary gold            #f7c016  (success banner only)
  */
 
 .lccl-bdf {
@@ -22,6 +22,8 @@
 	--lccl-bdf-border: #c4c4c4;
 	--lccl-bdf-border-focus: #333333;
 	--lccl-bdf-required: #d0021b;
+	--lccl-bdf-primary: #f7c016;
+	--lccl-bdf-primary-soft: #fff6d4;
 	--lccl-bdf-font: "CooperHewitt-Book", sans-serif;
 	--lccl-bdf-gap: 22px;
 	--lccl-bdf-pad: 0;
@@ -178,6 +180,98 @@
 
 .lccl-bdf .lccl-bdf__notice[hidden] {
 	display: none;
+}
+
+.lccl-bdf .lccl-bdf__banner {
+	margin: 0 0 22px;
+	padding: 12px 16px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-radius: 3px;
+	font-size: 16px;
+	line-height: 1.5;
+}
+
+.lccl-bdf .lccl-bdf__banner--error {
+	border-color: var(--lccl-bdf-required);
+	color: var(--lccl-bdf-required);
+}
+
+.lccl-bdf .lccl-bdf__banner--success {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	padding: 16px 20px 16px 18px;
+	border: 1px solid #f0d98a;
+	border-left: 6px solid var(--lccl-bdf-primary);
+	border-radius: 4px;
+	background-color: var(--lccl-bdf-primary-soft);
+	background-image: linear-gradient(180deg, #fffbeb 0%, var(--lccl-bdf-primary-soft) 100%);
+	box-shadow: 0 10px 24px rgba(247, 192, 22, 0.18);
+	color: var(--lccl-bdf-heading);
+	line-height: 1.45;
+}
+
+.lccl-bdf .lccl-bdf__banner-mark {
+	position: relative;
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background-color: var(--lccl-bdf-primary);
+	box-shadow: 0 0 0 3px rgba(247, 192, 22, 0.22);
+}
+
+.lccl-bdf .lccl-bdf__banner-mark::after {
+	content: "";
+	position: absolute;
+	top: 7px;
+	left: 11px;
+	width: 6px;
+	height: 11px;
+	border: solid var(--lccl-bdf-heading);
+	border-width: 0 2px 2px 0;
+	transform: rotate(45deg);
+}
+
+.lccl-bdf .lccl-bdf__banner-copy {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.lccl-bdf .lccl-bdf__banner-title {
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 18px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+}
+
+.lccl-bdf .lccl-bdf__banner-text {
+	color: var(--lccl-bdf-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+}
+
+.lccl-bdf .lccl-bdf__banner[hidden] {
+	display: none;
+}
+
+.lccl-bdf .lccl-bdf__input--error,
+.lccl-bdf .lccl-bdf__select.lccl-bdf__input--error,
+.lccl-bdf .lccl-bdf__field--invalid .lccl-bdf__input,
+.lccl-bdf .lccl-bdf__field--invalid .lccl-bdf__select {
+	border-color: var(--lccl-bdf-required);
+}
+
+.lccl-bdf .lccl-bdf__hp {
+	position: absolute;
+	left: -9999px;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
 }
 
 /* Checkboxes */
