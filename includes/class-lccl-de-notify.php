@@ -395,7 +395,7 @@ class LCCL_DE_Notify {
 
 		return '<html><body><div style="background-color:#f0f0f0;padding:20px;">
 			<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" style="max-width:200px;">
-			<h1 style="font-size:24px;color:#333;">LCCL Blood Donation</h1>
+			<h1 style="font-size:24px;color:#333;">LCCL Blood Donation 🩸</h1>
 			<p>Hello ' . esc_html( $name ) . ',</p>
 			<p>Congratulations! Your online registration for blood donation was successful. Your willingness to donate is truly life-saving. We appreciate your generosity.</p>
 			<p>Your preferred blood bank: ' . esc_html( $bank ) . '.</p>
