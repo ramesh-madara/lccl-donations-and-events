@@ -289,7 +289,13 @@
 	flex: 0 0 auto;
 	align-items: center;
 	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border: 1px solid #c4c4c4;
+	border-radius: 50%;
+	background-color: var(--lccl-bda-primary);
 	color: var(--lccl-bda-heading);
+	overflow: hidden;
 }
 
 .lccl-bda .lccl-bda__avatar-icon {

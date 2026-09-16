@@ -79,6 +79,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-first-name"
 					name="first_name"
 					value="<?php echo esc_attr( $val( 'first_name' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Amal', 'lccl-de' ); ?>"
 					autocomplete="given-name"
 					maxlength="100"
 					required
@@ -98,6 +99,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-last-name"
 					name="last_name"
 					value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
 					autocomplete="family-name"
 					maxlength="100"
 					required
@@ -117,6 +119,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-address"
 					name="address"
 					value="<?php echo esc_attr( $val( 'address' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'No. 12, Galle Road', 'lccl-de' ); ?>"
 					autocomplete="street-address"
 					maxlength="255"
 					required
@@ -136,6 +139,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-city"
 					name="city"
 					value="<?php echo esc_attr( $val( 'city' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Colombo', 'lccl-de' ); ?>"
 					autocomplete="address-level2"
 					maxlength="100"
 					required
@@ -155,6 +159,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-postal-code"
 					name="postal_code"
 					value="<?php echo esc_attr( $val( 'postal_code' ) ); ?>"
+					placeholder="<?php esc_attr_e( '00100', 'lccl-de' ); ?>"
 					inputmode="numeric"
 					autocomplete="postal-code"
 					maxlength="20"
@@ -171,6 +176,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-email"
 					name="email"
 					value="<?php echo esc_attr( $val( 'email' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
 					autocomplete="email"
 					maxlength="191"
 					data-lccl-validate="email"
@@ -195,7 +201,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-phone"
 					name="phone"
 					value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
-					placeholder="+94 71 0000000"
+					placeholder="<?php esc_attr_e( '0712345678 or +94712345678', 'lccl-de' ); ?>"
 					inputmode="tel"
 					autocomplete="tel"
 					maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
@@ -216,7 +222,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<?php esc_html_e( 'District', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-bdf-district" name="district" required>
-					<option value=""></option>
+					<option value=""><?php esc_html_e( 'Select your district', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_districts(), $val( 'district' ) ); ?>
 				</select>
 				<?php if ( $err( 'district' ) ) : ?>
@@ -241,7 +247,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="blood_bank"
 					aria-describedby="lccl-bdf-blood-bank-notice"
 					data-locked-label="<?php esc_attr_e( 'Select your district first', 'lccl-de' ); ?>"
-					data-ready-label=""
+					data-ready-label="<?php esc_attr_e( 'Select a blood bank', 'lccl-de' ); ?>"
 					required
 				>
 					<option value=""><?php esc_html_e( 'Select your district first', 'lccl-de' ); ?></option>
@@ -270,7 +276,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<?php esc_html_e( 'How would you prefer to donate?', 'lccl-de' ); ?>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-bdf-donation-preference" name="donation_preference">
-					<option value=""></option>
+					<option value=""><?php esc_html_e( 'Select a preference', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_donation_preferences(), $val( 'donation_preference' ) ); ?>
 				</select>
 			</div>
@@ -280,7 +286,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<?php esc_html_e( 'Have you donated blood before?', 'lccl-de' ); ?>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-bdf-donated-before" name="donated_before">
-					<option value=""></option>
+					<option value=""><?php esc_html_e( 'Select an option', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_donation_history_options(), $val( 'donated_before' ) ); ?>
 				</select>
 			</div>
@@ -290,7 +296,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<?php esc_html_e( 'Preferred Contact Method', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-bdf-contact-method" name="contact_method" required>
-					<option value=""></option>
+					<option value=""><?php esc_html_e( 'Select a contact method', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_contact_methods(), $val( 'contact_method' ) ); ?>
 				</select>
 				<?php if ( $err( 'contact_method' ) ) : ?>

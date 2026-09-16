@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LCCL Donations and Events
  * Description:       Donation and event management for the Lions Club of Colombo Leads.
- * Version:           0.8.38
+ * Version:           0.8.40
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Ramesh Madara
@@ -15,7 +15,7 @@
 // ramesh 3
 defined( 'ABSPATH' ) || exit;
 
-define( 'LCCL_DE_VERSION', '0.8.38' );
+define( 'LCCL_DE_VERSION', '0.8.40' );
 define( 'LCCL_DE_FILE', __FILE__ );
 define( 'LCCL_DE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LCCL_DE_URL', plugin_dir_url( __FILE__ ) );

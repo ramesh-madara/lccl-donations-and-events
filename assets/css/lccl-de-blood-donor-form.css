@@ -152,6 +152,14 @@
 	opacity: 0.7;
 }
 
+.lccl-bdf .lccl-bdf__select:has(> option[value=""]:checked) {
+	color: #9a9a9a;
+}
+
+.lccl-bdf .lccl-bdf__select option {
+	color: var(--lccl-bdf-field-text);
+}
+
 .lccl-bdf input.lccl-bdf__input:focus,
 .lccl-bdf input.lccl-bdf__input:focus-visible,
 .lccl-bdf select.lccl-bdf__select:focus,
