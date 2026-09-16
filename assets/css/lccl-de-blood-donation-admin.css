@@ -278,6 +278,24 @@
 	color: var(--lccl-bda-heading);
 }
 
+.lccl-bda .lccl-bda__identity {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.lccl-bda .lccl-bda__avatar {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	color: var(--lccl-bda-heading);
+}
+
+.lccl-bda .lccl-bda__avatar-icon {
+	display: block;
+}
+
 .lccl-bda .lccl-bda__nav {
 	display: flex;
 	flex-wrap: wrap;
@@ -377,6 +395,7 @@
 	width: 100%;
 	margin: 0;
 	border-collapse: collapse;
+	table-layout: fixed;
 }
 
 .lccl-bda .lccl-bda__table th,
@@ -426,8 +445,35 @@
 }
 
 .lccl-bda .lccl-bda__col-email {
+	width: 22%;
 	overflow-wrap: break-word;
 	word-break: break-word;
+}
+
+.lccl-bda .lccl-bda__col-district {
+	width: 9%;
+}
+
+.lccl-bda .lccl-bda__col-bank {
+	width: 14%;
+}
+
+.lccl-bda .lccl-bda__table .lccl-bda__col-notify {
+	width: 7%;
+	text-align: center;
+}
+
+.lccl-bda .lccl-bda__copy-wrap {
+	display: inline;
+	max-width: 100%;
+}
+
+.lccl-bda .lccl-bda__copy-wrap .lccl-bda__person-value {
+	display: inline;
+}
+
+.lccl-bda .lccl-bda__copy-wrap .lccl-bda__copy {
+	margin-left: 8px;
 }
 
 .lccl-bda .lccl-bda__col-expand {
@@ -531,8 +577,23 @@
 	min-height: 64px;
 }
 
+.lccl-bda .lccl-bda__person-title {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	max-width: 100%;
+	margin: 0 0 12px;
+	padding: 6px 8px 6px 4px;
+	border-radius: 4px;
+	transition: background-color 0.16s ease;
+}
+
+.lccl-bda .lccl-bda__person-title:hover {
+	background-color: rgba(247, 192, 22, 0.14);
+}
+
 .lccl-bda .lccl-bda__person-name {
-	margin: 0 0 16px;
+	margin: 0;
 	color: var(--lccl-bda-heading);
 	font-size: 20px;
 	font-weight: 400;
@@ -543,11 +604,18 @@
 .lccl-bda .lccl-bda__person-grid {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 16px 28px;
+	gap: 8px 16px;
 }
 
 .lccl-bda .lccl-bda__person-item {
 	min-width: 0;
+	padding: 10px 12px;
+	border-radius: 4px;
+	transition: background-color 0.16s ease;
+}
+
+.lccl-bda .lccl-bda__person-item:hover {
+	background-color: rgba(247, 192, 22, 0.14);
 }
 
 .lccl-bda .lccl-bda__person-item--wide {
@@ -569,6 +637,75 @@
 	font-size: 15px;
 	line-height: 1.45;
 	word-break: break-word;
+}
+
+.lccl-bda .lccl-bda__copy,
+.lccl-bda button.lccl-bda__copy {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	box-shadow: none;
+	color: #555555;
+	cursor: pointer;
+	letter-spacing: 0;
+	min-width: 22px;
+	min-height: 22px;
+	opacity: 1;
+	text-transform: none;
+	vertical-align: text-bottom;
+	transition: color 0.16s ease;
+}
+
+.lccl-bda .lccl-bda__copy:hover,
+.lccl-bda .lccl-bda__copy:focus,
+.lccl-bda button.lccl-bda__copy:hover,
+.lccl-bda button.lccl-bda__copy:focus {
+	background: transparent;
+	color: #000000;
+	outline: none;
+}
+
+.lccl-bda .lccl-bda__copy.is-copied,
+.lccl-bda .lccl-bda__copy.is-copied:hover,
+.lccl-bda .lccl-bda__copy.is-copied:focus,
+.lccl-bda button.lccl-bda__copy.is-copied {
+	background: transparent;
+	color: #000000;
+}
+
+.lccl-bda .lccl-bda__copy-icon {
+	position: relative;
+	display: block;
+	width: 14px;
+	height: 14px;
+}
+
+.lccl-bda .lccl-bda__copy-clip,
+.lccl-bda .lccl-bda__copy-check {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: block;
+}
+
+.lccl-bda .lccl-bda__copy-check {
+	opacity: 0;
+}
+
+.lccl-bda .lccl-bda__copy.is-copied .lccl-bda__copy-clip {
+	opacity: 0;
+}
+
+.lccl-bda .lccl-bda__copy.is-copied .lccl-bda__copy-check {
+	opacity: 1;
 }
 
 .lccl-bda .screen-reader-text {

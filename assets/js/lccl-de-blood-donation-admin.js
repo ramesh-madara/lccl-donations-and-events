@@ -215,7 +215,6 @@
 				var tr = el( 'tr' );
 				var notifyCell;
 				var pill;
-				var emailCell;
 				var actionCell;
 				var expandBtn;
 				var icon;
@@ -225,15 +224,13 @@
 					tr.className = 'is-open';
 				}
 
-				tr.appendChild( el( 'td', '', item.name || '' ) );
-				tr.appendChild( el( 'td', '', item.phone || '' ) );
+				tr.appendChild( textCell( item.name || '' ) );
+				tr.appendChild( textCell( item.phone || '' ) );
+				tr.appendChild( textCell( item.email || '', 'lccl-bda__col-email', '—' ) );
+				tr.appendChild( textCell( item.district || '', 'lccl-bda__col-district' ) );
+				tr.appendChild( textCell( item.blood_bank_label || item.blood_bank || '', 'lccl-bda__col-bank' ) );
 
-				emailCell = el( 'td', 'lccl-bda__col-email', item.email || '—' );
-				tr.appendChild( emailCell );
-				tr.appendChild( el( 'td', '', item.district || '' ) );
-				tr.appendChild( el( 'td', '', item.blood_bank_label || item.blood_bank || '' ) );
-
-				notifyCell = el( 'td' );
+				notifyCell = el( 'td', 'lccl-bda__col-notify' );
 				pill = el( 'span', item.notify_campaigns ? 'lccl-bda__pill lccl-bda__pill--yes' : 'lccl-bda__pill', item.notify_campaigns ? 'Yes' : 'No' );
 				notifyCell.appendChild( pill );
 				tr.appendChild( notifyCell );
@@ -403,42 +400,120 @@
 			} );
 		}
 
-		function addPersonField( grid, label, value, extraClass ) {
+		function fallbackCopy( value ) {
+			var area = document.createElement( 'textarea' );
+			var ok = false;
+			area.value = String( value );
+			area.setAttribute( 'readonly', '' );
+			area.style.position = 'absolute';
+			area.style.left = '-9999px';
+			document.body.appendChild( area );
+			area.select();
+			try {
+				ok = document.execCommand( 'copy' );
+			} catch ( err ) {
+				ok = false;
+			}
+			document.body.removeChild( area );
+			return ok;
+		}
+
+		function markCopied( btn ) {
+			btn.classList.add( 'is-copied' );
+			btn.setAttribute( 'aria-label', 'Copied' );
+			window.setTimeout( function () {
+				btn.classList.remove( 'is-copied' );
+				btn.setAttribute( 'aria-label', btn.getAttribute( 'data-copy-label' ) || 'Copy' );
+			}, 1400 );
+		}
+
+		function copyValue( value, btn ) {
+			var text = String( value );
+			if ( navigator.clipboard && navigator.clipboard.writeText ) {
+				navigator.clipboard.writeText( text ).then( function () {
+					markCopied( btn );
+				} ).catch( function () {
+					if ( fallbackCopy( text ) ) {
+						markCopied( btn );
+					}
+				} );
+				return;
+			}
+			if ( fallbackCopy( text ) ) {
+				markCopied( btn );
+			}
+		}
+
+		function copyButton( label, value ) {
+			var btn = el( 'button', 'lccl-bda__copy' );
+			var caption = 'Copy ' + label;
+			btn.type = 'button';
+			btn.setAttribute( 'aria-label', caption );
+			btn.setAttribute( 'data-copy-label', caption );
+			btn.innerHTML = '<span class="lccl-bda__copy-icon" aria-hidden="true">' +
+				'<svg class="lccl-bda__copy-clip" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+				'<rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>' +
+				'<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+				'</svg>' +
+				'<svg class="lccl-bda__copy-check" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+				'<path d="M3.2 8.4 6.6 11.7 12.8 4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+				'</svg>' +
+				'</span>';
+			btn.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+				copyValue( value, btn );
+			} );
+			return btn;
+		}
+
+		function textCell( value, extraClass, emptyText ) {
+			var text = ( null == value || '' === value ) ? '' : String( value );
+			return el( 'td', extraClass || '', text || emptyText || '' );
+		}
+
+		function addPersonField( grid, label, value, extraClass, canCopy ) {
 			var item;
-			var caption;
-			var text;
+			var wrap;
 			if ( null == value || '' === value ) {
 				return;
 			}
 			item = el( 'div', 'lccl-bda__person-item' + ( extraClass ? ' ' + extraClass : '' ) );
-			caption = el( 'span', 'lccl-bda__person-label', label );
-			text = el( 'span', 'lccl-bda__person-value', String( value ) );
-			item.appendChild( caption );
-			item.appendChild( text );
+			item.appendChild( el( 'span', 'lccl-bda__person-label', label ) );
+			if ( canCopy ) {
+				wrap = el( 'span', 'lccl-bda__copy-wrap' );
+				wrap.appendChild( el( 'span', 'lccl-bda__person-value', String( value ) ) );
+				wrap.appendChild( copyButton( label, value ) );
+				item.appendChild( wrap );
+			} else {
+				item.appendChild( el( 'span', 'lccl-bda__person-value', String( value ) ) );
+			}
 			grid.appendChild( item );
 		}
 
 		function fillPersonPanel( panel, item ) {
-			var heading = el( 'p', 'lccl-bda__person-name', item.name || '' );
+			var heading = el( 'div', 'lccl-bda__person-title' );
+			var nameEl = el( 'p', 'lccl-bda__person-name', item.name || '' );
 			var grid = el( 'div', 'lccl-bda__person-grid' );
 
 			panel.textContent = '';
+			heading.appendChild( nameEl );
+			if ( item.name ) {
+				heading.appendChild( copyButton( 'Name', item.name ) );
+			}
 			panel.appendChild( heading );
-			addPersonField( grid, 'Phone', item.phone );
-			addPersonField( grid, 'Email', item.email );
-			addPersonField( grid, 'Address', item.address, 'lccl-bda__person-item--wide' );
-			addPersonField( grid, 'City', item.city );
-			addPersonField( grid, 'Postal code', item.postal_code );
-			addPersonField( grid, 'District', item.district );
-			addPersonField( grid, 'Blood bank', item.blood_bank_label || item.blood_bank );
+			addPersonField( grid, 'Phone', item.phone, '', true );
+			addPersonField( grid, 'Email', item.email, '', true );
+			addPersonField( grid, 'Address', item.address, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'City', item.city, '', true );
+			addPersonField( grid, 'Postal code', item.postal_code, '', true );
+			addPersonField( grid, 'District', item.district, '', true );
+			addPersonField( grid, 'Blood bank', item.blood_bank_label || item.blood_bank, '', true );
 			addPersonField( grid, 'Donation preference', item.donation_preference_label );
 			addPersonField( grid, 'Donated before', item.donated_before_label );
 			addPersonField( grid, 'Contact method', item.contact_label );
 			addPersonField( grid, 'Notify about campaigns', item.notify_campaigns ? 'Yes' : 'No' );
 			addPersonField( grid, 'Registered', item.created_label );
-			if ( item.ip_address ) {
-				addPersonField( grid, 'IP address', item.ip_address );
-			}
 			panel.appendChild( grid );
 		}
 

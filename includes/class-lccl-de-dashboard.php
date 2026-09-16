@@ -447,7 +447,8 @@ class LCCL_DE_Dashboard {
 
 		if ( '' !== $search ) {
 			$like     = '%' . $wpdb->esc_like( $search ) . '%';
-			$where[]  = '(first_name LIKE %s OR last_name LIKE %s OR phone LIKE %s OR email LIKE %s OR CONCAT(first_name, \' \', last_name) LIKE %s)';
+			$where[]  = '(first_name LIKE %s OR last_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR CONCAT(first_name, \' \', last_name) LIKE %s)';
+			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;

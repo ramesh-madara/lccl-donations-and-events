@@ -100,7 +100,15 @@ if ( $can_view && $user instanceof WP_User ) {
 				</h2>
 			</div>
 			<div class="lccl-bda__who">
-				<span data-display-name><?php echo esc_html( $display ); ?></span>
+				<span class="lccl-bda__identity">
+					<span class="lccl-bda__avatar" aria-hidden="true">
+						<svg class="lccl-bda__avatar-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<circle cx="12" cy="8" r="3.6" stroke="currentColor" stroke-width="1.8"/>
+							<path d="M5 19.2c.7-3.5 3.5-5.3 7-5.3s6.3 1.8 7 5.3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+						</svg>
+					</span>
+					<span data-display-name><?php echo esc_html( $display ); ?></span>
+				</span>
 				<button class="lccl-bda__text-button" type="button" data-action="logout">
 					<?php esc_html_e( 'Sign out', 'lccl-de' ); ?>
 				</button>
@@ -112,7 +120,7 @@ if ( $can_view && $user instanceof WP_User ) {
 		<form class="lccl-bda__filters" data-form="filters">
 			<div class="lccl-bda__field lccl-bda__field--grow">
 				<label class="lccl-bda__label" for="lccl-bda-search"><?php esc_html_e( 'Search', 'lccl-de' ); ?></label>
-				<input class="lccl-bda__input" type="search" id="lccl-bda-search" name="search" placeholder="<?php esc_attr_e( 'Name, phone, or email', 'lccl-de' ); ?>">
+				<input class="lccl-bda__input" type="search" id="lccl-bda-search" name="search" placeholder="<?php esc_attr_e( 'Name, phone, email, or district', 'lccl-de' ); ?>">
 			</div>
 			<div class="lccl-bda__field">
 				<label class="lccl-bda__label" for="lccl-bda-district"><?php esc_html_e( 'District', 'lccl-de' ); ?></label>
@@ -142,10 +150,10 @@ if ( $can_view && $user instanceof WP_User ) {
 							<tr>
 								<th><?php esc_html_e( 'Name', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Phone', 'lccl-de' ); ?></th>
-								<th><?php esc_html_e( 'Email', 'lccl-de' ); ?></th>
-								<th><?php esc_html_e( 'District', 'lccl-de' ); ?></th>
-								<th><?php esc_html_e( 'Blood bank', 'lccl-de' ); ?></th>
-								<th><?php esc_html_e( 'Notify', 'lccl-de' ); ?></th>
+								<th class="lccl-bda__col-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></th>
+								<th class="lccl-bda__col-district"><?php esc_html_e( 'District', 'lccl-de' ); ?></th>
+								<th class="lccl-bda__col-bank"><?php esc_html_e( 'Blood bank', 'lccl-de' ); ?></th>
+								<th class="lccl-bda__col-notify"><?php esc_html_e( 'Notify', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Registered', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-expand"><span class="screen-reader-text"><?php esc_html_e( 'Details', 'lccl-de' ); ?></span></th>
 							</tr>
