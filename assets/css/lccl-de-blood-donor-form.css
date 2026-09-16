@@ -1,0 +1,302 @@
+/*
+ * Every rule is scoped under .lccl-bdf so it outranks the Kalium theme's
+ * input[type="..."] selectors, which are specificity (0,1,1) and would
+ * otherwise win against a single utility class.
+ *
+ * Palette matches the Kalium construction child theme:
+ *   heading / button hover  #333333
+ *   body text               #555555
+ *   field text              #6b6b6b
+ *   field background        #f7f7f7
+ *   field border            #c4c4c4
+ *   white                   #ffffff
+ * Primary gold (#f7c016) is intentionally unused here.
+ */
+
+.lccl-bdf {
+	--lccl-bdf-bg: #ffffff;
+	--lccl-bdf-text: #555555;
+	--lccl-bdf-heading: #333333;
+	--lccl-bdf-field-text: #6b6b6b;
+	--lccl-bdf-field-bg: #f7f7f7;
+	--lccl-bdf-border: #c4c4c4;
+	--lccl-bdf-border-focus: #333333;
+	--lccl-bdf-required: #d0021b;
+	--lccl-bdf-font: "CooperHewitt-Book", sans-serif;
+	--lccl-bdf-gap: 22px;
+	--lccl-bdf-pad: 0;
+
+	box-sizing: border-box;
+	/* No max-width: the field grid fills whatever column it is dropped into. */
+	width: 100%;
+	margin: 0;
+	padding: var(--lccl-bdf-pad);
+	background-color: var(--lccl-bdf-bg);
+	color: var(--lccl-bdf-text);
+	color-scheme: light;
+	font-family: var(--lccl-bdf-font);
+	font-size: 17px;
+	font-weight: 400;
+	line-height: 1.6;
+}
+
+.lccl-bdf *,
+.lccl-bdf *::before,
+.lccl-bdf *::after {
+	box-sizing: inherit;
+}
+
+.lccl-bdf .lccl-bdf__req {
+	color: var(--lccl-bdf-required);
+}
+
+/* Header */
+
+.lccl-bdf .lccl-bdf__header {
+	margin: 0 0 28px;
+}
+
+.lccl-bdf .lccl-bdf__title {
+	margin: 0 0 8px;
+	padding: 0;
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 28px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	line-height: 1.3;
+	text-transform: uppercase;
+}
+
+.lccl-bdf .lccl-bdf__required-note,
+.lccl-bdf .lccl-bdf__intro {
+	margin: 0 0 8px;
+	color: var(--lccl-bdf-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.6;
+}
+
+.lccl-bdf .lccl-bdf__intro {
+	margin-bottom: 0;
+}
+
+/* Layout */
+
+.lccl-bdf .lccl-bdf__grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--lccl-bdf-gap);
+}
+
+.lccl-bdf .lccl-bdf__field--full {
+	grid-column: 1 / -1;
+}
+
+.lccl-bdf .lccl-bdf__label {
+	display: block;
+	margin: 0 0 8px;
+	color: var(--lccl-bdf-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	letter-spacing: 0;
+	text-transform: none;
+}
+
+/* Fields */
+
+.lccl-bdf .lccl-bdf__input,
+.lccl-bdf .lccl-bdf__select {
+	display: block;
+	width: 100%;
+	height: auto;
+	min-height: 48px;
+	margin: 0;
+	padding: 12px 16px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-radius: 3px;
+	box-shadow: none;
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-field-text);
+	font-family: var(--lccl-bdf-font);
+	font-weight: 400;
+	/* 16px keeps iOS Safari from zooming the page when a field gains focus. */
+	font-size: 17px;
+	line-height: 1.4;
+	transition: border-color 0.15s ease;
+}
+
+.lccl-bdf .lccl-bdf__select {
+	padding-right: 40px;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%236b6b6b' stroke-width='1.5' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+	background-position: right 14px center;
+	background-repeat: no-repeat;
+	background-size: 12px 8px;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+.lccl-bdf .lccl-bdf__input::placeholder {
+	color: var(--lccl-bdf-field-text);
+	opacity: 0.7;
+}
+
+.lccl-bdf .lccl-bdf__input:focus,
+.lccl-bdf .lccl-bdf__select:focus {
+	border-color: var(--lccl-bdf-border-focus);
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-field-text);
+	box-shadow: none;
+	outline: none;
+}
+
+.lccl-bdf .lccl-bdf__input:focus-visible,
+.lccl-bdf .lccl-bdf__select:focus-visible {
+	outline: 2px solid var(--lccl-bdf-border-focus);
+	outline-offset: 1px;
+}
+
+/* Blood bank field waiting on a district selection */
+
+.lccl-bdf .lccl-bdf__select[data-locked="true"] {
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-field-text);
+	cursor: not-allowed;
+	opacity: 0.72;
+}
+
+.lccl-bdf .lccl-bdf__notice {
+	margin: 8px 0 0;
+	color: var(--lccl-bdf-required);
+	font-family: var(--lccl-bdf-font);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.lccl-bdf .lccl-bdf__notice[hidden] {
+	display: none;
+}
+
+/* Checkboxes */
+
+.lccl-bdf .lccl-bdf__checkbox {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	color: var(--lccl-bdf-text);
+	cursor: pointer;
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.5;
+	text-transform: none;
+}
+
+.lccl-bdf .lccl-bdf__checkbox input[type="checkbox"] {
+	flex: 0 0 auto;
+	width: 16px;
+	height: 16px;
+	margin: 3px 0 0;
+	accent-color: var(--lccl-bdf-heading);
+}
+
+/* Privacy and consent */
+
+.lccl-bdf .lccl-bdf__consent {
+	margin-top: 30px;
+	padding-top: 26px;
+	border-top: 1px solid var(--lccl-bdf-border);
+}
+
+.lccl-bdf .lccl-bdf__subtitle {
+	margin: 0 0 12px;
+	padding: 0;
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.lccl-bdf .lccl-bdf__privacy {
+	margin: 0 0 18px;
+	color: var(--lccl-bdf-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 15px;
+	line-height: 1.7;
+}
+
+/* Submit */
+
+.lccl-bdf .lccl-bdf__submit {
+	display: inline-block;
+	width: auto;
+	min-height: 44px;
+	margin: 26px 0 0;
+	padding: 11px 26px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-radius: 3px;
+	background-color: var(--lccl-bdf-bg);
+	background-image: none;
+	box-shadow: none;
+	color: var(--lccl-bdf-heading);
+	cursor: pointer;
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	letter-spacing: 0;
+	line-height: 1.4;
+	text-transform: none;
+	transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.lccl-bdf .lccl-bdf__submit:hover,
+.lccl-bdf .lccl-bdf__submit:focus {
+	border-color: var(--lccl-bdf-heading);
+	background-color: var(--lccl-bdf-heading);
+	color: var(--lccl-bdf-bg);
+}
+
+/* Mobile */
+
+@media (max-width: 782px) {
+	.lccl-bdf {
+		--lccl-bdf-gap: 18px;
+	}
+
+	.lccl-bdf .lccl-bdf__grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.lccl-bdf .lccl-bdf__field--full {
+		grid-column: auto;
+	}
+
+	.lccl-bdf .lccl-bdf__title {
+		font-size: 24px;
+	}
+
+	.lccl-bdf .lccl-bdf__submit {
+		width: 100%;
+	}
+}
+
+@media (max-width: 480px) {
+	.lccl-bdf .lccl-bdf__input,
+	.lccl-bdf .lccl-bdf__select {
+		min-height: 48px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.lccl-bdf .lccl-bdf__input,
+	.lccl-bdf .lccl-bdf__select,
+	.lccl-bdf .lccl-bdf__submit {
+		transition: none;
+	}
+}
