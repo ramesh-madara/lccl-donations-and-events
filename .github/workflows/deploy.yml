@@ -18,35 +18,10 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Add Server to Known Hosts
-        env:
-          HOST: ${{ secrets.SERVER_HOST }}
-          PORT: ${{ secrets.SSH_PORT }}
         run: |
-          set -euo pipefail
-          PORT="${PORT:-22}"
           mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -p "$PORT" -H "$HOST" 2>/dev/null | tee -a ~/.ssh/known_hosts | grep -q . \
-            || { echo "ssh-keyscan failed for $HOST port $PORT. Check SERVER_HOST (hostname only, no https://) and SSH_PORT."; exit 1; }
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy via Rsync
-        env:
-          HOST: ${{ secrets.SERVER_HOST }}
-          USER: ${{ secrets.SSH_USER }}
-          PORT: ${{ secrets.SSH_PORT }}
         run: |
-          set -euo pipefail
-          PORT="${PORT:-22}"
-          DEST="/home/lccl/public_html/wp-content/plugins/lccl-donations-and-events"
-          SSH="ssh -p $PORT -o StrictHostKeyChecking=yes"
-
-          $SSH "$USER@$HOST" "mkdir -p '$DEST'"
-
-          if $SSH "$USER@$HOST" "command -v rsync >/dev/null 2>&1"; then
-            rsync -avz --delete -e "$SSH" --exclude='.git/' --exclude='.github/' ./ "$USER@$HOST:$DEST/"
-          else
-            echo "rsync is not installed on the server; deploying with tar over SSH."
-            tar --exclude='.git' --exclude='.github' -czf /tmp/lccl-de-plugin.tgz .
-            scp -P "$PORT" -o StrictHostKeyChecking=yes /tmp/lccl-de-plugin.tgz "$USER@$HOST:/tmp/lccl-de-plugin.tgz"
-            $SSH "$USER@$HOST" "tar -xzf /tmp/lccl-de-plugin.tgz -C '$DEST' && rm /tmp/lccl-de-plugin.tgz"
-          fi
+          rsync -avz --delete --exclude='.git/' --exclude='.github/' ./ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_HOST }}:/home/lccl/public_html/wp-content/plugins/lccl-donations-and-events/
