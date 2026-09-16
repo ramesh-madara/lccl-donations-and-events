@@ -219,8 +219,9 @@ if ( $can_view && $user instanceof WP_User ) {
 						<span><?php esc_html_e( 'Email a staff copy when someone registers.', 'lccl-de' ); ?></span>
 					</label>
 					<div class="lccl-bda__field">
-						<label class="lccl-bda__label" for="lccl-bda-admin-address"><?php esc_html_e( 'Admin email address', 'lccl-de' ); ?></label>
-						<input class="lccl-bda__input" type="email" id="lccl-bda-admin-address" name="admin_address" autocomplete="email" required>
+						<p class="lccl-bda__label"><?php esc_html_e( 'Admin email addresses', 'lccl-de' ); ?></p>
+						<p class="lccl-bda__lede" data-admin-addresses></p>
+						<p class="lccl-bda__lede"><?php esc_html_e( 'Add or remove these addresses in wp-admin under Blood Donation Users → Notifications.', 'lccl-de' ); ?></p>
 					</div>
 					<button class="lccl-bda__button lccl-bda__button--inline" type="submit"><?php esc_html_e( 'Save notifications', 'lccl-de' ); ?></button>
 				</form>

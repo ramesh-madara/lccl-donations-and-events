@@ -173,18 +173,21 @@ class LCCL_DE_Notify {
 		}
 
 		if ( LCCL_DE_Settings::enabled( 'admin_email' ) ) {
-			self::mail(
-				LCCL_DE_Settings::admin_address(),
-				sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $name ),
-				self::admin_html( $name, $values, $bank, $phone, $insert_id )
-			);
+			$admin_emails = LCCL_DE_Settings::admin_addresses();
+			if ( $admin_emails ) {
+				self::mail(
+					$admin_emails,
+					sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $name ),
+					self::admin_html( $name, $values, $bank, $phone, $insert_id )
+				);
+			}
 		}
 	}
 
 	/**
 	 * HTML mail with the same From as payment.colomboleads.org.
 	 *
-	 * @param string $to      Recipient.
+	 * @param string|string[] $to      Recipient(s).
 	 * @param string $subject Subject.
 	 * @param string $html    Body.
 	 */

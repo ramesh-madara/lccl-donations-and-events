@@ -171,7 +171,15 @@
 			notifyForm.donor_sms.checked = !! parseInt( data.donor_sms, 10 );
 			notifyForm.donor_email.checked = !! parseInt( data.donor_email, 10 );
 			notifyForm.admin_email.checked = !! parseInt( data.admin_email, 10 );
-			notifyForm.admin_address.value = data.admin_address || '';
+
+			var list = root.querySelector( '[data-admin-addresses]' );
+			var emails = data.admin_addresses;
+			if ( ! emails || ! emails.length ) {
+				emails = data.admin_address ? [ data.admin_address ] : [];
+			}
+			if ( list ) {
+				list.textContent = emails.length ? emails.join( ', ' ) : 'No admin addresses yet.';
+			}
 		}
 
 		function loadNotifications() {
@@ -695,8 +703,7 @@
 					body: JSON.stringify( {
 						donor_sms: notifyForm.donor_sms.checked ? 1 : 0,
 						donor_email: notifyForm.donor_email.checked ? 1 : 0,
-						admin_email: notifyForm.admin_email.checked ? 1 : 0,
-						admin_address: notifyForm.admin_address.value
+						admin_email: notifyForm.admin_email.checked ? 1 : 0
 					} )
 				} ).then( function ( data ) {
 					applyNotifyForm( data );

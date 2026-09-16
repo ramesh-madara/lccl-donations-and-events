@@ -53,9 +53,32 @@ defined( 'ABSPATH' ) || exit;
 				</td>
 			</tr>
 			<tr>
-				<th scope="row"><label for="lccl-de-admin-address"><?php esc_html_e( 'Admin email address', 'lccl-de' ); ?></label></th>
+				<th scope="row"><?php esc_html_e( 'Admin email addresses', 'lccl-de' ); ?></th>
 				<td>
-					<input type="email" class="regular-text" id="lccl-de-admin-address" name="admin_address" value="<?php echo esc_attr( $settings['admin_address'] ); ?>" required>
+					<div id="lccl-de-admin-emails">
+						<?php
+						$emails = ! empty( $settings['admin_addresses'] ) && is_array( $settings['admin_addresses'] )
+							? $settings['admin_addresses']
+							: array( '' );
+						foreach ( $emails as $index => $email ) :
+							?>
+							<p class="lccl-de-admin-email-row" style="display:flex;gap:8px;align-items:center;margin:0 0 8px;">
+								<input
+									type="email"
+									class="regular-text"
+									name="admin_addresses[]"
+									value="<?php echo esc_attr( $email ); ?>"
+									<?php echo 0 === $index ? 'id="lccl-de-admin-address"' : ''; ?>
+									autocomplete="email"
+								>
+								<button type="button" class="button" data-remove-admin-email><?php esc_html_e( 'Remove', 'lccl-de' ); ?></button>
+							</p>
+						<?php endforeach; ?>
+					</div>
+					<p style="margin:8px 0 0;">
+						<button type="button" class="button" id="lccl-de-add-admin-email"><?php esc_html_e( 'Add email', 'lccl-de' ); ?></button>
+					</p>
+					<p class="description"><?php esc_html_e( 'Each address receives a staff copy when someone registers.', 'lccl-de' ); ?></p>
 				</td>
 			</tr>
 		</table>
