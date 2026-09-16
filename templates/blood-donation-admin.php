@@ -142,15 +142,17 @@ if ( $can_view && $user instanceof WP_User ) {
 							<tr>
 								<th><?php esc_html_e( 'Name', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Phone', 'lccl-de' ); ?></th>
+								<th><?php esc_html_e( 'Email', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'District', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Blood bank', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Notify', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Registered', 'lccl-de' ); ?></th>
+								<th class="lccl-bda__col-expand"><span class="screen-reader-text"><?php esc_html_e( 'Details', 'lccl-de' ); ?></span></th>
 							</tr>
 						</thead>
 						<tbody data-donor-rows>
 							<tr class="lccl-bda__empty">
-								<td colspan="6"><?php esc_html_e( 'Loading registrations…', 'lccl-de' ); ?></td>
+								<td colspan="8"><?php esc_html_e( 'Loading registrations…', 'lccl-de' ); ?></td>
 							</tr>
 						</tbody>
 					</table>
@@ -170,18 +172,6 @@ if ( $can_view && $user instanceof WP_User ) {
 					</div>
 				</div>
 			</div>
-
-			<aside class="lccl-bda__detail" data-detail hidden>
-				<div class="lccl-bda__modal" data-detail-modal hidden>
-					<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
-					<span class="lccl-bda__modal-label"><?php esc_html_e( 'Loading…', 'lccl-de' ); ?></span>
-				</div>
-				<button class="lccl-bda__text-button lccl-bda__detail-close" type="button" data-action="close-detail">
-					<?php esc_html_e( 'Close', 'lccl-de' ); ?>
-				</button>
-				<h3 class="lccl-bda__detail-title" data-detail-name></h3>
-				<dl class="lccl-bda__dl" data-detail-body></dl>
-			</aside>
 		</div>
 	</section>
 </div>

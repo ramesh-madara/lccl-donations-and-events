@@ -48,6 +48,7 @@
 			return parseInt( value, 10 );
 		} );
 		var defaultPerPage = allowedPerPage.indexOf( parseInt( cfg.perPage, 10 ) ) !== -1 ? parseInt( cfg.perPage, 10 ) : 20;
+		var COLS = 8;
 		var state = {
 			nonce: cfg.nonce || '',
 			page: 1,
@@ -56,7 +57,8 @@
 			loadSeq: 0,
 			detailSeq: 0,
 			listBusy: false,
-			detailBusy: false
+			detailBusy: false,
+			details: {}
 		};
 
 		var loginPanel = root.querySelector( '[data-panel="login"]' );
@@ -66,8 +68,6 @@
 		var pagerBar = root.querySelector( '[data-pager-bar]' );
 		var pager = root.querySelector( '[data-pager]' );
 		var pageStatus = root.querySelector( '[data-page-status]' );
-		var detail = root.querySelector( '[data-detail]' );
-		var layout = root.querySelector( '.lccl-bda__layout' );
 		var districtSelect = root.querySelector( '#lccl-bda-district' );
 		var perPageSelect = root.querySelector( '#lccl-bda-per-page' );
 		var searchInput = root.querySelector( '#lccl-bda-search' );
@@ -76,7 +76,6 @@
 		var dashLoader = root.querySelector( '[data-dash-loader]' );
 		var loginModal = root.querySelector( '[data-login-modal]' );
 		var forgotModal = root.querySelector( '[data-forgot-modal]' );
-		var detailModal = root.querySelector( '[data-detail-modal]' );
 		var tableModal = root.querySelector( '[data-table-modal]' );
 
 		if ( districtSelect && cfg.districts ) {
@@ -166,9 +165,8 @@
 		}
 
 		function syncLoaders() {
-			setBusy( dashLoader, !!( state.listBusy || state.detailBusy ) );
+			setBusy( dashLoader, !! state.listBusy );
 			setBusy( tableModal, !! state.listBusy );
-			setBusy( detailModal, !! state.detailBusy );
 		}
 
 		function resetListState() {
@@ -179,6 +177,7 @@
 			state.detailSeq += 1;
 			state.listBusy = false;
 			state.detailBusy = false;
+			state.details = {};
 			if ( searchInput ) {
 				searchInput.value = '';
 			}
@@ -206,7 +205,7 @@
 			if ( ! items.length ) {
 				var empty = el( 'tr', 'lccl-bda__empty' );
 				var cell = el( 'td', '', 'No registrations match these filters.' );
-				cell.colSpan = 6;
+				cell.colSpan = COLS;
 				empty.appendChild( cell );
 				rows.appendChild( empty );
 				return;
@@ -214,24 +213,48 @@
 
 			items.forEach( function ( item ) {
 				var tr = el( 'tr' );
+				var notifyCell;
+				var pill;
+				var emailCell;
+				var actionCell;
+				var expandBtn;
+				var icon;
+
 				tr.setAttribute( 'data-id', String( item.id ) );
 				if ( item.id === state.selected ) {
-					tr.className = 'is-selected';
+					tr.className = 'is-open';
 				}
+
 				tr.appendChild( el( 'td', '', item.name || '' ) );
 				tr.appendChild( el( 'td', '', item.phone || '' ) );
+
+				emailCell = el( 'td', 'lccl-bda__col-email', item.email || '—' );
+				tr.appendChild( emailCell );
 				tr.appendChild( el( 'td', '', item.district || '' ) );
 				tr.appendChild( el( 'td', '', item.blood_bank_label || item.blood_bank || '' ) );
 
-				var notifyCell = el( 'td' );
-				var pill = el( 'span', item.notify_campaigns ? 'lccl-bda__pill lccl-bda__pill--yes' : 'lccl-bda__pill', item.notify_campaigns ? 'Yes' : 'No' );
+				notifyCell = el( 'td' );
+				pill = el( 'span', item.notify_campaigns ? 'lccl-bda__pill lccl-bda__pill--yes' : 'lccl-bda__pill', item.notify_campaigns ? 'Yes' : 'No' );
 				notifyCell.appendChild( pill );
 				tr.appendChild( notifyCell );
 				tr.appendChild( el( 'td', '', item.created_label || '' ) );
 
-				tr.addEventListener( 'click', function () {
-					openDetail( item.id );
+				actionCell = el( 'td', 'lccl-bda__col-expand' );
+				expandBtn = el( 'button', 'lccl-bda__expand-btn' );
+				expandBtn.type = 'button';
+				expandBtn.setAttribute( 'aria-expanded', item.id === state.selected ? 'true' : 'false' );
+				expandBtn.setAttribute( 'aria-label', item.id === state.selected ? 'Hide details' : 'Show details' );
+				icon = el( 'span', 'lccl-bda__expand-icon' );
+				icon.setAttribute( 'aria-hidden', 'true' );
+				expandBtn.appendChild( icon );
+				expandBtn.addEventListener( 'click', function ( event ) {
+					event.preventDefault();
+					event.stopPropagation();
+					toggleDetail( item.id, tr );
 				} );
+				actionCell.appendChild( expandBtn );
+				tr.appendChild( actionCell );
+
 				rows.appendChild( tr );
 			} );
 		}
@@ -346,9 +369,7 @@
 			var seq;
 
 			options = options || {};
-			if ( options.closeDetail ) {
-				closeDetail();
-			}
+			closeDetail();
 
 			seq = ++state.loadSeq;
 			state.listBusy = true;
@@ -382,83 +403,124 @@
 			} );
 		}
 
-		function addDetail( body, label, value ) {
+		function addPersonField( grid, label, value, extraClass ) {
+			var item;
+			var caption;
+			var text;
 			if ( null == value || '' === value ) {
 				return;
 			}
-			body.appendChild( el( 'dt', '', label ) );
-			body.appendChild( el( 'dd', '', String( value ) ) );
+			item = el( 'div', 'lccl-bda__person-item' + ( extraClass ? ' ' + extraClass : '' ) );
+			caption = el( 'span', 'lccl-bda__person-label', label );
+			text = el( 'span', 'lccl-bda__person-value', String( value ) );
+			item.appendChild( caption );
+			item.appendChild( text );
+			grid.appendChild( item );
 		}
 
-		function openDetail( id ) {
+		function fillPersonPanel( panel, item ) {
+			var heading = el( 'p', 'lccl-bda__person-name', item.name || '' );
+			var grid = el( 'div', 'lccl-bda__person-grid' );
+
+			panel.textContent = '';
+			panel.appendChild( heading );
+			addPersonField( grid, 'Phone', item.phone );
+			addPersonField( grid, 'Email', item.email );
+			addPersonField( grid, 'Address', item.address, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'City', item.city );
+			addPersonField( grid, 'Postal code', item.postal_code );
+			addPersonField( grid, 'District', item.district );
+			addPersonField( grid, 'Blood bank', item.blood_bank_label || item.blood_bank );
+			addPersonField( grid, 'Donation preference', item.donation_preference_label );
+			addPersonField( grid, 'Donated before', item.donated_before_label );
+			addPersonField( grid, 'Contact method', item.contact_label );
+			addPersonField( grid, 'Notify about campaigns', item.notify_campaigns ? 'Yes' : 'No' );
+			addPersonField( grid, 'Registered', item.created_label );
+			if ( item.ip_address ) {
+				addPersonField( grid, 'IP address', item.ip_address );
+			}
+			panel.appendChild( grid );
+		}
+
+		function setExpandChrome( summaryTr, open ) {
+			var btn = summaryTr ? summaryTr.querySelector( '.lccl-bda__expand-btn' ) : null;
+			if ( summaryTr ) {
+				summaryTr.classList.toggle( 'is-open', !! open );
+			}
+			if ( btn ) {
+				btn.classList.toggle( 'is-open', !! open );
+				btn.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+				btn.setAttribute( 'aria-label', open ? 'Hide details' : 'Show details' );
+			}
+		}
+
+		function toggleDetail( id, summaryTr ) {
+			if ( state.selected === id ) {
+				closeDetail();
+				return;
+			}
+			closeDetail();
+			openDetail( id, summaryTr );
+		}
+
+		function openDetail( id, summaryTr ) {
 			var error = root.querySelector( '[data-dash-error]' );
 			var seq = ++state.detailSeq;
+			var expandTr = el( 'tr', 'lccl-bda__expand-row' );
+			var td = el( 'td' );
+			var panel = el( 'div', 'lccl-bda__person' );
+			var loader = el( 'div', 'lccl-bda__person-loading' );
 
 			showBanner( error, '' );
 			state.selected = id;
-			state.detailBusy = true;
+			setExpandChrome( summaryTr, true );
 
-			Array.prototype.forEach.call( rows.querySelectorAll( 'tr' ), function ( tr ) {
-				tr.classList.toggle( 'is-selected', tr.getAttribute( 'data-id' ) === String( id ) );
-			} );
-
-			detail.hidden = false;
-			if ( layout ) {
-				layout.classList.add( 'is-open' );
+			td.colSpan = COLS;
+			loader.appendChild( el( 'span', 'lccl-bda__loader lccl-bda__loader--lg' ) );
+			loader.appendChild( el( 'span', 'lccl-bda__modal-label', 'Loading…' ) );
+			panel.appendChild( loader );
+			td.appendChild( panel );
+			expandTr.appendChild( td );
+			if ( summaryTr && summaryTr.parentNode ) {
+				summaryTr.parentNode.insertBefore( expandTr, summaryTr.nextSibling );
 			}
-			syncLoaders();
 
+			if ( state.details[ id ] ) {
+				fillPersonPanel( panel, state.details[ id ] );
+				return;
+			}
+
+			state.detailBusy = true;
 			api( 'donors/' + id ).then( function ( item ) {
-				var title;
-				var body;
 				if ( seq !== state.detailSeq || dashPanel.hidden ) {
 					return;
 				}
-				title = root.querySelector( '[data-detail-name]' );
-				body = root.querySelector( '[data-detail-body]' );
-				title.textContent = item.name || '';
-				body.textContent = '';
-
-				addDetail( body, 'Phone', item.phone );
-				addDetail( body, 'Email', item.email );
-				addDetail( body, 'Address', item.address );
-				addDetail( body, 'City', item.city );
-				addDetail( body, 'Postal code', item.postal_code );
-				addDetail( body, 'District', item.district );
-				addDetail( body, 'Blood bank', item.blood_bank_label || item.blood_bank );
-				addDetail( body, 'Donation preference', item.donation_preference_label );
-				addDetail( body, 'Donated before', item.donated_before_label );
-				addDetail( body, 'Contact method', item.contact_label );
-				addDetail( body, 'Notify about campaigns', item.notify_campaigns ? 'Yes' : 'No' );
-				addDetail( body, 'Registered', item.created_label );
-				if ( item.ip_address ) {
-					addDetail( body, 'IP address', item.ip_address );
-				}
+				state.details[ id ] = item;
+				fillPersonPanel( panel, item );
 			} ).catch( function ( err ) {
 				if ( seq !== state.detailSeq || dashPanel.hidden ) {
 					return;
 				}
 				showBanner( error, err.message );
+				closeDetail();
 			} ).then( function () {
 				if ( seq !== state.detailSeq ) {
 					return;
 				}
 				state.detailBusy = false;
-				syncLoaders();
 			} );
 		}
 
 		function closeDetail() {
+			var openRow = rows ? rows.querySelector( '.lccl-bda__expand-row' ) : null;
 			state.selected = 0;
 			state.detailSeq += 1;
 			state.detailBusy = false;
-			syncLoaders();
-			detail.hidden = true;
-			if ( layout ) {
-				layout.classList.remove( 'is-open' );
+			if ( openRow && openRow.parentNode ) {
+				openRow.parentNode.removeChild( openRow );
 			}
-			Array.prototype.forEach.call( rows.querySelectorAll( 'tr' ), function ( tr ) {
-				tr.classList.remove( 'is-selected' );
+			Array.prototype.forEach.call( rows.querySelectorAll( 'tr[data-id]' ), function ( tr ) {
+				setExpandChrome( tr, false );
 			} );
 		}
 
@@ -575,11 +637,6 @@
 					setBusy( dashLoader, false );
 				} );
 			} );
-		}
-
-		var closeBtn = root.querySelector( '[data-action="close-detail"]' );
-		if ( closeBtn ) {
-			closeBtn.addEventListener( 'click', closeDetail );
 		}
 
 		if ( perPageSelect ) {
