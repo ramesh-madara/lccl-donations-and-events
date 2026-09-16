@@ -10,7 +10,8 @@
  *   field background        #f7f7f7
  *   field border            #c4c4c4
  *   white                   #ffffff
- *   primary gold            #f7c016  (accent, field focus, success banner)
+ *   primary gold            #f7c016  (accent, submit hover, success banner)
+ *   dark gold               #c9a012  (submit default)
  */
 
 .lccl-bdf {
@@ -20,7 +21,8 @@
 	--lccl-bdf-field-text: #6b6b6b;
 	--lccl-bdf-field-bg: #f7f7f7;
 	--lccl-bdf-border: #c4c4c4;
-	--lccl-bdf-border-focus: #f7c016;
+	--lccl-bdf-gold-dark: #c9a012;
+	--lccl-bdf-gold-light: #f7c016;
 	--lccl-bdf-required: #d0021b;
 	--lccl-bdf-primary: #f7c016;
 	--lccl-bdf-primary-soft: #fff6d4;
@@ -146,19 +148,15 @@
 	opacity: 0.7;
 }
 
-.lccl-bdf .lccl-bdf__input:focus,
-.lccl-bdf .lccl-bdf__select:focus {
-	border-color: var(--lccl-bdf-border-focus);
+.lccl-bdf input.lccl-bdf__input:focus,
+.lccl-bdf input.lccl-bdf__input:focus-visible,
+.lccl-bdf select.lccl-bdf__select:focus,
+.lccl-bdf select.lccl-bdf__select:focus-visible {
+	border-color: var(--lccl-bdf-border);
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-field-text);
 	box-shadow: none;
 	outline: none;
-}
-
-.lccl-bdf .lccl-bdf__input:focus-visible,
-.lccl-bdf .lccl-bdf__select:focus-visible {
-	outline: 2px solid var(--lccl-bdf-border-focus);
-	outline-offset: 1px;
 }
 
 /* Blood bank field waiting on a district selection */
@@ -292,15 +290,35 @@
 
 .lccl-bdf .lccl-bdf__checkbox input[type="checkbox"] {
 	flex: 0 0 auto;
-	width: 16px;
-	height: 16px;
+	width: 18px;
+	height: 18px;
 	margin: 3px 0 0;
+	padding: 0;
+	border: 2px solid var(--lccl-bdf-field-text);
+	border-radius: 3px;
+	background-color: var(--lccl-bdf-field-bg);
+	background-image: none;
+	box-shadow: none;
 	accent-color: var(--lccl-bdf-primary);
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	cursor: pointer;
 }
 
+.lccl-bdf .lccl-bdf__checkbox input[type="checkbox"]:checked {
+	border-color: var(--lccl-bdf-gold-dark);
+	background-color: var(--lccl-bdf-gold-light);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M2 6.2 4.7 9 10 3'/%3E%3C/svg%3E");
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: 12px 12px;
+}
+
+.lccl-bdf .lccl-bdf__checkbox input[type="checkbox"]:focus,
 .lccl-bdf .lccl-bdf__checkbox input[type="checkbox"]:focus-visible {
-	outline: 2px solid var(--lccl-bdf-border-focus);
-	outline-offset: 2px;
+	outline: none;
+	box-shadow: none;
 }
 
 /* Privacy and consent */
@@ -332,18 +350,19 @@
 
 /* Submit */
 
-.lccl-bdf .lccl-bdf__submit {
+.lccl-bdf .lccl-bdf__submit,
+.lccl-bdf button.lccl-bdf__submit {
 	display: inline-block;
 	width: auto;
 	min-height: 44px;
 	margin: 26px 0 0;
 	padding: 11px 26px;
-	border: 1px solid var(--lccl-bdf-border);
+	border: 1px solid var(--lccl-bdf-gold-dark);
 	border-radius: 3px;
-	background-color: var(--lccl-bdf-bg);
+	background-color: var(--lccl-bdf-gold-dark);
 	background-image: none;
 	box-shadow: none;
-	color: var(--lccl-bdf-heading);
+	color: #ffffff;
 	cursor: pointer;
 	font-family: var(--lccl-bdf-font);
 	font-size: 16px;
@@ -355,10 +374,16 @@
 }
 
 .lccl-bdf .lccl-bdf__submit:hover,
-.lccl-bdf .lccl-bdf__submit:focus {
-	border-color: var(--lccl-bdf-heading);
-	background-color: var(--lccl-bdf-heading);
-	color: var(--lccl-bdf-bg);
+.lccl-bdf .lccl-bdf__submit:focus,
+.lccl-bdf .lccl-bdf__submit:focus-visible,
+.lccl-bdf button.lccl-bdf__submit:hover,
+.lccl-bdf button.lccl-bdf__submit:focus,
+.lccl-bdf button.lccl-bdf__submit:focus-visible {
+	border-color: var(--lccl-bdf-gold-light);
+	background-color: var(--lccl-bdf-gold-light);
+	color: #ffffff;
+	outline: none;
+	box-shadow: none;
 }
 
 /* Mobile */
