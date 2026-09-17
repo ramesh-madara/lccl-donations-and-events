@@ -269,7 +269,8 @@ class LCCL_DE_Admin_Users {
 		$post = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$login     = isset( $post['user_login'] ) ? sanitize_user( $post['user_login'], true ) : '';
-		$email     = isset( $post['user_email'] ) ? sanitize_email( $post['user_email'] ) : '';
+		$email_raw = isset( $post['user_email'] ) ? sanitize_text_field( $post['user_email'] ) : '';
+		$email     = sanitize_email( $email_raw );
 		$first     = isset( $post['first_name'] ) ? sanitize_text_field( $post['first_name'] ) : '';
 		$last      = isset( $post['last_name'] ) ? sanitize_text_field( $post['last_name'] ) : '';
 		$password  = isset( $post['user_pass'] ) ? (string) $post['user_pass'] : '';
@@ -291,7 +292,7 @@ class LCCL_DE_Admin_Users {
 			return new WP_Error( 'lccl_de_pass', __( 'Password must be at least 8 characters.', 'lccl-de' ) );
 		}
 
-		if ( ! is_email( $email ) ) {
+		if ( ! LCCL_DE_Blood_Donor_Submissions::is_valid_email_field( $email_raw ) || ! is_email( $email ) ) {
 			return new WP_Error( 'lccl_de_email', __( 'Please enter a valid email address.', 'lccl-de' ) );
 		}
 

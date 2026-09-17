@@ -37,7 +37,7 @@ $notices = array(
 		<p><?php echo $is_edit ? esc_html__( 'Update this reviewer account.', 'lccl-de' ) : esc_html__( 'Create an account that can open the blood donation dashboard. It cannot reach wp-admin.', 'lccl-de' ); ?></p>
 	</div>
 
-	<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>">
+	<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>" data-lccl-user-form novalidate>
 		<?php wp_nonce_field( LCCL_DE_Admin_Users::NONCE ); ?>
 		<input type="hidden" name="lccl_de_user_action" value="<?php echo $is_edit ? 'update' : 'create'; ?>">
 		<?php if ( $is_edit ) : ?>
@@ -52,14 +52,14 @@ $notices = array(
 						<input type="text" id="lccl-de-user-login" value="<?php echo esc_attr( $edit->user_login ); ?>" disabled>
 						<p class="description"><?php esc_html_e( 'Username cannot be changed.', 'lccl-de' ); ?></p>
 					<?php else : ?>
-						<input type="text" id="lccl-de-user-login" name="user_login" required autocomplete="off">
+						<input type="text" id="lccl-de-user-login" name="user_login" required autocomplete="off" maxlength="60" pattern="[A-Za-z0-9._@-]+">
 					<?php endif; ?>
 				</td>
 			</tr>
 			<tr>
 				<th scope="row"><label for="lccl-de-user-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></label></th>
 				<td>
-					<input type="email" id="lccl-de-user-email" name="user_email" required value="<?php echo $is_edit ? esc_attr( $edit->user_email ) : ''; ?>">
+					<input type="email" id="lccl-de-user-email" name="user_email" required maxlength="191" autocomplete="email" value="<?php echo $is_edit ? esc_attr( $edit->user_email ) : ''; ?>">
 				</td>
 			</tr>
 			<tr>
@@ -77,7 +77,7 @@ $notices = array(
 			<tr>
 				<th scope="row"><label for="lccl-de-user-pass"><?php esc_html_e( 'Password', 'lccl-de' ); ?></label></th>
 				<td>
-					<input type="password" id="lccl-de-user-pass" name="user_pass" <?php echo $is_edit ? '' : 'required'; ?> autocomplete="new-password">
+					<input type="password" id="lccl-de-user-pass" name="user_pass" <?php echo $is_edit ? '' : 'required'; ?> minlength="8" autocomplete="new-password">
 					<p class="description">
 						<?php
 						echo $is_edit

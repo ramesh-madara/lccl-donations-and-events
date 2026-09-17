@@ -26,9 +26,8 @@ if ( $can_view && $user instanceof WP_User ) {
 				<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
 				<span class="lccl-bda__modal-label"><?php esc_html_e( 'Signing in…', 'lccl-de' ); ?></span>
 			</div>
-			<p class="lccl-bda__brand">LCCL</p>
 			<h2 class="lccl-bda__title"><?php esc_html_e( 'Blood Donation Admin', 'lccl-de' ); ?></h2>
-			<p class="lccl-bda__lede"><?php esc_html_e( 'Sign in to review donor registrations.', 'lccl-de' ); ?></p>
+			<p class="lccl-bda__lede"><?php esc_html_e( 'Sign in to manage blood donor registrations.', 'lccl-de' ); ?></p>
 
 			<p class="lccl-bda__banner lccl-bda__banner--error" data-login-error hidden></p>
 			<p class="lccl-bda__banner lccl-bda__banner--success" data-login-notice hidden></p>
@@ -93,7 +92,6 @@ if ( $can_view && $user instanceof WP_User ) {
 	<section class="lccl-bda__dash" data-panel="dash" <?php echo $can_view ? '' : 'hidden'; ?>>
 		<header class="lccl-bda__header">
 			<div>
-				<p class="lccl-bda__brand">LCCL</p>
 				<h2 class="lccl-bda__title lccl-bda__title--inline">
 					<?php esc_html_e( 'Donor registrations', 'lccl-de' ); ?>
 					<span class="lccl-bda__loader" data-dash-loader hidden aria-hidden="true"></span>
@@ -119,8 +117,8 @@ if ( $can_view && $user instanceof WP_User ) {
 
 		<form class="lccl-bda__filters" data-form="filters">
 			<div class="lccl-bda__field lccl-bda__field--grow">
-				<label class="lccl-bda__label" for="lccl-bda-search"><?php esc_html_e( 'Search', 'lccl-de' ); ?></label>
-				<input class="lccl-bda__input" type="search" id="lccl-bda-search" name="search" placeholder="<?php esc_attr_e( 'Name, phone, email, or district', 'lccl-de' ); ?>">
+				<label class="lccl-bda__label" for="lccl-bda-search"><?php esc_html_e( 'Search Donors', 'lccl-de' ); ?></label>
+				<input class="lccl-bda__input" type="search" id="lccl-bda-search" name="search" placeholder="<?php esc_attr_e( 'Search by name, phone, email, or district.', 'lccl-de' ); ?>">
 			</div>
 			<div class="lccl-bda__field">
 				<label class="lccl-bda__label" for="lccl-bda-district"><?php esc_html_e( 'District', 'lccl-de' ); ?></label>
@@ -129,17 +127,17 @@ if ( $can_view && $user instanceof WP_User ) {
 				</select>
 			</div>
 			<div class="lccl-bda__field">
-				<label class="lccl-bda__label" for="lccl-bda-notify"><?php esc_html_e( 'Campaigns', 'lccl-de' ); ?></label>
+				<label class="lccl-bda__label" for="lccl-bda-notify"><?php esc_html_e( 'Notification Status', 'lccl-de' ); ?></label>
 				<select class="lccl-bda__select" id="lccl-bda-notify" name="notify_campaigns">
-					<option value=""><?php esc_html_e( 'All', 'lccl-de' ); ?></option>
-					<option value="1"><?php esc_html_e( 'Notify: yes', 'lccl-de' ); ?></option>
-					<option value="0"><?php esc_html_e( 'Notify: no', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'All Statuses.', 'lccl-de' ); ?></option>
+					<option value="1"><?php esc_html_e( 'Subscribed', 'lccl-de' ); ?></option>
+					<option value="0"><?php esc_html_e( 'Not Subscribed.', 'lccl-de' ); ?></option>
 				</select>
 			</div>
 			<div class="lccl-bda__field lccl-bda__field--clear">
 				<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
 				<button class="lccl-bda__clear" type="button" data-action="clear-filters">
-					<?php esc_html_e( 'Clear filters', 'lccl-de' ); ?>
+					<?php esc_html_e( 'Clear Filters', 'lccl-de' ); ?>
 				</button>
 			</div>
 		</form>
@@ -188,4 +186,18 @@ if ( $can_view && $user instanceof WP_User ) {
 			</div>
 		</div>
 	</section>
+
+	<div class="lccl-bda__dialog" data-delete-dialog hidden>
+		<div class="lccl-bda__dialog-backdrop" data-delete-cancel></div>
+		<div class="lccl-bda__dialog-card" role="dialog" aria-modal="true" aria-labelledby="lccl-bda-delete-title">
+			<h3 class="lccl-bda__dialog-title" id="lccl-bda-delete-title"><?php esc_html_e( 'Delete this registration?', 'lccl-de' ); ?></h3>
+			<p class="lccl-bda__dialog-copy" data-delete-message><?php esc_html_e( 'Are you sure you want to delete this donor registration? This cannot be undone.', 'lccl-de' ); ?></p>
+			<p class="lccl-bda__banner lccl-bda__banner--error" data-delete-error hidden></p>
+			<div class="lccl-bda__dialog-actions">
+				<button class="lccl-bda__dialog-no" type="button" data-delete-cancel><?php esc_html_e( 'No', 'lccl-de' ); ?></button>
+				<button class="lccl-bda__dialog-yes" type="button" data-delete-confirm><?php esc_html_e( 'Yes', 'lccl-de' ); ?></button>
+			</div>
+		</div>
+	</div>
+	<div class="lccl-bda__toasts" data-toasts></div>
 </div>

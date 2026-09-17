@@ -1,5 +1,5 @@
 /**
- * AJAX tab switching for the blood donation workspace in wp-admin.
+ * AJAX tab switching and form validation for the blood donation workspace in wp-admin.
  */
 ( function () {
 	'use strict';
@@ -17,20 +17,222 @@
 		return match && 'notifications' === match[ 1 ] ? 'notifications' : 'users';
 	}
 
+	function isValidEmail( value ) {
+		value = String( value || '' ).replace( /^\s+|\s+$/g, '' );
+		if ( '' === value ) {
+			return true;
+		}
+		if ( value.length > 191 ) {
+			return false;
+		}
+		return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) && -1 === value.indexOf( '..' );
+	}
+
+	function fieldHost( field ) {
+		return field.closest( '.lccl-de-admin-email-row' ) || field.closest( 'td' ) || field.parentNode;
+	}
+
+	function ensureNotice( field ) {
+		var host = fieldHost( field );
+		var notice = host ? host.querySelector( '[data-lccl-notice]' ) : null;
+		if ( notice ) {
+			return notice;
+		}
+		notice = document.createElement( 'p' );
+		notice.className = 'lccl-prog__field-notice';
+		notice.setAttribute( 'data-lccl-notice', '' );
+		notice.hidden = true;
+		if ( host ) {
+			host.appendChild( notice );
+		}
+		return notice;
+	}
+
+	function setFieldError( field, message ) {
+		var notice = ensureNotice( field );
+		field.classList.toggle( 'lccl-prog__input--error', !! message );
+		field.setAttribute( 'aria-invalid', message ? 'true' : 'false' );
+		if ( ! notice ) {
+			return;
+		}
+		notice.textContent = message || '';
+		notice.hidden = ! message;
+	}
+
+	function fieldMessage( field ) {
+		var value = String( field.value || '' ).replace( /^\s+|\s+$/g, '' );
+		var name = field.getAttribute( 'name' ) || '';
+
+		if ( field.disabled ) {
+			return '';
+		}
+
+		if ( 'user_login' === name ) {
+			if ( ! value ) {
+				return 'Please enter a username.';
+			}
+			if ( value.length > 60 || ! /^[A-Za-z0-9._@-]+$/.test( value ) ) {
+				return 'Use letters, numbers, and . _ - @ only.';
+			}
+			return '';
+		}
+
+		if ( 'first_name' === name ) {
+			return value ? '' : 'Please enter a first name.';
+		}
+
+		if ( 'last_name' === name ) {
+			return value ? '' : 'Please enter a last name.';
+		}
+
+		if ( 'user_pass' === name ) {
+			if ( ! value ) {
+				return field.required ? 'Please enter a password of at least 8 characters.' : '';
+			}
+			if ( value.length < 8 ) {
+				return 'Password must be at least 8 characters.';
+			}
+			return '';
+		}
+
+		if ( 'email' === field.type ) {
+			if ( ! value ) {
+				return field.required ? 'Please enter a valid email address.' : '';
+			}
+			if ( ! isValidEmail( value ) ) {
+				return 'Please enter a valid email address.';
+			}
+			return '';
+		}
+
+		if ( field.required && ! value ) {
+			return 'This field is required.';
+		}
+
+		return '';
+	}
+
+	function isTrackedField( field ) {
+		if ( ! field || ! field.matches ) {
+			return false;
+		}
+		return field.matches( 'input[type="email"], input[name="user_login"], input[name="user_pass"], input[name="first_name"], input[name="last_name"]' );
+	}
+
+	function validateForm( form ) {
+		var firstInvalid = null;
+		var fields = form.querySelectorAll( 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"])' );
+		var adminToggle = form.querySelector( 'input[name="admin_email"]' );
+		var staffInputs;
+		var hasValidStaff = false;
+
+		Array.prototype.forEach.call( fields, function ( field ) {
+			var message = fieldMessage( field );
+			setFieldError( field, message );
+			if ( message && ! firstInvalid ) {
+				firstInvalid = field;
+			}
+		} );
+
+		if ( adminToggle && adminToggle.checked ) {
+			staffInputs = form.querySelectorAll( 'input[name="admin_addresses[]"]' );
+			Array.prototype.forEach.call( staffInputs, function ( input ) {
+				var value = String( input.value || '' ).replace( /^\s+|\s+$/g, '' );
+				if ( value && isValidEmail( value ) ) {
+					hasValidStaff = true;
+				}
+			} );
+			if ( ! hasValidStaff && staffInputs.length && ! firstInvalid ) {
+				firstInvalid = staffInputs[ 0 ];
+				setFieldError( staffInputs[ 0 ], 'Enter at least one valid staff email address.' );
+			}
+		}
+
+		if ( firstInvalid ) {
+			firstInvalid.focus();
+			return false;
+		}
+
+		return true;
+	}
+
+	function shouldValidateForm( form ) {
+		if ( form.querySelector( 'input[name="lccl_de_user_action"][value="toggle"], input[name="lccl_de_user_action"][value="delete"]' ) ) {
+			return false;
+		}
+		return !! form.querySelector( 'input[type="email"], input[name="user_login"], input[name="user_pass"], input[name="first_name"]' );
+	}
+
+	function bindForms( root ) {
+		Array.prototype.forEach.call( root.querySelectorAll( 'form' ), function ( form ) {
+			if ( form.getAttribute( 'data-lccl-validate-bound' ) || ! shouldValidateForm( form ) ) {
+				return;
+			}
+			form.setAttribute( 'data-lccl-validate-bound', '1' );
+			form.setAttribute( 'novalidate', 'novalidate' );
+			form.addEventListener( 'submit', function ( event ) {
+				if ( ! validateForm( form ) ) {
+					event.preventDefault();
+				}
+			} );
+		} );
+	}
+
+	function bindLive( root ) {
+		if ( ! root || root.getAttribute( 'data-lccl-live-bound' ) ) {
+			return;
+		}
+		root.setAttribute( 'data-lccl-live-bound', '1' );
+
+		root.addEventListener( 'input', function ( event ) {
+			if ( ! isTrackedField( event.target ) ) {
+				return;
+			}
+			if ( ! fieldMessage( event.target ) ) {
+				setFieldError( event.target, '' );
+			}
+		} );
+
+		root.addEventListener( 'blur', function ( event ) {
+			if ( ! isTrackedField( event.target ) ) {
+				return;
+			}
+			setFieldError( event.target, fieldMessage( event.target ) );
+		}, true );
+	}
+
+	function bindWorkspace( root ) {
+		if ( ! root ) {
+			return;
+		}
+		if ( 'function' === typeof window.lcclDeBindNotify ) {
+			window.lcclDeBindNotify( root );
+		}
+		bindForms( root );
+	}
+
 	ready( function () {
+		var workspace = document.querySelector( '.lccl-prog' );
 		var nav = document.querySelector( '[data-lccl-tabs]' );
 		var panel = document.querySelector( '[data-lccl-tab-panel]' );
 		var cfg = window.lcclDePrograms;
-
 		var loader = document.querySelector( '[data-lccl-tab-loader]' );
+		var cache;
+		var currentTab;
+		var requestId;
+
+		if ( workspace ) {
+			bindLive( workspace );
+			bindWorkspace( workspace );
+		}
 
 		if ( ! nav || ! panel || ! cfg ) {
 			return;
 		}
 
-		var cache = {};
-		var currentTab = tabFromUrl();
-		var requestId = 0;
+		cache = {};
+		currentTab = tabFromUrl();
+		requestId = 0;
 
 		function links() {
 			return nav.querySelectorAll( '[data-tab]' );
@@ -70,9 +272,7 @@
 		}
 
 		function bindPanel() {
-			if ( 'function' === typeof window.lcclDeBindNotify ) {
-				window.lcclDeBindNotify( panel );
-			}
+			bindWorkspace( panel );
 		}
 
 		function finish( tab, url, push ) {

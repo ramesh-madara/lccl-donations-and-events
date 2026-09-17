@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 1;
+	const VERSION = 2;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -134,6 +134,8 @@ class LCCL_DE_Schema {
 			consent tinyint(1) NOT NULL DEFAULT 0,
 			ip_address varchar(45) DEFAULT NULL,
 			created_at datetime NOT NULL,
+			updated_at datetime DEFAULT NULL,
+			updated_by bigint(20) unsigned DEFAULT NULL,
 			PRIMARY KEY  (id),
 			KEY district (district),
 			KEY blood_bank (blood_bank),

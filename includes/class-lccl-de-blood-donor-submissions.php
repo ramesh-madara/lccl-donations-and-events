@@ -151,6 +151,7 @@ class LCCL_DE_Blood_Donor_Submissions {
 			'last_name',
 			'address',
 			'city',
+			'postal_code',
 			'phone',
 			'district',
 			'blood_bank',
@@ -177,7 +178,7 @@ class LCCL_DE_Blood_Donor_Submissions {
 			'last_name'            => isset( $post['last_name'] ) ? sanitize_text_field( $post['last_name'] ) : '',
 			'address'              => isset( $post['address'] ) ? sanitize_text_field( $post['address'] ) : '',
 			'city'                 => isset( $post['city'] ) ? sanitize_text_field( $post['city'] ) : '',
-			'postal_code'          => isset( $post['postal_code'] ) ? sanitize_text_field( $post['postal_code'] ) : '',
+			'postal_code'          => self::sanitize_postal_code( isset( $post['postal_code'] ) ? $post['postal_code'] : '' ),
 			'email'                => self::sanitize_email_field( isset( $post['email'] ) ? $post['email'] : '' ),
 			'phone'                => self::sanitize_phone_field( isset( $post['phone'] ) ? $post['phone'] : '' ),
 			'district'             => isset( $post['district'] ) ? sanitize_text_field( $post['district'] ) : '',
@@ -191,18 +192,68 @@ class LCCL_DE_Blood_Donor_Submissions {
 	}
 
 	/**
-	 * Validate sanitised values. Returns field => message.
+	 * Pull and sanitise a JSON or form-style payload (admin updates).
 	 *
-	 * @param array $values Sanitised input.
+	 * @param array $source Raw field map.
 	 * @return array
 	 */
-	public static function validate( array $values ) {
+	public static function sanitize_payload( array $source ) {
+		$notify_raw = isset( $source['notify_campaigns'] ) ? $source['notify_campaigns'] : 0;
+		if ( is_bool( $notify_raw ) ) {
+			$notify = $notify_raw ? 1 : 0;
+		} else {
+			$notify = in_array( (string) $notify_raw, array( '1', 'true', 'yes', 'on' ), true ) ? 1 : 0;
+		}
+
+		return array(
+			'first_name'          => self::clip_field( isset( $source['first_name'] ) ? $source['first_name'] : '', 100 ),
+			'last_name'           => self::clip_field( isset( $source['last_name'] ) ? $source['last_name'] : '', 100 ),
+			'address'             => self::clip_field( isset( $source['address'] ) ? $source['address'] : '', 255 ),
+			'city'                => self::clip_field( isset( $source['city'] ) ? $source['city'] : '', 100 ),
+			'postal_code'         => self::sanitize_postal_code( isset( $source['postal_code'] ) ? $source['postal_code'] : '' ),
+			'email'               => self::sanitize_email_field( isset( $source['email'] ) ? $source['email'] : '' ),
+			'phone'               => self::sanitize_phone_field( isset( $source['phone'] ) ? $source['phone'] : '' ),
+			'district'            => isset( $source['district'] ) ? sanitize_text_field( (string) $source['district'] ) : '',
+			'blood_bank'          => isset( $source['blood_bank'] ) ? sanitize_text_field( (string) $source['blood_bank'] ) : '',
+			'donation_preference' => isset( $source['donation_preference'] ) ? sanitize_key( $source['donation_preference'] ) : '',
+			'donated_before'      => isset( $source['donated_before'] ) ? sanitize_key( $source['donated_before'] ) : '',
+			'contact_method'      => isset( $source['contact_method'] ) ? sanitize_key( $source['contact_method'] ) : '',
+			'notify_campaigns'    => $notify,
+			'consent'             => ! empty( $source['consent'] ) ? 1 : 0,
+		);
+	}
+
+	/**
+	 * Truncate a sanitised string to a column width.
+	 *
+	 * @param mixed $value Raw value.
+	 * @param int   $max   Max characters.
+	 * @return string
+	 */
+	private static function clip_field( $value, $max ) {
+		$text = sanitize_text_field( (string) $value );
+		if ( strlen( $text ) <= $max ) {
+			return $text;
+		}
+
+		return substr( $text, 0, $max );
+	}
+
+	/**
+	 * Validate sanitised values. Returns field => message.
+	 *
+	 * @param array $values          Sanitised input.
+	 * @param bool  $require_consent Whether consent must be ticked (public form only).
+	 * @return array
+	 */
+	public static function validate( array $values, $require_consent = true ) {
 		$errors   = array();
 		$required = array(
 			'first_name'     => __( 'Please enter your first name.', 'lccl-de' ),
 			'last_name'      => __( 'Please enter your last name.', 'lccl-de' ),
 			'address'        => __( 'Please enter your address.', 'lccl-de' ),
 			'city'           => __( 'Please enter your city.', 'lccl-de' ),
+			'postal_code'    => __( 'Please enter a 5-digit postal code.', 'lccl-de' ),
 			'phone'          => __( 'Please enter your phone number.', 'lccl-de' ),
 			'district'       => __( 'Please choose your district.', 'lccl-de' ),
 			'blood_bank'     => __( 'Please choose a blood bank.', 'lccl-de' ),
@@ -215,12 +266,16 @@ class LCCL_DE_Blood_Donor_Submissions {
 			}
 		}
 
-		if ( empty( $values['consent'] ) ) {
+		if ( $require_consent && empty( $values['consent'] ) ) {
 			$errors['consent'] = __( 'Please confirm that you consent to your information being used.', 'lccl-de' );
 		}
 
 		if ( '' !== $values['phone'] && ! self::is_valid_sl_phone( $values['phone'] ) ) {
 			$errors['phone'] = self::phone_error_message();
+		}
+
+		if ( '' !== $values['postal_code'] && ! self::is_valid_postal_code( $values['postal_code'] ) ) {
+			$errors['postal_code'] = self::postal_error_message();
 		}
 
 		if ( '' !== $values['email'] && ! self::is_valid_email_field( $values['email'] ) ) {
@@ -275,6 +330,36 @@ class LCCL_DE_Blood_Donor_Submissions {
 	}
 
 	/**
+	 * Message shown when the postal code is not exactly five digits.
+	 *
+	 * @return string
+	 */
+	public static function postal_error_message() {
+		return __( 'Enter a 5-digit postal code. Numbers only.', 'lccl-de' );
+	}
+
+	/**
+	 * Keep digits only, at most five.
+	 *
+	 * @param mixed $value Raw postal code.
+	 * @return string
+	 */
+	public static function sanitize_postal_code( $value ) {
+		$digits = preg_replace( '/\D+/', '', (string) $value );
+		return substr( (string) $digits, 0, 5 );
+	}
+
+	/**
+	 * Sri Lankan postal codes are exactly five digits.
+	 *
+	 * @param string $value Sanitised postal code.
+	 * @return bool
+	 */
+	public static function is_valid_postal_code( $value ) {
+		return (bool) preg_match( '/^\d{5}$/', (string) $value );
+	}
+
+	/**
 	 * Keep a typed email for redisplay; only fully sanitise valid ones.
 	 *
 	 * @param string $email Raw posted email.
@@ -305,7 +390,11 @@ class LCCL_DE_Blood_Donor_Submissions {
 			return false;
 		}
 
-		return (bool) is_email( $email );
+		if ( ! is_email( $email ) || false !== strpos( $email, '..' ) ) {
+			return false;
+		}
+
+		return (bool) preg_match( '/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/', $email );
 	}
 
 	/**
@@ -448,6 +537,57 @@ class LCCL_DE_Blood_Donor_Submissions {
 		}
 
 		return (int) $wpdb->insert_id;
+	}
+
+	/**
+	 * Update a registration. Does not change consent, IP, or created_at.
+	 *
+	 * @param int   $id      Donor ID.
+	 * @param array $values  Sanitised, validated values.
+	 * @param int   $user_id Acting administrator.
+	 * @return bool
+	 */
+	public static function update( $id, array $values, $user_id ) {
+		global $wpdb;
+
+		$id      = (int) $id;
+		$user_id = (int) $user_id;
+		if ( $id <= 0 || $user_id <= 0 ) {
+			return false;
+		}
+
+		$banks = LCCL_DE_Blood_Donor_Form::get_blood_banks( $values['district'] );
+		$label = isset( $banks[ $values['blood_bank'] ] ) ? $banks[ $values['blood_bank'] ] : '';
+
+		$result = $wpdb->update(
+			LCCL_DE_Schema::blood_donors_table(),
+			array(
+				'first_name'          => $values['first_name'],
+				'last_name'           => $values['last_name'],
+				'address'             => $values['address'],
+				'city'                => $values['city'],
+				'postal_code'         => '' !== $values['postal_code'] ? $values['postal_code'] : null,
+				'email'               => '' !== $values['email'] ? $values['email'] : null,
+				'phone'               => $values['phone'],
+				'district'            => $values['district'],
+				'blood_bank'          => $values['blood_bank'],
+				'blood_bank_label'    => $label,
+				'donation_preference' => '' !== $values['donation_preference'] ? $values['donation_preference'] : null,
+				'donated_before'      => '' !== $values['donated_before'] ? $values['donated_before'] : null,
+				'contact_method'      => $values['contact_method'],
+				'notify_campaigns'    => (int) $values['notify_campaigns'],
+				'updated_at'          => current_time( 'mysql' ),
+				'updated_by'          => $user_id,
+			),
+			array( 'id' => $id ),
+			array(
+				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
+				'%s', '%s', '%s', '%d', '%s', '%d',
+			),
+			array( '%d' )
+		);
+
+		return false !== $result;
 	}
 
 	/**

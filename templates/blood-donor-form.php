@@ -149,9 +149,9 @@ $invalid = static function ( $key ) use ( $errors ) {
 				<?php endif; ?>
 			</div>
 
-			<div class="lccl-bdf__field">
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'postal_code' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-bdf-postal-code">
-					<?php esc_html_e( 'Postal Code', 'lccl-de' ); ?>
+					<?php esc_html_e( 'Postal Code', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<input
 					class="lccl-bdf__input"
@@ -162,8 +162,18 @@ $invalid = static function ( $key ) use ( $errors ) {
 					placeholder="<?php esc_attr_e( '00100', 'lccl-de' ); ?>"
 					inputmode="numeric"
 					autocomplete="postal-code"
-					maxlength="20"
+					maxlength="5"
+					pattern="[0-9]{5}"
+					data-lccl-validate="postal"
+					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::postal_error_message() ); ?>"
+					required
 				>
+				<p
+					class="lccl-bdf__notice"
+					data-lccl-notice="postal_code"
+					role="alert"
+					<?php echo $err( 'postal_code' ) ? '' : 'hidden'; ?>
+				><?php echo $err( 'postal_code' ) ? esc_html( $err( 'postal_code' ) ) : ''; ?></p>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">

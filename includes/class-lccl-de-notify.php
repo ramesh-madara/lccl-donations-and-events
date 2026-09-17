@@ -139,15 +139,9 @@ class LCCL_DE_Notify {
 			return;
 		}
 
-		$first   = isset( $values['first_name'] ) ? $values['first_name'] : '';
-		$last    = isset( $values['last_name'] ) ? $values['last_name'] : '';
 		$bank    = self::bank_label( $values );
-		$when    = wp_date( 'd-m-Y H:i:s' );
 		$message = sprintf(
-			'LCCL BLOOD DONATION - Hello %s %s, Congratulations! Your online registration for blood donation was successful. Your willingness to donate is truly life-saving. We appreciate your generosity. Thank you, Lions Club of Colombo LEADS. Sri Lanka. Date: %s. Your preferred blood bank: %s.',
-			$first,
-			$last,
-			$when,
+			'Thank you for registering your interest in blood donation. Your registration has been successfully received. Preferred blood bank: %s.',
 			$bank
 		);
 
@@ -257,7 +251,7 @@ class LCCL_DE_Notify {
 		if ( LCCL_DE_Settings::enabled( 'donor_email' ) && is_email( $donor_email ) ) {
 			self::mail(
 				$donor_email,
-				__( 'Registration Successful', 'lccl-de' ),
+				__( 'Blood donor registration confirmed', 'lccl-de' ),
 				self::donor_html( $name, $bank ),
 				'donor'
 			);
@@ -392,16 +386,24 @@ class LCCL_DE_Notify {
 	 */
 	private static function donor_html( $name, $bank ) {
 		$logo = 'https://registration.colomboleads.org/lccclLOGO.png';
+		$who  = '' !== $name ? $name : __( 'Donor', 'lccl-de' );
 
-		return '<html><body><div style="background-color:#f0f0f0;padding:20px;">
-			<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" style="max-width:200px;">
-			<h1 style="font-size:24px;color:#333;">LCCL Blood Donation 🩸</h1>
-			<p>Hello ' . esc_html( $name ) . ',</p>
-			<p>Congratulations! Your online registration for blood donation was successful. Your willingness to donate is truly life-saving. We appreciate your generosity.</p>
-			<p>Your preferred blood bank: ' . esc_html( $bank ) . '.</p>
-			<p>Thank you,</p>
-			<p>Lions Club of Colombo LEADS.<br>Sri Lanka.</p>
-		</div></body></html>';
+		return '<html><body style="margin:0;padding:0;background-color:#F3F3F3;">
+			<div style="background-color:#F3F3F3;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;">
+				<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
+				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">BLOOD DONOR REGISTRATION CONFIRMED</h1>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Dear ' . esc_html( $who ) . ',</p>
+				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Thank you for registering your interest in donating blood through Lions Club of Colombo LEADS. Your registration has been successfully received.</p>
+				<h2 style="margin:0 0 10px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.08em;">REGISTRATION DETAILS</h2>
+				<p style="margin:0 0 4px;color:#555555;font-size:14px;line-height:1.5;">Preferred Blood Bank:</p>
+				<p style="margin:0 0 22px;color:#333333;font-size:16px;font-weight:700;line-height:1.45;">' . esc_html( $bank ) . '</p>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">We will use the information you provided to help facilitate your blood donation through the selected blood bank or a relevant Lions blood donation campaign.</p>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Please note that donor eligibility and medical suitability will be assessed by the relevant blood bank at the time of donation.</p>
+				<p style="margin:0 0 28px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your willingness to help save lives.</p>
+				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
+				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
+			</div>
+		</body></html>';
 	}
 
 	/**

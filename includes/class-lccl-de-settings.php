@@ -198,7 +198,16 @@ class LCCL_DE_Settings {
 
 		$out = array();
 		foreach ( $raw as $email ) {
-			$email = sanitize_email( (string) $email );
+			$email = trim( (string) $email );
+			if ( '' === $email ) {
+				continue;
+			}
+
+			if ( ! LCCL_DE_Blood_Donor_Submissions::is_valid_email_field( $email ) ) {
+				continue;
+			}
+
+			$email = sanitize_email( $email );
 			if ( ! is_email( $email ) ) {
 				continue;
 			}
@@ -220,6 +229,42 @@ class LCCL_DE_Settings {
 	}
 
 	/**
+	 * Error if a posted staff address is present but not a real email.
+	 *
+	 * @return string Empty when the list is usable.
+	 */
+	private static function invalid_posted_address() {
+		if ( ! isset( $_POST['admin_addresses'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return '';
+		}
+
+		$raw = wp_unslash( $_POST['admin_addresses'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( ! is_array( $raw ) ) {
+			$raw = array( $raw );
+		}
+
+		$has_valid = false;
+		foreach ( $raw as $email ) {
+			$email = trim( (string) $email );
+			if ( '' === $email ) {
+				continue;
+			}
+
+			if ( ! LCCL_DE_Blood_Donor_Submissions::is_valid_email_field( $email ) || ! is_email( sanitize_email( $email ) ) ) {
+				return __( 'Please enter a valid email address.', 'lccl-de' );
+			}
+
+			$has_valid = true;
+		}
+
+		if ( ! empty( $_POST['admin_email'] ) && ! $has_valid ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return __( 'Enter at least one valid staff email address.', 'lccl-de' );
+		}
+
+		return '';
+	}
+
+	/**
 	 * Save toggles or send a test email.
 	 */
 	public static function handle_post() {
@@ -235,10 +280,19 @@ class LCCL_DE_Settings {
 		if ( ! empty( $_POST['lccl_de_notify_test'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( self::NONCE );
 
-			$to = isset( $_POST['test_email'] ) ? sanitize_email( wp_unslash( $_POST['test_email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( ! is_email( $to ) ) {
-				$saved = self::admin_addresses();
-				$to    = isset( $saved[0] ) ? $saved[0] : '';
+			$to_raw = isset( $_POST['test_email'] ) ? sanitize_text_field( wp_unslash( $_POST['test_email'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$to     = sanitize_email( $to_raw );
+			if ( ! LCCL_DE_Blood_Donor_Submissions::is_valid_email_field( $to_raw ) || ! is_email( $to ) ) {
+				wp_safe_redirect(
+					LCCL_DE_Admin_Programs::blood_url(
+						array(
+							'tab'     => 'notifications',
+							'message' => 'error',
+							'error'   => rawurlencode( __( 'Please enter a valid email address.', 'lccl-de' ) ),
+						)
+					)
+				);
+				exit;
 			}
 
 			$ok = LCCL_DE_Notify::send_test( $to );
@@ -259,6 +313,20 @@ class LCCL_DE_Settings {
 		}
 
 		check_admin_referer( self::NONCE );
+
+		$invalid = self::invalid_posted_address();
+		if ( $invalid ) {
+			wp_safe_redirect(
+				LCCL_DE_Admin_Programs::blood_url(
+					array(
+						'tab'     => 'notifications',
+						'message' => 'error',
+						'error'   => rawurlencode( $invalid ),
+					)
+				)
+			);
+			exit;
+		}
 
 		self::save( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 

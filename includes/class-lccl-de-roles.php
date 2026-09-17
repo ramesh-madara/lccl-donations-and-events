@@ -143,6 +143,20 @@ class LCCL_DE_Roles {
 	}
 
 	/**
+	 * Whether the user may edit or delete donor registrations.
+	 *
+	 * Site administrators only — reviewers can view, not write.
+	 *
+	 * @param WP_User|int|null $user User or ID.
+	 * @return bool
+	 */
+	public static function can_manage_donors( $user = null ) {
+		$user = self::resolve_user( $user );
+
+		return $user && $user->ID && user_can( $user, 'manage_options' );
+	}
+
+	/**
 	 * Whether a reviewer account is allowed to authenticate.
 	 *
 	 * Site admins are always treated as active.

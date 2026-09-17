@@ -136,6 +136,7 @@
 
 		bindRequiredValidation( form, district, bank, isLocked, showNotice );
 		bindContactValidation( form );
+		bindPostalValidation( form );
 	}
 
 	function isFilled( field ) {
@@ -288,6 +289,38 @@
 		}
 	}
 
+	function isValidPostal( value ) {
+		return /^\d{5}$/.test( String( value || '' ) );
+	}
+
+	function constrainPostal( value ) {
+		return String( value || '' ).replace( /\D/g, '' ).substring( 0, 5 );
+	}
+
+	function bindPostalValidation( form ) {
+		var postal = form.querySelector( '[data-lccl-validate="postal"]' );
+		if ( ! postal ) {
+			return;
+		}
+
+		postal.addEventListener( 'input', function () {
+			var next = constrainPostal( postal.value );
+			if ( next !== postal.value ) {
+				postal.value = next;
+			}
+			if ( isValidPostal( postal.value ) ) {
+				markField( postal, false );
+				setNotice( form, 'postal_code', '' );
+			}
+		} );
+
+		postal.addEventListener( 'blur', function () {
+			var ok = isValidPostal( postal.value );
+			markField( postal, ! ok );
+			setNotice( form, 'postal_code', ok ? '' : postal.getAttribute( 'data-invalid-message' ) || '' );
+		} );
+	}
+
 	function validateEmailField( form, email, contactMethod, requireIfEmpty ) {
 		if ( ! email ) {
 			return true;
@@ -314,6 +347,7 @@
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
 		var phone = form.querySelector( '[data-lccl-validate="phone"]' );
 		var email = form.querySelector( '[data-lccl-validate="email"]' );
+		var postal = form.querySelector( '[data-lccl-validate="postal"]' );
 		var contactMethod = form.querySelector( '[name="contact_method"]' );
 
 		form.addEventListener( 'submit', function ( event ) {
@@ -350,6 +384,16 @@
 				setNotice( form, 'phone', '' );
 			}
 
+			if ( postal && ! isValidPostal( postal.value ) ) {
+				markField( postal, true );
+				setNotice( form, 'postal_code', postal.getAttribute( 'data-invalid-message' ) || '' );
+				if ( ! firstInvalid ) {
+					firstInvalid = postal;
+				}
+			} else if ( postal ) {
+				setNotice( form, 'postal_code', '' );
+			}
+
 			if ( ! validateEmailField( form, email, contactMethod, true ) && email && ! firstInvalid ) {
 				firstInvalid = email;
 			}
@@ -372,7 +416,7 @@
 			if ( ! event.target || ! event.target.hasAttribute( 'required' ) ) {
 				return;
 			}
-			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) ) {
+			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) || 'postal' === event.target.getAttribute( 'data-lccl-validate' ) ) {
 				return;
 			}
 			markField( event.target, ! isFilled( event.target ) );
@@ -382,7 +426,7 @@
 			if ( ! event.target || ! event.target.hasAttribute( 'required' ) ) {
 				return;
 			}
-			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) ) {
+			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) || 'postal' === event.target.getAttribute( 'data-lccl-validate' ) ) {
 				return;
 			}
 			markField( event.target, ! isFilled( event.target ) );

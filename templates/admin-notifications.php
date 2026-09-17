@@ -20,6 +20,8 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 	<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Test email was accepted by WordPress. Check the inbox (and spam).', 'lccl-de' ); ?></p></div>
 <?php elseif ( 'test-fail' === $message ) : ?>
 	<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'Test email was not sent. See the log below for the server error.', 'lccl-de' ); ?></p></div>
+<?php elseif ( 'error' === $message && ! empty( $error ) ) : ?>
+	<div class="notice notice-error is-dismissible"><p><?php echo esc_html( $error ); ?></p></div>
 <?php endif; ?>
 
 <div class="lccl-prog__section">
@@ -27,7 +29,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 		<?php esc_html_e( 'These go out after someone submits the public registration form. Uncheck a row to stop that message. Saving a registration is never blocked if a send fails.', 'lccl-de' ); ?>
 	</p>
 
-	<form method="post" action="<?php echo esc_url( $notify_action ); ?>">
+	<form method="post" action="<?php echo esc_url( $notify_action ); ?>" data-lccl-notify-form novalidate>
 		<?php wp_nonce_field( LCCL_DE_Settings::NONCE ); ?>
 		<input type="hidden" name="lccl_de_notify_save" value="1">
 
@@ -89,7 +91,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 		</p>
 	<?php endif; ?>
 
-	<form method="post" action="<?php echo esc_url( $notify_action ); ?>">
+	<form method="post" action="<?php echo esc_url( $notify_action ); ?>" data-lccl-test-email-form novalidate>
 		<?php wp_nonce_field( LCCL_DE_Settings::NONCE ); ?>
 		<input type="hidden" name="lccl_de_notify_test" value="1">
 		<p>

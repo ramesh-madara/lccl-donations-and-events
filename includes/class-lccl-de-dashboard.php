@@ -58,21 +58,31 @@ class LCCL_DE_Dashboard {
 			true
 		);
 
-		$can_view = LCCL_DE_Roles::can_view_submissions();
-		$user     = wp_get_current_user();
+		$can_view    = LCCL_DE_Roles::can_view_submissions();
+		$can_manage  = LCCL_DE_Roles::can_manage_donors();
+		$user        = wp_get_current_user();
+		$script_data = array(
+			'restUrl'     => esc_url_raw( rest_url( self::REST_NS . '/' ) ),
+			'nonce'       => wp_create_nonce( 'wp_rest' ),
+			'loggedIn'    => $can_view ? 1 : 0,
+			'canManage'   => $can_manage ? 1 : 0,
+			'displayName' => $can_view ? self::display_name( $user ) : '',
+			'districts'   => array_keys( LCCL_DE_Blood_Donor_Form::get_districts() ),
+			'perPage'     => 20,
+			'perPages'    => array( 10, 20, 50 ),
+		);
+
+		if ( $can_manage ) {
+			$script_data['bloodBanks']     = LCCL_DE_Blood_Donor_Form::get_blood_banks_by_district();
+			$script_data['preferences']    = LCCL_DE_Blood_Donor_Form::get_donation_preferences();
+			$script_data['history']        = LCCL_DE_Blood_Donor_Form::get_donation_history_options();
+			$script_data['contactMethods'] = LCCL_DE_Blood_Donor_Form::get_contact_methods();
+		}
 
 		wp_localize_script(
 			'lccl-de-blood-donation-admin',
 			'lcclBda',
-			array(
-				'restUrl'     => esc_url_raw( rest_url( self::REST_NS . '/' ) ),
-				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'loggedIn'    => $can_view ? 1 : 0,
-				'displayName' => $can_view ? self::display_name( $user ) : '',
-				'districts'   => array_keys( LCCL_DE_Blood_Donor_Form::get_districts() ),
-				'perPage'     => 20,
-				'perPages'    => array( 10, 20, 50 ),
-			)
+			$script_data
 		);
 
 		$values = array();
@@ -154,18 +164,34 @@ class LCCL_DE_Dashboard {
 			)
 		);
 
+		$id_args = array(
+			'id' => array(
+				'type'              => 'integer',
+				'sanitize_callback' => 'absint',
+			),
+		);
+
 		register_rest_route(
 			self::REST_NS,
 			'/donors/(?P<id>\d+)',
 			array(
-				'methods'             => WP_REST_Server::READABLE,
-				'callback'            => array( __CLASS__, 'rest_donor' ),
-				'permission_callback' => array( __CLASS__, 'rest_can_view' ),
-				'args'                => array(
-					'id' => array(
-						'type'              => 'integer',
-						'sanitize_callback' => 'absint',
-					),
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( __CLASS__, 'rest_donor' ),
+					'permission_callback' => array( __CLASS__, 'rest_can_view' ),
+					'args'                => $id_args,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( __CLASS__, 'rest_update_donor' ),
+					'permission_callback' => array( __CLASS__, 'rest_can_manage' ),
+					'args'                => $id_args,
+				),
+				array(
+					'methods'             => WP_REST_Server::DELETABLE,
+					'callback'            => array( __CLASS__, 'rest_delete_donor' ),
+					'permission_callback' => array( __CLASS__, 'rest_can_manage' ),
+					'args'                => $id_args,
 				),
 			)
 		);
@@ -178,6 +204,23 @@ class LCCL_DE_Dashboard {
 	 */
 	public static function rest_can_view() {
 		return LCCL_DE_Roles::can_view_submissions();
+	}
+
+	/**
+	 * Permission for donor write routes. Site administrators only.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public static function rest_can_manage() {
+		if ( LCCL_DE_Roles::can_manage_donors() ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'lccl_de_forbidden',
+			__( 'Only site administrators can edit or delete registrations.', 'lccl-de' ),
+			array( 'status' => 403 )
+		);
 	}
 
 	/**
@@ -516,22 +559,98 @@ class LCCL_DE_Dashboard {
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function rest_donor( WP_REST_Request $request ) {
-		global $wpdb;
-
-		$id  = (int) $request['id'];
-		$row = $wpdb->get_row(
-			$wpdb->prepare(
-				'SELECT * FROM ' . LCCL_DE_Schema::blood_donors_table() . ' WHERE id = %d',
-				$id
-			),
-			ARRAY_A
-		);
-
+		$row = self::get_donor_row( (int) $request['id'] );
 		if ( ! $row ) {
 			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
 		}
 
 		return new WP_REST_Response( self::present_detail( $row ), 200 );
+	}
+
+	/**
+	 * Update one donor. Site administrators only.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function rest_update_donor( WP_REST_Request $request ) {
+		$row = self::get_donor_row( (int) $request['id'] );
+		if ( ! $row ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		$params = $request->get_json_params();
+		if ( ! is_array( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$values = LCCL_DE_Blood_Donor_Submissions::sanitize_payload( $params );
+		$errors = LCCL_DE_Blood_Donor_Submissions::validate( $values, false );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error(
+				'lccl_de_invalid',
+				__( 'Please correct the highlighted fields.', 'lccl-de' ),
+				array(
+					'status' => 400,
+					'errors' => $errors,
+				)
+			);
+		}
+
+		$saved = LCCL_DE_Blood_Donor_Submissions::update( (int) $row['id'], $values, get_current_user_id() );
+		if ( ! $saved ) {
+			return new WP_Error(
+				'lccl_de_update',
+				__( 'The registration could not be saved. Please try again.', 'lccl-de' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$fresh = self::get_donor_row( (int) $row['id'] );
+		if ( ! $fresh ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( self::present_detail( $fresh ), 200 );
+	}
+
+	/**
+	 * Delete one donor. Site administrators only.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function rest_delete_donor( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$row = self::get_donor_row( (int) $request['id'] );
+		if ( ! $row ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		$deleted = $wpdb->delete(
+			LCCL_DE_Schema::blood_donors_table(),
+			array( 'id' => (int) $row['id'] ),
+			array( '%d' )
+		);
+
+		if ( ! $deleted ) {
+			return new WP_Error(
+				'lccl_de_delete',
+				__( 'The registration could not be deleted. Please try again.', 'lccl-de' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'deleted' => true,
+				'id'      => (int) $row['id'],
+				'name'    => trim( $row['first_name'] . ' ' . $row['last_name'] ),
+			),
+			200
+		);
 	}
 
 	/**
@@ -561,12 +680,24 @@ class LCCL_DE_Dashboard {
 	 * @return array
 	 */
 	private static function session_payload( WP_User $user ) {
-		return array(
+		$can_manage = LCCL_DE_Roles::can_manage_donors( $user );
+
+		$payload = array(
 			'logged_in'    => true,
+			'can_manage'   => $can_manage,
 			'nonce'        => wp_create_nonce( 'wp_rest' ),
 			'display_name' => self::display_name( $user ),
 			'user_login'   => $user->user_login,
 		);
+
+		if ( $can_manage ) {
+			$payload['blood_banks']     = LCCL_DE_Blood_Donor_Form::get_blood_banks_by_district();
+			$payload['preferences']     = LCCL_DE_Blood_Donor_Form::get_donation_preferences();
+			$payload['history']         = LCCL_DE_Blood_Donor_Form::get_donation_history_options();
+			$payload['contact_methods'] = LCCL_DE_Blood_Donor_Form::get_contact_methods();
+		}
+
+		return $payload;
 	}
 
 	/**
@@ -617,6 +748,7 @@ class LCCL_DE_Dashboard {
 		$prefs    = LCCL_DE_Blood_Donor_Form::get_donation_preferences();
 		$history  = LCCL_DE_Blood_Donor_Form::get_donation_history_options();
 		$payload  = self::present_list_row( $row );
+		$updated  = ! empty( $row['updated_at'] ) ? $row['updated_at'] : '';
 		$more     = array(
 			'address'                   => $row['address'],
 			'city'                      => $row['city'],
@@ -626,6 +758,10 @@ class LCCL_DE_Dashboard {
 			'donated_before'            => $row['donated_before'],
 			'donated_before_label'      => isset( $history[ $row['donated_before'] ] ) ? $history[ $row['donated_before'] ] : $row['donated_before'],
 			'consent'                   => (int) $row['consent'],
+			'updated_at'                => $updated,
+			'updated_label'             => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
+			'updated_by'                => isset( $row['updated_by'] ) ? (int) $row['updated_by'] : 0,
+			'updated_by_label'          => self::present_updater( isset( $row['updated_by'] ) ? $row['updated_by'] : 0 ),
 		);
 
 		if ( current_user_can( 'manage_options' ) ) {
@@ -633,6 +769,51 @@ class LCCL_DE_Dashboard {
 		}
 
 		return array_merge( $payload, $more );
+	}
+
+	/**
+	 * Load one donor row.
+	 *
+	 * @param int $id Donor ID.
+	 * @return array|null
+	 */
+	private static function get_donor_row( $id ) {
+		global $wpdb;
+
+		$id = (int) $id;
+		if ( $id <= 0 ) {
+			return null;
+		}
+
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM ' . LCCL_DE_Schema::blood_donors_table() . ' WHERE id = %d',
+				$id
+			),
+			ARRAY_A
+		);
+
+		return is_array( $row ) ? $row : null;
+	}
+
+	/**
+	 * "Full Name (username)" for the last editor.
+	 *
+	 * @param int $user_id User ID.
+	 * @return string
+	 */
+	private static function present_updater( $user_id ) {
+		$user_id = (int) $user_id;
+		if ( $user_id <= 0 ) {
+			return '';
+		}
+
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return __( 'Unknown user', 'lccl-de' );
+		}
+
+		return self::display_name( $user ) . ' (' . $user->user_login . ')';
 	}
 
 	/**
