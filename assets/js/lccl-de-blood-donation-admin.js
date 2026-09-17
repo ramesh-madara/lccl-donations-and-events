@@ -678,6 +678,10 @@
 			return ( cfg.bloodBanks && cfg.bloodBanks[ district ] ) ? cfg.bloodBanks[ district ] : {};
 		}
 
+		function bankDistrictHint() {
+			return 'Please select your district first, then select a blood bank.';
+		}
+
 		function addEditControl( grid, name, label, control, extraClass ) {
 			var item = el( 'div', 'lccl-bda__person-item lccl-bda__person-item--edit' + ( extraClass ? ' ' + extraClass : '' ) );
 			var lab = el( 'label', 'lccl-bda__person-label', label );
@@ -745,6 +749,9 @@
 					errors[ name ] = required[ name ];
 				}
 			} );
+			if ( ! values.district ) {
+				errors.blood_bank = bankDistrictHint();
+			}
 			if ( values.postal_code && ! isValidPostal( values.postal_code ) ) {
 				errors.postal_code = 'Enter a 5-digit postal code. Numbers only.';
 			}
@@ -930,6 +937,24 @@
 			);
 			bank.disabled = ! item.district;
 
+			function syncBankDistrictHint() {
+				var notice = bank.parentNode ? bank.parentNode.querySelector( '[data-lccl-notice="blood_bank"]' ) : null;
+				if ( ! notice ) {
+					return;
+				}
+				if ( district.value ) {
+					if ( ! bank.classList.contains( 'lccl-bda__input--error' ) ) {
+						notice.textContent = '';
+						notice.hidden = true;
+					}
+					return;
+				}
+				notice.textContent = bankDistrictHint();
+				notice.hidden = false;
+				bank.classList.remove( 'lccl-bda__input--error' );
+				bank.setAttribute( 'aria-invalid', 'false' );
+			}
+
 			addEditControl(
 				grid,
 				'donation_preference',
@@ -986,6 +1011,8 @@
 					options[ current ] ? current : '',
 					district.value ? 'Select your preferred blood bank' : 'Select your district first'
 				);
+				setFieldNotice( form, 'blood_bank', '' );
+				syncBankDistrictHint();
 			} );
 
 			form.addEventListener( 'submit', function ( event ) {
@@ -995,6 +1022,7 @@
 
 			form.appendChild( grid );
 			panel.appendChild( form );
+			syncBankDistrictHint();
 		}
 
 		function setSaving( panel, saving ) {

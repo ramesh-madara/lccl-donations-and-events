@@ -277,7 +277,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					role="status"
 					<?php echo $err( 'blood_bank' ) ? '' : 'hidden'; ?>
 				>
-					<?php echo $err( 'blood_bank' ) ? esc_html( $err( 'blood_bank' ) ) : esc_html__( 'Please choose your district first, then pick a blood bank.', 'lccl-de' ); ?>
+					<?php echo $err( 'blood_bank' ) ? esc_html( $err( 'blood_bank' ) ) : esc_html__( 'Please select your district first, then select a blood bank.', 'lccl-de' ); ?>
 				</p>
 			</div>
 

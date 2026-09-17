@@ -905,6 +905,10 @@
 	line-height: 1.35;
 }
 
+.lccl-bda .lccl-bda__field-notice[hidden] {
+	display: none;
+}
+
 .lccl-bda .lccl-bda__dialog {
 	position: fixed;
 	inset: 0;
