@@ -34,7 +34,7 @@ if ( $can_view && $user instanceof WP_User ) {
 
 			<form class="lccl-bda__form" data-form="login" novalidate>
 				<div class="lccl-bda__field">
-					<label class="lccl-bda__label" for="lccl-bda-username"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
+					<label class="lccl-bda__label" id="lccl-bda-username-label" for="lccl-bda-username"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
 					<input class="lccl-bda__input" type="text" id="lccl-bda-username" name="username" autocomplete="username" required>
 				</div>
 				<div class="lccl-bda__field">
@@ -64,14 +64,14 @@ if ( $can_view && $user instanceof WP_User ) {
 			</div>
 			<p class="lccl-bda__brand">LCCL</p>
 			<h2 class="lccl-bda__title"><?php esc_html_e( 'Reset password', 'lccl-de' ); ?></h2>
-			<p class="lccl-bda__lede"><?php esc_html_e( 'Enter your username or email. We will send a reset link if the account exists.', 'lccl-de' ); ?></p>
+			<p class="lccl-bda__lede" id="lccl-bda-forgot-lede"><?php esc_html_e( 'Enter your username or email. We will send a reset link if the account exists.', 'lccl-de' ); ?></p>
 
 			<p class="lccl-bda__banner lccl-bda__banner--error" data-forgot-error hidden></p>
 			<p class="lccl-bda__banner lccl-bda__banner--success" data-forgot-notice hidden></p>
 
 			<form class="lccl-bda__form" data-form="forgot" novalidate>
 				<div class="lccl-bda__field">
-					<label class="lccl-bda__label" for="lccl-bda-forgot-user"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
+					<label class="lccl-bda__label" id="lccl-bda-forgot-user-label" for="lccl-bda-forgot-user"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
 					<input class="lccl-bda__input" type="text" id="lccl-bda-forgot-user" name="username" autocomplete="username" required>
 				</div>
 				<div class="lccl-bda__hp" aria-hidden="true">
