@@ -23,16 +23,6 @@ class LCCL_DE_Notify {
 	const DIALOG_SMS = 'https://e-sms.dialog.lk/api/v1/sms';
 
 	/**
-	 * Dialog portal username.
-	 */
-	const DIALOG_USER = 'lionsclubadmin2';
-
-	/**
-	 * Dialog portal password.
-	 */
-	const DIALOG_PASS = 'Lions@1234';
-
-	/**
 	 * Transient that caches the Dialog bearer token.
 	 */
 	const TOKEN_TRANSIENT = 'lccl_de_dialog_sms_token';
@@ -133,7 +123,7 @@ class LCCL_DE_Notify {
 					'kind'   => 'sms',
 					'ok'     => 0,
 					'to'     => $phone,
-					'detail' => 'Dialog login failed. No bearer token.',
+					'detail' => 'Dialog login failed. Check the SMS API key and password, then try again.',
 				)
 			);
 			return;
@@ -199,6 +189,12 @@ class LCCL_DE_Notify {
 	 * @return string
 	 */
 	private static function dialog_token() {
+		$key      = LCCL_DE_Settings::sms_api_key();
+		$password = LCCL_DE_Settings::sms_password();
+		if ( '' === $key || '' === $password ) {
+			return '';
+		}
+
 		$cached = get_transient( self::TOKEN_TRANSIENT );
 		if ( is_string( $cached ) && '' !== $cached ) {
 			return $cached;
@@ -213,8 +209,8 @@ class LCCL_DE_Notify {
 				),
 				'body'    => wp_json_encode(
 					array(
-						'username' => self::DIALOG_USER,
-						'password' => self::DIALOG_PASS,
+						'username' => $key,
+						'password' => $password,
 					)
 				),
 			)

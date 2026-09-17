@@ -51,11 +51,16 @@ class LCCL_DE_Settings {
 				'donor_sms'     => 1,
 				'donor_email'   => 1,
 				'admin_email'   => 1,
+				'sms_api_key'   => '',
+				'sms_password'  => '',
 			)
 		);
 
 		$settings['admin_addresses'] = self::emails_from_stored( $stored );
 		$settings['admin_address']   = isset( $settings['admin_addresses'][0] ) ? $settings['admin_addresses'][0] : '';
+		$settings['sms_api_key']     = isset( $stored['sms_api_key'] ) ? (string) $stored['sms_api_key'] : '';
+		$settings['sms_password']    = isset( $stored['sms_password'] ) ? (string) $stored['sms_password'] : '';
+		$settings['sms_ready']       = '' !== $settings['sms_api_key'] && '' !== $settings['sms_password'];
 
 		return $settings;
 	}
@@ -78,8 +83,14 @@ class LCCL_DE_Settings {
 	 * @return array{donor_sms:int,donor_email:int,admin_email:int,admin_addresses:array,admin_address:string}
 	 */
 	public static function save( $input ) {
-		$clean = self::sanitize( $input );
+		$before = self::get();
+		$clean  = self::sanitize( $input );
 		update_option( self::OPTION, $clean );
+
+		if ( $before['sms_api_key'] !== $clean['sms_api_key'] || $before['sms_password'] !== $clean['sms_password'] ) {
+			delete_transient( LCCL_DE_Notify::TOKEN_TRANSIENT );
+		}
+
 		return $clean;
 	}
 
@@ -99,12 +110,31 @@ class LCCL_DE_Settings {
 			$addresses = self::admin_addresses();
 		}
 
+		$stored = get_option( self::OPTION, array() );
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+
+		$api_key = array_key_exists( 'sms_api_key', $input )
+			? trim( sanitize_text_field( (string) $input['sms_api_key'] ) )
+			: ( isset( $stored['sms_api_key'] ) ? (string) $stored['sms_api_key'] : '' );
+
+		$password = isset( $stored['sms_password'] ) ? (string) $stored['sms_password'] : '';
+		if ( array_key_exists( 'sms_password', $input ) ) {
+			$posted = trim( (string) $input['sms_password'] );
+			if ( '' !== $posted ) {
+				$password = $posted;
+			}
+		}
+
 		return array(
-			'donor_sms'        => self::flag( isset( $input['donor_sms'] ) ? $input['donor_sms'] : 0 ),
-			'donor_email'      => self::flag( isset( $input['donor_email'] ) ? $input['donor_email'] : 0 ),
-			'admin_email'      => self::flag( isset( $input['admin_email'] ) ? $input['admin_email'] : 0 ),
-			'admin_addresses'  => $addresses,
-			'admin_address'    => isset( $addresses[0] ) ? $addresses[0] : '',
+			'donor_sms'       => self::flag( isset( $input['donor_sms'] ) ? $input['donor_sms'] : 0 ),
+			'donor_email'     => self::flag( isset( $input['donor_email'] ) ? $input['donor_email'] : 0 ),
+			'admin_email'     => self::flag( isset( $input['admin_email'] ) ? $input['admin_email'] : 0 ),
+			'admin_addresses' => $addresses,
+			'admin_address'   => isset( $addresses[0] ) ? $addresses[0] : '',
+			'sms_api_key'     => $api_key,
+			'sms_password'    => $password,
 		);
 	}
 
@@ -142,6 +172,26 @@ class LCCL_DE_Settings {
 	public static function admin_address() {
 		$emails = self::admin_addresses();
 		return isset( $emails[0] ) ? $emails[0] : '';
+	}
+
+	/**
+	 * Dialog e-SMS API key saved in wp-admin.
+	 *
+	 * @return string
+	 */
+	public static function sms_api_key() {
+		$settings = self::get();
+		return isset( $settings['sms_api_key'] ) ? (string) $settings['sms_api_key'] : '';
+	}
+
+	/**
+	 * Dialog e-SMS password saved in wp-admin.
+	 *
+	 * @return string
+	 */
+	public static function sms_password() {
+		$settings = self::get();
+		return isset( $settings['sms_password'] ) ? (string) $settings['sms_password'] : '';
 	}
 
 	/**
@@ -265,6 +315,27 @@ class LCCL_DE_Settings {
 	}
 
 	/**
+	 * Error if SMS is on but the Dialog credentials are incomplete.
+	 *
+	 * @return string
+	 */
+	private static function invalid_sms_credentials() {
+		if ( empty( $_POST['donor_sms'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return '';
+		}
+
+		$key = isset( $_POST['sms_api_key'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['sms_api_key'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$posted_pass = isset( $_POST['sms_password'] ) ? trim( (string) wp_unslash( $_POST['sms_password'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$stored_pass = self::sms_password();
+
+		if ( '' === $key || ( '' === $posted_pass && '' === $stored_pass ) ) {
+			return __( 'Enter the SMS gateway API key and password.', 'lccl-de' );
+		}
+
+		return '';
+	}
+
+	/**
 	 * Save toggles or send a test email.
 	 */
 	public static function handle_post() {
@@ -315,6 +386,9 @@ class LCCL_DE_Settings {
 		check_admin_referer( self::NONCE );
 
 		$invalid = self::invalid_posted_address();
+		if ( '' === $invalid ) {
+			$invalid = self::invalid_sms_credentials();
+		}
 		if ( $invalid ) {
 			wp_safe_redirect(
 				LCCL_DE_Admin_Programs::blood_url(

@@ -37,6 +37,28 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 			<input type="checkbox" name="donor_sms" value="1" <?php checked( ! empty( $settings['donor_sms'] ) ); ?>>
 			<span><?php esc_html_e( 'Send an SMS to the person who registered (Dialog e-SMS).', 'lccl-de' ); ?></span>
 		</label>
+		<p>
+			<label for="lccl-de-sms-api-key"><strong><?php esc_html_e( 'SMS API key', 'lccl-de' ); ?></strong></label><br>
+			<input
+				type="text"
+				id="lccl-de-sms-api-key"
+				name="sms_api_key"
+				value="<?php echo esc_attr( isset( $settings['sms_api_key'] ) ? $settings['sms_api_key'] : '' ); ?>"
+				autocomplete="off"
+			>
+		</p>
+		<p>
+			<label for="lccl-de-sms-password"><strong><?php esc_html_e( 'SMS password', 'lccl-de' ); ?></strong></label><br>
+			<input
+				type="password"
+				id="lccl-de-sms-password"
+				name="sms_password"
+				value=""
+				autocomplete="new-password"
+				placeholder="<?php echo ! empty( $settings['sms_password'] ) ? esc_attr__( 'Saved. Leave blank to keep it.', 'lccl-de' ) : ''; ?>"
+			>
+		</p>
+		<p class="lccl-prog__hint"><?php esc_html_e( 'Used only for Dialog e-SMS. Leave the password blank when saving other settings if it is already stored.', 'lccl-de' ); ?></p>
 		<label class="lccl-prog__check">
 			<input type="checkbox" name="donor_email" value="1" <?php checked( ! empty( $settings['donor_email'] ) ); ?>>
 			<span><?php esc_html_e( 'Email the person who registered, if they entered an email address.', 'lccl-de' ); ?></span>
