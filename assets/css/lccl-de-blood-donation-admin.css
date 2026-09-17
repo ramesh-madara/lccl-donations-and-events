@@ -160,13 +160,18 @@
 	font-size: 16px;
 }
 
-#lccl-bda-username-label,
 #lccl-bda-forgot-user-label {
 	padding-top: 0px;
 }
 
-#lccl-bda-forgot-lede {
-	margin-top: 16px;
+.lccl-bda [data-panel="forgot"] .lccl-bda__lede {
+	margin-top: 34px;
+	padding-top: 16px;
+}
+
+.lccl-bda [data-panel="login"] label[for="lccl-bda-username"] {
+	margin-top: 24px;
+	padding-top: 16px;
 }
 
 .lccl-bda .lccl-bda__input,

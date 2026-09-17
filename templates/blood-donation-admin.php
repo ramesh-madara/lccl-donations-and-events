@@ -64,7 +64,7 @@ if ( $can_view && $user instanceof WP_User ) {
 			</div>
 			<p class="lccl-bda__brand">LCCL</p>
 			<h2 class="lccl-bda__title"><?php esc_html_e( 'Reset password', 'lccl-de' ); ?></h2>
-			<p class="lccl-bda__lede" id="lccl-bda-forgot-lede"><?php esc_html_e( 'Enter your username or email. We will send a reset link if the account exists.', 'lccl-de' ); ?></p>
+			<p class="lccl-bda__lede" data-lccl-forgot-lede><?php esc_html_e( 'Enter your username or email. We will send a reset link if the account exists.', 'lccl-de' ); ?></p>
 
 			<p class="lccl-bda__banner lccl-bda__banner--error" data-forgot-error hidden></p>
 			<p class="lccl-bda__banner lccl-bda__banner--success" data-forgot-notice hidden></p>
