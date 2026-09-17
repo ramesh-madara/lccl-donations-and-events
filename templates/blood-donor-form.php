@@ -99,7 +99,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-last-name"
 					name="last_name"
 					value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Doe', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
 					autocomplete="family-name"
 					maxlength="100"
 					required
@@ -119,7 +119,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-address"
 					name="address"
 					value="<?php echo esc_attr( $val( 'address' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'No. 12, Galle Road', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'No. 25, Main Street', 'lccl-de' ); ?>"
 					autocomplete="street-address"
 					maxlength="255"
 					required
@@ -201,7 +201,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					id="lccl-bdf-phone"
 					name="phone"
 					value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
-					placeholder="<?php esc_attr_e( '0712345678 or +94712345678', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( '+94712345678', 'lccl-de' ); ?>"
 					inputmode="tel"
 					autocomplete="tel"
 					maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
@@ -247,7 +247,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					name="blood_bank"
 					aria-describedby="lccl-bdf-blood-bank-notice"
 					data-locked-label="<?php esc_attr_e( 'Select your district first', 'lccl-de' ); ?>"
-					data-ready-label="<?php esc_attr_e( 'Select a blood bank', 'lccl-de' ); ?>"
+					data-ready-label="<?php esc_attr_e( 'Select your preferred blood bank', 'lccl-de' ); ?>"
 					required
 				>
 					<option value=""><?php esc_html_e( 'Select your district first', 'lccl-de' ); ?></option>
@@ -276,7 +276,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<?php esc_html_e( 'How would you prefer to donate?', 'lccl-de' ); ?>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-bdf-donation-preference" name="donation_preference">
-					<option value=""><?php esc_html_e( 'Select a preference', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select your preferred option', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_donation_preferences(), $val( 'donation_preference' ) ); ?>
 				</select>
 			</div>
