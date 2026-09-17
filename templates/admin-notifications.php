@@ -38,7 +38,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 			<span><?php esc_html_e( 'Send an SMS to the person who registered (Dialog e-SMS).', 'lccl-de' ); ?></span>
 		</label>
 		<p>
-			<label for="lccl-de-sms-api-key"><strong><?php esc_html_e( 'SMS API key', 'lccl-de' ); ?></strong></label><br>
+			<label for="lccl-de-sms-api-key"><strong><?php esc_html_e( 'SMS username', 'lccl-de' ); ?></strong></label><br>
 			<input
 				type="text"
 				id="lccl-de-sms-api-key"
@@ -58,7 +58,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 				placeholder="<?php echo ! empty( $settings['sms_password'] ) ? esc_attr__( 'Saved. Leave blank to keep it.', 'lccl-de' ) : ''; ?>"
 			>
 		</p>
-		<p class="lccl-prog__hint"><?php esc_html_e( 'Used only for Dialog e-SMS. Leave the password blank when saving other settings if it is already stored.', 'lccl-de' ); ?></p>
+		<p class="lccl-prog__hint"><?php esc_html_e( 'Dialog e-SMS POST login. Username is the portal / API username (sometimes labelled API key). Leave the password blank when saving other settings if it is already stored. The LCCL sender mask is applied by Dialog — do not put it in the message.', 'lccl-de' ); ?></p>
 		<label class="lccl-prog__check">
 			<input type="checkbox" name="donor_email" value="1" <?php checked( ! empty( $settings['donor_email'] ) ); ?>>
 			<span><?php esc_html_e( 'Email the person who registered, if they entered an email address.', 'lccl-de' ); ?></span>
@@ -104,7 +104,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 <div class="lccl-prog__section">
 	<h2><?php esc_html_e( 'Send a test email', 'lccl-de' ); ?></h2>
 	<p class="lccl-prog__hint">
-		<?php esc_html_e( 'This uses the same wp_mail path as a real registration. If this fails, live notifications will fail the same way.', 'lccl-de' ); ?>
+		<?php esc_html_e( 'Sends the live donor and/or staff templates with sample registration data, using the same wp_mail path as a real signup. The subject is prefixed with [TEST].', 'lccl-de' ); ?>
 	</p>
 
 	<?php if ( ! empty( $smtp ) ) : ?>
@@ -126,6 +126,21 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 				required
 			>
 		</p>
+		<p>
+			<strong><?php esc_html_e( 'Template', 'lccl-de' ); ?></strong>
+		</p>
+		<label class="lccl-prog__check">
+			<input type="radio" name="test_kind" value="donor">
+			<span><?php esc_html_e( 'Donor confirmation email', 'lccl-de' ); ?></span>
+		</label>
+		<label class="lccl-prog__check">
+			<input type="radio" name="test_kind" value="staff">
+			<span><?php esc_html_e( 'Staff notification email', 'lccl-de' ); ?></span>
+		</label>
+		<label class="lccl-prog__check">
+			<input type="radio" name="test_kind" value="both" checked>
+			<span><?php esc_html_e( 'Both templates', 'lccl-de' ); ?></span>
+		</label>
 		<p>
 			<button type="submit" class="button"><?php esc_html_e( 'Send test email', 'lccl-de' ); ?></button>
 		</p>

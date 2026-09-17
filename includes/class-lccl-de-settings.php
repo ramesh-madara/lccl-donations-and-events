@@ -28,16 +28,24 @@ class LCCL_DE_Settings {
 	const NONCE = 'lccl_de_save_notify';
 
 	/**
+	 * Prefix for AES-256-GCM values in the options table.
+	 */
+	const SECRET_PREFIX = 'lccl1:';
+
+	/**
 	 * Hook save handler. The menu lives on LCCL Programs.
 	 */
 	public static function init() {
+		add_action( 'init', array( __CLASS__, 'upgrade_secrets' ), 1 );
 		add_action( 'admin_init', array( __CLASS__, 'handle_post' ) );
 	}
 
 	/**
 	 * Current settings with defaults (all on).
 	 *
-	 * @return array{donor_sms:int,donor_email:int,admin_email:int,admin_addresses:array,admin_address:string}
+	 * SMS username and password are decrypted in memory only.
+	 *
+	 * @return array{donor_sms:int,donor_email:int,admin_email:int,admin_addresses:array,admin_address:string,sms_api_key:string,sms_password:string}
 	 */
 	public static function get() {
 		$stored = get_option( self::OPTION, array() );
@@ -58,8 +66,8 @@ class LCCL_DE_Settings {
 
 		$settings['admin_addresses'] = self::emails_from_stored( $stored );
 		$settings['admin_address']   = isset( $settings['admin_addresses'][0] ) ? $settings['admin_addresses'][0] : '';
-		$settings['sms_api_key']     = isset( $stored['sms_api_key'] ) ? (string) $stored['sms_api_key'] : '';
-		$settings['sms_password']    = isset( $stored['sms_password'] ) ? (string) $stored['sms_password'] : '';
+		$settings['sms_api_key']     = self::decrypt_secret( isset( $stored['sms_api_key'] ) ? $stored['sms_api_key'] : '' );
+		$settings['sms_password']    = self::decrypt_secret( isset( $stored['sms_password'] ) ? $stored['sms_password'] : '' );
 		$settings['sms_ready']       = '' !== $settings['sms_api_key'] && '' !== $settings['sms_password'];
 
 		return $settings;
@@ -85,7 +93,7 @@ class LCCL_DE_Settings {
 	public static function save( $input ) {
 		$before = self::get();
 		$clean  = self::sanitize( $input );
-		update_option( self::OPTION, $clean );
+		update_option( self::OPTION, self::with_encrypted_secrets( $clean ) );
 
 		if ( $before['sms_api_key'] !== $clean['sms_api_key'] || $before['sms_password'] !== $clean['sms_password'] ) {
 			delete_transient( LCCL_DE_Notify::TOKEN_TRANSIENT );
@@ -117,9 +125,9 @@ class LCCL_DE_Settings {
 
 		$api_key = array_key_exists( 'sms_api_key', $input )
 			? trim( sanitize_text_field( (string) $input['sms_api_key'] ) )
-			: ( isset( $stored['sms_api_key'] ) ? (string) $stored['sms_api_key'] : '' );
+			: self::decrypt_secret( isset( $stored['sms_api_key'] ) ? $stored['sms_api_key'] : '' );
 
-		$password = isset( $stored['sms_password'] ) ? (string) $stored['sms_password'] : '';
+		$password = self::decrypt_secret( isset( $stored['sms_password'] ) ? $stored['sms_password'] : '' );
 		if ( array_key_exists( 'sms_password', $input ) ) {
 			$posted = trim( (string) $input['sms_password'] );
 			if ( '' !== $posted ) {
@@ -136,6 +144,122 @@ class LCCL_DE_Settings {
 			'sms_api_key'     => $api_key,
 			'sms_password'    => $password,
 		);
+	}
+
+	/**
+	 * Encrypt any SMS secrets still stored as plain text.
+	 */
+	public static function upgrade_secrets() {
+		$stored = get_option( self::OPTION, array() );
+		if ( ! is_array( $stored ) ) {
+			return;
+		}
+
+		$key_raw  = isset( $stored['sms_api_key'] ) ? (string) $stored['sms_api_key'] : '';
+		$pass_raw = isset( $stored['sms_password'] ) ? (string) $stored['sms_password'] : '';
+		if ( ! self::secret_is_plain( $key_raw ) && ! self::secret_is_plain( $pass_raw ) ) {
+			return;
+		}
+
+		$stored['sms_api_key']  = self::encrypt_secret( self::decrypt_secret( $key_raw ) );
+		$stored['sms_password'] = self::encrypt_secret( self::decrypt_secret( $pass_raw ) );
+		update_option( self::OPTION, $stored );
+	}
+
+	/**
+	 * Copy of settings with SMS secrets encrypted for the options table.
+	 *
+	 * @param array $clean Sanitised in-memory values.
+	 * @return array
+	 */
+	private static function with_encrypted_secrets( array $clean ) {
+		$clean['sms_api_key']  = self::encrypt_secret( isset( $clean['sms_api_key'] ) ? $clean['sms_api_key'] : '' );
+		$clean['sms_password'] = self::encrypt_secret( isset( $clean['sms_password'] ) ? $clean['sms_password'] : '' );
+		return $clean;
+	}
+
+	/**
+	 * Whether a stored secret is non-empty plain text.
+	 *
+	 * @param string $value Raw option value.
+	 * @return bool
+	 */
+	private static function secret_is_plain( $value ) {
+		$value = (string) $value;
+		return '' !== $value && 0 !== strpos( $value, self::SECRET_PREFIX );
+	}
+
+	/**
+	 * AES-256-GCM encrypt a Dialog credential. Empty stays empty.
+	 *
+	 * @param string $plain Decrypted value.
+	 * @return string
+	 */
+	private static function encrypt_secret( $plain ) {
+		$plain = (string) $plain;
+		if ( '' === $plain ) {
+			return '';
+		}
+
+		$key = self::secret_key();
+		if ( '' === $key ) {
+			return $plain;
+		}
+
+		$iv  = random_bytes( 12 );
+		$tag = '';
+		$raw = openssl_encrypt( $plain, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag, '', 16 );
+		if ( false === $raw || 16 !== strlen( $tag ) ) {
+			return $plain;
+		}
+
+		return self::SECRET_PREFIX . base64_encode( $iv . $tag . $raw );
+	}
+
+	/**
+	 * Decrypt a Dialog credential. Legacy plain text is returned as-is.
+	 *
+	 * @param mixed $stored Raw option value.
+	 * @return string
+	 */
+	private static function decrypt_secret( $stored ) {
+		$stored = (string) $stored;
+		if ( '' === $stored ) {
+			return '';
+		}
+
+		if ( 0 !== strpos( $stored, self::SECRET_PREFIX ) ) {
+			return $stored;
+		}
+
+		$key = self::secret_key();
+		if ( '' === $key ) {
+			return '';
+		}
+
+		$blob = base64_decode( substr( $stored, strlen( self::SECRET_PREFIX ) ), true );
+		if ( false === $blob || strlen( $blob ) < 29 ) {
+			return '';
+		}
+
+		$iv     = substr( $blob, 0, 12 );
+		$tag    = substr( $blob, 12, 16 );
+		$cipher = substr( $blob, 28 );
+		$plain  = openssl_decrypt( $cipher, 'aes-256-gcm', $key, OPENSSL_RAW_DATA, $iv, $tag );
+		return false === $plain ? '' : $plain;
+	}
+
+	/**
+	 * 32-byte key from WordPress salts in wp-config.php, not from the database.
+	 *
+	 * @return string
+	 */
+	private static function secret_key() {
+		if ( ! function_exists( 'openssl_encrypt' ) ) {
+			return '';
+		}
+
+		return hash( 'sha256', 'lccl-de-sms-v1|' . wp_salt( 'auth' ) . '|' . wp_salt( 'secure_auth' ), true );
 	}
 
 	/**
@@ -329,7 +453,7 @@ class LCCL_DE_Settings {
 		$stored_pass = self::sms_password();
 
 		if ( '' === $key || ( '' === $posted_pass && '' === $stored_pass ) ) {
-			return __( 'Enter the SMS gateway API key and password.', 'lccl-de' );
+			return __( 'Enter the SMS username and password.', 'lccl-de' );
 		}
 
 		return '';
@@ -366,7 +490,8 @@ class LCCL_DE_Settings {
 				exit;
 			}
 
-			$ok = LCCL_DE_Notify::send_test( $to );
+			$kind = isset( $_POST['test_kind'] ) ? sanitize_key( wp_unslash( $_POST['test_kind'] ) ) : 'both'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$ok   = LCCL_DE_Notify::send_test( $to, $kind );
 
 			wp_safe_redirect(
 				LCCL_DE_Admin_Programs::blood_url(
