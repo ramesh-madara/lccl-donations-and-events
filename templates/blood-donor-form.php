@@ -22,12 +22,14 @@ $err  = static function ( $key ) use ( $errors ) {
 $invalid = static function ( $key ) use ( $errors ) {
 	return isset( $errors[ $key ] ) ? ' lccl-bdf__field--invalid' : '';
 };
-$notice = static function ( $key, $fallback = '' ) use ( $err ) {
+$notice = static function ( $key ) use ( $err ) {
 	$msg = $err( $key );
-	$text = '' !== $msg ? $msg : $fallback;
-	echo '<p class="lccl-bdf__notice" data-lccl-notice="' . esc_attr( $key ) . '" role="alert"' . ( $msg ? '' : ' hidden' ) . '>';
-	echo $text ? esc_html( $text ) : '';
-	echo '</p>';
+	printf(
+		'<p class="lccl-bdf__notice" data-lccl-notice="%1$s" role="alert"%2$s>%3$s</p>',
+		esc_attr( $key ),
+		$msg ? '' : ' hidden',
+		$msg ? esc_html( $msg ) : ''
+	);
 };
 ?>
 <div class="lccl-bdf">
@@ -35,8 +37,7 @@ $notice = static function ( $key, $fallback = '' ) use ( $err ) {
 		class="lccl-bdf__form"
 		method="post"
 		action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
-		data-lccl-required-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::required_field_message() ); ?>"
-		data-lccl-bank-district-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::blood_bank_district_message() ); ?>"
+		data-required-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::required_field_message() ); ?>"
 		novalidate
 	>
 
@@ -57,7 +58,7 @@ $notice = static function ( $key, $fallback = '' ) use ( $err ) {
 		<?php endif; ?>
 
 		<p class="lccl-bdf__banner lccl-bdf__banner--error" data-lccl-notice="required" role="alert" hidden>
-			<?php echo esc_html( LCCL_DE_Blood_Donor_Submissions::required_banner_message() ); ?>
+			<?php esc_html_e( 'Please complete all fields marked with an *.', 'lccl-de' ); ?>
 		</p>
 
 		<header class="lccl-bdf__header">
@@ -169,7 +170,12 @@ $notice = static function ( $key, $fallback = '' ) use ( $err ) {
 					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::postal_error_message() ); ?>"
 					required
 				>
-				<?php $notice( 'postal_code' ); ?>
+				<p
+					class="lccl-bdf__notice"
+					data-lccl-notice="postal_code"
+					role="alert"
+					<?php echo $err( 'postal_code' ) ? '' : 'hidden'; ?>
+				><?php echo $err( 'postal_code' ) ? esc_html( $err( 'postal_code' ) ) : ''; ?></p>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
@@ -215,7 +221,12 @@ $notice = static function ( $key, $fallback = '' ) use ( $err ) {
 					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
 					required
 				>
-				<?php $notice( 'phone' ); ?>
+				<p
+					class="lccl-bdf__notice"
+					data-lccl-notice="phone"
+					role="alert"
+					<?php echo $err( 'phone' ) ? '' : 'hidden'; ?>
+				><?php echo $err( 'phone' ) ? esc_html( $err( 'phone' ) ) : ''; ?></p>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'district' ) ); ?>">
@@ -244,6 +255,7 @@ $notice = static function ( $key, $fallback = '' ) use ( $err ) {
 					class="lccl-bdf__select"
 					id="lccl-bdf-blood-bank"
 					name="blood_bank"
+					aria-describedby="lccl-bdf-blood-bank-notice"
 					data-locked-label="<?php esc_attr_e( 'Select your district first', 'lccl-de' ); ?>"
 					data-ready-label="<?php esc_attr_e( 'Select your preferred blood bank', 'lccl-de' ); ?>"
 					required
@@ -258,7 +270,16 @@ $notice = static function ( $key, $fallback = '' ) use ( $err ) {
 						</optgroup>
 					<?php endforeach; ?>
 				</select>
-				<?php $notice( 'blood_bank', LCCL_DE_Blood_Donor_Submissions::blood_bank_district_message() ); ?>
+				<p
+					class="lccl-bdf__notice"
+					id="lccl-bdf-blood-bank-notice"
+					data-lccl-notice="blood_bank"
+					data-locked-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::blood_bank_district_message() ); ?>"
+					role="status"
+					<?php echo $err( 'blood_bank' ) ? '' : 'hidden'; ?>
+				>
+					<?php echo $err( 'blood_bank' ) ? esc_html( $err( 'blood_bank' ) ) : esc_html( LCCL_DE_Blood_Donor_Submissions::blood_bank_district_message() ); ?>
+				</p>
 			</div>
 
 			<div class="lccl-bdf__field">

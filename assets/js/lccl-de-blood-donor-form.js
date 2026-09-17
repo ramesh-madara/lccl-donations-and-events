@@ -38,7 +38,10 @@
 			if ( ! notice ) {
 				return;
 			}
-			notice.textContent = form.getAttribute( 'data-lccl-bank-district-message' ) || notice.textContent;
+			var lockedMessage = notice.getAttribute( 'data-locked-message' );
+			if ( lockedMessage ) {
+				notice.textContent = lockedMessage;
+			}
 			notice.hidden = false;
 		}
 
@@ -317,6 +320,8 @@
 
 		postal.addEventListener( 'blur', function () {
 			if ( ! isFilled( postal ) ) {
+				markField( postal, true );
+				setNotice( form, 'postal_code', form.getAttribute( 'data-required-message' ) || '' );
 				return;
 			}
 			var ok = isValidPostal( postal.value );
@@ -353,7 +358,7 @@
 		var email = form.querySelector( '[data-lccl-validate="email"]' );
 		var postal = form.querySelector( '[data-lccl-validate="postal"]' );
 		var contactMethod = form.querySelector( '[name="contact_method"]' );
-		var requiredMessage = form.getAttribute( 'data-lccl-required-message' ) || 'This field is required.';
+		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
 
 		form.addEventListener( 'submit', function ( event ) {
 			var required = form.querySelectorAll( '[required]' );
@@ -361,22 +366,21 @@
 			var missingRequired = false;
 
 			Array.prototype.forEach.call( required, function ( field ) {
-				var invalid;
-
-				if ( field === bank && isLocked() ) {
-					return;
-				}
-
-				invalid = ! isFilled( field );
+				var invalid = ! isFilled( field );
+				var name = field.getAttribute( 'name' ) || '';
 				markField( field, invalid );
 				if ( invalid ) {
-					setNotice( form, field.name, requiredMessage );
-					missingRequired = true;
+					if ( 'blood_bank' === name && isLocked() ) {
+						showNotice();
+					} else {
+						setNotice( form, name, requiredMsg );
+					}
 					if ( ! firstInvalid ) {
 						firstInvalid = field;
 					}
-				} else if ( field !== postal && field !== phone && field !== email ) {
-					setNotice( form, field.name, '' );
+					missingRequired = true;
+				} else if ( 'blood_bank' !== name || ! isLocked() ) {
+					setNotice( form, name, '' );
 				}
 			} );
 
@@ -435,7 +439,10 @@
 			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) || 'postal' === event.target.getAttribute( 'data-lccl-validate' ) ) {
 				return;
 			}
-			markField( event.target, ! isFilled( event.target ) );
+			if ( isFilled( event.target ) ) {
+				markField( event.target, false );
+				setNotice( form, event.target.getAttribute( 'name' ) || '', '' );
+			}
 		} );
 
 		form.addEventListener( 'change', function ( event ) {
@@ -445,7 +452,10 @@
 			if ( 'phone' === event.target.getAttribute( 'data-lccl-validate' ) || 'postal' === event.target.getAttribute( 'data-lccl-validate' ) ) {
 				return;
 			}
-			markField( event.target, ! isFilled( event.target ) );
+			if ( isFilled( event.target ) ) {
+				markField( event.target, false );
+				setNotice( form, event.target.getAttribute( 'name' ) || '', '' );
+			}
 		} );
 	}
 

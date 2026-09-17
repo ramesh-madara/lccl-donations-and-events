@@ -734,15 +734,15 @@
 		function validateEdit( form, values ) {
 			var errors = {};
 			var required = {
-				first_name: 'This field is required.',
-				last_name: 'This field is required.',
-				address: 'This field is required.',
-				city: 'This field is required.',
-				postal_code: 'This field is required.',
-				phone: 'This field is required.',
-				district: 'This field is required.',
-				blood_bank: 'This field is required.',
-				contact_method: 'This field is required.'
+				first_name: 'Please enter your first name.',
+				last_name: 'Please enter your last name.',
+				address: 'Please enter your address.',
+				city: 'Please enter your city.',
+				postal_code: 'Please enter a 5-digit postal code.',
+				phone: 'Please enter your phone number.',
+				district: 'Please choose your district.',
+				blood_bank: 'Please choose a blood bank.',
+				contact_method: 'Please choose a preferred contact method.'
 			};
 			Object.keys( required ).forEach( function ( name ) {
 				if ( ! values[ name ] ) {
