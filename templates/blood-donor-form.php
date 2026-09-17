@@ -35,8 +35,8 @@ $invalid = static function ( $key ) use ( $errors ) {
 			<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status">
 				<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
 				<span class="lccl-bdf__banner-copy">
-					<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Thank you.', 'lccl-de' ); ?></strong>
-					<span class="lccl-bdf__banner-text"><?php esc_html_e( 'Your registration has been received.', 'lccl-de' ); ?></span>
+					<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Thank you for registering.', 'lccl-de' ); ?></strong>
+					<span class="lccl-bdf__banner-text"><?php esc_html_e( 'Your registration has been successfully received.', 'lccl-de' ); ?></span>
 				</span>
 			</p>
 		<?php endif; ?>

@@ -199,7 +199,7 @@ class LCCL_DE_Notify {
 
 		$bank    = self::bank_label( $values );
 		$message = sprintf(
-			'Thank you for registering your interest in blood donation. Your registration has been successfully received. Preferred blood bank: %s.',
+			'Thank you for registering as a blood donor. Your registration has been successfully received. Preferred blood bank : %s.',
 			$bank
 		);
 
