@@ -22,12 +22,21 @@ $err  = static function ( $key ) use ( $errors ) {
 $invalid = static function ( $key ) use ( $errors ) {
 	return isset( $errors[ $key ] ) ? ' lccl-bdf__field--invalid' : '';
 };
+$notice = static function ( $key, $fallback = '' ) use ( $err ) {
+	$msg = $err( $key );
+	$text = '' !== $msg ? $msg : $fallback;
+	echo '<p class="lccl-bdf__notice" data-lccl-notice="' . esc_attr( $key ) . '" role="alert"' . ( $msg ? '' : ' hidden' ) . '>';
+	echo $text ? esc_html( $text ) : '';
+	echo '</p>';
+};
 ?>
 <div class="lccl-bdf">
 	<form
 		class="lccl-bdf__form"
 		method="post"
 		action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>"
+		data-lccl-required-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::required_field_message() ); ?>"
+		data-lccl-bank-district-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::blood_bank_district_message() ); ?>"
 		novalidate
 	>
 
@@ -48,7 +57,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 		<?php endif; ?>
 
 		<p class="lccl-bdf__banner lccl-bdf__banner--error" data-lccl-notice="required" role="alert" hidden>
-			<?php esc_html_e( 'Please fill in all required fields marked with an asterisk.', 'lccl-de' ); ?>
+			<?php echo esc_html( LCCL_DE_Blood_Donor_Submissions::required_banner_message() ); ?>
 		</p>
 
 		<header class="lccl-bdf__header">
@@ -84,9 +93,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					maxlength="100"
 					required
 				>
-				<?php if ( $err( 'first_name' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'first_name' ) ); ?></p>
-				<?php endif; ?>
+				<?php $notice( 'first_name' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
@@ -104,9 +111,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					maxlength="100"
 					required
 				>
-				<?php if ( $err( 'last_name' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'last_name' ) ); ?></p>
-				<?php endif; ?>
+				<?php $notice( 'last_name' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'address' ) ); ?>">
@@ -124,9 +129,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					maxlength="255"
 					required
 				>
-				<?php if ( $err( 'address' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'address' ) ); ?></p>
-				<?php endif; ?>
+				<?php $notice( 'address' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'city' ) ); ?>">
@@ -144,9 +147,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					maxlength="100"
 					required
 				>
-				<?php if ( $err( 'city' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'city' ) ); ?></p>
-				<?php endif; ?>
+				<?php $notice( 'city' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'postal_code' ) ); ?>">
@@ -168,12 +169,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::postal_error_message() ); ?>"
 					required
 				>
-				<p
-					class="lccl-bdf__notice"
-					data-lccl-notice="postal_code"
-					role="alert"
-					<?php echo $err( 'postal_code' ) ? '' : 'hidden'; ?>
-				><?php echo $err( 'postal_code' ) ? esc_html( $err( 'postal_code' ) ) : ''; ?></p>
+				<?php $notice( 'postal_code' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
@@ -219,12 +215,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
 					required
 				>
-				<p
-					class="lccl-bdf__notice"
-					data-lccl-notice="phone"
-					role="alert"
-					<?php echo $err( 'phone' ) ? '' : 'hidden'; ?>
-				><?php echo $err( 'phone' ) ? esc_html( $err( 'phone' ) ) : ''; ?></p>
+				<?php $notice( 'phone' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'district' ) ); ?>">
@@ -235,9 +226,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<option value=""><?php esc_html_e( 'Select your district', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_districts(), $val( 'district' ) ); ?>
 				</select>
-				<?php if ( $err( 'district' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'district' ) ); ?></p>
-				<?php endif; ?>
+				<?php $notice( 'district' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'blood_bank' ) ); ?>">
@@ -255,7 +244,6 @@ $invalid = static function ( $key ) use ( $errors ) {
 					class="lccl-bdf__select"
 					id="lccl-bdf-blood-bank"
 					name="blood_bank"
-					aria-describedby="lccl-bdf-blood-bank-notice"
 					data-locked-label="<?php esc_attr_e( 'Select your district first', 'lccl-de' ); ?>"
 					data-ready-label="<?php esc_attr_e( 'Select your preferred blood bank', 'lccl-de' ); ?>"
 					required
@@ -270,15 +258,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 						</optgroup>
 					<?php endforeach; ?>
 				</select>
-				<p
-					class="lccl-bdf__notice"
-					id="lccl-bdf-blood-bank-notice"
-					data-lccl-notice="blood_bank"
-					role="status"
-					<?php echo $err( 'blood_bank' ) ? '' : 'hidden'; ?>
-				>
-					<?php echo $err( 'blood_bank' ) ? esc_html( $err( 'blood_bank' ) ) : esc_html__( 'Please select your district first, then select a blood bank.', 'lccl-de' ); ?>
-				</p>
+				<?php $notice( 'blood_bank', LCCL_DE_Blood_Donor_Submissions::blood_bank_district_message() ); ?>
 			</div>
 
 			<div class="lccl-bdf__field">
@@ -309,9 +289,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<option value=""><?php esc_html_e( 'Select a contact method', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::get_contact_methods(), $val( 'contact_method' ) ); ?>
 				</select>
-				<?php if ( $err( 'contact_method' ) ) : ?>
-					<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'contact_method' ) ); ?></p>
-				<?php endif; ?>
+				<?php $notice( 'contact_method' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full">
@@ -355,9 +333,7 @@ $invalid = static function ( $key ) use ( $errors ) {
 					<span class="lccl-bdf__req">*</span>
 				</span>
 			</label>
-			<?php if ( $err( 'consent' ) ) : ?>
-				<p class="lccl-bdf__notice"><?php echo esc_html( $err( 'consent' ) ); ?></p>
-			<?php endif; ?>
+			<?php $notice( 'consent' ); ?>
 		</section>
 
 		<div class="lccl-bdf__hp" aria-hidden="true">

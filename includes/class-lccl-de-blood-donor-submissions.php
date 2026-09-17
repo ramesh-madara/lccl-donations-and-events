@@ -249,25 +249,36 @@ class LCCL_DE_Blood_Donor_Submissions {
 	public static function validate( array $values, $require_consent = true ) {
 		$errors   = array();
 		$required = array(
-			'first_name'     => __( 'Please enter your first name.', 'lccl-de' ),
-			'last_name'      => __( 'Please enter your last name.', 'lccl-de' ),
-			'address'        => __( 'Please enter your address.', 'lccl-de' ),
-			'city'           => __( 'Please enter your city.', 'lccl-de' ),
-			'postal_code'    => __( 'Please enter a 5-digit postal code.', 'lccl-de' ),
-			'phone'          => __( 'Please enter your phone number.', 'lccl-de' ),
-			'district'       => __( 'Please choose your district.', 'lccl-de' ),
-			'blood_bank'     => __( 'Please choose a blood bank.', 'lccl-de' ),
-			'contact_method' => __( 'Please choose a preferred contact method.', 'lccl-de' ),
+			'first_name',
+			'last_name',
+			'address',
+			'city',
+			'postal_code',
+			'phone',
+			'district',
+			'blood_bank',
+			'contact_method',
 		);
+		$missing = false;
 
-		foreach ( $required as $field => $message ) {
+		foreach ( $required as $field ) {
 			if ( '' === $values[ $field ] ) {
-				$errors[ $field ] = $message;
+				$errors[ $field ] = self::required_field_message();
+				$missing          = true;
 			}
 		}
 
 		if ( $require_consent && empty( $values['consent'] ) ) {
-			$errors['consent'] = __( 'Please confirm that you consent to your information being used.', 'lccl-de' );
+			$errors['consent'] = self::required_field_message();
+			$missing           = true;
+		}
+
+		if ( $missing ) {
+			$errors['form'] = self::required_banner_message();
+		}
+
+		if ( '' === $values['district'] ) {
+			$errors['blood_bank'] = self::blood_bank_district_message();
 		}
 
 		if ( '' !== $values['phone'] && ! self::is_valid_sl_phone( $values['phone'] ) ) {
@@ -336,6 +347,33 @@ class LCCL_DE_Blood_Donor_Submissions {
 	 */
 	public static function postal_error_message() {
 		return __( 'Enter a 5-digit postal code. Numbers only.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown under an empty required field.
+	 *
+	 * @return string
+	 */
+	public static function required_field_message() {
+		return __( 'This field is required.', 'lccl-de' );
+	}
+
+	/**
+	 * Top-of-form message when required fields are empty.
+	 *
+	 * @return string
+	 */
+	public static function required_banner_message() {
+		return __( 'Please complete all fields marked with an *.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when Preferred Blood Bank is used before a district.
+	 *
+	 * @return string
+	 */
+	public static function blood_bank_district_message() {
+		return __( 'Please select your district first, then select a blood bank.', 'lccl-de' );
 	}
 
 	/**

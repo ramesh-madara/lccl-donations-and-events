@@ -38,6 +38,7 @@
 			if ( ! notice ) {
 				return;
 			}
+			notice.textContent = form.getAttribute( 'data-lccl-bank-district-message' ) || notice.textContent;
 			notice.hidden = false;
 		}
 
@@ -315,6 +316,9 @@
 		} );
 
 		postal.addEventListener( 'blur', function () {
+			if ( ! isFilled( postal ) ) {
+				return;
+			}
 			var ok = isValidPostal( postal.value );
 			markField( postal, ! ok );
 			setNotice( form, 'postal_code', ok ? '' : postal.getAttribute( 'data-invalid-message' ) || '' );
@@ -349,6 +353,7 @@
 		var email = form.querySelector( '[data-lccl-validate="email"]' );
 		var postal = form.querySelector( '[data-lccl-validate="postal"]' );
 		var contactMethod = form.querySelector( '[name="contact_method"]' );
+		var requiredMessage = form.getAttribute( 'data-lccl-required-message' ) || 'This field is required.';
 
 		form.addEventListener( 'submit', function ( event ) {
 			var required = form.querySelectorAll( '[required]' );
@@ -356,11 +361,22 @@
 			var missingRequired = false;
 
 			Array.prototype.forEach.call( required, function ( field ) {
-				var invalid = ! isFilled( field );
+				var invalid;
+
+				if ( field === bank && isLocked() ) {
+					return;
+				}
+
+				invalid = ! isFilled( field );
 				markField( field, invalid );
-				if ( invalid && ! firstInvalid ) {
-					firstInvalid = field;
+				if ( invalid ) {
+					setNotice( form, field.name, requiredMessage );
 					missingRequired = true;
+					if ( ! firstInvalid ) {
+						firstInvalid = field;
+					}
+				} else if ( field !== postal && field !== phone && field !== email ) {
+					setNotice( form, field.name, '' );
 				}
 			} );
 
@@ -384,13 +400,13 @@
 				setNotice( form, 'phone', '' );
 			}
 
-			if ( postal && ! isValidPostal( postal.value ) ) {
+			if ( postal && isFilled( postal ) && ! isValidPostal( postal.value ) ) {
 				markField( postal, true );
 				setNotice( form, 'postal_code', postal.getAttribute( 'data-invalid-message' ) || '' );
 				if ( ! firstInvalid ) {
 					firstInvalid = postal;
 				}
-			} else if ( postal ) {
+			} else if ( postal && isFilled( postal ) ) {
 				setNotice( form, 'postal_code', '' );
 			}
 
