@@ -886,10 +886,10 @@
 			addPersonField( grid, 'District', item.district, '', true );
 			addPersonField( grid, 'Blood bank', item.blood_bank_label || item.blood_bank, '', true );
 			addPersonField( grid, 'Donation preference', item.donation_preference_label );
-			addPersonField( grid, 'Donated before', item.donated_before_label );
-			addPersonField( grid, 'Contact method', item.contact_label );
-			addPersonField( grid, 'Notify about campaigns', item.notify_campaigns ? 'Yes' : 'No' );
-			addPersonField( grid, 'Registered', item.created_label );
+			addPersonField( grid, 'Previous blood donation', item.donated_before_label );
+			addPersonField( grid, 'Preferred contact method', item.contact_label );
+			addPersonField( grid, 'Campaign notifications', item.notify_campaigns ? 'Yes' : 'No' );
+			addPersonField( grid, 'Registration date', item.created_label );
 			addPersonField( grid, 'Updated', item.updated_label );
 			addPersonField( grid, 'Updated by', item.updated_by_label );
 			panel.appendChild( grid );
@@ -968,7 +968,7 @@
 			addEditControl(
 				grid,
 				'donated_before',
-				'Donated before',
+				'Previous blood donation',
 				( function () {
 					var select = el( 'select', 'lccl-bda__select' );
 					fillOptions( select, cfg.history || {}, item.donated_before, 'Select an option' );
@@ -978,19 +978,19 @@
 			contact = addEditControl(
 				grid,
 				'contact_method',
-				'Contact method',
+				'Preferred contact method',
 				( function () {
 					var select = el( 'select', 'lccl-bda__select' );
 					fillOptions( select, cfg.contactMethods || {}, item.contact_method, 'Select a contact method' );
 					return select;
 				}() )
 			);
-			notify = addEditControl( grid, 'notify_campaigns', 'Notification status', el( 'select', 'lccl-bda__select' ) );
+			notify = addEditControl( grid, 'notify_campaigns', 'Campaign notifications', el( 'select', 'lccl-bda__select' ) );
 			notify.appendChild( new Option( 'Subscribed', '1' ) );
 			notify.appendChild( new Option( 'Not Subscribed.', '0' ) );
 			notify.value = item.notify_campaigns ? '1' : '0';
 
-			addPersonField( grid, 'Registered', item.created_label );
+			addPersonField( grid, 'Registration date', item.created_label );
 			addPersonField( grid, 'Updated', item.updated_label );
 			addPersonField( grid, 'Updated by', item.updated_by_label );
 

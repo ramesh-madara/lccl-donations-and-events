@@ -157,7 +157,7 @@ if ( $can_view && $user instanceof WP_User ) {
 								<th class="lccl-bda__col-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-district"><?php esc_html_e( 'District', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-bank"><?php esc_html_e( 'Blood bank', 'lccl-de' ); ?></th>
-								<th class="lccl-bda__col-notify"><?php esc_html_e( 'Notify', 'lccl-de' ); ?></th>
+								<th class="lccl-bda__col-notify"><?php esc_html_e( 'Notification', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Registered', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-expand"><span class="screen-reader-text"><?php esc_html_e( 'Details', 'lccl-de' ); ?></span></th>
 							</tr>
