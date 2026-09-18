@@ -297,7 +297,7 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Create or recover a published page by slug.
+	 * Create the plugin dashboard page if it is missing. Never edit or delete editor pages.
 	 *
 	 * @param string $option  Option that stores the page ID.
 	 * @param string $slug    post_name.
@@ -310,8 +310,7 @@ class LCCL_DE_Roles {
 
 		if ( $page_id ) {
 			$page = get_post( $page_id );
-			if ( $page && 'page' === $page->post_type && 'trash' !== $page->post_status ) {
-				self::sync_page_title( $page_id, $title );
+			if ( self::is_usable_page( $page ) ) {
 				return $page_id;
 			}
 		}
@@ -320,16 +319,18 @@ class LCCL_DE_Roles {
 			array(
 				'post_type'      => 'page',
 				'post_status'    => array( 'publish', 'private', 'draft' ),
-				'posts_per_page' => 1,
+				'posts_per_page' => 5,
 				'name'           => $slug,
 			)
 		);
 
-		if ( ! empty( $existing ) ) {
-			$page_id = (int) $existing[0]->ID;
-			update_option( $option, $page_id );
-			self::sync_page_title( $page_id, $title );
-			return $page_id;
+		foreach ( $existing as $page ) {
+			if ( ! self::is_usable_page( $page ) || ! self::page_has_shortcode( $page, $content ) ) {
+				continue;
+			}
+
+			update_option( $option, (int) $page->ID );
+			return (int) $page->ID;
 		}
 
 		$page_id = wp_insert_post(
@@ -353,23 +354,29 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Keep a recovered page title in sync without changing its slug.
+	 * Whether a post is a live page this plugin may keep using.
 	 *
-	 * @param int    $page_id Page ID.
-	 * @param string $title   Expected title.
+	 * @param mixed $page Post object.
+	 * @return bool
 	 */
-	private static function sync_page_title( $page_id, $title ) {
-		$page = get_post( (int) $page_id );
-		if ( ! $page || 'page' !== $page->post_type || $page->post_title === $title ) {
-			return;
+	private static function is_usable_page( $page ) {
+		return $page instanceof WP_Post && 'page' === $page->post_type && 'trash' !== $page->post_status;
+	}
+
+	/**
+	 * Whether page content already hosts this plugin shortcode.
+	 *
+	 * @param WP_Post $page    Page.
+	 * @param string  $content Shortcode markup such as [lccl_blood_donation_admin].
+	 * @return bool
+	 */
+	private static function page_has_shortcode( $page, $content ) {
+		$tag = trim( (string) $content, '[]' );
+		if ( '' === $tag ) {
+			return false;
 		}
 
-		wp_update_post(
-			array(
-				'ID'         => (int) $page_id,
-				'post_title' => $title,
-			)
-		);
+		return false !== strpos( (string) $page->post_content, '[' . $tag );
 	}
 
 	/**
