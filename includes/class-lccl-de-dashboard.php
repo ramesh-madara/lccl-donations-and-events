@@ -58,9 +58,10 @@ class LCCL_DE_Dashboard {
 			true
 		);
 
-		$can_view    = LCCL_DE_Roles::can_view_submissions();
-		$can_manage  = LCCL_DE_Roles::can_manage_donors();
-		$user        = wp_get_current_user();
+		$can_view     = LCCL_DE_Roles::can_view_submissions();
+		$can_manage   = LCCL_DE_Roles::can_manage_donors();
+		$user         = wp_get_current_user();
+		$current_dash = 'blood';
 		$script_data = array(
 			'restUrl'     => esc_url_raw( rest_url( self::REST_NS . '/' ) ),
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
@@ -364,7 +365,7 @@ class LCCL_DE_Dashboard {
 			wp_logout();
 			return new WP_Error(
 				'lccl_de_forbidden',
-				__( 'This account cannot open the blood donation dashboard.', 'lccl-de' ),
+				__( 'This account cannot open program dashboards.', 'lccl-de' ),
 				array( 'status' => 403 )
 			);
 		}

@@ -1,6 +1,6 @@
 <?php
 /**
- * Blood donation reviewer accounts (tab content).
+ * Program reviewer accounts.
  *
  * @package LCCL_Donations_And_Events
  *
@@ -34,10 +34,10 @@ $notices = array(
 	$disabled = $is_edit && ! LCCL_DE_Roles::is_active( $edit->ID );
 	?>
 	<div class="lccl-prog__toolbar">
-		<p><?php echo $is_edit ? esc_html__( 'Update this reviewer account.', 'lccl-de' ) : esc_html__( 'Create an account that can open the blood donation dashboard. It cannot reach wp-admin.', 'lccl-de' ); ?></p>
+		<p><?php echo $is_edit ? esc_html__( 'Update this reviewer account.', 'lccl-de' ) : esc_html__( 'Create an account that can open every program dashboard. It cannot reach wp-admin.', 'lccl-de' ); ?></p>
 	</div>
 
-	<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>" data-lccl-user-form novalidate>
+	<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>" data-lccl-user-form novalidate>
 		<?php wp_nonce_field( LCCL_DE_Admin_Users::NONCE ); ?>
 		<input type="hidden" name="lccl_de_user_action" value="<?php echo $is_edit ? 'update' : 'create'; ?>">
 		<?php if ( $is_edit ) : ?>
@@ -102,14 +102,14 @@ $notices = array(
 			<button type="submit" class="button button-primary">
 				<?php echo $is_edit ? esc_html__( 'Save reviewer', 'lccl-de' ) : esc_html__( 'Create reviewer', 'lccl-de' ); ?>
 			</button>
-			<a class="button" href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>"><?php esc_html_e( 'Cancel', 'lccl-de' ); ?></a>
+			<a class="button" href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>"><?php esc_html_e( 'Cancel', 'lccl-de' ); ?></a>
 		</p>
 	</form>
 <?php else : ?>
 	<?php $users = LCCL_DE_Admin_Users::get_reviewers(); ?>
 	<div class="lccl-prog__toolbar">
-		<p><?php esc_html_e( 'These accounts can open the blood donation dashboard on the site. They cannot reach wp-admin.', 'lccl-de' ); ?></p>
-		<a class="button button-primary" href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users', 'action' => 'add' ) ) ); ?>">
+		<p><?php esc_html_e( 'Add, edit, or deactivate reviewer accounts.', 'lccl-de' ); ?></p>
+		<a class="button button-primary" href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url( array( 'action' => 'add' ) ) ); ?>">
 			<?php esc_html_e( 'Add reviewer', 'lccl-de' ); ?>
 		</a>
 	</div>
@@ -136,7 +136,7 @@ $notices = array(
 				<tr>
 					<td>
 						<strong>
-							<a href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users', 'action' => 'edit', 'user_id' => $user->ID ) ) ); ?>">
+							<a href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url( array( 'action' => 'edit', 'user_id' => $user->ID ) ) ); ?>">
 								<?php echo esc_html( trim( $user->first_name . ' ' . $user->last_name ) ? trim( $user->first_name . ' ' . $user->last_name ) : $user->display_name ); ?>
 							</a>
 						</strong>
@@ -151,10 +151,10 @@ $notices = array(
 					<td><?php echo esc_html( mysql2date( get_option( 'date_format' ), $user->user_registered ) ); ?></td>
 					<td>
 						<div class="lccl-prog__actions">
-							<a class="lccl-prog__link-btn" href="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users', 'action' => 'edit', 'user_id' => $user->ID ) ) ); ?>">
+							<a class="lccl-prog__link-btn" href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url( array( 'action' => 'edit', 'user_id' => $user->ID ) ) ); ?>">
 								<?php esc_html_e( 'Edit', 'lccl-de' ); ?>
 							</a>
-							<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>">
+							<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>">
 								<?php wp_nonce_field( LCCL_DE_Admin_Users::NONCE ); ?>
 								<input type="hidden" name="lccl_de_user_action" value="toggle">
 								<input type="hidden" name="user_id" value="<?php echo esc_attr( (string) $user->ID ); ?>">
@@ -162,7 +162,7 @@ $notices = array(
 									<?php echo $active ? esc_html__( 'Deactivate', 'lccl-de' ) : esc_html__( 'Activate', 'lccl-de' ); ?>
 								</button>
 							</form>
-							<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Delete this reviewer permanently?', 'lccl-de' ) ); ?>');">
+							<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Delete this reviewer permanently?', 'lccl-de' ) ); ?>');">
 								<?php wp_nonce_field( LCCL_DE_Admin_Users::NONCE ); ?>
 								<input type="hidden" name="lccl_de_user_action" value="delete">
 								<input type="hidden" name="user_id" value="<?php echo esc_attr( (string) $user->ID ); ?>">

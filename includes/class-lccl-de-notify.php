@@ -46,16 +46,26 @@ class LCCL_DE_Notify {
 	const LOG_OPTION = 'lccl_de_notify_log';
 
 	/**
-	 * Notify the donor and staff after a row is stored.
+	 * Programme used for the current send so log rows stay filtered.
+	 *
+	 * @var string
+	 */
+	private static $program = 'blood-donation';
+
+	/**
+	 * Notify the registrant and staff after a row is stored.
 	 *
 	 * Failures here must not undo the registration.
 	 *
-	 * @param array $values    Sanitised registration.
-	 * @param int   $insert_id Donor row ID.
+	 * @param array  $values    Sanitised registration.
+	 * @param int    $insert_id Row ID.
+	 * @param string $program   blood-donation|our-projects.
 	 */
-	public static function after_registration( array $values, $insert_id ) {
+	public static function after_registration( array $values, $insert_id, $program = '' ) {
+		self::set_program( $program );
+
 		try {
-			if ( LCCL_DE_Settings::enabled( 'donor_sms' ) ) {
+			if ( LCCL_DE_Settings::enabled( 'donor_sms', self::$program ) ) {
 				self::send_sms( $values, (int) $insert_id );
 			} else {
 				self::record(
@@ -81,13 +91,16 @@ class LCCL_DE_Notify {
 	}
 
 	/**
-	 * Send a test of the live donor and/or staff templates from wp-admin.
+	 * Send a test of the live registrant and/or staff templates from wp-admin.
 	 *
-	 * @param string $to   Address.
-	 * @param string $kind donor, staff, or both.
+	 * @param string $to      Address.
+	 * @param string $kind    donor, staff, or both.
+	 * @param string $program blood-donation|our-projects.
 	 * @return bool
 	 */
-	public static function send_test( $to, $kind = 'both' ) {
+	public static function send_test( $to, $kind = 'both', $program = '' ) {
+		self::set_program( $program );
+
 		if ( ! is_email( $to ) ) {
 			self::record(
 				array(
@@ -100,15 +113,15 @@ class LCCL_DE_Notify {
 			return false;
 		}
 
-		$kind = in_array( $kind, array( 'donor', 'staff', 'both' ), true ) ? $kind : 'both';
+		$kind   = in_array( $kind, array( 'donor', 'staff', 'both' ), true ) ? $kind : 'both';
 		$sample = self::sample_registration( $to );
 		$ok     = true;
 
 		if ( 'donor' === $kind || 'both' === $kind ) {
 			$ok = self::mail(
 				$to,
-				'[TEST] ' . __( 'Blood donor registration confirmed', 'lccl-de' ),
-				self::donor_html( $sample['name'], $sample['bank'] ),
+				'[TEST] ' . self::confirmation_subject(),
+				self::confirmation_html( $sample ),
 				'test'
 			) && $ok;
 		}
@@ -116,8 +129,8 @@ class LCCL_DE_Notify {
 		if ( 'staff' === $kind || 'both' === $kind ) {
 			$ok = self::mail(
 				$to,
-				'[TEST] ' . sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $sample['name'] ),
-				self::admin_html( $sample['name'], $sample['values'], $sample['bank'], $sample['values']['phone'], $sample['id'] ),
+				'[TEST] ' . self::staff_subject( $sample['name'] ),
+				self::staff_html( $sample ),
 				'test'
 			) && $ok;
 		}
@@ -132,6 +145,32 @@ class LCCL_DE_Notify {
 	 * @return array{name:string,bank:string,id:int,values:array}
 	 */
 	private static function sample_registration( $to ) {
+		if ( self::is_projects() ) {
+			$values = array(
+				'full_name'            => 'Saman Padukka',
+				'email'                => $to,
+				'phone'                => '+94712345678',
+				'city'                 => 'Colombo',
+				'occupation'           => 'Engineer',
+				'organisation'         => 'Example Company',
+				'support_ways'         => array( 'volunteer-time', 'professional-skills' ),
+				'support_ways_other'   => '',
+				'interest_areas'       => array( 'health-medical', 'blood-donation' ),
+				'interest_areas_other' => '',
+				'project_types'        => array( 'any-suitable' ),
+				'specific_idea'        => 'Support a community health clinic.',
+				'registering_as'       => 'individual',
+				'message'              => 'Happy to help on weekends.',
+			);
+
+			return array(
+				'name'   => 'Saman Padukka',
+				'bank'   => '',
+				'id'     => 1001,
+				'values' => $values,
+			);
+		}
+
 		$values = array(
 			'first_name'          => 'Saman',
 			'last_name'           => 'Padukka',
@@ -159,11 +198,25 @@ class LCCL_DE_Notify {
 	/**
 	 * Recent send results, newest first.
 	 *
+	 * @param string $program Empty for the full log, or a programme key to filter.
 	 * @return array<int,array<string,mixed>>
 	 */
-	public static function log() {
-		$log = get_option( self::LOG_OPTION, array() );
-		return is_array( $log ) ? $log : array();
+	public static function log( $program = '' ) {
+		$log = self::all_log();
+		if ( '' === $program ) {
+			return $log;
+		}
+
+		$program = LCCL_DE_Settings::normalize_program( $program );
+		$out     = array();
+		foreach ( $log as $row ) {
+			$row_program = ! empty( $row['program'] ) ? LCCL_DE_Settings::normalize_program( $row['program'] ) : LCCL_DE_Admin_Programs::PROGRAM_BLOOD;
+			if ( $row_program === $program ) {
+				$out[] = $row;
+			}
+		}
+
+		return array_slice( $out, 0, 12 );
 	}
 
 	/**
@@ -198,10 +251,12 @@ class LCCL_DE_Notify {
 		}
 
 		$bank    = self::bank_label( $values );
-		$message = sprintf(
-			'Thank you for registering as a blood donor. Your registration has been successfully received. Preferred blood bank : %s.',
-			$bank
-		);
+		$message = self::is_projects()
+			? 'Thank you for registering your interest in our community projects. Your registration has been successfully received.'
+			: sprintf(
+				'Thank you for registering as a blood donor. Your registration has been successfully received. Preferred blood bank : %s.',
+				$bank
+			);
 
 		$payload = array(
 			'message'        => $message,
@@ -416,27 +471,28 @@ class LCCL_DE_Notify {
 	}
 
 	/**
-	 * HTML confirmation to the donor and a copy to admin, each if enabled.
+	 * HTML confirmation to the registrant and a copy to admin, each if enabled.
 	 *
 	 * @param array $values    Sanitised registration.
-	 * @param int   $insert_id Donor row ID.
+	 * @param int   $insert_id Row ID.
 	 */
 	private static function send_emails( array $values, $insert_id ) {
-		$first = isset( $values['first_name'] ) ? $values['first_name'] : '';
-		$last  = isset( $values['last_name'] ) ? $values['last_name'] : '';
-		$name  = trim( $first . ' ' . $last );
-		$bank  = self::bank_label( $values );
-		$phone = isset( $values['phone'] ) ? $values['phone'] : '';
+		$sample = array(
+			'name'   => self::registrant_name( $values ),
+			'bank'   => self::bank_label( $values ),
+			'id'     => (int) $insert_id,
+			'values' => $values,
+		);
 
 		$donor_email = isset( $values['email'] ) ? $values['email'] : '';
-		if ( LCCL_DE_Settings::enabled( 'donor_email' ) && is_email( $donor_email ) ) {
+		if ( LCCL_DE_Settings::enabled( 'donor_email', self::$program ) && is_email( $donor_email ) ) {
 			self::mail(
 				$donor_email,
-				__( 'Blood donor registration confirmed', 'lccl-de' ),
-				self::donor_html( $name, $bank ),
+				self::confirmation_subject(),
+				self::confirmation_html( $sample ),
 				'donor'
 			);
-		} elseif ( LCCL_DE_Settings::enabled( 'donor_email' ) ) {
+		} elseif ( LCCL_DE_Settings::enabled( 'donor_email', self::$program ) ) {
 			self::record(
 				array(
 					'kind'   => 'donor',
@@ -455,13 +511,13 @@ class LCCL_DE_Notify {
 			);
 		}
 
-		if ( LCCL_DE_Settings::enabled( 'admin_email' ) ) {
-			$admin_emails = LCCL_DE_Settings::admin_addresses();
+		if ( LCCL_DE_Settings::enabled( 'admin_email', self::$program ) ) {
+			$admin_emails = LCCL_DE_Settings::admin_addresses( self::$program );
 			if ( $admin_emails ) {
 				self::mail(
 					$admin_emails,
-					sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $name ),
-					self::admin_html( $name, $values, $bank, $phone, $insert_id ),
+					self::staff_subject( $sample['name'] ),
+					self::staff_html( $sample ),
 					'admin'
 				);
 			} else {
@@ -536,6 +592,16 @@ class LCCL_DE_Notify {
 	}
 
 	/**
+	 * Unfiltered send log.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	private static function all_log() {
+		$log = get_option( self::LOG_OPTION, array() );
+		return is_array( $log ) ? $log : array();
+	}
+
+	/**
 	 * Keep the newest send results.
 	 *
 	 * @param array $entry Log row.
@@ -550,12 +616,238 @@ class LCCL_DE_Notify {
 				'to'      => '',
 				'subject' => '',
 				'detail'  => '',
+				'program' => self::$program,
 			)
 		);
+		$entry['program'] = LCCL_DE_Settings::normalize_program( isset( $entry['program'] ) ? $entry['program'] : self::$program );
 
-		$log = self::log();
+		$log = self::all_log();
 		array_unshift( $log, $entry );
-		update_option( self::LOG_OPTION, array_slice( $log, 0, 12 ), false );
+		update_option( self::LOG_OPTION, array_slice( $log, 0, 40 ), false );
+	}
+
+	/**
+	 * Remember which programme is sending.
+	 *
+	 * @param string $program blood-donation|our-projects.
+	 */
+	private static function set_program( $program ) {
+		self::$program = LCCL_DE_Settings::normalize_program( $program );
+	}
+
+	/**
+	 * Whether the current send belongs to Join Our Projects.
+	 *
+	 * @return bool
+	 */
+	private static function is_projects() {
+		return LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === self::$program;
+	}
+
+	/**
+	 * Display name on confirmation emails.
+	 *
+	 * @param array $values Sanitised registration.
+	 * @return string
+	 */
+	private static function registrant_name( array $values ) {
+		if ( ! empty( $values['full_name'] ) ) {
+			return trim( (string) $values['full_name'] );
+		}
+
+		$first = isset( $values['first_name'] ) ? $values['first_name'] : '';
+		$last  = isset( $values['last_name'] ) ? $values['last_name'] : '';
+		return trim( $first . ' ' . $last );
+	}
+
+	/**
+	 * Registrant confirmation subject.
+	 *
+	 * @return string
+	 */
+	private static function confirmation_subject() {
+		return self::is_projects()
+			? __( 'Join Our Projects registration confirmed', 'lccl-de' )
+			: __( 'Blood donor registration confirmed', 'lccl-de' );
+	}
+
+	/**
+	 * Staff notification subject.
+	 *
+	 * @param string $name Display name.
+	 * @return string
+	 */
+	private static function staff_subject( $name ) {
+		return self::is_projects()
+			? sprintf( __( 'New Join Our Projects registration: %s', 'lccl-de' ), $name )
+			: sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $name );
+	}
+
+	/**
+	 * Registrant-facing HTML for the current programme.
+	 *
+	 * @param array $sample name, bank, values, id.
+	 * @return string
+	 */
+	private static function confirmation_html( array $sample ) {
+		if ( self::is_projects() ) {
+			return self::projects_registrant_html( $sample['name'] );
+		}
+
+		return self::donor_html( $sample['name'], $sample['bank'] );
+	}
+
+	/**
+	 * Staff HTML for the current programme.
+	 *
+	 * @param array $sample name, bank, values, id.
+	 * @return string
+	 */
+	private static function staff_html( array $sample ) {
+		$phone = isset( $sample['values']['phone'] ) ? $sample['values']['phone'] : '';
+		if ( self::is_projects() ) {
+			return self::projects_admin_html( $sample['name'], $sample['values'], $phone, $sample['id'] );
+		}
+
+		return self::admin_html( $sample['name'], $sample['values'], $sample['bank'], $phone, $sample['id'] );
+	}
+
+	/**
+	 * Staff copy for a Join Our Projects registration.
+	 *
+	 * @param string $name      Display name.
+	 * @param array  $values    Sanitised registration.
+	 * @param string $phone     Phone.
+	 * @param int    $insert_id Row ID.
+	 * @return string
+	 */
+	private static function projects_admin_html( $name, array $values, $phone, $insert_id ) {
+		$logo = 'https://registration.colomboleads.org/lccclLOGO.png';
+		$who  = '' !== $name ? $name : __( 'Registrant', 'lccl-de' );
+
+		$details  = self::email_detail( __( 'Registration ID', 'lccl-de' ), (string) (int) $insert_id );
+		$details .= self::email_detail( __( 'Name', 'lccl-de' ), $who );
+		$details .= self::email_detail( __( 'Phone', 'lccl-de' ), $phone );
+		$details .= self::email_detail( __( 'Email', 'lccl-de' ), isset( $values['email'] ) ? $values['email'] : '' );
+		$details .= self::email_detail( __( 'City / Area', 'lccl-de' ), isset( $values['city'] ) ? $values['city'] : '' );
+		$details .= self::email_detail( __( 'Occupation / Profession', 'lccl-de' ), isset( $values['occupation'] ) ? $values['occupation'] : '' );
+		$details .= self::email_detail( __( 'Organisation / Company', 'lccl-de' ), isset( $values['organisation'] ) ? $values['organisation'] : '' );
+		$details .= self::email_detail(
+			__( 'How they would like to support', 'lccl-de' ),
+			self::choice_labels(
+				isset( $values['support_ways'] ) ? $values['support_ways'] : array(),
+				LCCL_DE_Join_Projects_Form::support_ways()
+			)
+		);
+		$details .= self::email_detail(
+			__( 'Volunteer / skill areas', 'lccl-de' ),
+			self::choice_labels(
+				isset( $values['volunteer_areas'] ) ? $values['volunteer_areas'] : array(),
+				LCCL_DE_Join_Projects_Form::volunteer_areas()
+			)
+		);
+		$details .= self::email_detail( __( 'Skills / expertise', 'lccl-de' ), isset( $values['skills'] ) ? $values['skills'] : '' );
+		$details .= self::email_detail(
+			__( 'Availability', 'lccl-de' ),
+			self::choice_labels(
+				isset( $values['availability'] ) ? $values['availability'] : array(),
+				LCCL_DE_Join_Projects_Form::availability()
+			)
+		);
+		$details .= self::email_detail(
+			__( 'Financial support', 'lccl-de' ),
+			self::choice_labels(
+				isset( $values['financial_support'] ) ? $values['financial_support'] : array(),
+				LCCL_DE_Join_Projects_Form::financial_support()
+			)
+		);
+		$amount_key  = isset( $values['contribution_amount'] ) ? $values['contribution_amount'] : '';
+		$amount_opts = LCCL_DE_Join_Projects_Form::contribution_amounts();
+		$details    .= self::email_detail( __( 'Estimated contribution', 'lccl-de' ), ( $amount_key && isset( $amount_opts[ $amount_key ] ) ) ? $amount_opts[ $amount_key ] : $amount_key );
+		$details    .= self::email_detail(
+			__( 'Areas they would like to support', 'lccl-de' ),
+			self::choice_labels(
+				isset( $values['interest_areas'] ) ? $values['interest_areas'] : array(),
+				LCCL_DE_Join_Projects_Form::interest_areas()
+			)
+		);
+		$details .= self::email_detail(
+			__( 'Project-specific support', 'lccl-de' ),
+			self::choice_labels(
+				isset( $values['project_types'] ) ? $values['project_types'] : array(),
+				LCCL_DE_Join_Projects_Form::project_types()
+			)
+		);
+		$details .= self::email_detail( __( 'Specific project or idea', 'lccl-de' ), isset( $values['specific_idea'] ) ? $values['specific_idea'] : '' );
+		$as_key   = isset( $values['registering_as'] ) ? $values['registering_as'] : '';
+		$as_opts  = LCCL_DE_Join_Projects_Form::registering_as_options();
+		$details .= self::email_detail( __( 'Registering as', 'lccl-de' ), ( $as_key && isset( $as_opts[ $as_key ] ) ) ? $as_opts[ $as_key ] : $as_key );
+		$details .= self::email_detail( __( 'Organization name', 'lccl-de' ), isset( $values['company_name'] ) ? $values['company_name'] : '' );
+		$details .= self::email_detail( __( 'Position / designation', 'lccl-de' ), isset( $values['designation'] ) ? $values['designation'] : '' );
+		$details .= self::email_detail( __( 'Organization support', 'lccl-de' ), isset( $values['company_support'] ) ? $values['company_support'] : '' );
+		$details .= self::email_detail( __( 'Additional message', 'lccl-de' ), isset( $values['message'] ) ? $values['message'] : '' );
+
+		return '<html><body style="margin:0;padding:0;background-color:#F3F3F3;">
+			<div style="background-color:#F3F3F3;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;">
+				<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
+				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">NEW JOIN OUR PROJECTS REGISTRATION</h1>
+				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Someone has registered their interest in supporting community projects through Lions Club of Colombo LEADS. The registration has been successfully received.</p>
+				<h2 style="margin:0 0 10px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.08em;">REGISTRATION DETAILS</h2>
+				' . $details . '
+				<p style="margin:22px 0 28px;color:#555555;font-size:15px;line-height:1.6;">Please follow up using the contact details above, as needed.</p>
+				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
+				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
+			</div>
+		</body></html>';
+	}
+
+	/**
+	 * Registrant confirmation for Join Our Projects.
+	 *
+	 * @param string $name Display name.
+	 * @return string
+	 */
+	private static function projects_registrant_html( $name ) {
+		$logo = 'https://registration.colomboleads.org/lccclLOGO.png';
+		$who  = '' !== $name ? $name : __( 'Friend', 'lccl-de' );
+
+		return '<html><body style="margin:0;padding:0;background-color:#F3F3F3;">
+			<div style="background-color:#F3F3F3;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;">
+				<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
+				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">JOIN OUR PROJECTS REGISTRATION CONFIRMED</h1>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Dear ' . esc_html( $who ) . ',</p>
+				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Thank you for registering your interest in supporting community projects through Lions Club of Colombo LEADS. Your registration has been successfully received.</p>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">We will use the information you provided to get in touch about relevant community service opportunities, volunteering, donations, sponsorships and related activities.</p>
+				<p style="margin:0 0 28px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your willingness to help.</p>
+				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
+				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
+			</div>
+		</body></html>';
+	}
+
+	/**
+	 * Join selected option keys into a readable list.
+	 *
+	 * @param mixed $keys Selected keys.
+	 * @param array $map  Key => label.
+	 * @return string
+	 */
+	private static function choice_labels( $keys, array $map ) {
+		if ( ! is_array( $keys ) ) {
+			$keys = array();
+		}
+
+		$labels = array();
+		foreach ( $keys as $key ) {
+			$key = sanitize_key( (string) $key );
+			if ( isset( $map[ $key ] ) ) {
+				$labels[] = $map[ $key ];
+			} elseif ( '' !== $key ) {
+				$labels[] = $key;
+			}
+		}
+
+		return implode( ', ', $labels );
 	}
 
 	/**

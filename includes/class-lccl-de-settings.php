@@ -13,14 +13,19 @@ defined( 'ABSPATH' ) || exit;
 class LCCL_DE_Settings {
 
 	/**
-	 * Submenu slug under Blood Donation Users.
+	 * Legacy submenu slug. Still accepted on POST for old bookmarks.
 	 */
 	const PAGE = 'lccl-de-blood-notify';
 
 	/**
-	 * Option that stores the switches.
+	 * Option that stores Blood Donation switches and shared SMS credentials.
 	 */
 	const OPTION = 'lccl_de_notify';
+
+	/**
+	 * Option that stores Join Our Projects notification switches.
+	 */
+	const OPTION_PROJECTS = 'lccl_de_projects_notify';
 
 	/**
 	 * Nonce for saving.
@@ -43,57 +48,109 @@ class LCCL_DE_Settings {
 	/**
 	 * Current settings with defaults (all on).
 	 *
-	 * SMS username and password are decrypted in memory only.
+	 * SMS username and password are decrypted in memory only and are shared
+	 * across programmes. Toggles and staff inboxes are per programme.
 	 *
+	 * @param string $program blood-donation|our-projects.
 	 * @return array{donor_sms:int,donor_email:int,admin_email:int,admin_addresses:array,admin_address:string,sms_api_key:string,sms_password:string}
 	 */
-	public static function get() {
-		$stored = get_option( self::OPTION, array() );
-		if ( ! is_array( $stored ) ) {
-			$stored = array();
+	public static function get( $program = '' ) {
+		$program    = self::normalize_program( $program );
+		$sms_stored = get_option( self::OPTION, array() );
+		if ( ! is_array( $sms_stored ) ) {
+			$sms_stored = array();
+		}
+
+		$stored = $sms_stored;
+		if ( LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program ) {
+			$stored = get_option( self::OPTION_PROJECTS, array() );
+			if ( ! is_array( $stored ) ) {
+				$stored = array();
+			}
 		}
 
 		$settings = wp_parse_args(
 			$stored,
 			array(
-				'donor_sms'     => 1,
-				'donor_email'   => 1,
-				'admin_email'   => 1,
-				'sms_api_key'   => '',
-				'sms_password'  => '',
+				'donor_sms'    => 1,
+				'donor_email'  => 1,
+				'admin_email'  => 1,
+				'sms_api_key'  => '',
+				'sms_password' => '',
 			)
 		);
 
 		$settings['admin_addresses'] = self::emails_from_stored( $stored );
 		$settings['admin_address']   = isset( $settings['admin_addresses'][0] ) ? $settings['admin_addresses'][0] : '';
-		$settings['sms_api_key']     = self::decrypt_secret( isset( $stored['sms_api_key'] ) ? $stored['sms_api_key'] : '' );
-		$settings['sms_password']    = self::decrypt_secret( isset( $stored['sms_password'] ) ? $stored['sms_password'] : '' );
+		$settings['sms_api_key']     = self::decrypt_secret( isset( $sms_stored['sms_api_key'] ) ? $sms_stored['sms_api_key'] : '' );
+		$settings['sms_password']    = self::decrypt_secret( isset( $sms_stored['sms_password'] ) ? $sms_stored['sms_password'] : '' );
 		$settings['sms_ready']       = '' !== $settings['sms_api_key'] && '' !== $settings['sms_password'];
+		$settings['program']         = $program;
 
 		return $settings;
 	}
 
 	/**
+	 * blood-donation or our-projects.
+	 *
+	 * @param string $program Raw programme key.
+	 * @return string
+	 */
+	public static function normalize_program( $program ) {
+		$program = sanitize_key( (string) $program );
+		if ( LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program ) {
+			return LCCL_DE_Admin_Programs::PROGRAM_PROJECTS;
+		}
+
+		return LCCL_DE_Admin_Programs::PROGRAM_BLOOD;
+	}
+
+	/**
 	 * Whether a named notification is enabled.
 	 *
-	 * @param string $key donor_sms|donor_email|admin_email.
+	 * @param string $key     donor_sms|donor_email|admin_email.
+	 * @param string $program blood-donation|our-projects.
 	 * @return bool
 	 */
-	public static function enabled( $key ) {
-		$settings = self::get();
+	public static function enabled( $key, $program = '' ) {
+		$settings = self::get( $program );
 		return ! empty( $settings[ $key ] );
 	}
 
 	/**
 	 * Persist switches from wp-admin or REST.
 	 *
-	 * @param array $input Raw values.
+	 * @param array  $input   Raw values.
+	 * @param string $program blood-donation|our-projects.
 	 * @return array{donor_sms:int,donor_email:int,admin_email:int,admin_addresses:array,admin_address:string}
 	 */
-	public static function save( $input ) {
-		$before = self::get();
-		$clean  = self::sanitize( $input );
-		update_option( self::OPTION, self::with_encrypted_secrets( $clean ) );
+	public static function save( $input, $program = '' ) {
+		$program = self::normalize_program( $program );
+		$before  = self::get( $program );
+		$clean   = self::sanitize( $input, $program );
+
+		$blood = get_option( self::OPTION, array() );
+		if ( ! is_array( $blood ) ) {
+			$blood = array();
+		}
+
+		$blood['sms_api_key']  = self::encrypt_secret( $clean['sms_api_key'] );
+		$blood['sms_password'] = self::encrypt_secret( $clean['sms_password'] );
+
+		$toggles = array(
+			'donor_sms'       => $clean['donor_sms'],
+			'donor_email'     => $clean['donor_email'],
+			'admin_email'     => $clean['admin_email'],
+			'admin_addresses' => $clean['admin_addresses'],
+			'admin_address'   => $clean['admin_address'],
+		);
+
+		if ( LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program ) {
+			update_option( self::OPTION, $blood );
+			update_option( self::OPTION_PROJECTS, $toggles );
+		} else {
+			update_option( self::OPTION, array_merge( $blood, $toggles ) );
+		}
 
 		if ( $before['sms_api_key'] !== $clean['sms_api_key'] || $before['sms_password'] !== $clean['sms_password'] ) {
 			delete_transient( LCCL_DE_Notify::TOKEN_TRANSIENT );
@@ -105,17 +162,20 @@ class LCCL_DE_Settings {
 	/**
 	 * Normalise a settings payload.
 	 *
-	 * @param array $input Raw values.
+	 * @param array  $input   Raw values.
+	 * @param string $program blood-donation|our-projects.
 	 * @return array{donor_sms:int,donor_email:int,admin_email:int,admin_addresses:array,admin_address:string}
 	 */
-	public static function sanitize( $input ) {
+	public static function sanitize( $input, $program = '' ) {
+		$program = self::normalize_program( $program );
+
 		if ( ! is_array( $input ) ) {
 			$input = array();
 		}
 
 		$addresses = self::collect_addresses( $input );
 		if ( null === $addresses ) {
-			$addresses = self::admin_addresses();
+			$addresses = self::admin_addresses( $program );
 		}
 
 		$stored = get_option( self::OPTION, array() );
@@ -279,10 +339,11 @@ class LCCL_DE_Settings {
 	/**
 	 * Staff inboxes for the admin copy.
 	 *
+	 * @param string $program blood-donation|our-projects.
 	 * @return string[]
 	 */
-	public static function admin_addresses() {
-		$settings = self::get();
+	public static function admin_addresses( $program = '' ) {
+		$settings = self::get( $program );
 		return isset( $settings['admin_addresses'] ) && is_array( $settings['admin_addresses'] )
 			? $settings['admin_addresses']
 			: array();
@@ -291,10 +352,11 @@ class LCCL_DE_Settings {
 	/**
 	 * First staff inbox, kept for older callers.
 	 *
+	 * @param string $program blood-donation|our-projects.
 	 * @return string
 	 */
-	public static function admin_address() {
-		$emails = self::admin_addresses();
+	public static function admin_address( $program = '' ) {
+		$emails = self::admin_addresses( $program );
 		return isset( $emails[0] ) ? $emails[0] : '';
 	}
 
@@ -472,6 +534,8 @@ class LCCL_DE_Settings {
 			return;
 		}
 
+		$program = self::posted_program();
+
 		if ( ! empty( $_POST['lccl_de_notify_test'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( self::NONCE );
 
@@ -479,9 +543,9 @@ class LCCL_DE_Settings {
 			$to     = sanitize_email( $to_raw );
 			if ( ! LCCL_DE_Blood_Donor_Submissions::is_valid_email_field( $to_raw ) || ! is_email( $to ) ) {
 				wp_safe_redirect(
-					LCCL_DE_Admin_Programs::blood_url(
+					LCCL_DE_Admin_Programs::notify_url(
+						$program,
 						array(
-							'tab'     => 'notifications',
 							'message' => 'error',
 							'error'   => rawurlencode( __( 'Please enter a valid email address.', 'lccl-de' ) ),
 						)
@@ -491,12 +555,12 @@ class LCCL_DE_Settings {
 			}
 
 			$kind = isset( $_POST['test_kind'] ) ? sanitize_key( wp_unslash( $_POST['test_kind'] ) ) : 'both'; // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$ok   = LCCL_DE_Notify::send_test( $to, $kind );
+			$ok   = LCCL_DE_Notify::send_test( $to, $kind, $program );
 
 			wp_safe_redirect(
-				LCCL_DE_Admin_Programs::blood_url(
+				LCCL_DE_Admin_Programs::notify_url(
+					$program,
 					array(
-						'tab'     => 'notifications',
 						'message' => $ok ? 'test-ok' : 'test-fail',
 					)
 				)
@@ -516,9 +580,9 @@ class LCCL_DE_Settings {
 		}
 		if ( $invalid ) {
 			wp_safe_redirect(
-				LCCL_DE_Admin_Programs::blood_url(
+				LCCL_DE_Admin_Programs::notify_url(
+					$program,
 					array(
-						'tab'     => 'notifications',
 						'message' => 'error',
 						'error'   => rawurlencode( $invalid ),
 					)
@@ -527,17 +591,33 @@ class LCCL_DE_Settings {
 			exit;
 		}
 
-		self::save( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		self::save( wp_unslash( $_POST ), $program ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		wp_safe_redirect(
-			LCCL_DE_Admin_Programs::blood_url(
+			LCCL_DE_Admin_Programs::notify_url(
+				$program,
 				array(
-					'tab'     => 'notifications',
 					'message' => 'saved',
 				)
 			)
 		);
 		exit;
+	}
+
+	/**
+	 * Programme for this notifications POST.
+	 *
+	 * @return string
+	 */
+	private static function posted_program() {
+		$program = '';
+		if ( ! empty( $_POST['lccl_de_notify_program'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$program = sanitize_key( wp_unslash( $_POST['lccl_de_notify_program'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		} elseif ( ! empty( $_GET['program'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$program = sanitize_key( wp_unslash( $_GET['program'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+
+		return self::normalize_program( $program );
 	}
 
 	/**

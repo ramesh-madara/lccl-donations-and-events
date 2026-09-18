@@ -1,6 +1,6 @@
 <?php
 /**
- * Reviewer role and dashboard page.
+ * Reviewer role and dashboard pages.
  *
  * @package LCCL_Donations_And_Events
  */
@@ -8,7 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Registers the blood donation reviewer role and its landing page.
+ * Registers the program reviewer role and frontend pages.
  */
 class LCCL_DE_Roles {
 
@@ -18,14 +18,14 @@ class LCCL_DE_Roles {
 	const ROLE = 'lccl_blood_donation_reviewer';
 
 	/**
-	 * Capability that unlocks the frontend dashboard and donor REST routes.
+	 * Capability that unlocks frontend dashboards and submission REST routes.
 	 */
 	const CAP = 'view_lccl_submissions';
 
 	/**
-	 * Bump when the role's capability set changes so existing accounts update.
+	 * Bump when the role's capability set or display name changes.
 	 */
-	const VERSION = 1;
+	const VERSION = 2;
 
 	/**
 	 * Option that stores the installed role version.
@@ -33,9 +33,19 @@ class LCCL_DE_Roles {
 	const OPTION = 'lccl_de_roles_version';
 
 	/**
-	 * Option that stores the frontend admin page ID.
+	 * Option that stores the blood donation admin page ID.
 	 */
 	const PAGE_OPTION = 'lccl_de_admin_page_id';
+
+	/**
+	 * Option that stores the Join Our Projects admin page ID.
+	 */
+	const PROJECTS_PAGE_OPTION = 'lccl_de_projects_admin_page_id';
+
+	/**
+	 * Option that stores the Join Our Projects public form page ID.
+	 */
+	const JOIN_PAGE_OPTION = 'lccl_de_join_form_page_id';
 
 	/**
 	 * User meta: "1" means the reviewer cannot sign in.
@@ -43,7 +53,7 @@ class LCCL_DE_Roles {
 	const DISABLED_META = 'lccl_de_reviewer_disabled';
 
 	/**
-	 * Install or upgrade the role if the stored version is behind, then the page.
+	 * Install or upgrade the role if the stored version is behind, then the pages.
 	 *
 	 * Must run on init or later — wp_insert_post needs rewrite rules.
 	 */
@@ -54,24 +64,27 @@ class LCCL_DE_Roles {
 			self::install();
 		}
 
-		self::ensure_page();
+		self::ensure_pages();
 	}
 
 	/**
 	 * Create the role and strip read. Page creation happens on init.
 	 */
 	public static function install() {
-		$role = get_role( self::ROLE );
+		$label = __( 'LCCL Program Reviewer', 'lccl-de' );
+		$role  = get_role( self::ROLE );
 
 		if ( ! $role ) {
 			add_role(
 				self::ROLE,
-				'Blood Donation Reviewer',
+				$label,
 				array(
 					self::CAP => true,
 				)
 			);
 			$role = get_role( self::ROLE );
+		} else {
+			self::rename_role( $label );
 		}
 
 		if ( $role ) {
@@ -119,7 +132,7 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Whether the user may see donor data (reviewer or site admin).
+	 * Whether the user may see program submissions (reviewer or site admin).
 	 *
 	 * @param WP_User|int|null $user User or ID.
 	 * @return bool
@@ -143,7 +156,7 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Whether the user may edit or delete donor registrations.
+	 * Whether the user may edit or delete registrations.
 	 *
 	 * Site administrators only — reviewers can view, not write.
 	 *
@@ -179,12 +192,121 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Frontend dashboard URL. Falls back to home if the page is missing.
+	 * Blood donation frontend dashboard URL. Falls back to home if the page is missing.
 	 *
 	 * @return string
 	 */
 	public static function dashboard_url() {
-		$page_id = self::ensure_page();
+		return self::page_url( self::ensure_page() );
+	}
+
+	/**
+	 * Join Our Projects review dashboard URL.
+	 *
+	 * @return string
+	 */
+	public static function projects_dashboard_url() {
+		return self::page_url( self::ensure_projects_page() );
+	}
+
+	/**
+	 * Public form URL if a host page still exists. The form is a shortcode now.
+	 *
+	 * @return string
+	 */
+	public static function join_form_url() {
+		$page_id = (int) get_option( self::JOIN_PAGE_OPTION, 0 );
+		if ( $page_id ) {
+			return self::page_url( $page_id );
+		}
+
+		return home_url( '/' );
+	}
+
+	/**
+	 * Create or recover every frontend page this plugin owns.
+	 */
+	public static function ensure_pages() {
+		self::ensure_page();
+		self::ensure_projects_page();
+		self::remove_join_page();
+	}
+
+	/**
+	 * Create or recover the page that hosts [lccl_blood_donation_admin].
+	 *
+	 * @return int Page ID or 0.
+	 */
+	public static function ensure_page() {
+		return self::ensure_named_page(
+			self::PAGE_OPTION,
+			'blood-donation-admin',
+			__( 'BLOOD DONATION ADMIN', 'lccl-de' ),
+			'[lccl_blood_donation_admin]'
+		);
+	}
+
+	/**
+	 * Create or recover the page that hosts [lccl_our_projects_admin].
+	 *
+	 * @return int Page ID or 0.
+	 */
+	public static function ensure_projects_page() {
+		return self::ensure_named_page(
+			self::PROJECTS_PAGE_OPTION,
+			'our-projects-admin',
+			__( 'OUR PROJECTS ADMIN', 'lccl-de' ),
+			'[lccl_our_projects_admin]'
+		);
+	}
+
+	/**
+	 * Remove the plugin-created public form page. Editors drop the shortcode on their own page.
+	 */
+	public static function remove_join_page() {
+		$ids = array();
+		$stored = (int) get_option( self::JOIN_PAGE_OPTION, 0 );
+		if ( $stored ) {
+			$ids[] = $stored;
+		}
+
+		$found = get_posts(
+			array(
+				'post_type'      => 'page',
+				'post_status'    => array( 'publish', 'private', 'draft', 'pending' ),
+				'posts_per_page' => 5,
+				'name'           => 'join-our-projects',
+			)
+		);
+		foreach ( $found as $page ) {
+			$ids[] = (int) $page->ID;
+		}
+
+		$ids = array_unique( array_filter( $ids ) );
+		foreach ( $ids as $page_id ) {
+			$page = get_post( $page_id );
+			if ( ! $page || 'page' !== $page->post_type ) {
+				continue;
+			}
+
+			$has_shortcode = false !== strpos( (string) $page->post_content, '[' . LCCL_DE_Join_Projects_Form::SHORTCODE );
+			$is_plugin_slug = 'join-our-projects' === $page->post_name;
+			if ( $has_shortcode || $is_plugin_slug ) {
+				wp_delete_post( $page_id, true );
+			}
+		}
+
+		delete_option( self::JOIN_PAGE_OPTION );
+	}
+
+	/**
+	 * Permalink for a page ID, or home if it is missing.
+	 *
+	 * @param int $page_id Page ID.
+	 * @return string
+	 */
+	private static function page_url( $page_id ) {
+		$page_id = (int) $page_id;
 
 		if ( $page_id ) {
 			$url = get_permalink( $page_id );
@@ -197,16 +319,21 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Create or recover the page that hosts [lccl_blood_donation_admin].
+	 * Create or recover a published page by slug.
 	 *
+	 * @param string $option  Option that stores the page ID.
+	 * @param string $slug    post_name.
+	 * @param string $title   Page title when inserting.
+	 * @param string $content Shortcode markup.
 	 * @return int Page ID or 0.
 	 */
-	public static function ensure_page() {
-		$page_id = (int) get_option( self::PAGE_OPTION, 0 );
+	private static function ensure_named_page( $option, $slug, $title, $content ) {
+		$page_id = (int) get_option( $option, 0 );
 
 		if ( $page_id ) {
 			$page = get_post( $page_id );
 			if ( $page && 'page' === $page->post_type && 'trash' !== $page->post_status ) {
+				self::sync_page_title( $page_id, $title );
 				return $page_id;
 			}
 		}
@@ -216,23 +343,24 @@ class LCCL_DE_Roles {
 				'post_type'      => 'page',
 				'post_status'    => array( 'publish', 'private', 'draft' ),
 				'posts_per_page' => 1,
-				'name'           => 'blood-donation-admin',
+				'name'           => $slug,
 			)
 		);
 
 		if ( ! empty( $existing ) ) {
 			$page_id = (int) $existing[0]->ID;
-			update_option( self::PAGE_OPTION, $page_id );
+			update_option( $option, $page_id );
+			self::sync_page_title( $page_id, $title );
 			return $page_id;
 		}
 
 		$page_id = wp_insert_post(
 			array(
-				'post_title'   => __( 'Blood Donation Admin', 'lccl-de' ),
-				'post_name'    => 'blood-donation-admin',
+				'post_title'   => $title,
+				'post_name'    => $slug,
 				'post_status'  => 'publish',
 				'post_type'    => 'page',
-				'post_content' => '[lccl_blood_donation_admin]',
+				'post_content' => $content,
 			),
 			true
 		);
@@ -241,9 +369,50 @@ class LCCL_DE_Roles {
 			return 0;
 		}
 
-		update_option( self::PAGE_OPTION, (int) $page_id );
+		update_option( $option, (int) $page_id );
 
 		return (int) $page_id;
+	}
+
+	/**
+	 * Keep a recovered page title in sync without changing its slug.
+	 *
+	 * @param int    $page_id Page ID.
+	 * @param string $title   Expected title.
+	 */
+	private static function sync_page_title( $page_id, $title ) {
+		$page = get_post( (int) $page_id );
+		if ( ! $page || 'page' !== $page->post_type || $page->post_title === $title ) {
+			return;
+		}
+
+		wp_update_post(
+			array(
+				'ID'         => (int) $page_id,
+				'post_title' => $title,
+			)
+		);
+	}
+
+	/**
+	 * Update the stored display name for an existing role.
+	 *
+	 * @param string $label Role name shown in wp-admin.
+	 */
+	private static function rename_role( $label ) {
+		global $wp_roles;
+
+		if ( ! $wp_roles instanceof WP_Roles ) {
+			$wp_roles = wp_roles();
+		}
+
+		if ( ! $wp_roles instanceof WP_Roles || ! isset( $wp_roles->roles[ self::ROLE ] ) ) {
+			return;
+		}
+
+		$wp_roles->roles[ self::ROLE ]['name'] = $label;
+		$wp_roles->role_names[ self::ROLE ]    = $label;
+		update_option( $wp_roles->role_key, $wp_roles->roles );
 	}
 
 	/**

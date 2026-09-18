@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 2;
+	const VERSION = 5;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -47,6 +47,20 @@ class LCCL_DE_Schema {
 	}
 
 	/**
+	 * Join Our Projects registrations table, including the WP prefix.
+	 *
+	 * @return string
+	 */
+	public static function project_joins_table() {
+		global $wpdb;
+
+		$wanted   = $wpdb->prefix . 'lccl_de_project_joins';
+		$existing = self::existing_table_name( $wanted );
+
+		return $existing ? $existing : $wanted;
+	}
+
+	/**
 	 * Create tables if they are missing or the schema version is behind.
 	 *
 	 * Runs on activation and on plugins_loaded so a file-copy deploy or a
@@ -55,7 +69,7 @@ class LCCL_DE_Schema {
 	public static function maybe_install() {
 		$installed = (int) get_option( self::OPTION, 0 );
 
-		if ( $installed >= self::VERSION && self::table_exists() ) {
+		if ( $installed >= self::VERSION && self::table_exists() && self::project_joins_exist() ) {
 			return;
 		}
 
@@ -71,6 +85,17 @@ class LCCL_DE_Schema {
 		global $wpdb;
 
 		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_blood_donors' );
+	}
+
+	/**
+	 * Whether the Join Our Projects table is present, ignoring identifier case.
+	 *
+	 * @return bool
+	 */
+	public static function project_joins_exist() {
+		global $wpdb;
+
+		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_project_joins' );
 	}
 
 	/**
@@ -145,6 +170,44 @@ class LCCL_DE_Schema {
 		) {$charset};";
 
 		dbDelta( $sql );
+
+		$joins = self::project_joins_table();
+		$join_sql = "CREATE TABLE {$joins} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			full_name varchar(191) NOT NULL,
+			email varchar(191) NOT NULL,
+			phone varchar(30) NOT NULL,
+			city varchar(100) DEFAULT NULL,
+			occupation varchar(191) DEFAULT NULL,
+			organisation varchar(191) DEFAULT NULL,
+			support_ways text,
+			support_ways_other varchar(255) DEFAULT NULL,
+			volunteer_areas text,
+			skills text,
+			availability text,
+			financial_support text,
+			contribution_amount varchar(64) DEFAULT NULL,
+			interest_areas text,
+			interest_areas_other varchar(255) DEFAULT NULL,
+			project_types text,
+			specific_idea text,
+			registering_as varchar(64) DEFAULT NULL,
+			company_name varchar(191) DEFAULT NULL,
+			designation varchar(191) DEFAULT NULL,
+			company_support text,
+			message text,
+			consent tinyint(1) NOT NULL DEFAULT 0,
+			ip_address varchar(45) DEFAULT NULL,
+			created_at datetime NOT NULL,
+			updated_at datetime DEFAULT NULL,
+			updated_by bigint(20) unsigned DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY email (email),
+			KEY phone (phone),
+			KEY created_at (created_at)
+		) {$charset};";
+
+		dbDelta( $join_sql );
 		self::$table_names = array();
 		update_option( self::OPTION, self::VERSION );
 	}

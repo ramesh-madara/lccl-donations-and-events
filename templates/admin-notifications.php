@@ -1,18 +1,29 @@
 <?php
 /**
- * Blood donation notification switches (tab content).
+ * Programme notification switches (tab content).
  *
  * @package LCCL_Donations_And_Events
  *
- * @var array  $settings Current option values.
- * @var string $message  Flash code.
- * @var array  $log      Send log.
- * @var bool   $smtp     Whether WP Mail SMTP is present.
+ * @var array  $settings      Current option values.
+ * @var string $message       Flash code.
+ * @var string $error         Flash error.
+ * @var array  $log           Send log.
+ * @var bool   $smtp          Whether WP Mail SMTP is present.
+ * @var string $program       blood-donation|our-projects.
+ * @var string $notify_action Form action URL.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-$notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notifications' ) );
+if ( empty( $program ) ) {
+	$program = LCCL_DE_Admin_Programs::PROGRAM_BLOOD;
+}
+
+if ( empty( $notify_action ) ) {
+	$notify_action = LCCL_DE_Admin_Programs::notify_url( $program );
+}
+
+$is_projects = LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program;
 ?>
 <?php if ( 'saved' === $message ) : ?>
 	<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Notification settings saved.', 'lccl-de' ); ?></p></div>
@@ -32,6 +43,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 	<form method="post" action="<?php echo esc_url( $notify_action ); ?>" data-lccl-notify-form novalidate>
 		<?php wp_nonce_field( LCCL_DE_Settings::NONCE ); ?>
 		<input type="hidden" name="lccl_de_notify_save" value="1">
+		<input type="hidden" name="lccl_de_notify_program" value="<?php echo esc_attr( $program ); ?>">
 
 		<label class="lccl-prog__check">
 			<input type="checkbox" name="donor_sms" value="1" <?php checked( ! empty( $settings['donor_sms'] ) ); ?>>
@@ -104,7 +116,13 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 <div class="lccl-prog__section">
 	<h2><?php esc_html_e( 'Send a test email', 'lccl-de' ); ?></h2>
 	<p class="lccl-prog__hint">
-		<?php esc_html_e( 'Sends the live donor and/or staff templates with sample registration data, using the same wp_mail path as a real signup. The subject is prefixed with [TEST].', 'lccl-de' ); ?>
+		<?php
+		if ( $is_projects ) {
+			esc_html_e( 'Sends the live registrant and/or staff templates with sample registration data, using the same wp_mail path as a real signup. The subject is prefixed with [TEST].', 'lccl-de' );
+		} else {
+			esc_html_e( 'Sends the live donor and/or staff templates with sample registration data, using the same wp_mail path as a real signup. The subject is prefixed with [TEST].', 'lccl-de' );
+		}
+		?>
 	</p>
 
 	<?php if ( ! empty( $smtp ) ) : ?>
@@ -116,6 +134,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 	<form method="post" action="<?php echo esc_url( $notify_action ); ?>" data-lccl-test-email-form novalidate>
 		<?php wp_nonce_field( LCCL_DE_Settings::NONCE ); ?>
 		<input type="hidden" name="lccl_de_notify_test" value="1">
+		<input type="hidden" name="lccl_de_notify_program" value="<?php echo esc_attr( $program ); ?>">
 		<p>
 			<label for="lccl-de-test-email"><?php esc_html_e( 'Send test to', 'lccl-de' ); ?></label><br>
 			<input
@@ -131,7 +150,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 		</p>
 		<label class="lccl-prog__check">
 			<input type="radio" name="test_kind" value="donor">
-			<span><?php esc_html_e( 'Donor confirmation email', 'lccl-de' ); ?></span>
+			<span><?php echo $is_projects ? esc_html__( 'Registrant confirmation email', 'lccl-de' ) : esc_html__( 'Donor confirmation email', 'lccl-de' ); ?></span>
 		</label>
 		<label class="lccl-prog__check">
 			<input type="radio" name="test_kind" value="staff">
@@ -150,7 +169,7 @@ $notify_action = LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notificatio
 <div class="lccl-prog__section">
 	<h2><?php esc_html_e( 'Recent send log', 'lccl-de' ); ?></h2>
 	<p class="lccl-prog__hint">
-		<?php esc_html_e( 'Newest first. A registration that shows a thank-you still writes a row here even if mail or SMS failed.', 'lccl-de' ); ?>
+		<?php esc_html_e( 'Newest first for this programme. A registration that shows a thank-you still writes a row here even if mail or SMS failed.', 'lccl-de' ); ?>
 	</p>
 	<?php if ( empty( $log ) ) : ?>
 		<p><?php esc_html_e( 'No sends recorded yet. Submit a test or a registration on this server.', 'lccl-de' ); ?></p>

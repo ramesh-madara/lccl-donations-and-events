@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)https://www.colomboleads.org/join-our-projects.php -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Our Projects | Lions Club of Colombo LEADS</title>
+<meta name="description" content="Register your interest in supporting community projects of the Lions Club of Colombo LEADS. Volunteer, donate, sponsor or contribute your skills and resources.">
+<style>
+    :root {
+        --gold: #f7c016;
+        --gold-dark: #d9a600;
+        --heading: #333333;
+        --text: #555555;
+        --muted: #777777;
+        --border: #dddddd;
+        --bg: #f7f7f7;
+        --white: #ffffff;
+        --success: #2e7d32;
+        --error: #b3261e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.6;
+    }
+
+    .page {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 35px 18px 60px;
+    }
+
+    .form-card {
+        background: var(--white);
+        border-radius: 8px;
+        box-shadow: 0 3px 18px rgba(0,0,0,.08);
+        overflow: hidden;
+    }
+
+    .hero {
+        padding: 38px 42px 32px;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    .brand {
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        text-transform: uppercase;
+        color: var(--gold-dark);
+        margin-bottom: 8px;
+    }
+
+    h1 {
+        color: var(--heading);
+        font-size: 32px;
+        line-height: 1.2;
+        margin: 0 0 12px;
+    }
+
+    .intro {
+        color: var(--text);
+        font-size: 16px;
+        max-width: 800px;
+        margin: 0;
+    }
+
+    form {
+        padding: 34px 42px 42px;
+    }
+
+    .section {
+        margin-bottom: 36px;
+    }
+
+    .section:last-of-type {
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        color: var(--heading);
+        font-size: 21px;
+        margin: 0 0 6px;
+        padding-bottom: 9px;
+        border-bottom: 2px solid var(--gold);
+        display: inline-block;
+    }
+
+    .section-description {
+        margin: 0 0 20px;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px 22px;
+    }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .field.full {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--heading);
+        margin-bottom: 7px;
+    }
+
+    .required { color: #c62828; }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 12px 13px;
+        font: inherit;
+        color: var(--heading);
+        background: #fff;
+        outline: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: var(--gold-dark);
+        box-shadow: 0 0 0 3px rgba(247,192,22,.16);
+    }
+
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .choice-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px 16px;
+    }
+
+    .choice {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 11px 12px;
+        border: 1px solid #e5e5e5;
+        border-radius: 5px;
+        background: #fff;
+        cursor: pointer;
+        font-weight: 400;
+        color: var(--text);
+        margin: 0;
+        transition: border-color .15s, background .15s;
+    }
+
+    .choice:hover {
+        border-color: #d4aa22;
+        background: #fffdf5;
+    }
+
+    .choice input {
+        margin-top: 4px;
+        accent-color: var(--gold-dark);
+        flex: 0 0 auto;
+    }
+
+    .choice span {
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .conditional {
+        display: none;
+        margin-top: 22px;
+        padding: 22px;
+        border-left: 4px solid var(--gold);
+        background: #fffdf6;
+        border-radius: 4px;
+    }
+
+    .conditional.show { display: block; }
+
+    .conditional h3 {
+        margin: 0 0 5px;
+        color: var(--heading);
+        font-size: 17px;
+    }
+
+    .conditional p {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+    }
+
+    .notice {
+        padding: 14px 16px;
+        border-radius: 5px;
+        margin-bottom: 25px;
+        font-size: 14px;
+    }
+
+    .notice.error {
+        background: #fff1f0;
+        border: 1px solid #f1c4c0;
+        color: var(--error);
+    }
+
+    .notice.success {
+        background: #eef8ef;
+        border: 1px solid #b9dfbc;
+        color: var(--success);
+    }
+
+    .notice ul {
+        margin: 7px 0 0 18px;
+        padding: 0;
+    }
+
+    .consent {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-weight: 400;
+        color: var(--text);
+        margin: 18px 0 24px;
+    }
+
+    .consent input {
+        margin-top: 5px;
+        accent-color: var(--gold-dark);
+    }
+
+    .submit-area {
+        padding-top: 8px;
+        border-top: 1px solid #eeeeee;
+        text-align: center;
+    }
+
+    button {
+        border: 0;
+        background: var(--gold);
+        color: #333;
+        font-weight: 700;
+        font-size: 15px;
+        padding: 14px 34px;
+        border-radius: 4px;
+        cursor: pointer;
+        min-width: 210px;
+        transition: background .15s, transform .05s;
+    }
+
+    button:hover { background: #eab400; }
+    button:active { transform: translateY(1px); }
+
+    .small-note {
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+
+    .submitted-data {
+        padding: 0 42px 42px;
+    }
+
+    .summary {
+        border: 1px solid #e1e1e1;
+        border-radius: 6px;
+        overflow: hidden;
+    }
+
+    .summary-row {
+        display: grid;
+        grid-template-columns: 250px 1fr;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    .summary-row:last-child { border-bottom: 0; }
+
+    .summary-label {
+        background: #fafafa;
+        padding: 11px 14px;
+        font-weight: 700;
+        color: var(--heading);
+    }
+
+    .summary-value {
+        padding: 11px 14px;
+        white-space: pre-wrap;
+    }
+
+    @media (max-width: 700px) {
+        .page { padding: 12px 8px 35px; }
+        .hero, form, .submitted-data { padding-left: 20px; padding-right: 20px; }
+        h1 { font-size: 26px; }
+        .grid, .choice-grid { grid-template-columns: 1fr; }
+        .field.full { grid-column: auto; }
+        .summary-row { grid-template-columns: 1fr; }
+        .summary-label { border-bottom: 1px solid #eeeeee; }
+    }
+</style>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1151.0" data-gr-ext-installed="">
+
+<div class="page">
+    <div class="form-card">
+
+        <div class="hero">
+            <div class="brand">Lions Club of Colombo LEADS</div>
+            <h1>Join Our Projects</h1>
+            <p class="intro">
+                Your time, skills, resources and generosity can make a meaningful difference in the lives of others.
+                Register your interest to support our community projects. You may volunteer your time, contribute
+                professional skills, provide financial support, sponsor a project, or support us in other ways.
+            </p>
+        </div>
+
+        
+        
+        <form method="post" action="https://www.colomboleads.org/join-our-projects.php" id="projectForm" novalidate="">
+
+            <!-- 1. Personal Information -->
+            <section class="section">
+                <h2 class="section-title">1. Personal Information</h2>
+                <p class="section-description">Please provide your contact details so our team can get in touch with you.</p>
+
+                <div class="grid">
+                    <div class="field">
+                        <label for="full_name">Full Name <span class="required">*</span></label>
+                        <input type="text" id="full_name" name="full_name" value="" required="">
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" id="email" name="email" value="" required="">
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Mobile / WhatsApp Number <span class="required">*</span></label>
+                        <input type="tel" id="phone" name="phone" value="" required="">
+                    </div>
+
+                    <div class="field">
+                        <label for="city">City / Area</label>
+                        <input type="text" id="city" name="city" value="">
+                    </div>
+
+                    <div class="field">
+                        <label for="occupation">Occupation / Profession</label>
+                        <input type="text" id="occupation" name="occupation" value="">
+                    </div>
+
+                    <div class="field">
+                        <label for="organization">Organization / Company</label>
+                        <input type="text" id="organization" name="organization" value="">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. How to support -->
+            <section class="section">
+                <h2 class="section-title">2. How Would You Like to Support Us?</h2>
+                <p class="section-description">Select all that apply.</p>
+
+                <div class="choice-grid">
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Volunteer My Time">
+                            <span>Volunteer My Time</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Offer My Professional Skills">
+                            <span>Offer My Professional Skills</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Make a Financial Donation">
+                            <span>Make a Financial Donation</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Sponsor a Project / Activity">
+                            <span>Sponsor a Project / Activity</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Donate Goods / Equipment / Supplies">
+                            <span>Donate Goods / Equipment / Supplies</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Provide Services / Resources">
+                            <span>Provide Services / Resources</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Support Fundraising Activities">
+                            <span>Support Fundraising Activities</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Partner / Collaborate with the Club">
+                            <span>Partner / Collaborate with the Club</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="support[]" value="Other">
+                            <span>Other</span>
+                        </label>
+                                    </div>
+
+                <div id="volunteerSection" class="conditional">
+                    <h3>Volunteer Your Time &amp; Skills</h3>
+                    <p>Tell us how you would like to participate in projects.</p>
+
+                    <div class="field">
+                        <label>Volunteer / Skill Areas</label>
+                        <div class="choice-grid">
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Event / Project Volunteer">
+                                    <span>Event / Project Volunteer</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Medical / Healthcare Services">
+                                    <span>Medical / Healthcare Services</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Professional / Technical Skills">
+                                    <span>Professional / Technical Skills</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="IT / Technology">
+                                    <span>IT / Technology</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Administration">
+                                    <span>Administration</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Public Relations / Communications">
+                                    <span>Public Relations / Communications</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Photography / Videography">
+                                    <span>Photography / Videography</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Fundraising">
+                                    <span>Fundraising</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Event Coordination">
+                                    <span>Event Coordination</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Transportation / Logistics">
+                                    <span>Transportation / Logistics</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Community Outreach">
+                                    <span>Community Outreach</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Teaching / Training">
+                                    <span>Teaching / Training</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="volunteer_areas[]" value="Other">
+                                    <span>Other</span>
+                                </label>
+                                                    </div>
+                    </div>
+
+                    <div class="grid" style="margin-top:18px;">
+                        <div class="field full">
+                            <label for="skills">Your Skills / Expertise</label>
+                            <textarea id="skills" name="skills" placeholder="For example: doctor, nurse, accountant, engineer, IT professional, teacher, photographer, driver, event organizer, etc."></textarea>
+                        </div>
+
+                        <div class="field full">
+                            <label>When Are You Generally Available?</label>
+                            <div class="choice-grid">
+                                                                    <label class="choice">
+                                        <input type="checkbox" name="availability[]" value="Weekdays">
+                                        <span>Weekdays</span>
+                                    </label>
+                                                                    <label class="choice">
+                                        <input type="checkbox" name="availability[]" value="Weekends">
+                                        <span>Weekends</span>
+                                    </label>
+                                                                    <label class="choice">
+                                        <input type="checkbox" name="availability[]" value="Evenings">
+                                        <span>Evenings</span>
+                                    </label>
+                                                                    <label class="choice">
+                                        <input type="checkbox" name="availability[]" value="Occasionally / Based on Project Requirements">
+                                        <span>Occasionally / Based on Project Requirements</span>
+                                    </label>
+                                                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="financialSection" class="conditional">
+                    <h3>Financial Support</h3>
+                    <p>Financial contributions can help us plan and deliver community projects. This information is optional and does not constitute a payment.</p>
+
+                    <div class="field">
+                        <label>How Would You Prefer to Contribute?</label>
+                        <div class="choice-grid">
+                                                            <label class="choice">
+                                    <input type="checkbox" name="financial_support[]" value="One-time donation">
+                                    <span>One-time donation</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="financial_support[]" value="Regular / recurring donation">
+                                    <span>Regular / recurring donation</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="financial_support[]" value="Sponsor a specific project">
+                                    <span>Sponsor a specific project</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="financial_support[]" value="Sponsor a specific beneficiary / requirement">
+                                    <span>Sponsor a specific beneficiary / requirement</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="financial_support[]" value="Corporate / Organization sponsorship">
+                                    <span>Corporate / Organization sponsorship</span>
+                                </label>
+                                                            <label class="choice">
+                                    <input type="checkbox" name="financial_support[]" value="I would like to discuss the options">
+                                    <span>I would like to discuss the options</span>
+                                </label>
+                                                    </div>
+                    </div>
+
+                    <div class="field" style="margin-top:18px;">
+                        <label for="amount">Estimated Contribution <span style="font-weight:400;color:#777;">(Optional)</span></label>
+                        <select id="amount" name="amount">
+                            <option value="">Please select</option>
+                                                            <option value="Below Rs. 5,000">
+                                    Below Rs. 5,000                                </option>
+                                                            <option value="Rs. 5,000 – 10,000">
+                                    Rs. 5,000 – 10,000                                </option>
+                                                            <option value="Rs. 10,000 – 25,000">
+                                    Rs. 10,000 – 25,000                                </option>
+                                                            <option value="Rs. 25,000 – 50,000">
+                                    Rs. 25,000 – 50,000                                </option>
+                                                            <option value="Above Rs. 50,000">
+                                    Above Rs. 50,000                                </option>
+                                                            <option value="Prefer to discuss">
+                                    Prefer to discuss                                </option>
+                                                    </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Areas -->
+            <section class="section">
+                <h2 class="section-title">3. Areas You Would Like to Support</h2>
+                <p class="section-description">Select all project or service areas that interest you.</p>
+
+                <div class="choice-grid">
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Health &amp; Medical Care">
+                            <span>Health &amp; Medical Care</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Vision &amp; Eye Care">
+                            <span>Vision &amp; Eye Care</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Diabetes Awareness &amp; Screening">
+                            <span>Diabetes Awareness &amp; Screening</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Blood Donation">
+                            <span>Blood Donation</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Childhood Cancer Support">
+                            <span>Childhood Cancer Support</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Youth &amp; Education">
+                            <span>Youth &amp; Education</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Support for Children &amp; Families in Need">
+                            <span>Support for Children &amp; Families in Need</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Hunger &amp; Food Assistance">
+                            <span>Hunger &amp; Food Assistance</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Environment">
+                            <span>Environment</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Disaster Relief">
+                            <span>Disaster Relief</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Support for Persons with Disabilities">
+                            <span>Support for Persons with Disabilities</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Senior Citizen Support">
+                            <span>Senior Citizen Support</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Humanitarian Assistance">
+                            <span>Humanitarian Assistance</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Community Development">
+                            <span>Community Development</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="service_areas[]" value="Other">
+                            <span>Other</span>
+                        </label>
+                                    </div>
+            </section>
+
+            <!-- 4. Project preference -->
+            <section class="section">
+                <h2 class="section-title">4. Project-Specific Support</h2>
+                <p class="section-description">If there is a particular type of project you would like to support, please let us know.</p>
+
+                <div class="choice-grid">
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Any suitable community project">
+                            <span>Any suitable community project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Health / Medical Project">
+                            <span>Health / Medical Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Vision / Cataract Project">
+                            <span>Vision / Cataract Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Blood Donation Project">
+                            <span>Blood Donation Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Diabetes Project">
+                            <span>Diabetes Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Youth / Education Project">
+                            <span>Youth / Education Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Hunger / Food Assistance">
+                            <span>Hunger / Food Assistance</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Environment Project">
+                            <span>Environment Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Humanitarian Project">
+                            <span>Humanitarian Project</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Disaster Relief">
+                            <span>Disaster Relief</span>
+                        </label>
+                                            <label class="choice">
+                            <input type="checkbox" name="project[]" value="Other">
+                            <span>Other</span>
+                        </label>
+                                    </div>
+
+                <div class="field" style="margin-top:18px;">
+                    <label for="project_idea">Specific Project or Idea</label>
+                    <textarea id="project_idea" name="project_idea" placeholder="Tell us if you have a particular project, beneficiary group, activity or idea you would like to support."></textarea>
+                </div>
+            </section>
+
+            <!-- 5. Organization -->
+            <section class="section">
+                <h2 class="section-title">5. About Your Registration</h2>
+                <p class="section-description">This helps us understand whether you are registering individually or on behalf of an organization.</p>
+
+                <div class="field">
+                    <label for="person_type">I Am Registering As</label>
+                    <select id="person_type" name="person_type">
+                        <option value="">Please select</option>
+                        <option value="Individual">Individual</option>
+                        <option value="Company / Organization">Company / Organization</option>
+                        <option value="Community / Social Group">Community / Social Group</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div id="organizationSection" class="conditional">
+                    <h3>Organization / Corporate Support</h3>
+                    <p>If you represent an organization, please provide some additional information.</p>
+
+                    <div class="grid">
+                        <div class="field">
+                            <label for="company_name">Organization Name</label>
+                            <input type="text" id="company_name" name="company_name" value="">
+                        </div>
+
+                        <div class="field">
+                            <label for="designation">Position / Designation</label>
+                            <input type="text" id="designation" name="designation" value="">
+                        </div>
+
+                        <div class="field full">
+                            <label for="company_support">How Could Your Organization Support Community Projects?</label>
+                            <textarea id="company_support" name="company_support" placeholder="For example: sponsorship, employee volunteering, equipment, professional services, venue, transportation, food, medical supplies, educational materials, etc."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Additional message -->
+            <section class="section">
+                <h2 class="section-title">6. Additional Message</h2>
+                <p class="section-description">Anything else you would like our team to know?</p>
+
+                <div class="field">
+                    <textarea id="message" name="message" placeholder="Please share any additional information, suggestions or questions."></textarea>
+                </div>
+            </section>
+
+            <!-- Consent -->
+            <label class="consent">
+                <input type="checkbox" name="consent" value="1" required="">
+                <span>I agree to be contacted by the Lions Club of Colombo LEADS regarding community service projects, volunteering opportunities, donations, sponsorships and related activities. <span class="required">*</span></span>
+            </label>
+
+            <div class="submit-area">
+                <button type="submit">REGISTER YOUR INTEREST</button>
+                <div class="small-note">Your information will be used to respond to your registration and coordinate relevant community service opportunities.</div>
+            </div>
+
+        </form>
+        
+    </div>
+</div>
+
+<script>
+(function () {
+    const form = document.getElementById('projectForm');
+    if (!form) return;
+
+    const volunteerSection = document.getElementById('volunteerSection');
+    const financialSection = document.getElementById('financialSection');
+    const organizationSection = document.getElementById('organizationSection');
+    const personType = document.getElementById('person_type');
+
+    function updateConditionalSections() {
+        const support = Array.from(form.querySelectorAll('input[name="support[]"]:checked')).map(el => el.value);
+
+        const needsVolunteer =
+            support.includes('Volunteer My Time') ||
+            support.includes('Offer My Professional Skills');
+
+        const needsFinancial =
+            support.includes('Make a Financial Donation');
+
+        if (volunteerSection) {
+            volunteerSection.classList.toggle('show', needsVolunteer);
+        }
+
+        if (financialSection) {
+            financialSection.classList.toggle('show', needsFinancial);
+        }
+
+        if (organizationSection) {
+            organizationSection.classList.toggle(
+                'show',
+                personType && personType.value === 'Company / Organization'
+            );
+        }
+    }
+
+    form.querySelectorAll('input[name="support[]"]').forEach(function (checkbox) {
+        checkbox.addEventListener('change', updateConditionalSections);
+    });
+
+    if (personType) {
+        personType.addEventListener('change', updateConditionalSections);
+    }
+
+    updateConditionalSections();
+
+    form.addEventListener('submit', function (event) {
+        const supportChecked = form.querySelectorAll('input[name="support[]"]:checked').length;
+        const areasChecked = form.querySelectorAll('input[name="service_areas[]"]:checked').length;
+
+        if (!supportChecked || !areasChecked) {
+            event.preventDefault();
+            alert('Please select at least one support option and at least one project/service area.');
+        }
+    });
+})();
+</script>
+
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

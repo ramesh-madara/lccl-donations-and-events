@@ -1,6 +1,6 @@
 <?php
 /**
- * wp-admin CRUD for blood donation reviewer accounts.
+ * wp-admin CRUD for program reviewer accounts.
  *
  * @package LCCL_Donations_And_Events
  */
@@ -62,9 +62,8 @@ class LCCL_DE_Admin_Users {
 			return;
 		}
 
-		$redirect = LCCL_DE_Admin_Programs::blood_url(
+		$redirect = LCCL_DE_Admin_Programs::users_url(
 			array(
-				'tab'     => 'users',
 				'message' => is_wp_error( $result ) ? 'error' : $result,
 				'error'   => is_wp_error( $result ) ? rawurlencode( $result->get_error_message() ) : false,
 			)
@@ -78,7 +77,7 @@ class LCCL_DE_Admin_Users {
 	 * Legacy renderer — the workspace now lives under LCCL Programs.
 	 */
 	public static function render() {
-		wp_safe_redirect( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'users' ) ) );
+		wp_safe_redirect( LCCL_DE_Admin_Programs::users_url() );
 		exit;
 	}
 
@@ -124,8 +123,7 @@ class LCCL_DE_Admin_Users {
 	 * @return string
 	 */
 	public static function url( $args = array() ) {
-		$args['tab'] = isset( $args['tab'] ) ? $args['tab'] : 'users';
-		return LCCL_DE_Admin_Programs::blood_url( $args );
+		return LCCL_DE_Admin_Programs::users_url( $args );
 	}
 
 	/**
@@ -177,7 +175,7 @@ class LCCL_DE_Admin_Users {
 		$target  = self::get_reviewer( $user_id );
 
 		if ( ! $target ) {
-			return new WP_Error( 'lccl_de_not_reviewer', __( 'That account is not a blood donation reviewer.', 'lccl-de' ) );
+			return new WP_Error( 'lccl_de_not_reviewer', __( 'That account is not a program reviewer.', 'lccl-de' ) );
 		}
 
 		$values = self::posted_fields( false );
@@ -224,7 +222,7 @@ class LCCL_DE_Admin_Users {
 		$target  = self::get_reviewer( $user_id );
 
 		if ( ! $target ) {
-			return new WP_Error( 'lccl_de_not_reviewer', __( 'That account is not a blood donation reviewer.', 'lccl-de' ) );
+			return new WP_Error( 'lccl_de_not_reviewer', __( 'That account is not a program reviewer.', 'lccl-de' ) );
 		}
 
 		$disabled = LCCL_DE_Roles::is_active( $user_id );
@@ -243,7 +241,7 @@ class LCCL_DE_Admin_Users {
 		$target  = self::get_reviewer( $user_id );
 
 		if ( ! $target ) {
-			return new WP_Error( 'lccl_de_not_reviewer', __( 'That account is not a blood donation reviewer.', 'lccl-de' ) );
+			return new WP_Error( 'lccl_de_not_reviewer', __( 'That account is not a program reviewer.', 'lccl-de' ) );
 		}
 
 		if ( get_current_user_id() === $user_id ) {

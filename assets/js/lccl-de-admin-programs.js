@@ -1,5 +1,5 @@
 /**
- * AJAX tab switching and form validation for the blood donation workspace in wp-admin.
+ * AJAX tab switching and form validation for the LCCL Programs hub in wp-admin.
  */
 ( function () {
 	'use strict';
@@ -14,7 +14,7 @@
 
 	function tabFromUrl() {
 		var match = /(?:\?|&)tab=([^&]+)/.exec( window.location.search );
-		return match && 'notifications' === match[ 1 ] ? 'notifications' : 'users';
+		return match && 'users' === match[ 1 ] ? 'users' : 'programs';
 	}
 
 	function isValidEmail( value ) {

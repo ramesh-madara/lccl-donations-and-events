@@ -128,7 +128,7 @@ class LCCL_DE_Blood_Donor_Submissions {
 			);
 		}
 
-		LCCL_DE_Notify::after_registration( $values, $inserted );
+		LCCL_DE_Notify::after_registration( $values, $inserted, LCCL_DE_Admin_Programs::PROGRAM_BLOOD );
 
 		self::redirect_with_flash(
 			$redirect,
