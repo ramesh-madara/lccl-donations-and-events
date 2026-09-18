@@ -64,13 +64,21 @@ class LCCL_DE_Join_Projects_Dashboard {
 		$user         = wp_get_current_user();
 		$current_dash = 'projects';
 		$script_data  = array(
-			'restUrl'     => esc_url_raw( rest_url( self::REST_NS . '/' ) ),
-			'nonce'       => wp_create_nonce( 'wp_rest' ),
-			'loggedIn'    => $can_view ? 1 : 0,
-			'canManage'   => $can_manage ? 1 : 0,
-			'displayName' => $can_view ? self::display_name( $user ) : '',
-			'perPage'     => 20,
-			'perPages'    => array( 10, 20, 50 ),
+			'restUrl'              => esc_url_raw( rest_url( self::REST_NS . '/' ) ),
+			'nonce'                => wp_create_nonce( 'wp_rest' ),
+			'loggedIn'             => $can_view ? 1 : 0,
+			'canManage'            => $can_manage ? 1 : 0,
+			'displayName'          => $can_view ? self::display_name( $user ) : '',
+			'perPage'              => 20,
+			'perPages'             => array( 10, 20, 50 ),
+			'supportWays'          => LCCL_DE_Join_Projects_Form::support_ways(),
+			'volunteerAreas'       => LCCL_DE_Join_Projects_Form::volunteer_areas(),
+			'availability'         => LCCL_DE_Join_Projects_Form::availability(),
+			'financialSupport'     => LCCL_DE_Join_Projects_Form::financial_support(),
+			'contributionAmounts'  => LCCL_DE_Join_Projects_Form::contribution_amounts(),
+			'interestAreas'        => LCCL_DE_Join_Projects_Form::interest_areas(),
+			'projectTypes'         => LCCL_DE_Join_Projects_Form::project_types(),
+			'registeringAs'        => LCCL_DE_Join_Projects_Form::registering_as_options(),
 		);
 
 		wp_localize_script(
@@ -182,19 +190,51 @@ class LCCL_DE_Join_Projects_Dashboard {
 	}
 
 	/**
-	 * Editable fields wait for the form layout. Site admins still get a clear error.
+	 * Update one registration. Site administrators only.
 	 *
 	 * @param WP_REST_Request $request Request.
-	 * @return WP_Error
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public static function rest_update( WP_REST_Request $request ) {
-		unset( $request );
+		$row = LCCL_DE_Join_Projects_Submissions::get( (int) $request['id'] );
+		if ( ! $row ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
 
-		return new WP_Error(
-			'lccl_de_not_ready',
-			__( 'This program has no editable fields yet.', 'lccl-de' ),
-			array( 'status' => 400 )
-		);
+		$params = $request->get_json_params();
+		if ( ! is_array( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$values = LCCL_DE_Join_Projects_Submissions::sanitize_payload( $params );
+		$errors = LCCL_DE_Join_Projects_Submissions::validate( $values, false );
+
+		if ( ! empty( $errors ) ) {
+			return new WP_Error(
+				'lccl_de_invalid',
+				__( 'Please correct the highlighted fields.', 'lccl-de' ),
+				array(
+					'status' => 400,
+					'errors' => $errors,
+				)
+			);
+		}
+
+		$saved = LCCL_DE_Join_Projects_Submissions::update( (int) $row['id'], $values, get_current_user_id() );
+		if ( ! $saved ) {
+			return new WP_Error(
+				'lccl_de_update',
+				__( 'The registration could not be saved. Please try again.', 'lccl-de' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$fresh = LCCL_DE_Join_Projects_Submissions::get( (int) $row['id'] );
+		if ( ! $fresh ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( LCCL_DE_Join_Projects_Submissions::present( $fresh ), 200 );
 	}
 
 	/**
@@ -221,6 +261,7 @@ class LCCL_DE_Join_Projects_Dashboard {
 			array(
 				'deleted' => true,
 				'id'      => (int) $row['id'],
+				'name'    => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
 			),
 			200
 		);

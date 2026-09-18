@@ -1,5 +1,5 @@
 /**
- * Frontend Join Our Projects admin: login, list, and delete over REST.
+ * Frontend Join Our Projects admin: login, list, edit, and delete over REST.
  */
 ( function () {
 	'use strict';
@@ -72,7 +72,11 @@
 			search: '',
 			selected: 0,
 			loadSeq: 0,
-			listBusy: false
+			detailSeq: 0,
+			listBusy: false,
+			detailBusy: false,
+			details: {},
+			parked: {}
 		};
 
 		var loginPanel = root.querySelector( '[data-panel="login"]' );
@@ -131,6 +135,7 @@
 						var message = ( data && data.message ) ? data.message : 'Request failed.';
 						var err = new Error( message );
 						err.status = response.status;
+						err.fields = ( data && data.data && data.data.errors ) ? data.data.errors : {};
 						throw err;
 					}
 					return data;
@@ -173,7 +178,11 @@
 			state.search = '';
 			state.selected = 0;
 			state.loadSeq += 1;
+			state.detailSeq += 1;
 			state.listBusy = false;
+			state.detailBusy = false;
+			state.details = {};
+			state.parked = {};
 			if ( perPageSelect ) {
 				perPageSelect.value = String( defaultPerPage );
 			}
@@ -189,20 +198,676 @@
 			syncLoaders();
 		}
 
-		function closeDetail() {
-			var open = rows ? rows.querySelector( 'tr.is-open' ) : null;
-			var detail = rows ? rows.querySelector( '[data-detail-row]' ) : null;
-			state.selected = 0;
-			if ( open ) {
-				open.classList.remove( 'is-open' );
-				var btn = open.querySelector( '.lccl-bda__expand-btn' );
-				if ( btn ) {
-					btn.setAttribute( 'aria-expanded', 'false' );
-					btn.setAttribute( 'aria-label', 'Show details' );
+		function syncTablePort() {
+			var port;
+			var maxScroll;
+
+			if ( ! tableScroll ) {
+				return;
+			}
+
+			port = Math.max( 200, Math.round( tableScroll.clientWidth ) );
+			tableScroll.style.setProperty( '--lccl-bda-port', port + 'px' );
+
+			if ( tableWrap ) {
+				maxScroll = tableScroll.scrollWidth - tableScroll.clientWidth;
+				tableWrap.classList.toggle( 'is-scrollable', maxScroll > 1 );
+				tableWrap.classList.toggle( 'is-scrolled-end', maxScroll > 1 && tableScroll.scrollLeft >= maxScroll - 1 );
+			}
+		}
+
+		function fallbackCopy( text ) {
+			var area = document.createElement( 'textarea' );
+			var ok = false;
+			area.value = text;
+			area.setAttribute( 'readonly', '' );
+			area.style.position = 'absolute';
+			area.style.left = '-9999px';
+			document.body.appendChild( area );
+			area.select();
+			try {
+				ok = document.execCommand( 'copy' );
+			} catch ( err ) {
+				ok = false;
+			}
+			document.body.removeChild( area );
+			return ok;
+		}
+
+		function markCopied( btn ) {
+			var label = btn.querySelector( '[data-copy-text]' );
+			btn.classList.add( 'is-copied' );
+			btn.setAttribute( 'aria-label', 'Copied' );
+			if ( label ) {
+				label.textContent = 'Copied';
+			}
+			window.setTimeout( function () {
+				btn.classList.remove( 'is-copied' );
+				btn.setAttribute( 'aria-label', btn.getAttribute( 'data-copy-label' ) || 'Copy' );
+				if ( label ) {
+					label.textContent = 'Copy error';
+				}
+			}, 1400 );
+		}
+
+		function copyValue( value, btn ) {
+			var text = String( value );
+			if ( navigator.clipboard && navigator.clipboard.writeText ) {
+				navigator.clipboard.writeText( text ).then( function () {
+					markCopied( btn );
+				} ).catch( function () {
+					if ( fallbackCopy( text ) ) {
+						markCopied( btn );
+					}
+				} );
+				return;
+			}
+			if ( fallbackCopy( text ) ) {
+				markCopied( btn );
+			}
+		}
+
+		function copyButton( label, value ) {
+			var btn = el( 'button', 'lccl-bda__copy' );
+			var caption = 'Copy ' + label;
+			btn.type = 'button';
+			btn.setAttribute( 'aria-label', caption );
+			btn.setAttribute( 'data-copy-label', caption );
+			btn.innerHTML = '<span class="lccl-bda__copy-icon" aria-hidden="true">' +
+				'<svg class="lccl-bda__copy-clip" width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+				'<rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/>' +
+				'<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+				'</svg>' +
+				'<svg class="lccl-bda__copy-check" width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+				'<path d="M3.2 8.4 6.6 11.7 12.8 4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+				'</svg>' +
+				'</span>';
+			btn.addEventListener( 'click', function ( event ) {
+				event.preventDefault();
+				event.stopPropagation();
+				copyValue( value, btn );
+			} );
+			return btn;
+		}
+
+		function addPersonField( grid, label, value, extraClass, canCopy ) {
+			var item;
+			var wrap;
+			if ( null == value || '' === value ) {
+				return;
+			}
+			item = el( 'div', 'lccl-bda__person-item' + ( extraClass ? ' ' + extraClass : '' ) );
+			item.appendChild( el( 'span', 'lccl-bda__person-label', label ) );
+			if ( canCopy ) {
+				wrap = el( 'span', 'lccl-bda__copy-wrap' );
+				wrap.appendChild( el( 'span', 'lccl-bda__person-value', String( value ) ) );
+				wrap.appendChild( copyButton( label, value ) );
+				item.appendChild( wrap );
+			} else {
+				item.appendChild( el( 'span', 'lccl-bda__person-value', String( value ) ) );
+			}
+			grid.appendChild( item );
+		}
+
+		function textCell( value, extraClass, emptyText ) {
+			var text = ( null == value || '' === value ) ? '' : String( value );
+			return el( 'td', extraClass || '', text || emptyText || '' );
+		}
+
+		function iconMarkup( name ) {
+			if ( 'edit' === name ) {
+				return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+			}
+			if ( 'delete' === name ) {
+				return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M9 7V5h6v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 7l1 14h10l1-14" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+			}
+			if ( 'cancel' === name ) {
+				return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+			}
+			return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+		}
+
+		function actionButton( kind, label, extraClass ) {
+			var btn = el( 'button', 'lccl-bda__action' + ( extraClass ? ' ' + extraClass : '' ) );
+			btn.type = 'button';
+			btn.setAttribute( 'data-action-kind', kind );
+			btn.innerHTML = iconMarkup( kind ) + '<span>' + label + '</span>';
+			return btn;
+		}
+
+		function constrainPhone( value ) {
+			value = String( value || '' );
+			var typed = value.replace( /[^\d+]/g, '' );
+			var digits = typed.replace( /\D/g, '' );
+			var international = 0 === typed.indexOf( '+' ) || 0 === digits.indexOf( '94' );
+
+			if ( ! international ) {
+				return digits.substring( 0, 10 );
+			}
+			if ( '+' === typed ) {
+				return '+';
+			}
+			if ( 0 === typed.indexOf( '+9' ) && 0 !== typed.indexOf( '+94' ) ) {
+				return '+9' === typed ? '+9' : '+94';
+			}
+			if ( 0 === typed.indexOf( '+' ) && 0 !== typed.indexOf( '+9' ) ) {
+				return '+';
+			}
+			if ( 0 === digits.indexOf( '94' ) ) {
+				digits = digits.substring( 2 );
+			}
+			if ( 0 === digits.indexOf( '0' ) ) {
+				digits = digits.substring( 1 );
+			}
+			return '+94' + digits.substring( 0, 9 );
+		}
+
+		function isValidPhone( value ) {
+			var raw = String( value || '' ).replace( /^\s+|\s+$/g, '' );
+			if ( '' === raw ) {
+				return false;
+			}
+			var digits = raw.replace( /\D/g, '' );
+			var international = 0 === raw.indexOf( '+' ) || 0 === digits.indexOf( '94' );
+			if ( international ) {
+				if ( 0 === digits.indexOf( '94' ) ) {
+					digits = digits.substring( 2 );
+				}
+				if ( 0 === digits.indexOf( '0' ) ) {
+					digits = digits.substring( 1 );
+				}
+				return /^[1-9][0-9]{8}$/.test( digits );
+			}
+			return /^0[1-9][0-9]{8}$/.test( digits );
+		}
+
+		function isValidEmail( value ) {
+			value = String( value || '' ).replace( /^\s+|\s+$/g, '' );
+			if ( '' === value ) {
+				return false;
+			}
+			if ( value.length > 191 ) {
+				return false;
+			}
+			return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) && -1 === value.indexOf( '..' );
+		}
+
+		function syncPhoneMax( field ) {
+			field.setAttribute( 'maxlength', 0 === field.value.indexOf( '+' ) ? '12' : '10' );
+		}
+
+		function setFieldNotice( form, name, message ) {
+			var notice = form.querySelector( '[data-lccl-notice="' + name + '"]' );
+			var field = form.querySelector( '[name="' + name + '"]' );
+			if ( notice ) {
+				if ( message ) {
+					notice.textContent = message;
+					notice.hidden = false;
+				} else {
+					notice.textContent = '';
+					notice.hidden = true;
 				}
 			}
-			if ( detail && detail.parentNode ) {
-				detail.parentNode.removeChild( detail );
+			if ( field ) {
+				field.classList.toggle( 'lccl-bda__input--error', !! message );
+				field.setAttribute( 'aria-invalid', message ? 'true' : 'false' );
+			}
+		}
+
+		function clearFieldNotices( form ) {
+			Array.prototype.forEach.call( form.querySelectorAll( '[data-lccl-notice]' ), function ( notice ) {
+				setFieldNotice( form, notice.getAttribute( 'data-lccl-notice' ), '' );
+			} );
+		}
+
+		function fillOptions( select, options, selected, placeholder ) {
+			var keys;
+			select.textContent = '';
+			if ( placeholder ) {
+				select.appendChild( new Option( placeholder, '' ) );
+			}
+			keys = Object.keys( options || {} );
+			keys.forEach( function ( key ) {
+				var opt = new Option( options[ key ], key );
+				if ( String( selected || '' ) === String( key ) ) {
+					opt.selected = true;
+				}
+				select.appendChild( opt );
+			} );
+		}
+
+		function addEditControl( grid, name, label, control, extraClass ) {
+			var item = el( 'div', 'lccl-bda__person-item lccl-bda__person-item--edit' + ( extraClass ? ' ' + extraClass : '' ) );
+			var lab = el( 'label', 'lccl-bda__person-label', label );
+			var notice = el( 'span', 'lccl-bda__field-notice' );
+			var id = 'lccl-opa-edit-' + name + '-' + String( state.selected || '' );
+			lab.setAttribute( 'for', id );
+			if ( control.classList && control.classList.contains( 'lccl-bda__checks' ) ) {
+				control.setAttribute( 'id', id );
+			} else {
+				control.id = id;
+				control.name = name;
+			}
+			notice.setAttribute( 'data-lccl-notice', name );
+			notice.hidden = true;
+			item.appendChild( lab );
+			item.appendChild( control );
+			item.appendChild( notice );
+			grid.appendChild( item );
+			return control;
+		}
+
+		function textInput( value, max, type ) {
+			var input = el( 'input', 'lccl-bda__input' );
+			input.type = type || 'text';
+			input.value = value || '';
+			if ( max ) {
+				input.setAttribute( 'maxlength', String( max ) );
+			}
+			return input;
+		}
+
+		function textArea( value, max ) {
+			var area = el( 'textarea', 'lccl-bda__input' );
+			area.value = value || '';
+			area.rows = 4;
+			if ( max ) {
+				area.setAttribute( 'maxlength', String( max ) );
+			}
+			return area;
+		}
+
+		function checkboxGroup( name, options, selected ) {
+			var wrap = el( 'div', 'lccl-bda__checks' );
+			selected = selected || [];
+			Object.keys( options || {} ).forEach( function ( key ) {
+				var lab = el( 'label', 'lccl-bda__check' );
+				var input = document.createElement( 'input' );
+				input.type = 'checkbox';
+				input.name = name;
+				input.value = key;
+				if ( -1 !== selected.indexOf( key ) ) {
+					input.checked = true;
+				}
+				lab.appendChild( input );
+				lab.appendChild( document.createTextNode( options[ key ] ) );
+				wrap.appendChild( lab );
+			} );
+			return wrap;
+		}
+
+		function collectChecked( form, name ) {
+			var out = [];
+			Array.prototype.forEach.call( form.querySelectorAll( 'input[name="' + name + '"]:checked' ), function ( input ) {
+				out.push( input.value );
+			} );
+			return out;
+		}
+
+		function collectEditValues( form ) {
+			function val( name ) {
+				var field = form.querySelector( '[name="' + name + '"]' );
+				return field ? String( field.value || '' ).replace( /^\s+|\s+$/g, '' ) : '';
+			}
+			return {
+				full_name: val( 'full_name' ),
+				email: val( 'email' ),
+				phone: val( 'phone' ),
+				city: val( 'city' ),
+				occupation: val( 'occupation' ),
+				organisation: val( 'organisation' ),
+				support_ways: collectChecked( form, 'support_ways' ),
+				volunteer_areas: collectChecked( form, 'volunteer_areas' ),
+				skills: val( 'skills' ),
+				availability: collectChecked( form, 'availability' ),
+				financial_support: collectChecked( form, 'financial_support' ),
+				contribution_amount: val( 'contribution_amount' ),
+				interest_areas: collectChecked( form, 'interest_areas' ),
+				project_types: collectChecked( form, 'project_types' ),
+				specific_idea: val( 'specific_idea' ),
+				registering_as: val( 'registering_as' ),
+				company_name: val( 'company_name' ),
+				designation: val( 'designation' ),
+				company_support: val( 'company_support' ),
+				message: val( 'message' )
+			};
+		}
+
+		function validateEdit( form, values ) {
+			var errors = {};
+			var required = 'This field is required.';
+			if ( ! values.full_name ) {
+				errors.full_name = required;
+			}
+			if ( ! values.email ) {
+				errors.email = required;
+			} else if ( ! isValidEmail( values.email ) ) {
+				errors.email = 'Please enter a valid email address.';
+			}
+			if ( ! values.phone ) {
+				errors.phone = required;
+			} else if ( ! isValidPhone( values.phone ) ) {
+				errors.phone = 'Enter a Sri Lankan phone number: 10 digits, or +94 followed by 9 digits.';
+			}
+			if ( ! values.support_ways.length ) {
+				errors.support_ways = 'Please select at least one support option and at least one project/service area.';
+			}
+			if ( ! values.interest_areas.length ) {
+				errors.interest_areas = 'Please select at least one support option and at least one project/service area.';
+			}
+			clearFieldNotices( form );
+			Object.keys( errors ).forEach( function ( name ) {
+				setFieldNotice( form, name, errors[ name ] );
+			} );
+			return errors;
+		}
+
+		function applyFieldErrors( form, fields ) {
+			clearFieldNotices( form );
+			Object.keys( fields || {} ).forEach( function ( name ) {
+				setFieldNotice( form, name, fields[ name ] );
+			} );
+		}
+
+		function patchSummaryRow( item ) {
+			var tr = rows ? rows.querySelector( 'tr[data-id="' + String( item.id ) + '"]' ) : null;
+			var cells;
+			if ( ! tr ) {
+				return;
+			}
+			cells = tr.querySelectorAll( 'td' );
+			if ( cells.length < 5 ) {
+				return;
+			}
+			cells[ 0 ].textContent = item.full_name || item.name || '';
+			cells[ 1 ].textContent = item.phone || '';
+			cells[ 2 ].textContent = item.email || '';
+			cells[ 3 ].textContent = item.city || '';
+		}
+
+		function personActions( panel, item, editing ) {
+			var actions = el( 'div', 'lccl-bda__person-actions' );
+			var editBtn;
+			var deleteBtn;
+			var cancelBtn;
+			var saveBtn;
+
+			if ( ! canManage ) {
+				return actions;
+			}
+
+			if ( editing ) {
+				cancelBtn = actionButton( 'cancel', 'Cancel' );
+				deleteBtn = actionButton( 'delete', 'Delete', 'lccl-bda__action--delete' );
+				saveBtn = actionButton( 'save', 'Save', 'lccl-bda__action--save' );
+				deleteBtn.disabled = true;
+				deleteBtn.setAttribute( 'aria-disabled', 'true' );
+				cancelBtn.addEventListener( 'click', function () {
+					if ( panel.classList.contains( 'is-saving' ) ) {
+						return;
+					}
+					fillPersonPanel( panel, item, false );
+				} );
+				saveBtn.addEventListener( 'click', function () {
+					var form = panel.querySelector( '.lccl-bda__person-form' );
+					if ( form && ! panel.classList.contains( 'is-saving' ) ) {
+						savePerson( panel, form, item );
+					}
+				} );
+				actions.appendChild( cancelBtn );
+				actions.appendChild( deleteBtn );
+				actions.appendChild( saveBtn );
+				return actions;
+			}
+
+			editBtn = actionButton( 'edit', 'Edit' );
+			deleteBtn = actionButton( 'delete', 'Delete', 'lccl-bda__action--delete' );
+			editBtn.addEventListener( 'click', function () {
+				fillPersonPanel( panel, item, true );
+			} );
+			deleteBtn.addEventListener( 'click', function () {
+				openDeleteDialog( item.id, personFullName( item ) );
+			} );
+			actions.appendChild( editBtn );
+			actions.appendChild( deleteBtn );
+			return actions;
+		}
+
+		function bindPhoneField( field ) {
+			syncPhoneMax( field );
+			field.addEventListener( 'input', function () {
+				var next = constrainPhone( field.value );
+				if ( next !== field.value ) {
+					field.value = next;
+				}
+				syncPhoneMax( field );
+				if ( field.value && isValidPhone( field.value ) ) {
+					field.classList.remove( 'lccl-bda__input--error' );
+				}
+			} );
+		}
+
+		function fillPersonView( panel, item ) {
+			var grid = el( 'div', 'lccl-bda__person-grid' );
+			addPersonField( grid, 'Phone', item.phone, '', true );
+			addPersonField( grid, 'Email', item.email, '', true );
+			addPersonField( grid, 'City / Area', item.city, '', true );
+			addPersonField( grid, 'Occupation / Profession', item.occupation, '', true );
+			addPersonField( grid, 'Organisation / Company', item.organisation, '', true );
+			addPersonField( grid, 'Registering as', item.registering_as_label );
+			addPersonField( grid, 'How they would like to support', item.support_ways_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Volunteer / skill areas', item.volunteer_areas_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Skills / expertise', item.skills, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Availability', item.availability_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Financial support', item.financial_support_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Estimated contribution', item.contribution_amount_label );
+			addPersonField( grid, 'Areas they would like to support', item.interest_areas_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Project-specific support', item.project_types_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Specific project or idea', item.specific_idea, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Organization name', item.company_name, '', true );
+			addPersonField( grid, 'Position / designation', item.designation, '', true );
+			addPersonField( grid, 'Organization support', item.company_support, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Additional message', item.message, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Registration date', item.created_label );
+			addPersonField( grid, 'Updated', item.updated_label );
+			addPersonField( grid, 'Updated by', item.updated_by_label );
+			panel.appendChild( grid );
+		}
+
+		function fillPersonEdit( panel, item ) {
+			var form = el( 'form', 'lccl-bda__person-form' );
+			var grid = el( 'div', 'lccl-bda__person-grid' );
+			var name;
+			var email;
+			var phone;
+
+			form.id = 'lccl-opa-edit-form';
+			form.setAttribute( 'novalidate', 'novalidate' );
+
+			name = addEditControl( grid, 'full_name', 'Full name', textInput( item.full_name || item.name, 191 ), 'lccl-bda__person-item--wide' );
+			phone = addEditControl( grid, 'phone', 'Phone', textInput( item.phone, 12, 'tel' ) );
+			email = addEditControl( grid, 'email', 'Email', textInput( item.email, 191, 'email' ) );
+			addEditControl( grid, 'city', 'City / Area', textInput( item.city, 100 ) );
+			addEditControl( grid, 'occupation', 'Occupation / Profession', textInput( item.occupation, 191 ) );
+			addEditControl( grid, 'organisation', 'Organisation / Company', textInput( item.organisation, 191 ) );
+			addEditControl(
+				grid,
+				'registering_as',
+				'Registering as',
+				( function () {
+					var select = el( 'select', 'lccl-bda__select' );
+					fillOptions( select, cfg.registeringAs || {}, item.registering_as, 'Select an option' );
+					return select;
+				}() )
+			);
+			addEditControl( grid, 'support_ways', 'How they would like to support', checkboxGroup( 'support_ways', cfg.supportWays || {}, item.support_ways || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'volunteer_areas', 'Volunteer / skill areas', checkboxGroup( 'volunteer_areas', cfg.volunteerAreas || {}, item.volunteer_areas || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'skills', 'Skills / expertise', textArea( item.skills, 2000 ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'availability', 'Availability', checkboxGroup( 'availability', cfg.availability || {}, item.availability || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'financial_support', 'Financial support', checkboxGroup( 'financial_support', cfg.financialSupport || {}, item.financial_support || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl(
+				grid,
+				'contribution_amount',
+				'Estimated contribution',
+				( function () {
+					var select = el( 'select', 'lccl-bda__select' );
+					fillOptions( select, cfg.contributionAmounts || {}, item.contribution_amount, 'Select an option' );
+					return select;
+				}() )
+			);
+			addEditControl( grid, 'interest_areas', 'Areas they would like to support', checkboxGroup( 'interest_areas', cfg.interestAreas || {}, item.interest_areas || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'project_types', 'Project-specific support', checkboxGroup( 'project_types', cfg.projectTypes || {}, item.project_types || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'specific_idea', 'Specific project or idea', textArea( item.specific_idea, 2000 ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'company_name', 'Organization name', textInput( item.company_name, 191 ) );
+			addEditControl( grid, 'designation', 'Position / designation', textInput( item.designation, 191 ) );
+			addEditControl( grid, 'company_support', 'Organization support', textArea( item.company_support, 2000 ), 'lccl-bda__person-item--wide' );
+			addEditControl( grid, 'message', 'Additional message', textArea( item.message, 2000 ), 'lccl-bda__person-item--wide' );
+
+			addPersonField( grid, 'Registration date', item.created_label );
+			addPersonField( grid, 'Updated', item.updated_label );
+			addPersonField( grid, 'Updated by', item.updated_by_label );
+
+			name.required = true;
+			phone.required = true;
+			email.required = true;
+			bindPhoneField( phone );
+
+			form.addEventListener( 'submit', function ( event ) {
+				event.preventDefault();
+				savePerson( panel, form, item );
+			} );
+
+			form.appendChild( grid );
+			panel.appendChild( form );
+		}
+
+		function setSaving( panel, saving ) {
+			var form = panel.querySelector( '.lccl-bda__person-form' );
+			var saveBtn = panel.querySelector( '.lccl-bda__action--save' );
+			var cancelBtn = panel.querySelector( '[data-action-kind="cancel"]' );
+			var spinner;
+
+			panel.classList.toggle( 'is-saving', !! saving );
+			panel.setAttribute( 'aria-busy', saving ? 'true' : 'false' );
+
+			if ( form ) {
+				Array.prototype.forEach.call( form.querySelectorAll( 'input, select, textarea' ), function ( field ) {
+					if ( saving ) {
+						field.setAttribute( 'data-lccl-was-disabled', field.disabled ? '1' : '0' );
+						field.disabled = true;
+					} else {
+						field.disabled = '1' === field.getAttribute( 'data-lccl-was-disabled' );
+						field.removeAttribute( 'data-lccl-was-disabled' );
+					}
+				} );
+			}
+
+			if ( cancelBtn ) {
+				cancelBtn.disabled = !! saving;
+				if ( saving ) {
+					cancelBtn.setAttribute( 'aria-disabled', 'true' );
+				} else {
+					cancelBtn.removeAttribute( 'aria-disabled' );
+				}
+			}
+
+			if ( ! saveBtn ) {
+				return;
+			}
+
+			saveBtn.disabled = !! saving;
+			saveBtn.classList.toggle( 'is-busy', !! saving );
+			saveBtn.setAttribute( 'aria-busy', saving ? 'true' : 'false' );
+			spinner = saveBtn.querySelector( '.lccl-bda__loader' );
+			if ( saving && ! spinner ) {
+				spinner = el( 'span', 'lccl-bda__loader lccl-bda__loader--btn' );
+				spinner.setAttribute( 'aria-hidden', 'true' );
+				saveBtn.insertBefore( spinner, saveBtn.firstChild );
+			} else if ( ! saving && spinner ) {
+				spinner.parentNode.removeChild( spinner );
+			}
+		}
+
+		function savePerson( panel, form, item ) {
+			var values = collectEditValues( form );
+			var errors = validateEdit( form, values );
+			var dashError = root.querySelector( '[data-dash-error]' );
+			var names;
+
+			if ( panel.classList.contains( 'is-saving' ) ) {
+				return;
+			}
+
+			if ( Object.keys( errors ).length ) {
+				names = Object.keys( errors ).map( function ( name ) {
+					return name + ': ' + errors[ name ];
+				} );
+				showToast( 'Please correct the highlighted fields.', 'error', names.join( '\n' ) );
+				return;
+			}
+
+			showBanner( dashError, '' );
+			setSaving( panel, true );
+
+			api( 'project-joins/' + item.id, {
+				method: 'PUT',
+				body: JSON.stringify( values )
+			} ).then( function ( saved ) {
+				state.details[ saved.id ] = saved;
+				patchSummaryRow( saved );
+				if ( state.parked[ saved.id ] && ! panel.isConnected ) {
+					delete state.parked[ saved.id ];
+				}
+				if ( panel.isConnected ) {
+					fillPersonPanel( panel, saved, false );
+				}
+				showToast( ( saved.full_name || saved.name || 'Registration' ) + '’s details were saved.', 'success' );
+			} ).catch( function ( err ) {
+				var liveForm = panel.querySelector( '.lccl-bda__person-form' );
+				if ( err.fields && Object.keys( err.fields ).length && liveForm ) {
+					applyFieldErrors( liveForm, err.fields );
+				}
+				showToast( err.message || 'The registration could not be saved.', 'error', formatErrorCopy( err ) );
+			} ).then( function () {
+				if ( panel.classList.contains( 'is-saving' ) ) {
+					setSaving( panel, false );
+				}
+			} );
+		}
+
+		function fillPersonPanel( panel, item, editing ) {
+			var head = el( 'div', 'lccl-bda__person-head' );
+			var heading = el( 'div', 'lccl-bda__person-title' );
+			var nameEl = el( 'p', 'lccl-bda__person-name', personFullName( item ) );
+
+			editing = !! editing && canManage;
+			panel.textContent = '';
+			panel.classList.remove( 'is-saving', 'is-loading' );
+			panel.removeAttribute( 'aria-busy' );
+			panel.classList.toggle( 'is-editing', editing );
+			heading.appendChild( nameEl );
+			if ( ! editing && personFullName( item ) ) {
+				heading.appendChild( copyButton( 'Name', personFullName( item ) ) );
+			}
+			head.appendChild( heading );
+			head.appendChild( personActions( panel, item, editing ) );
+			panel.appendChild( head );
+			if ( editing ) {
+				fillPersonEdit( panel, item );
+			} else {
+				fillPersonView( panel, item );
+			}
+		}
+
+		function setExpandChrome( summaryTr, open ) {
+			var btn = summaryTr ? summaryTr.querySelector( '.lccl-bda__expand-btn' ) : null;
+			if ( summaryTr ) {
+				summaryTr.classList.toggle( 'is-open', !! open );
+			}
+			if ( btn ) {
+				btn.classList.toggle( 'is-open', !! open );
+				btn.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+				btn.setAttribute( 'aria-label', open ? 'Hide details' : 'Show details' );
 			}
 		}
 
@@ -215,6 +880,7 @@
 				cell.colSpan = COLS;
 				empty.appendChild( cell );
 				rows.appendChild( empty );
+				syncTablePort();
 				return;
 			}
 
@@ -225,106 +891,145 @@
 				var icon;
 
 				tr.setAttribute( 'data-id', String( item.id ) );
-				tr.appendChild( el( 'td', '', item.full_name || item.name || '' ) );
-				tr.appendChild( el( 'td', '', item.phone || '' ) );
-				tr.appendChild( el( 'td', 'lccl-bda__col-email', item.email || '' ) );
-				tr.appendChild( el( 'td', '', item.city || '' ) );
-				tr.appendChild( el( 'td', '', item.created_label || '' ) );
+				if ( item.id === state.selected ) {
+					tr.className = 'is-open';
+				}
+				tr.appendChild( textCell( item.full_name || item.name || '' ) );
+				tr.appendChild( textCell( item.phone || '' ) );
+				tr.appendChild( textCell( item.email || '', 'lccl-bda__col-email', '—' ) );
+				tr.appendChild( textCell( item.city || '', 'lccl-bda__col-city' ) );
+				tr.appendChild( textCell( item.created_label || '' ) );
 
 				actionCell = el( 'td', 'lccl-bda__col-expand' );
 				expandBtn = el( 'button', 'lccl-bda__expand-btn' );
 				expandBtn.type = 'button';
-				expandBtn.setAttribute( 'aria-expanded', 'false' );
-				expandBtn.setAttribute( 'aria-label', 'Show details' );
+				expandBtn.setAttribute( 'aria-expanded', item.id === state.selected ? 'true' : 'false' );
+				expandBtn.setAttribute( 'aria-label', item.id === state.selected ? 'Hide details' : 'Show details' );
 				icon = el( 'span', 'lccl-bda__expand-icon' );
 				icon.setAttribute( 'aria-hidden', 'true' );
 				expandBtn.appendChild( icon );
 				expandBtn.addEventListener( 'click', function ( event ) {
 					event.preventDefault();
 					event.stopPropagation();
-					toggleDetail( item, tr );
+					toggleDetail( item.id, tr );
 				} );
 				actionCell.appendChild( expandBtn );
 				tr.appendChild( actionCell );
 				rows.appendChild( tr );
 			} );
+			syncTablePort();
 		}
 
-		function toggleDetail( item, summaryTr ) {
-			if ( state.selected === item.id ) {
+		function toggleDetail( id, summaryTr ) {
+			if ( state.selected === id ) {
 				closeDetail();
 				return;
 			}
-
 			closeDetail();
-			state.selected = item.id;
-			summaryTr.classList.add( 'is-open' );
-			var btn = summaryTr.querySelector( '.lccl-bda__expand-btn' );
-			if ( btn ) {
-				btn.setAttribute( 'aria-expanded', 'true' );
-				btn.setAttribute( 'aria-label', 'Hide details' );
+			openDetail( id, summaryTr );
+		}
+
+		function restoreParked( id, summaryTr ) {
+			var parked = state.parked[ id ];
+			if ( ! parked ) {
+				return false;
+			}
+			delete state.parked[ id ];
+			state.selected = id;
+			setExpandChrome( summaryTr, true );
+			if ( summaryTr && summaryTr.parentNode ) {
+				summaryTr.parentNode.insertBefore( parked, summaryTr.nextSibling );
+			}
+			syncTablePort();
+			return true;
+		}
+
+		function openDetail( id, summaryTr ) {
+			var error = root.querySelector( '[data-dash-error]' );
+			var seq;
+			var expandTr;
+			var td;
+			var panel;
+			var loader;
+			var overlay;
+			var spinner;
+
+			showBanner( error, '' );
+			if ( restoreParked( id, summaryTr ) ) {
+				return;
 			}
 
-			var detailTr = el( 'tr', 'lccl-bda__detail-row' );
-			detailTr.setAttribute( 'data-detail-row', '' );
-			var td = el( 'td', 'lccl-bda__detail' );
+			seq = ++state.detailSeq;
+			expandTr = el( 'tr', 'lccl-bda__expand-row' );
+			td = el( 'td' );
+			panel = el( 'div', 'lccl-bda__person' );
+			loader = el( 'div', 'lccl-bda__person-loading' );
+
+			state.selected = id;
+			setExpandChrome( summaryTr, true );
+
+			td.className = 'lccl-bda__expand-cell';
 			td.colSpan = COLS;
-
-			var panel = el( 'div', 'lccl-bda__person' );
-			var head = el( 'div', 'lccl-bda__person-head' );
-			var grid = el( 'div', 'lccl-bda__person-grid' );
-
-			function personItem( label, value, wide ) {
-				var item = el( 'div', 'lccl-bda__person-item' + ( wide ? ' lccl-bda__person-item--wide' : '' ) );
-				item.appendChild( el( 'span', 'lccl-bda__person-label', label ) );
-				item.appendChild( el( 'span', 'lccl-bda__person-value', value || '—' ) );
-				return item;
-			}
-
-			head.appendChild( el( 'h3', 'lccl-bda__person-name', personFullName( item ) ) );
-			if ( canManage ) {
-				var actions = el( 'div', 'lccl-bda__person-actions' );
-				var del = el( 'button', 'lccl-bda__action lccl-bda__action--delete', 'Delete' );
-				del.type = 'button';
-				del.addEventListener( 'click', function ( event ) {
-					event.preventDefault();
-					openDeleteDialog( item.id );
-				} );
-				actions.appendChild( del );
-				head.appendChild( actions );
-			}
-			panel.appendChild( head );
-
-			grid.appendChild( personItem( 'ID', String( item.id ) ) );
-			grid.appendChild( personItem( 'Registration date', item.created_label || '' ) );
-			grid.appendChild( personItem( 'Phone', item.phone || '' ) );
-			grid.appendChild( personItem( 'Email', item.email || '' ) );
-			grid.appendChild( personItem( 'City / Area', item.city || '' ) );
-			grid.appendChild( personItem( 'Occupation / Profession', item.occupation || '' ) );
-			grid.appendChild( personItem( 'Organisation / Company', item.organisation || '' ) );
-			grid.appendChild( personItem( 'Registering as', item.registering_as_label || '' ) );
-			grid.appendChild( personItem( 'How they would like to support', item.support_ways_label || '', true ) );
-			grid.appendChild( personItem( 'Volunteer / skill areas', item.volunteer_areas_label || '', true ) );
-			grid.appendChild( personItem( 'Skills / expertise', item.skills || '', true ) );
-			grid.appendChild( personItem( 'Availability', item.availability_label || '', true ) );
-			grid.appendChild( personItem( 'Financial support', item.financial_support_label || '', true ) );
-			grid.appendChild( personItem( 'Estimated contribution', item.contribution_amount_label || '' ) );
-			grid.appendChild( personItem( 'Areas they would like to support', item.interest_areas_label || '', true ) );
-			grid.appendChild( personItem( 'Project-specific support', item.project_types_label || '', true ) );
-			grid.appendChild( personItem( 'Specific project or idea', item.specific_idea || '', true ) );
-			grid.appendChild( personItem( 'Organization name', item.company_name || '' ) );
-			grid.appendChild( personItem( 'Position / designation', item.designation || '' ) );
-			grid.appendChild( personItem( 'Organization support', item.company_support || '', true ) );
-			grid.appendChild( personItem( 'Additional message', item.message || '', true ) );
-			panel.appendChild( grid );
+			panel.classList.add( 'is-loading' );
+			panel.setAttribute( 'aria-busy', 'true' );
+			overlay = el( 'div', 'lccl-bda__modal' );
+			spinner = el( 'span', 'lccl-bda__loader lccl-bda__loader--lg' );
+			spinner.setAttribute( 'aria-hidden', 'true' );
+			overlay.appendChild( spinner );
+			overlay.appendChild( el( 'span', 'lccl-bda__modal-label', 'Loading…' ) );
+			loader.appendChild( el( 'span', 'lccl-bda__loader lccl-bda__loader--lg' ) );
+			loader.appendChild( el( 'span', 'lccl-bda__modal-label', 'Loading…' ) );
+			panel.appendChild( loader );
+			panel.appendChild( overlay );
 			td.appendChild( panel );
-
-			detailTr.appendChild( td );
-			if ( summaryTr.nextSibling ) {
-				rows.insertBefore( detailTr, summaryTr.nextSibling );
-			} else {
-				rows.appendChild( detailTr );
+			expandTr.appendChild( td );
+			if ( summaryTr && summaryTr.parentNode ) {
+				summaryTr.parentNode.insertBefore( expandTr, summaryTr.nextSibling );
 			}
+			syncTablePort();
+
+			state.detailBusy = true;
+			api( 'project-joins/' + id ).then( function ( item ) {
+				if ( seq !== state.detailSeq || dashPanel.hidden ) {
+					return;
+				}
+				state.details[ id ] = item;
+				fillPersonPanel( panel, item );
+				syncTablePort();
+			} ).catch( function ( err ) {
+				if ( seq !== state.detailSeq || dashPanel.hidden ) {
+					return;
+				}
+				showToast( err.message || 'Registration details could not be loaded.', 'error', formatErrorCopy( err ) );
+				closeDetail();
+			} ).then( function () {
+				if ( seq !== state.detailSeq ) {
+					return;
+				}
+				state.detailBusy = false;
+			} );
+		}
+
+		function closeDetail() {
+			var openRow = rows ? rows.querySelector( '.lccl-bda__expand-row' ) : null;
+			var panel = openRow ? openRow.querySelector( '.lccl-bda__person' ) : null;
+			var id = state.selected;
+
+			if ( openRow && panel && panel.classList.contains( 'is-saving' ) && id ) {
+				state.parked[ id ] = openRow;
+				if ( openRow.parentNode ) {
+					openRow.parentNode.removeChild( openRow );
+				}
+			} else if ( openRow && openRow.parentNode ) {
+				openRow.parentNode.removeChild( openRow );
+			}
+
+			state.selected = 0;
+			state.detailSeq += 1;
+			state.detailBusy = false;
+			Array.prototype.forEach.call( rows.querySelectorAll( 'tr[data-id]' ), function ( tr ) {
+				setExpandChrome( tr, false );
+			} );
 		}
 
 		function pageWindow( current, pages ) {
@@ -455,7 +1160,7 @@
 				if ( seq !== state.loadSeq || dashPanel.hidden ) {
 					return;
 				}
-				showToast( err.message || 'Registrations could not be loaded.', 'error' );
+				showToast( err.message || 'Registrations could not be loaded.', 'error', formatErrorCopy( err ) );
 			} ).then( function () {
 				if ( seq !== state.loadSeq ) {
 					return;
@@ -465,37 +1170,103 @@
 			} );
 		}
 
-		function showToast( message, tone ) {
+		function formatErrorCopy( err ) {
+			var lines;
+			var fields;
+			var message = ( err && err.message ) ? String( err.message ) : 'Request failed.';
+			if ( 'string' === typeof err ) {
+				return err;
+			}
+			lines = [ message ];
+			fields = err && err.fields ? err.fields : {};
+			Object.keys( fields ).forEach( function ( name ) {
+				lines.push( name + ': ' + fields[ name ] );
+			} );
+			if ( err && err.status ) {
+				lines.push( 'Status: ' + err.status );
+			}
+			return lines.join( '\n' );
+		}
+
+		function showToast( message, tone, copyText ) {
 			var host = root.querySelector( '[data-toasts]' );
 			var toast;
+			var copyBtn;
+			var label;
+			var isError;
 			if ( ! host || ! message ) {
 				return;
 			}
+			isError = 'error' === tone;
 			toast = el( 'div', 'lccl-bda__toast lccl-bda__toast--' + ( tone || 'success' ) );
-			toast.setAttribute( 'role', 'error' === tone ? 'alert' : 'status' );
+			toast.setAttribute( 'role', isError ? 'alert' : 'status' );
 			toast.appendChild( el( 'span', 'lccl-bda__toast-text', message ) );
+			if ( isError ) {
+				copyBtn = el( 'button', 'lccl-bda__toast-copy' );
+				label = el( 'span', '', 'Copy error' );
+				copyBtn.type = 'button';
+				copyBtn.setAttribute( 'aria-label', 'Copy error' );
+				copyBtn.setAttribute( 'data-copy-label', 'Copy error' );
+				label.setAttribute( 'data-copy-text', '' );
+				copyBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+				copyBtn.appendChild( label );
+				copyBtn.addEventListener( 'click', function ( event ) {
+					event.preventDefault();
+					event.stopPropagation();
+					copyValue( copyText || message, copyBtn );
+				} );
+				toast.appendChild( copyBtn );
+			}
 			host.appendChild( toast );
 			window.setTimeout( function () {
 				if ( toast.parentNode ) {
 					toast.parentNode.removeChild( toast );
 				}
-			}, 'error' === tone ? 8000 : 4500 );
+			}, isError ? 8000 : 4500 );
+		}
+
+		function isDeleting() {
+			var dialog = root.querySelector( '[data-delete-dialog]' );
+			return !!( dialog && dialog.classList.contains( 'is-deleting' ) );
 		}
 
 		function setDeleting( deleting ) {
 			var dialog = root.querySelector( '[data-delete-dialog]' );
 			var yes = root.querySelector( '[data-delete-confirm]' );
+			var spinner;
+
 			deleting = !! deleting;
 			if ( dialog ) {
 				dialog.classList.toggle( 'is-deleting', deleting );
+				dialog.setAttribute( 'aria-busy', deleting ? 'true' : 'false' );
 			}
+
 			Array.prototype.forEach.call( root.querySelectorAll( '[data-delete-cancel]' ), function ( btn ) {
-				if ( 'BUTTON' === btn.tagName ) {
-					btn.disabled = deleting;
+				if ( 'BUTTON' !== btn.tagName ) {
+					return;
+				}
+				btn.disabled = deleting;
+				if ( deleting ) {
+					btn.setAttribute( 'aria-disabled', 'true' );
+				} else {
+					btn.removeAttribute( 'aria-disabled' );
 				}
 			} );
-			if ( yes ) {
-				yes.disabled = deleting;
+
+			if ( ! yes ) {
+				return;
+			}
+
+			yes.disabled = deleting;
+			yes.classList.toggle( 'is-busy', deleting );
+			yes.setAttribute( 'aria-busy', deleting ? 'true' : 'false' );
+			spinner = yes.querySelector( '.lccl-bda__loader' );
+			if ( deleting && ! spinner ) {
+				spinner = el( 'span', 'lccl-bda__loader lccl-bda__loader--btn' );
+				spinner.setAttribute( 'aria-hidden', 'true' );
+				yes.insertBefore( spinner, yes.firstChild );
+			} else if ( ! deleting && spinner ) {
+				spinner.parentNode.removeChild( spinner );
 			}
 		}
 
@@ -510,12 +1281,19 @@
 			showBanner( error, '' );
 		}
 
-		function openDeleteDialog( id ) {
+		function openDeleteDialog( id, name ) {
 			var dialog = root.querySelector( '[data-delete-dialog]' );
+			var message = root.querySelector( '[data-delete-message]' );
 			var error = root.querySelector( '[data-delete-error]' );
 			var yes = root.querySelector( '[data-delete-confirm]' );
-			pendingDelete = { id: id };
+			pendingDelete = {
+				id: id,
+				name: name || 'this registration'
+			};
 			setDeleting( false );
+			if ( message ) {
+				message.textContent = 'Are you sure you want to delete the registration for ' + pendingDelete.name + '? This cannot be undone.';
+			}
 			showBanner( error, '' );
 			if ( dialog ) {
 				dialog.hidden = false;
@@ -528,20 +1306,46 @@
 		function confirmDelete() {
 			var error = root.querySelector( '[data-delete-error]' );
 			var current = pendingDelete;
-			if ( ! current ) {
+			if ( ! current || isDeleting() ) {
 				return;
 			}
-			setDeleting( true );
 			showBanner( error, '' );
-			api( 'project-joins/' + current.id, { method: 'DELETE' } ).then( function () {
+			setDeleting( true );
+			api( 'project-joins/' + current.id, { method: 'DELETE' } ).then( function ( data ) {
+				var name = ( data && data.name ) ? data.name : current.name;
 				closeDeleteDialog();
-				showToast( 'Registration deleted.', 'success' );
-				loadJoins();
+				delete state.details[ current.id ];
+				closeDetail();
+				showToast( name + '’s registration was deleted.', 'delete' );
+				return loadJoins();
 			} ).catch( function ( err ) {
+				showToast( err.message || 'The registration could not be deleted.', 'error', formatErrorCopy( err ) );
 				setDeleting( false );
-				showBanner( error, err.message || 'The registration could not be deleted.' );
 			} );
 		}
+
+		( function bindDeleteDialog() {
+			var dialog = root.querySelector( '[data-delete-dialog]' );
+			var yes = root.querySelector( '[data-delete-confirm]' );
+			if ( ! dialog ) {
+				return;
+			}
+			Array.prototype.forEach.call( root.querySelectorAll( '[data-delete-cancel]' ), function ( btn ) {
+				btn.addEventListener( 'click', function () {
+					if ( ! isDeleting() ) {
+						closeDeleteDialog();
+					}
+				} );
+			} );
+			if ( yes ) {
+				yes.addEventListener( 'click', confirmDelete );
+			}
+			document.addEventListener( 'keydown', function ( event ) {
+				if ( 'Escape' === event.key && ! dialog.hidden && ! isDeleting() ) {
+					closeDeleteDialog();
+				}
+			} );
+		}() );
 
 		Array.prototype.forEach.call( root.querySelectorAll( '[data-show]' ), function ( btn ) {
 			btn.addEventListener( 'click', function () {
@@ -678,13 +1482,15 @@
 			} );
 		}
 
-		var deleteConfirm = root.querySelector( '[data-delete-confirm]' );
-		if ( deleteConfirm ) {
-			deleteConfirm.addEventListener( 'click', confirmDelete );
+		if ( tableScroll ) {
+			tableScroll.addEventListener( 'scroll', syncTablePort, { passive: true } );
+			if ( window.ResizeObserver ) {
+				new window.ResizeObserver( syncTablePort ).observe( tableScroll );
+			} else {
+				window.addEventListener( 'resize', syncTablePort );
+			}
+			syncTablePort();
 		}
-		Array.prototype.forEach.call( root.querySelectorAll( '[data-delete-cancel]' ), function ( btn ) {
-			btn.addEventListener( 'click', closeDeleteDialog );
-		} );
 
 		if ( '1' === root.getAttribute( 'data-logged-in' ) ) {
 			loadJoins();
@@ -694,7 +1500,11 @@
 	ready( function () {
 		Array.prototype.forEach.call(
 			document.querySelectorAll( '.lccl-bda' ),
-			init
+			function ( root ) {
+				if ( root.querySelector( '[data-join-rows]' ) ) {
+					init( root );
+				}
+			}
 		);
 	} );
 }() );

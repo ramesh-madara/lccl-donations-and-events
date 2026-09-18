@@ -143,42 +143,51 @@ class LCCL_DE_Join_Projects_Submissions {
 	 * @return array
 	 */
 	public static function sanitize_request() {
-		$post = wp_unslash( $_POST );
+		return self::sanitize_payload( wp_unslash( $_POST ) );
+	}
 
+	/**
+	 * Sanitise a POST or JSON payload into stored field values.
+	 *
+	 * @param array $source Raw values.
+	 * @return array
+	 */
+	public static function sanitize_payload( array $source ) {
 		return array(
-			'full_name'            => self::clip_field( isset( $post['full_name'] ) ? $post['full_name'] : '', 191 ),
-			'email'                => LCCL_DE_Blood_Donor_Submissions::sanitize_email_field( isset( $post['email'] ) ? $post['email'] : '' ),
-			'phone'                => LCCL_DE_Blood_Donor_Submissions::sanitize_phone_field( isset( $post['phone'] ) ? $post['phone'] : '' ),
-			'city'                 => self::clip_field( isset( $post['city'] ) ? $post['city'] : '', 100 ),
-			'occupation'           => self::clip_field( isset( $post['occupation'] ) ? $post['occupation'] : '', 191 ),
-			'organisation'         => self::clip_field( isset( $post['organisation'] ) ? $post['organisation'] : '', 191 ),
-			'support_ways'         => self::sanitize_choice_list( isset( $post['support_ways'] ) ? $post['support_ways'] : array(), array_keys( LCCL_DE_Join_Projects_Form::support_ways() ) ),
+			'full_name'            => self::clip_field( isset( $source['full_name'] ) ? $source['full_name'] : '', 191 ),
+			'email'                => LCCL_DE_Blood_Donor_Submissions::sanitize_email_field( isset( $source['email'] ) ? $source['email'] : '' ),
+			'phone'                => LCCL_DE_Blood_Donor_Submissions::sanitize_phone_field( isset( $source['phone'] ) ? $source['phone'] : '' ),
+			'city'                 => self::clip_field( isset( $source['city'] ) ? $source['city'] : '', 100 ),
+			'occupation'           => self::clip_field( isset( $source['occupation'] ) ? $source['occupation'] : '', 191 ),
+			'organisation'         => self::clip_field( isset( $source['organisation'] ) ? $source['organisation'] : '', 191 ),
+			'support_ways'         => self::sanitize_choice_list( isset( $source['support_ways'] ) ? $source['support_ways'] : array(), array_keys( LCCL_DE_Join_Projects_Form::support_ways() ) ),
 			'support_ways_other'   => '',
-			'volunteer_areas'      => self::sanitize_choice_list( isset( $post['volunteer_areas'] ) ? $post['volunteer_areas'] : array(), array_keys( LCCL_DE_Join_Projects_Form::volunteer_areas() ) ),
-			'skills'               => self::clip_textarea( isset( $post['skills'] ) ? $post['skills'] : '', 2000 ),
-			'availability'         => self::sanitize_choice_list( isset( $post['availability'] ) ? $post['availability'] : array(), array_keys( LCCL_DE_Join_Projects_Form::availability() ) ),
-			'financial_support'    => self::sanitize_choice_list( isset( $post['financial_support'] ) ? $post['financial_support'] : array(), array_keys( LCCL_DE_Join_Projects_Form::financial_support() ) ),
-			'contribution_amount'  => isset( $post['contribution_amount'] ) ? sanitize_key( $post['contribution_amount'] ) : '',
-			'interest_areas'       => self::sanitize_choice_list( isset( $post['interest_areas'] ) ? $post['interest_areas'] : array(), array_keys( LCCL_DE_Join_Projects_Form::interest_areas() ) ),
+			'volunteer_areas'      => self::sanitize_choice_list( isset( $source['volunteer_areas'] ) ? $source['volunteer_areas'] : array(), array_keys( LCCL_DE_Join_Projects_Form::volunteer_areas() ) ),
+			'skills'               => self::clip_textarea( isset( $source['skills'] ) ? $source['skills'] : '', 2000 ),
+			'availability'         => self::sanitize_choice_list( isset( $source['availability'] ) ? $source['availability'] : array(), array_keys( LCCL_DE_Join_Projects_Form::availability() ) ),
+			'financial_support'    => self::sanitize_choice_list( isset( $source['financial_support'] ) ? $source['financial_support'] : array(), array_keys( LCCL_DE_Join_Projects_Form::financial_support() ) ),
+			'contribution_amount'  => isset( $source['contribution_amount'] ) ? sanitize_key( $source['contribution_amount'] ) : '',
+			'interest_areas'       => self::sanitize_choice_list( isset( $source['interest_areas'] ) ? $source['interest_areas'] : array(), array_keys( LCCL_DE_Join_Projects_Form::interest_areas() ) ),
 			'interest_areas_other' => '',
-			'project_types'        => self::sanitize_choice_list( isset( $post['project_types'] ) ? $post['project_types'] : array(), array_keys( LCCL_DE_Join_Projects_Form::project_types() ) ),
-			'specific_idea'        => self::clip_textarea( isset( $post['specific_idea'] ) ? $post['specific_idea'] : '', 2000 ),
-			'registering_as'       => isset( $post['registering_as'] ) ? sanitize_key( $post['registering_as'] ) : '',
-			'company_name'         => self::clip_field( isset( $post['company_name'] ) ? $post['company_name'] : '', 191 ),
-			'designation'          => self::clip_field( isset( $post['designation'] ) ? $post['designation'] : '', 191 ),
-			'company_support'      => self::clip_textarea( isset( $post['company_support'] ) ? $post['company_support'] : '', 2000 ),
-			'message'              => self::clip_textarea( isset( $post['message'] ) ? $post['message'] : '', 2000 ),
-			'consent'              => ! empty( $post['consent'] ) ? 1 : 0,
+			'project_types'        => self::sanitize_choice_list( isset( $source['project_types'] ) ? $source['project_types'] : array(), array_keys( LCCL_DE_Join_Projects_Form::project_types() ) ),
+			'specific_idea'        => self::clip_textarea( isset( $source['specific_idea'] ) ? $source['specific_idea'] : '', 2000 ),
+			'registering_as'       => isset( $source['registering_as'] ) ? sanitize_key( $source['registering_as'] ) : '',
+			'company_name'         => self::clip_field( isset( $source['company_name'] ) ? $source['company_name'] : '', 191 ),
+			'designation'          => self::clip_field( isset( $source['designation'] ) ? $source['designation'] : '', 191 ),
+			'company_support'      => self::clip_textarea( isset( $source['company_support'] ) ? $source['company_support'] : '', 2000 ),
+			'message'              => self::clip_textarea( isset( $source['message'] ) ? $source['message'] : '', 2000 ),
+			'consent'              => ! empty( $source['consent'] ) ? 1 : 0,
 		);
 	}
 
 	/**
 	 * Validate sanitised values. Returns field => message.
 	 *
-	 * @param array $values Sanitised input.
+	 * @param array $values          Sanitised input.
+	 * @param bool  $require_consent Whether consent must be ticked (public form only).
 	 * @return array
 	 */
-	public static function validate( array $values ) {
+	public static function validate( array $values, $require_consent = true ) {
 		$errors       = array();
 		$required_msg = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 
@@ -188,7 +197,7 @@ class LCCL_DE_Join_Projects_Submissions {
 			}
 		}
 
-		if ( empty( $values['consent'] ) ) {
+		if ( $require_consent && empty( $values['consent'] ) ) {
 			$errors['consent'] = $required_msg;
 		}
 
@@ -270,7 +279,7 @@ class LCCL_DE_Join_Projects_Submissions {
 		}
 
 		$offset      = ( $page - 1 ) * $per_page;
-		$list_sql    = "SELECT * FROM {$table} WHERE {$where_sql} ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d";
+		$list_sql    = "SELECT id, full_name, email, phone, city, created_at FROM {$table} WHERE {$where_sql} ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d";
 		$list_params = $params;
 		$list_params[] = $per_page;
 		$list_params[] = $offset;
@@ -279,7 +288,7 @@ class LCCL_DE_Join_Projects_Submissions {
 
 		$items = array();
 		foreach ( (array) $rows as $row ) {
-			$items[] = self::present( $row );
+			$items[] = self::present_list_row( $row );
 		}
 
 		return array(
@@ -392,13 +401,88 @@ class LCCL_DE_Join_Projects_Submissions {
 	}
 
 	/**
-	 * List/detail DTO.
+	 * Update a registration. Does not change consent, IP, or created_at.
+	 *
+	 * @param int   $id      Row ID.
+	 * @param array $values  Sanitised, validated values.
+	 * @param int   $user_id Acting administrator.
+	 * @return bool
+	 */
+	public static function update( $id, array $values, $user_id ) {
+		global $wpdb;
+
+		$id      = (int) $id;
+		$user_id = (int) $user_id;
+		if ( $id <= 0 || $user_id <= 0 ) {
+			return false;
+		}
+
+		$result = $wpdb->update(
+			LCCL_DE_Schema::project_joins_table(),
+			array(
+				'full_name'           => $values['full_name'],
+				'email'               => $values['email'],
+				'phone'               => $values['phone'],
+				'city'                => '' !== $values['city'] ? $values['city'] : null,
+				'occupation'          => '' !== $values['occupation'] ? $values['occupation'] : null,
+				'organisation'        => '' !== $values['organisation'] ? $values['organisation'] : null,
+				'support_ways'        => self::encode_list( $values['support_ways'] ),
+				'volunteer_areas'     => self::encode_list( $values['volunteer_areas'] ),
+				'skills'              => '' !== $values['skills'] ? $values['skills'] : null,
+				'availability'        => self::encode_list( $values['availability'] ),
+				'financial_support'   => self::encode_list( $values['financial_support'] ),
+				'contribution_amount' => '' !== $values['contribution_amount'] ? $values['contribution_amount'] : null,
+				'interest_areas'      => self::encode_list( $values['interest_areas'] ),
+				'project_types'       => self::encode_list( $values['project_types'] ),
+				'specific_idea'       => '' !== $values['specific_idea'] ? $values['specific_idea'] : null,
+				'registering_as'      => '' !== $values['registering_as'] ? $values['registering_as'] : null,
+				'company_name'        => '' !== $values['company_name'] ? $values['company_name'] : null,
+				'designation'         => '' !== $values['designation'] ? $values['designation'] : null,
+				'company_support'     => '' !== $values['company_support'] ? $values['company_support'] : null,
+				'message'             => '' !== $values['message'] ? $values['message'] : null,
+				'updated_at'          => current_time( 'mysql' ),
+				'updated_by'          => $user_id,
+			),
+			array( 'id' => $id ),
+			array(
+				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
+				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
+				'%s', '%d',
+			),
+			array( '%d' )
+		);
+
+		return false !== $result;
+	}
+
+	/**
+	 * Table-row DTO. Expand fetches the rest on demand.
+	 *
+	 * @param array $row Database row.
+	 * @return array
+	 */
+	public static function present_list_row( array $row ) {
+		$created = isset( $row['created_at'] ) ? $row['created_at'] : '';
+
+		return array(
+			'id'            => (int) $row['id'],
+			'full_name'     => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
+			'name'          => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
+			'email'         => isset( $row['email'] ) ? (string) $row['email'] : '',
+			'phone'         => isset( $row['phone'] ) ? (string) $row['phone'] : '',
+			'city'          => isset( $row['city'] ) ? (string) $row['city'] : '',
+			'created_at'    => $created,
+			'created_label' => $created ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $created ) : '',
+		);
+	}
+
+	/**
+	 * Full detail DTO used after the expand request.
 	 *
 	 * @param array $row Database row.
 	 * @return array
 	 */
 	public static function present( array $row ) {
-		$created        = isset( $row['created_at'] ) ? $row['created_at'] : '';
 		$updated        = ! empty( $row['updated_at'] ) ? $row['updated_at'] : '';
 		$support        = self::decode_list( isset( $row['support_ways'] ) ? $row['support_ways'] : '' );
 		$volunteer      = self::decode_list( isset( $row['volunteer_areas'] ) ? $row['volunteer_areas'] : '' );
@@ -411,44 +495,67 @@ class LCCL_DE_Join_Projects_Submissions {
 		$amount_key     = isset( $row['contribution_amount'] ) ? (string) $row['contribution_amount'] : '';
 		$amount_opts    = LCCL_DE_Join_Projects_Form::contribution_amounts();
 
-		return array(
-			'id'                      => (int) $row['id'],
-			'full_name'               => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
-			'name'                    => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
-			'email'                   => isset( $row['email'] ) ? (string) $row['email'] : '',
-			'phone'                   => isset( $row['phone'] ) ? (string) $row['phone'] : '',
-			'city'                    => isset( $row['city'] ) ? (string) $row['city'] : '',
-			'occupation'              => isset( $row['occupation'] ) ? (string) $row['occupation'] : '',
-			'organisation'            => isset( $row['organisation'] ) ? (string) $row['organisation'] : '',
-			'support_ways'            => $support,
-			'support_ways_label'      => self::labels_for( $support, LCCL_DE_Join_Projects_Form::support_ways() ),
-			'volunteer_areas'         => $volunteer,
-			'volunteer_areas_label'   => self::labels_for( $volunteer, LCCL_DE_Join_Projects_Form::volunteer_areas() ),
-			'skills'                  => isset( $row['skills'] ) ? (string) $row['skills'] : '',
-			'availability'            => $availability,
-			'availability_label'      => self::labels_for( $availability, LCCL_DE_Join_Projects_Form::availability() ),
-			'financial_support'       => $financial,
-			'financial_support_label' => self::labels_for( $financial, LCCL_DE_Join_Projects_Form::financial_support() ),
-			'contribution_amount'     => $amount_key,
-			'contribution_amount_label' => ( $amount_key && isset( $amount_opts[ $amount_key ] ) ) ? $amount_opts[ $amount_key ] : $amount_key,
-			'interest_areas'          => $areas,
-			'interest_areas_label'    => self::labels_for( $areas, LCCL_DE_Join_Projects_Form::interest_areas() ),
-			'project_types'           => $types,
-			'project_types_label'     => self::labels_for( $types, LCCL_DE_Join_Projects_Form::project_types() ),
-			'specific_idea'           => isset( $row['specific_idea'] ) ? (string) $row['specific_idea'] : '',
-			'registering_as'          => $as_key,
-			'registering_as_label'    => ( $as_key && isset( $as_options[ $as_key ] ) ) ? $as_options[ $as_key ] : $as_key,
-			'company_name'            => isset( $row['company_name'] ) ? (string) $row['company_name'] : '',
-			'designation'             => isset( $row['designation'] ) ? (string) $row['designation'] : '',
-			'company_support'         => isset( $row['company_support'] ) ? (string) $row['company_support'] : '',
-			'message'                 => isset( $row['message'] ) ? (string) $row['message'] : '',
-			'consent'                 => ! empty( $row['consent'] ) ? 1 : 0,
-			'created_at'             => $created,
-			'created_label'          => $created ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $created ) : '',
-			'updated_at'             => $updated,
-			'updated_label'          => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
-			'updated_by'             => isset( $row['updated_by'] ) ? (int) $row['updated_by'] : 0,
+		$payload = self::present_list_row( $row );
+
+		return array_merge(
+			$payload,
+			array(
+				'occupation'                => isset( $row['occupation'] ) ? (string) $row['occupation'] : '',
+				'organisation'              => isset( $row['organisation'] ) ? (string) $row['organisation'] : '',
+				'support_ways'              => $support,
+				'support_ways_label'        => self::labels_for( $support, LCCL_DE_Join_Projects_Form::support_ways() ),
+				'volunteer_areas'           => $volunteer,
+				'volunteer_areas_label'     => self::labels_for( $volunteer, LCCL_DE_Join_Projects_Form::volunteer_areas() ),
+				'skills'                    => isset( $row['skills'] ) ? (string) $row['skills'] : '',
+				'availability'              => $availability,
+				'availability_label'        => self::labels_for( $availability, LCCL_DE_Join_Projects_Form::availability() ),
+				'financial_support'         => $financial,
+				'financial_support_label'   => self::labels_for( $financial, LCCL_DE_Join_Projects_Form::financial_support() ),
+				'contribution_amount'       => $amount_key,
+				'contribution_amount_label' => ( $amount_key && isset( $amount_opts[ $amount_key ] ) ) ? $amount_opts[ $amount_key ] : $amount_key,
+				'interest_areas'            => $areas,
+				'interest_areas_label'      => self::labels_for( $areas, LCCL_DE_Join_Projects_Form::interest_areas() ),
+				'project_types'             => $types,
+				'project_types_label'       => self::labels_for( $types, LCCL_DE_Join_Projects_Form::project_types() ),
+				'specific_idea'             => isset( $row['specific_idea'] ) ? (string) $row['specific_idea'] : '',
+				'registering_as'            => $as_key,
+				'registering_as_label'      => ( $as_key && isset( $as_options[ $as_key ] ) ) ? $as_options[ $as_key ] : $as_key,
+				'company_name'              => isset( $row['company_name'] ) ? (string) $row['company_name'] : '',
+				'designation'               => isset( $row['designation'] ) ? (string) $row['designation'] : '',
+				'company_support'           => isset( $row['company_support'] ) ? (string) $row['company_support'] : '',
+				'message'                   => isset( $row['message'] ) ? (string) $row['message'] : '',
+				'consent'                   => ! empty( $row['consent'] ) ? 1 : 0,
+				'updated_at'                => $updated,
+				'updated_label'             => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
+				'updated_by'                => isset( $row['updated_by'] ) ? (int) $row['updated_by'] : 0,
+				'updated_by_label'          => self::present_updater( isset( $row['updated_by'] ) ? $row['updated_by'] : 0 ),
+			)
 		);
+	}
+
+	/**
+	 * "Full Name (username)" for the last editor.
+	 *
+	 * @param int $user_id User ID.
+	 * @return string
+	 */
+	private static function present_updater( $user_id ) {
+		$user_id = (int) $user_id;
+		if ( $user_id <= 0 ) {
+			return '';
+		}
+
+		$user = get_userdata( $user_id );
+		if ( ! $user ) {
+			return __( 'Unknown user', 'lccl-de' );
+		}
+
+		$name = trim( $user->first_name . ' ' . $user->last_name );
+		if ( '' === $name ) {
+			$name = $user->display_name;
+		}
+
+		return $name . ' (' . $user->user_login . ')';
 	}
 
 	/**

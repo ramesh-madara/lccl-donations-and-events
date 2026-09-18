@@ -582,17 +582,6 @@
 	border-top: none;
 }
 
-.lccl-bdf.lccl-bdf--join .lccl-bdf__actions {
-	margin-top: 8px;
-	text-align: center;
-}
-
-.lccl-bdf.lccl-bdf--join .lccl-bdf__submit {
-	min-width: 240px;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-}
-
 .lccl-bdf .lccl-bdf__foot-note {
 	margin: 14px 0 0;
 	color: #6b6b6b;

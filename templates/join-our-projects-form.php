@@ -287,13 +287,11 @@ $show_organisation = $form::needs_organisation( $values );
 		<input type="hidden" name="redirect_to" value="<?php echo esc_url( get_permalink() ? get_permalink() : home_url( '/' ) ); ?>">
 		<?php wp_nonce_field( LCCL_DE_Join_Projects_Submissions::ACTION, 'lccl_de_nonce' ); ?>
 
-		<div class="lccl-bdf__actions">
-			<button class="lccl-bdf__submit" type="submit">
-				<?php esc_html_e( 'Register Your Interest', 'lccl-de' ); ?>
-			</button>
-			<p class="lccl-bdf__foot-note">
-				<?php esc_html_e( 'Your information will be used to respond to your registration and coordinate relevant community service opportunities.', 'lccl-de' ); ?>
-			</p>
-		</div>
+		<button class="lccl-bdf__submit" type="submit">
+			<?php esc_html_e( 'Register Your Interest', 'lccl-de' ); ?>
+		</button>
+		<p class="lccl-bdf__foot-note">
+			<?php esc_html_e( 'Your information will be used to respond to your registration and coordinate relevant community service opportunities.', 'lccl-de' ); ?>
+		</p>
 	</form>
 </div>
