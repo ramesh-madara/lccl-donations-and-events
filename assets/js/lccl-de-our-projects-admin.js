@@ -333,6 +333,12 @@
 			return grid;
 		}
 
+		function addPersonSectionsWrap( parent ) {
+			var wrap = el( 'div', 'lccl-bda__person-sections' );
+			parent.appendChild( wrap );
+			return wrap;
+		}
+
 		function pruneEmptySections( parent ) {
 			Array.prototype.forEach.call( parent.querySelectorAll( '.lccl-bda__person-section' ), function ( section ) {
 				var grid = section.querySelector( '.lccl-bda__person-grid' );
@@ -729,12 +735,13 @@
 		}
 
 		function fillPersonView( panel, item ) {
-			var personal = addPersonSection( panel, '1. Personal Information' );
-			var support = addPersonSection( panel, '2. How Would You Like to Support Us?' );
-			var areas = addPersonSection( panel, '3. Areas You Would Like to Support' );
-			var about = addPersonSection( panel, '4. About Your Registration' );
-			var extra = addPersonSection( panel, '5. Additional Message' );
-			var record = addPersonSection( panel, 'Record details' );
+			var wrap = addPersonSectionsWrap( panel );
+			var personal = addPersonSection( wrap, '1. Personal Information' );
+			var support = addPersonSection( wrap, '2. How Would You Like to Support Us?' );
+			var areas = addPersonSection( wrap, '3. Areas You Would Like to Support' );
+			var about = addPersonSection( wrap, '4. About Your Registration' );
+			var extra = addPersonSection( wrap, '5. Additional Message' );
+			var record = addPersonSection( wrap, 'Record details' );
 
 			addPersonField( personal, 'Mobile / WhatsApp', item.phone, '', true );
 			addPersonField( personal, 'Email', item.email, '', true );
@@ -785,6 +792,7 @@
 			var about;
 			var extra;
 			var record;
+			var wrap;
 			var first;
 			var last;
 			var email;
@@ -796,7 +804,8 @@
 			form.id = 'lccl-opa-edit-form';
 			form.setAttribute( 'novalidate', 'novalidate' );
 
-			personal = addPersonSection( form, '1. Personal Information' );
+			wrap = addPersonSectionsWrap( form );
+			personal = addPersonSection( wrap, '1. Personal Information' );
 			first = addEditControl( personal, 'first_name', 'First name', textInput( item.first_name, 100 ) );
 			last = addEditControl( personal, 'last_name', 'Last name', textInput( item.last_name, 100 ) );
 			address = addEditControl( personal, 'address', 'Address', textInput( item.address, 255 ), 'lccl-bda__person-item--wide' );
@@ -807,7 +816,7 @@
 			addEditControl( personal, 'occupation', 'Occupation / Profession', textInput( item.occupation, 191 ) );
 			addEditControl( personal, 'organisation', 'Organization / Company', textInput( item.organisation, 191 ) );
 
-			support = addPersonSection( form, '2. How Would You Like to Support Us?' );
+			support = addPersonSection( wrap, '2. How Would You Like to Support Us?' );
 			addEditControl( support, 'support_ways', 'How they would like to support', checkboxGroup( 'support_ways', cfg.supportWays || {}, item.support_ways || [] ), 'lccl-bda__person-item--wide' );
 			addPersonSubhead( support, 'Volunteer Your Time & Skills' );
 			addEditControl( support, 'volunteer_areas', 'Volunteer / skill areas', checkboxGroup( 'volunteer_areas', cfg.volunteerAreas || {}, item.volunteer_areas || [] ), 'lccl-bda__person-item--wide' );
@@ -826,11 +835,11 @@
 				}() )
 			);
 
-			areas = addPersonSection( form, '3. Areas You Would Like to Support' );
+			areas = addPersonSection( wrap, '3. Areas You Would Like to Support' );
 			addEditControl( areas, 'interest_areas', 'Areas of support', checkboxGroup( 'interest_areas', cfg.interestAreas || {}, item.interest_areas || [] ), 'lccl-bda__person-item--wide' );
 			addEditControl( areas, 'specific_idea', 'Specific project or idea', textArea( item.specific_idea, 2000 ), 'lccl-bda__person-item--wide' );
 
-			about = addPersonSection( form, '4. About Your Registration' );
+			about = addPersonSection( wrap, '4. About Your Registration' );
 			addEditControl(
 				about,
 				'registering_as',
@@ -846,10 +855,10 @@
 			addEditControl( about, 'designation', 'Position / designation', textInput( item.designation, 191 ) );
 			addEditControl( about, 'company_support', 'Organization support', textArea( item.company_support, 2000 ), 'lccl-bda__person-item--wide' );
 
-			extra = addPersonSection( form, '5. Additional Message' );
+			extra = addPersonSection( wrap, '5. Additional Message' );
 			addEditControl( extra, 'message', 'Additional message', textArea( item.message, 2000 ), 'lccl-bda__person-item--wide' );
 
-			record = addPersonSection( form, 'Record details' );
+			record = addPersonSection( wrap, 'Record details' );
 			addPersonField( record, 'Registration date', item.created_label );
 			addPersonField( record, 'Updated', item.updated_label );
 			addPersonField( record, 'Updated by', item.updated_by_label );
