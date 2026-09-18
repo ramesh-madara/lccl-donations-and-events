@@ -263,12 +263,29 @@
 			panel.removeAttribute( 'aria-busy' );
 		}
 
+		function isBusy() {
+			return 'true' === panel.getAttribute( 'aria-busy' );
+		}
+
 		function takePanel() {
 			var frag = document.createDocumentFragment();
 			while ( panel.firstChild ) {
 				frag.appendChild( panel.firstChild );
 			}
 			return frag;
+		}
+
+		function emptyPanel() {
+			while ( panel.firstChild ) {
+				panel.removeChild( panel.firstChild );
+			}
+		}
+
+		function stashCurrent() {
+			if ( isBusy() || ! panel.firstChild || ! currentTab ) {
+				return;
+			}
+			cache[ currentTab ] = takePanel();
 		}
 
 		function bindPanel() {
@@ -285,12 +302,15 @@
 		}
 
 		function load( tab, url, push ) {
-			if ( tab === currentTab && panel.firstChild ) {
+			if ( tab === currentTab && ! isBusy() && panel.firstChild ) {
 				return;
 			}
 
+			stashCurrent();
+			requestId += 1;
+
 			if ( cache[ tab ] ) {
-				cache[ currentTab ] = takePanel();
+				emptyPanel();
 				panel.appendChild( cache[ tab ] );
 				delete cache[ tab ];
 				finish( tab, url, push );
@@ -298,14 +318,16 @@
 			}
 
 			var fromTab = currentTab;
-			var id = ++requestId;
-			setCurrent( tab );
+			var dest = tab;
+			var id = requestId;
+			emptyPanel();
+			setCurrent( dest );
 			showLoader();
 
 			var body = new window.FormData();
 			body.append( 'action', cfg.action );
 			body.append( 'nonce', cfg.nonce );
-			body.append( 'tab', tab );
+			body.append( 'tab', dest );
 
 			window.fetch( cfg.ajaxUrl, {
 				method: 'POST',
@@ -316,19 +338,18 @@
 					return res.json();
 				} )
 				.then( function ( json ) {
-					if ( id !== requestId ) {
+					if ( id !== requestId || dest !== currentTab ) {
 						return;
 					}
 					if ( ! json || ! json.success || ! json.data || ! json.data.html ) {
 						window.location.href = url;
 						return;
 					}
-					cache[ fromTab ] = takePanel();
 					panel.innerHTML = json.data.html;
-					finish( tab, url, push );
+					finish( dest, url, push );
 				} )
 				.catch( function () {
-					if ( id !== requestId ) {
+					if ( id !== requestId || dest !== currentTab ) {
 						return;
 					}
 					hideLoader();

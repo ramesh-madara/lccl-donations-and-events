@@ -17,13 +17,13 @@ $current_dash = isset( $current_dash ) ? $current_dash : 'blood';
 		href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>"
 		<?php echo 'blood' === $current_dash ? ' aria-current="page"' : ''; ?>
 	>
-		<?php esc_html_e( 'Blood Donation', 'lccl-de' ); ?>
+		<?php esc_html_e( 'BLOOD DONATION', 'lccl-de' ); ?>
 	</a>
 	<a
 		class="lccl-bda__nav-btn<?php echo 'projects' === $current_dash ? ' is-current' : ''; ?>"
 		href="<?php echo esc_url( LCCL_DE_Roles::projects_dashboard_url() ); ?>"
 		<?php echo 'projects' === $current_dash ? ' aria-current="page"' : ''; ?>
 	>
-		<?php esc_html_e( 'Join Our Projects', 'lccl-de' ); ?>
+		<?php esc_html_e( 'OUR PROJECTS', 'lccl-de' ); ?>
 	</a>
 </nav>
