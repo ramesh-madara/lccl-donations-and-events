@@ -120,7 +120,7 @@ class LCCL_DE_Notify {
 		if ( 'donor' === $kind || 'both' === $kind ) {
 			$ok = self::mail(
 				$to,
-				'[TEST] ' . self::confirmation_subject(),
+				self::confirmation_subject(),
 				self::confirmation_html( $sample ),
 				'test'
 			) && $ok;
@@ -129,7 +129,7 @@ class LCCL_DE_Notify {
 		if ( 'staff' === $kind || 'both' === $kind ) {
 			$ok = self::mail(
 				$to,
-				'[TEST] ' . self::staff_subject( $sample['name'] ),
+				self::staff_subject( $sample['name'] ),
 				self::staff_html( $sample ),
 				'test'
 			) && $ok;

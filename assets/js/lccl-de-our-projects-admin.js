@@ -654,15 +654,15 @@
 			addPersonField( grid, 'City / Area', item.city, '', true );
 			addPersonField( grid, 'Occupation / Profession', item.occupation, '', true );
 			addPersonField( grid, 'Organisation / Company', item.organisation, '', true );
-			addPersonField( grid, 'Registering as', item.registering_as_label );
-			addPersonField( grid, 'How they would like to support', item.support_ways_label, 'lccl-bda__person-item--wide' );
-			addPersonField( grid, 'Volunteer / skill areas', item.volunteer_areas_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Registering as', item.registering_as_label, '', true );
+			addPersonField( grid, 'How they would like to support', item.support_ways_label, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Volunteer / skill areas', item.volunteer_areas_label, 'lccl-bda__person-item--wide', true );
 			addPersonField( grid, 'Skills / expertise', item.skills, 'lccl-bda__person-item--wide', true );
-			addPersonField( grid, 'Availability', item.availability_label, 'lccl-bda__person-item--wide' );
-			addPersonField( grid, 'Financial support', item.financial_support_label, 'lccl-bda__person-item--wide' );
-			addPersonField( grid, 'Estimated contribution', item.contribution_amount_label );
-			addPersonField( grid, 'Areas they would like to support', item.interest_areas_label, 'lccl-bda__person-item--wide' );
-			addPersonField( grid, 'Project-specific support', item.project_types_label, 'lccl-bda__person-item--wide' );
+			addPersonField( grid, 'Availability', item.availability_label, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Financial support', item.financial_support_label, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Estimated contribution', item.contribution_amount_label, '', true );
+			addPersonField( grid, 'Areas they would like to support', item.interest_areas_label, 'lccl-bda__person-item--wide', true );
+			addPersonField( grid, 'Project-specific support', item.project_types_label, 'lccl-bda__person-item--wide', true );
 			addPersonField( grid, 'Specific project or idea', item.specific_idea, 'lccl-bda__person-item--wide', true );
 			addPersonField( grid, 'Organization name', item.company_name, '', true );
 			addPersonField( grid, 'Position / designation', item.designation, '', true );
@@ -950,7 +950,6 @@
 			var expandTr;
 			var td;
 			var panel;
-			var loader;
 			var overlay;
 			var spinner;
 
@@ -963,7 +962,6 @@
 			expandTr = el( 'tr', 'lccl-bda__expand-row' );
 			td = el( 'td' );
 			panel = el( 'div', 'lccl-bda__person' );
-			loader = el( 'div', 'lccl-bda__person-loading' );
 
 			state.selected = id;
 			setExpandChrome( summaryTr, true );
@@ -977,9 +975,6 @@
 			spinner.setAttribute( 'aria-hidden', 'true' );
 			overlay.appendChild( spinner );
 			overlay.appendChild( el( 'span', 'lccl-bda__modal-label', 'Loading…' ) );
-			loader.appendChild( el( 'span', 'lccl-bda__loader lccl-bda__loader--lg' ) );
-			loader.appendChild( el( 'span', 'lccl-bda__modal-label', 'Loading…' ) );
-			panel.appendChild( loader );
 			panel.appendChild( overlay );
 			td.appendChild( panel );
 			expandTr.appendChild( td );

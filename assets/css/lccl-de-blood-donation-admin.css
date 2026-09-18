@@ -706,14 +706,13 @@
 }
 
 .lccl-bda .lccl-bda__person.is-loading {
-	min-height: 120px;
+	min-height: 140px;
 }
 
 .lccl-bda .lccl-bda__person-loading {
-	position: relative;
-	z-index: 4;
 	display: flex;
 	align-items: center;
+	justify-content: center;
 	gap: 12px;
 	min-height: 64px;
 }

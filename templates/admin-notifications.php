@@ -118,9 +118,9 @@ $is_projects = LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program;
 	<p class="lccl-prog__hint">
 		<?php
 		if ( $is_projects ) {
-			esc_html_e( 'Sends the live registrant and/or staff templates with sample registration data, using the same wp_mail path as a real signup. The subject is prefixed with [TEST].', 'lccl-de' );
+			esc_html_e( 'Sends the live registrant and/or staff templates with sample registration data, using the same wp_mail path as a real signup.', 'lccl-de' );
 		} else {
-			esc_html_e( 'Sends the live donor and/or staff templates with sample registration data, using the same wp_mail path as a real signup. The subject is prefixed with [TEST].', 'lccl-de' );
+			esc_html_e( 'Sends the live donor and/or staff templates with sample registration data, using the same wp_mail path as a real signup.', 'lccl-de' );
 		}
 		?>
 	</p>
