@@ -776,15 +776,11 @@ class LCCL_DE_Notify {
 		$details    .= self::email_detail(
 			__( 'Areas they would like to support', 'lccl-de' ),
 			self::choice_labels(
-				isset( $values['interest_areas'] ) ? $values['interest_areas'] : array(),
+				LCCL_DE_Join_Projects_Form::merge_interest_area_keys(
+					isset( $values['interest_areas'] ) ? $values['interest_areas'] : array(),
+					isset( $values['project_types'] ) ? $values['project_types'] : array()
+				),
 				LCCL_DE_Join_Projects_Form::interest_areas()
-			)
-		);
-		$details .= self::email_detail(
-			__( 'Project-specific support', 'lccl-de' ),
-			self::choice_labels(
-				isset( $values['project_types'] ) ? $values['project_types'] : array(),
-				LCCL_DE_Join_Projects_Form::project_types()
 			)
 		);
 		$details .= self::email_detail( __( 'Specific project or idea', 'lccl-de' ), isset( $values['specific_idea'] ) ? $values['specific_idea'] : '' );

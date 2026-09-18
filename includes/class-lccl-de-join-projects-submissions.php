@@ -167,6 +167,9 @@ class LCCL_DE_Join_Projects_Submissions {
 			$full = trim( $first . ' ' . $last );
 		}
 
+		$areas = self::sanitize_choice_list( isset( $source['interest_areas'] ) ? $source['interest_areas'] : array(), array_keys( LCCL_DE_Join_Projects_Form::interest_areas() ) );
+		$types = self::sanitize_choice_list( isset( $source['project_types'] ) ? $source['project_types'] : array(), array_keys( LCCL_DE_Join_Projects_Form::project_types() ) );
+
 		return array(
 			'full_name'            => $full,
 			'first_name'           => $first,
@@ -185,9 +188,9 @@ class LCCL_DE_Join_Projects_Submissions {
 			'availability'         => self::sanitize_choice_list( isset( $source['availability'] ) ? $source['availability'] : array(), array_keys( LCCL_DE_Join_Projects_Form::availability() ) ),
 			'financial_support'    => self::sanitize_choice_list( isset( $source['financial_support'] ) ? $source['financial_support'] : array(), array_keys( LCCL_DE_Join_Projects_Form::financial_support() ) ),
 			'contribution_amount'  => isset( $source['contribution_amount'] ) ? sanitize_key( $source['contribution_amount'] ) : '',
-			'interest_areas'       => self::sanitize_choice_list( isset( $source['interest_areas'] ) ? $source['interest_areas'] : array(), array_keys( LCCL_DE_Join_Projects_Form::interest_areas() ) ),
+			'interest_areas'       => LCCL_DE_Join_Projects_Form::merge_interest_area_keys( $areas, $types ),
 			'interest_areas_other' => '',
-			'project_types'        => self::sanitize_choice_list( isset( $source['project_types'] ) ? $source['project_types'] : array(), array_keys( LCCL_DE_Join_Projects_Form::project_types() ) ),
+			'project_types'        => array(),
 			'specific_idea'        => self::clip_textarea( isset( $source['specific_idea'] ) ? $source['specific_idea'] : '', 2000 ),
 			'registering_as'       => isset( $source['registering_as'] ) ? sanitize_key( $source['registering_as'] ) : '',
 			'company_name'         => self::clip_field( isset( $source['company_name'] ) ? $source['company_name'] : '', 191 ),
@@ -534,8 +537,10 @@ class LCCL_DE_Join_Projects_Submissions {
 		$volunteer      = self::decode_list( isset( $row['volunteer_areas'] ) ? $row['volunteer_areas'] : '' );
 		$availability   = self::decode_list( isset( $row['availability'] ) ? $row['availability'] : '' );
 		$financial      = self::decode_list( isset( $row['financial_support'] ) ? $row['financial_support'] : '' );
-		$areas          = self::decode_list( isset( $row['interest_areas'] ) ? $row['interest_areas'] : '' );
-		$types          = self::decode_list( isset( $row['project_types'] ) ? $row['project_types'] : '' );
+		$areas          = LCCL_DE_Join_Projects_Form::merge_interest_area_keys(
+			self::decode_list( isset( $row['interest_areas'] ) ? $row['interest_areas'] : '' ),
+			self::decode_list( isset( $row['project_types'] ) ? $row['project_types'] : '' )
+		);
 		$as_key         = isset( $row['registering_as'] ) ? (string) $row['registering_as'] : '';
 		$as_options     = LCCL_DE_Join_Projects_Form::registering_as_options();
 		$amount_key     = isset( $row['contribution_amount'] ) ? (string) $row['contribution_amount'] : '';
@@ -546,7 +551,6 @@ class LCCL_DE_Join_Projects_Submissions {
 		$availability_items = self::label_items( $availability, LCCL_DE_Join_Projects_Form::availability() );
 		$financial_items = self::label_items( $financial, LCCL_DE_Join_Projects_Form::financial_support() );
 		$area_items     = self::label_items( $areas, LCCL_DE_Join_Projects_Form::interest_areas() );
-		$type_items     = self::label_items( $types, LCCL_DE_Join_Projects_Form::project_types() );
 
 		$payload = self::present_list_row( $row );
 
@@ -575,9 +579,6 @@ class LCCL_DE_Join_Projects_Submissions {
 				'interest_areas'            => $areas,
 				'interest_areas_items'      => $area_items,
 				'interest_areas_label'      => implode( ', ', $area_items ),
-				'project_types'             => $types,
-				'project_types_items'       => $type_items,
-				'project_types_label'       => implode( ', ', $type_items ),
 				'specific_idea'             => isset( $row['specific_idea'] ) ? (string) $row['specific_idea'] : '',
 				'registering_as'            => $as_key,
 				'registering_as_label'      => ( $as_key && isset( $as_options[ $as_key ] ) ) ? $as_options[ $as_key ] : $as_key,

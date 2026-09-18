@@ -311,6 +311,44 @@
 			grid.appendChild( item );
 		}
 
+		function addPersonSubhead( grid, title ) {
+			grid.appendChild( el( 'h5', 'lccl-bda__person-subhead', title ) );
+		}
+
+		function addPersonSection( parent, title ) {
+			var section = el( 'section', 'lccl-bda__person-section' );
+			var heading = el( 'h4', 'lccl-bda__person-section-title' );
+			var grid = el( 'div', 'lccl-bda__person-grid' );
+			var parts = String( title ).match( /^(\d+\.)\s+([\s\S]+)$/ );
+			if ( parts ) {
+				heading.appendChild( el( 'span', 'lccl-bda__person-section-num', parts[ 1 ] ) );
+				heading.appendChild( document.createTextNode( ' ' ) );
+				heading.appendChild( el( 'span', 'lccl-bda__person-section-name', parts[ 2 ] ) );
+			} else {
+				heading.appendChild( el( 'span', 'lccl-bda__person-section-name', title ) );
+			}
+			section.appendChild( heading );
+			section.appendChild( grid );
+			parent.appendChild( section );
+			return grid;
+		}
+
+		function pruneEmptySections( parent ) {
+			Array.prototype.forEach.call( parent.querySelectorAll( '.lccl-bda__person-section' ), function ( section ) {
+				var grid = section.querySelector( '.lccl-bda__person-grid' );
+				var filled = grid && Array.prototype.some.call( grid.children, function ( child ) {
+					return ! child.classList.contains( 'lccl-bda__person-subhead' );
+				} );
+				if ( ! filled ) {
+					section.parentNode.removeChild( section );
+				}
+			} );
+		}
+
+		function hasItems( items ) {
+			return !!( items && items.length );
+		}
+
 		function addPersonList( grid, label, items, extraClass, canCopy ) {
 			var item;
 			var wrap;
@@ -691,37 +729,62 @@
 		}
 
 		function fillPersonView( panel, item ) {
-			var grid = el( 'div', 'lccl-bda__person-grid' );
-			addPersonField( grid, 'Phone', item.phone, '', true );
-			addPersonField( grid, 'Email', item.email, '', true );
-			addPersonField( grid, 'Address', item.address, 'lccl-bda__person-item--wide', true );
-			addPersonField( grid, 'City', item.city, '', true );
-			addPersonField( grid, 'Postal code', item.postal_code, '', true );
-			addPersonField( grid, 'Occupation / Profession', item.occupation, '', true );
-			addPersonField( grid, 'Organization / Company', item.organisation, '', true );
-			addPersonField( grid, 'Registering as', item.registering_as_label, '', true );
-			addPersonList( grid, 'How they would like to support', item.support_ways_items, '', true );
-			addPersonList( grid, 'Volunteer / skill areas', item.volunteer_areas_items, '', true );
-			addPersonList( grid, 'Availability', item.availability_items, '', true );
-			addPersonList( grid, 'Financial support', item.financial_support_items, '', true );
-			addPersonField( grid, 'Estimated contribution', item.contribution_amount_label, '', true );
-			addPersonList( grid, 'Areas they would like to support', item.interest_areas_items, '', true );
-			addPersonList( grid, 'Project-specific support', item.project_types_items, '', true );
-			addPersonField( grid, 'Skills / expertise', item.skills, 'lccl-bda__person-item--wide', true );
-			addPersonField( grid, 'Specific project or idea', item.specific_idea, 'lccl-bda__person-item--wide', true );
-			addPersonField( grid, 'Organization name', item.company_name, '', true );
-			addPersonField( grid, 'Position / designation', item.designation, '', true );
-			addPersonField( grid, 'Organization support', item.company_support, 'lccl-bda__person-item--wide', true );
-			addPersonField( grid, 'Additional message', item.message, 'lccl-bda__person-item--wide', true );
-			addPersonField( grid, 'Registration date', item.created_label );
-			addPersonField( grid, 'Updated', item.updated_label );
-			addPersonField( grid, 'Updated by', item.updated_by_label );
-			panel.appendChild( grid );
+			var personal = addPersonSection( panel, '1. Personal Information' );
+			var support = addPersonSection( panel, '2. How Would You Like to Support Us?' );
+			var areas = addPersonSection( panel, '3. Areas You Would Like to Support' );
+			var about = addPersonSection( panel, '4. About Your Registration' );
+			var extra = addPersonSection( panel, '5. Additional Message' );
+			var record = addPersonSection( panel, 'Record details' );
+
+			addPersonField( personal, 'Mobile / WhatsApp', item.phone, '', true );
+			addPersonField( personal, 'Email', item.email, '', true );
+			addPersonField( personal, 'Address', item.address, 'lccl-bda__person-item--wide', true );
+			addPersonField( personal, 'City / Area', item.city, '', true );
+			addPersonField( personal, 'Postal code', item.postal_code, '', true );
+			addPersonField( personal, 'Occupation / Profession', item.occupation, '', true );
+			addPersonField( personal, 'Organization / Company', item.organisation, '', true );
+
+			addPersonList( support, 'How they would like to support', item.support_ways_items, 'lccl-bda__person-item--wide', true );
+			if ( hasItems( item.volunteer_areas_items ) || item.skills || hasItems( item.availability_items ) ) {
+				addPersonSubhead( support, 'Volunteer Your Time & Skills' );
+				addPersonList( support, 'Volunteer / skill areas', item.volunteer_areas_items, '', true );
+				addPersonField( support, 'Skills / expertise', item.skills, 'lccl-bda__person-item--wide', true );
+				addPersonList( support, 'Availability', item.availability_items, '', true );
+			}
+			if ( hasItems( item.financial_support_items ) || item.contribution_amount_label ) {
+				addPersonSubhead( support, 'Financial Support' );
+				addPersonList( support, 'Financial support', item.financial_support_items, '', true );
+				addPersonField( support, 'Estimated contribution', item.contribution_amount_label, '', true );
+			}
+
+			addPersonList( areas, 'Areas of support', item.interest_areas_items, 'lccl-bda__person-item--wide', true );
+			addPersonField( areas, 'Specific project or idea', item.specific_idea, 'lccl-bda__person-item--wide', true );
+
+			addPersonField( about, 'Registration type', item.registering_as_label, '', true );
+			if ( item.company_name || item.designation || item.company_support ) {
+				addPersonSubhead( about, 'Organization / Corporate Support' );
+				addPersonField( about, 'Organization name', item.company_name, '', true );
+				addPersonField( about, 'Position / designation', item.designation, '', true );
+				addPersonField( about, 'Organization support', item.company_support, 'lccl-bda__person-item--wide', true );
+			}
+
+			addPersonField( extra, 'Additional message', item.message, 'lccl-bda__person-item--wide', true );
+
+			addPersonField( record, 'Registration date', item.created_label );
+			addPersonField( record, 'Updated', item.updated_label );
+			addPersonField( record, 'Updated by', item.updated_by_label );
+
+			pruneEmptySections( panel );
 		}
 
 		function fillPersonEdit( panel, item ) {
 			var form = el( 'form', 'lccl-bda__person-form' );
-			var grid = el( 'div', 'lccl-bda__person-grid' );
+			var personal;
+			var support;
+			var areas;
+			var about;
+			var extra;
+			var record;
 			var first;
 			var last;
 			var email;
@@ -733,32 +796,27 @@
 			form.id = 'lccl-opa-edit-form';
 			form.setAttribute( 'novalidate', 'novalidate' );
 
-			first = addEditControl( grid, 'first_name', 'First name', textInput( item.first_name, 100 ) );
-			last = addEditControl( grid, 'last_name', 'Last name', textInput( item.last_name, 100 ) );
-			address = addEditControl( grid, 'address', 'Address', textInput( item.address, 255 ), 'lccl-bda__person-item--wide' );
-			city = addEditControl( grid, 'city', 'City', textInput( item.city, 100 ) );
-			postal = addEditControl( grid, 'postal_code', 'Postal code', textInput( item.postal_code, 5 ) );
-			phone = addEditControl( grid, 'phone', 'Mobile / WhatsApp number', textInput( item.phone, 12, 'tel' ) );
-			email = addEditControl( grid, 'email', 'Email', textInput( item.email, 191, 'email' ) );
-			addEditControl( grid, 'occupation', 'Occupation / Profession', textInput( item.occupation, 191 ) );
-			addEditControl( grid, 'organisation', 'Organization / Company', textInput( item.organisation, 191 ) );
+			personal = addPersonSection( form, '1. Personal Information' );
+			first = addEditControl( personal, 'first_name', 'First name', textInput( item.first_name, 100 ) );
+			last = addEditControl( personal, 'last_name', 'Last name', textInput( item.last_name, 100 ) );
+			address = addEditControl( personal, 'address', 'Address', textInput( item.address, 255 ), 'lccl-bda__person-item--wide' );
+			city = addEditControl( personal, 'city', 'City / Area', textInput( item.city, 100 ) );
+			postal = addEditControl( personal, 'postal_code', 'Postal code', textInput( item.postal_code, 5 ) );
+			phone = addEditControl( personal, 'phone', 'Mobile / WhatsApp', textInput( item.phone, 12, 'tel' ) );
+			email = addEditControl( personal, 'email', 'Email', textInput( item.email, 191, 'email' ) );
+			addEditControl( personal, 'occupation', 'Occupation / Profession', textInput( item.occupation, 191 ) );
+			addEditControl( personal, 'organisation', 'Organization / Company', textInput( item.organisation, 191 ) );
+
+			support = addPersonSection( form, '2. How Would You Like to Support Us?' );
+			addEditControl( support, 'support_ways', 'How they would like to support', checkboxGroup( 'support_ways', cfg.supportWays || {}, item.support_ways || [] ), 'lccl-bda__person-item--wide' );
+			addPersonSubhead( support, 'Volunteer Your Time & Skills' );
+			addEditControl( support, 'volunteer_areas', 'Volunteer / skill areas', checkboxGroup( 'volunteer_areas', cfg.volunteerAreas || {}, item.volunteer_areas || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( support, 'skills', 'Skills / expertise', textArea( item.skills, 2000 ), 'lccl-bda__person-item--wide' );
+			addEditControl( support, 'availability', 'Availability', checkboxGroup( 'availability', cfg.availability || {}, item.availability || [] ), 'lccl-bda__person-item--wide' );
+			addPersonSubhead( support, 'Financial Support' );
+			addEditControl( support, 'financial_support', 'Financial support', checkboxGroup( 'financial_support', cfg.financialSupport || {}, item.financial_support || [] ), 'lccl-bda__person-item--wide' );
 			addEditControl(
-				grid,
-				'registering_as',
-				'I am registering as',
-				( function () {
-					var select = el( 'select', 'lccl-bda__select' );
-					fillOptions( select, cfg.registeringAs || {}, item.registering_as, 'Select an option' );
-					return select;
-				}() )
-			);
-			addEditControl( grid, 'support_ways', 'How they would like to support', checkboxGroup( 'support_ways', cfg.supportWays || {}, item.support_ways || [] ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'volunteer_areas', 'Volunteer / skill areas', checkboxGroup( 'volunteer_areas', cfg.volunteerAreas || {}, item.volunteer_areas || [] ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'skills', 'Skills / expertise', textArea( item.skills, 2000 ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'availability', 'Availability', checkboxGroup( 'availability', cfg.availability || {}, item.availability || [] ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'financial_support', 'Financial support', checkboxGroup( 'financial_support', cfg.financialSupport || {}, item.financial_support || [] ), 'lccl-bda__person-item--wide' );
-			addEditControl(
-				grid,
+				support,
 				'contribution_amount',
 				'Estimated contribution',
 				( function () {
@@ -767,16 +825,34 @@
 					return select;
 				}() )
 			);
-			addEditControl( grid, 'interest_areas', 'Areas they would like to support', checkboxGroup( 'interest_areas', cfg.interestAreas || {}, item.interest_areas || [] ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'specific_idea', 'Specific project or idea', textArea( item.specific_idea, 2000 ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'company_name', 'Organization name', textInput( item.company_name, 191 ) );
-			addEditControl( grid, 'designation', 'Position / designation', textInput( item.designation, 191 ) );
-			addEditControl( grid, 'company_support', 'Organization support', textArea( item.company_support, 2000 ), 'lccl-bda__person-item--wide' );
-			addEditControl( grid, 'message', 'Additional message', textArea( item.message, 2000 ), 'lccl-bda__person-item--wide' );
 
-			addPersonField( grid, 'Registration date', item.created_label );
-			addPersonField( grid, 'Updated', item.updated_label );
-			addPersonField( grid, 'Updated by', item.updated_by_label );
+			areas = addPersonSection( form, '3. Areas You Would Like to Support' );
+			addEditControl( areas, 'interest_areas', 'Areas of support', checkboxGroup( 'interest_areas', cfg.interestAreas || {}, item.interest_areas || [] ), 'lccl-bda__person-item--wide' );
+			addEditControl( areas, 'specific_idea', 'Specific project or idea', textArea( item.specific_idea, 2000 ), 'lccl-bda__person-item--wide' );
+
+			about = addPersonSection( form, '4. About Your Registration' );
+			addEditControl(
+				about,
+				'registering_as',
+				'Registration type',
+				( function () {
+					var select = el( 'select', 'lccl-bda__select' );
+					fillOptions( select, cfg.registeringAs || {}, item.registering_as, 'Select an option' );
+					return select;
+				}() )
+			);
+			addPersonSubhead( about, 'Organization / Corporate Support' );
+			addEditControl( about, 'company_name', 'Organization name', textInput( item.company_name, 191 ) );
+			addEditControl( about, 'designation', 'Position / designation', textInput( item.designation, 191 ) );
+			addEditControl( about, 'company_support', 'Organization support', textArea( item.company_support, 2000 ), 'lccl-bda__person-item--wide' );
+
+			extra = addPersonSection( form, '5. Additional Message' );
+			addEditControl( extra, 'message', 'Additional message', textArea( item.message, 2000 ), 'lccl-bda__person-item--wide' );
+
+			record = addPersonSection( form, 'Record details' );
+			addPersonField( record, 'Registration date', item.created_label );
+			addPersonField( record, 'Updated', item.updated_label );
+			addPersonField( record, 'Updated by', item.updated_by_label );
 
 			first.required = true;
 			last.required = true;
@@ -792,7 +868,6 @@
 				savePerson( panel, form, item );
 			} );
 
-			form.appendChild( grid );
 			panel.appendChild( form );
 		}
 

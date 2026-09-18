@@ -904,6 +904,49 @@
 	gap: 8px 16px;
 }
 
+.lccl-bda .lccl-bda__person-section {
+	margin: 20px 0 0;
+}
+
+.lccl-bda .lccl-bda__person-section:first-of-type {
+	margin-top: 4px;
+}
+
+.lccl-bda .lccl-bda__person-section-title {
+	display: block;
+	margin: 0 0 10px;
+	padding: 0;
+	border-bottom: none;
+	color: var(--lccl-bda-heading);
+	font-size: 16px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	line-height: 1.35;
+	text-transform: uppercase;
+}
+
+.lccl-bda .lccl-bda__person-section-num {
+	margin-right: 0.35em;
+}
+
+.lccl-bda .lccl-bda__person-section-name {
+	display: inline-block;
+	padding: 0 0 6px;
+	border-bottom: 2px solid #f8e4a0;
+	vertical-align: baseline;
+}
+
+.lccl-bda .lccl-bda__person-subhead {
+	grid-column: 1 / -1;
+	margin: 10px 0 2px;
+	color: var(--lccl-bda-heading);
+	font-size: 14px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	line-height: 1.35;
+	text-transform: uppercase;
+}
+
 .lccl-bda .lccl-bda__person-item {
 	min-width: 0;
 	padding: 10px 12px;

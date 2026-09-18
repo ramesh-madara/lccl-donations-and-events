@@ -467,10 +467,10 @@
 }
 
 .lccl-bdf .lccl-bdf__section-title {
-	display: inline-block;
+	display: block;
 	margin: 0 0 10px;
-	padding: 0 0 6px;
-	border-bottom: 2px solid var(--lccl-bdf-gold-light);
+	padding: 0;
+	border-bottom: none;
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
 	font-size: 20px;
@@ -478,6 +478,17 @@
 	letter-spacing: 0.04em;
 	line-height: 1.35;
 	text-transform: uppercase;
+}
+
+.lccl-bdf .lccl-bdf__section-num {
+	margin-right: 0.35em;
+}
+
+.lccl-bdf .lccl-bdf__section-name {
+	display: inline-block;
+	padding: 0 0 6px;
+	border-bottom: 2px solid var(--lccl-bdf-gold-light);
+	vertical-align: baseline;
 }
 
 .lccl-bdf .lccl-bdf__section-lede {

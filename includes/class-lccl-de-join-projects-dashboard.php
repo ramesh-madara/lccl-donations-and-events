@@ -77,7 +77,6 @@ class LCCL_DE_Join_Projects_Dashboard {
 			'financialSupport'     => LCCL_DE_Join_Projects_Form::financial_support(),
 			'contributionAmounts'  => LCCL_DE_Join_Projects_Form::contribution_amounts(),
 			'interestAreas'        => LCCL_DE_Join_Projects_Form::interest_areas(),
-			'projectTypes'         => LCCL_DE_Join_Projects_Form::project_types(),
 			'registeringAs'        => LCCL_DE_Join_Projects_Form::registering_as_options(),
 		);
 

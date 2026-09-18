@@ -149,7 +149,7 @@ class LCCL_DE_Join_Projects_Form {
 	}
 
 	/**
-	 * Project-specific support types.
+	 * Legacy project-specific support types, kept so older rows can be labelled.
 	 *
 	 * @return array<string,string>
 	 */
@@ -167,6 +167,50 @@ class LCCL_DE_Join_Projects_Form {
 			'disaster-relief' => __( 'Disaster Relief', 'lccl-de' ),
 			'other'           => __( 'Other', 'lccl-de' ),
 		);
+	}
+
+	/**
+	 * Map a legacy project-type key onto the combined areas list.
+	 *
+	 * @param string $key Stored project type key.
+	 * @return string
+	 */
+	public static function project_type_to_area_key( $key ) {
+		$key = sanitize_key( (string) $key );
+		$map = array(
+			'vision-cataract' => 'vision-eye',
+		);
+
+		if ( isset( $map[ $key ] ) ) {
+			return $map[ $key ];
+		}
+
+		$areas = self::interest_areas();
+		if ( isset( $areas[ $key ] ) ) {
+			return $key;
+		}
+
+		return $key;
+	}
+
+	/**
+	 * Fold legacy project types into the areas-to-support keys, without duplicates.
+	 *
+	 * @param array $areas Interest-area keys.
+	 * @param array $types Legacy project-type keys.
+	 * @return string[]
+	 */
+	public static function merge_interest_area_keys( array $areas, array $types ) {
+		$out = array();
+		foreach ( array_merge( $areas, $types ) as $key ) {
+			$mapped = self::project_type_to_area_key( $key );
+			if ( '' === $mapped || in_array( $mapped, $out, true ) ) {
+				continue;
+			}
+			$out[] = $mapped;
+		}
+
+		return $out;
 	}
 
 	/**

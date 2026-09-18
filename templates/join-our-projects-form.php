@@ -25,6 +25,13 @@ $err  = static function ( $key ) use ( $errors ) {
 $invalid = static function ( $key ) use ( $errors ) {
 	return isset( $errors[ $key ] ) ? ' lccl-bdf__field--invalid' : '';
 };
+$section_title = static function ( $number, $label ) {
+	printf(
+		'<h3 class="lccl-bdf__section-title"><span class="lccl-bdf__section-num">%1$s.</span> <span class="lccl-bdf__section-name">%2$s</span></h3>',
+		esc_html( (string) $number ),
+		esc_html( $label )
+	);
+};
 $notice = static function ( $key ) use ( $err ) {
 	$msg = $err( $key );
 	printf(
@@ -90,7 +97,7 @@ $show_organisation = $form::needs_organisation( $values );
 		</header>
 
 		<section class="lccl-bdf__section">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '1. Personal Information', 'lccl-de' ); ?></h3>
+			<?php $section_title( 1, __( 'Personal Information', 'lccl-de' ) ); ?>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Please provide your contact details so our team can get in touch with you.', 'lccl-de' ); ?></p>
 
 			<div class="lccl-bdf__grid">
@@ -260,7 +267,7 @@ $show_organisation = $form::needs_organisation( $values );
 		</section>
 
 		<section class="lccl-bdf__section" data-lccl-section="support">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '2. How Would You Like to Support Us?', 'lccl-de' ); ?></h3>
+			<?php $section_title( 2, __( 'How Would You Like to Support Us?', 'lccl-de' ) ); ?>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Select all that apply.', 'lccl-de' ); ?></p>
 			<?php $form::render_choices( 'support_ways', $form::support_ways(), $list( 'support_ways' ) ); ?>
 
@@ -302,7 +309,7 @@ $show_organisation = $form::needs_organisation( $values );
 		</section>
 
 		<section class="lccl-bdf__section" data-lccl-section="areas">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '3. Areas You Would Like to Support', 'lccl-de' ); ?></h3>
+			<?php $section_title( 3, __( 'Areas You Would Like to Support', 'lccl-de' ) ); ?>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Select all project or service areas that interest you.', 'lccl-de' ); ?></p>
 			<?php $form::render_choices( 'interest_areas', $form::interest_areas(), $list( 'interest_areas' ) ); ?>
 
@@ -313,7 +320,7 @@ $show_organisation = $form::needs_organisation( $values );
 		</section>
 
 		<section class="lccl-bdf__section">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '4. About Your Registration', 'lccl-de' ); ?></h3>
+			<?php $section_title( 4, __( 'About Your Registration', 'lccl-de' ) ); ?>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'This helps us understand whether you are registering individually or on behalf of an organization.', 'lccl-de' ); ?></p>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'registering_as' ) ); ?>">
@@ -346,7 +353,7 @@ $show_organisation = $form::needs_organisation( $values );
 		</section>
 
 		<section class="lccl-bdf__section">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '5. Additional Message', 'lccl-de' ); ?></h3>
+			<?php $section_title( 5, __( 'Additional Message', 'lccl-de' ) ); ?>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Anything else you would like our team to know?', 'lccl-de' ); ?></p>
 			<div class="lccl-bdf__field lccl-bdf__field--full">
 				<label class="lccl-bdf__label" for="lccl-jpf-message"><?php esc_html_e( 'Additional Message', 'lccl-de' ); ?></label>
