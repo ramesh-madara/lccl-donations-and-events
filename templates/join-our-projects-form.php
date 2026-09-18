@@ -75,6 +75,9 @@ $show_organisation = $form::needs_organisation( $values );
 
 		<header class="lccl-bdf__header">
 			<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+			<?php if ( '' !== $atts['intro'] ) : ?>
+				<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
+			<?php endif; ?>
 			<p class="lccl-bdf__required-note">
 				<?php
 				printf(
@@ -84,9 +87,6 @@ $show_organisation = $form::needs_organisation( $values );
 				);
 				?>
 			</p>
-			<?php if ( '' !== $atts['intro'] ) : ?>
-				<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
-			<?php endif; ?>
 		</header>
 
 		<section class="lccl-bdf__section">
@@ -94,26 +94,103 @@ $show_organisation = $form::needs_organisation( $values );
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Please provide your contact details so our team can get in touch with you.', 'lccl-de' ); ?></p>
 
 			<div class="lccl-bdf__grid">
-				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'full_name' ) ); ?>">
-					<label class="lccl-bdf__label" for="lccl-jpf-full-name">
-						<?php esc_html_e( 'Full Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-jpf-first-name">
+						<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 					</label>
 					<input
 						class="lccl-bdf__input"
 						type="text"
-						id="lccl-jpf-full-name"
-						name="full_name"
-						value="<?php echo esc_attr( $val( 'full_name' ) ); ?>"
-						autocomplete="name"
-						maxlength="191"
+						id="lccl-jpf-first-name"
+						name="first_name"
+						value="<?php echo esc_attr( $val( 'first_name' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
+						autocomplete="given-name"
+						maxlength="100"
 						required
 					>
-					<?php $notice( 'full_name' ); ?>
+					<?php $notice( 'first_name' ); ?>
+				</div>
+
+				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-jpf-last-name">
+						<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					</label>
+					<input
+						class="lccl-bdf__input"
+						type="text"
+						id="lccl-jpf-last-name"
+						name="last_name"
+						value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
+						autocomplete="family-name"
+						maxlength="100"
+						required
+					>
+					<?php $notice( 'last_name' ); ?>
+				</div>
+
+				<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'address' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-jpf-address">
+						<?php esc_html_e( 'Address', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					</label>
+					<input
+						class="lccl-bdf__input"
+						type="text"
+						id="lccl-jpf-address"
+						name="address"
+						value="<?php echo esc_attr( $val( 'address' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'No. 25, Main Street', 'lccl-de' ); ?>"
+						autocomplete="street-address"
+						maxlength="255"
+						required
+					>
+					<?php $notice( 'address' ); ?>
+				</div>
+
+				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'city' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-jpf-city">
+						<?php esc_html_e( 'City', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					</label>
+					<input
+						class="lccl-bdf__input"
+						type="text"
+						id="lccl-jpf-city"
+						name="city"
+						value="<?php echo esc_attr( $val( 'city' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Colombo', 'lccl-de' ); ?>"
+						autocomplete="address-level2"
+						maxlength="100"
+						required
+					>
+					<?php $notice( 'city' ); ?>
+				</div>
+
+				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'postal_code' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-jpf-postal-code">
+						<?php esc_html_e( 'Postal Code', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					</label>
+					<input
+						class="lccl-bdf__input"
+						type="text"
+						id="lccl-jpf-postal-code"
+						name="postal_code"
+						value="<?php echo esc_attr( $val( 'postal_code' ) ); ?>"
+						placeholder="<?php esc_attr_e( '00100', 'lccl-de' ); ?>"
+						inputmode="numeric"
+						autocomplete="postal-code"
+						maxlength="5"
+						pattern="[0-9]{5}"
+						data-lccl-validate="postal"
+						data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::postal_error_message() ); ?>"
+						required
+					>
+					<?php $notice( 'postal_code' ); ?>
 				</div>
 
 				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 					<label class="lccl-bdf__label" for="lccl-jpf-email">
-						<?php esc_html_e( 'Email Address', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+						<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 					</label>
 					<input
 						class="lccl-bdf__input"
@@ -121,6 +198,7 @@ $show_organisation = $form::needs_organisation( $values );
 						id="lccl-jpf-email"
 						name="email"
 						value="<?php echo esc_attr( $val( 'email' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
 						autocomplete="email"
 						maxlength="191"
 						data-lccl-validate="email"
@@ -140,8 +218,10 @@ $show_organisation = $form::needs_organisation( $values );
 						id="lccl-jpf-phone"
 						name="phone"
 						value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
+						placeholder="<?php esc_attr_e( '+94712345678', 'lccl-de' ); ?>"
 						autocomplete="tel"
 						inputmode="tel"
+						maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
 						data-lccl-validate="phone"
 						data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
 						required
@@ -150,18 +230,31 @@ $show_organisation = $form::needs_organisation( $values );
 				</div>
 
 				<div class="lccl-bdf__field">
-					<label class="lccl-bdf__label" for="lccl-jpf-city"><?php esc_html_e( 'City / Area', 'lccl-de' ); ?></label>
-					<input class="lccl-bdf__input" type="text" id="lccl-jpf-city" name="city" value="<?php echo esc_attr( $val( 'city' ) ); ?>" autocomplete="address-level2" maxlength="100">
-				</div>
-
-				<div class="lccl-bdf__field">
 					<label class="lccl-bdf__label" for="lccl-jpf-occupation"><?php esc_html_e( 'Occupation / Profession', 'lccl-de' ); ?></label>
-					<input class="lccl-bdf__input" type="text" id="lccl-jpf-occupation" name="occupation" value="<?php echo esc_attr( $val( 'occupation' ) ); ?>" autocomplete="organization-title" maxlength="191">
+					<input
+						class="lccl-bdf__input"
+						type="text"
+						id="lccl-jpf-occupation"
+						name="occupation"
+						value="<?php echo esc_attr( $val( 'occupation' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Engineer', 'lccl-de' ); ?>"
+						autocomplete="organization-title"
+						maxlength="191"
+					>
 				</div>
 
 				<div class="lccl-bdf__field">
 					<label class="lccl-bdf__label" for="lccl-jpf-organisation"><?php esc_html_e( 'Organization / Company', 'lccl-de' ); ?></label>
-					<input class="lccl-bdf__input" type="text" id="lccl-jpf-organisation" name="organisation" value="<?php echo esc_attr( $val( 'organisation' ) ); ?>" autocomplete="organization" maxlength="191">
+					<input
+						class="lccl-bdf__input"
+						type="text"
+						id="lccl-jpf-organisation"
+						name="organisation"
+						value="<?php echo esc_attr( $val( 'organisation' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'Example Company', 'lccl-de' ); ?>"
+						autocomplete="organization"
+						maxlength="191"
+					>
 				</div>
 			</div>
 		</section>
@@ -212,12 +305,6 @@ $show_organisation = $form::needs_organisation( $values );
 			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '3. Areas You Would Like to Support', 'lccl-de' ); ?></h3>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Select all project or service areas that interest you.', 'lccl-de' ); ?></p>
 			<?php $form::render_choices( 'interest_areas', $form::interest_areas(), $list( 'interest_areas' ) ); ?>
-		</section>
-
-		<section class="lccl-bdf__section">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '4. Project-Specific Support', 'lccl-de' ); ?></h3>
-			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'If there is a particular type of project you would like to support, please let us know.', 'lccl-de' ); ?></p>
-			<?php $form::render_choices( 'project_types', $form::project_types(), $list( 'project_types' ) ); ?>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full lccl-bdf__field--idea">
 				<label class="lccl-bdf__label" for="lccl-jpf-specific-idea"><?php esc_html_e( 'Specific Project or Idea', 'lccl-de' ); ?></label>
@@ -226,11 +313,11 @@ $show_organisation = $form::needs_organisation( $values );
 		</section>
 
 		<section class="lccl-bdf__section">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '5. About Your Registration', 'lccl-de' ); ?></h3>
+			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '4. About Your Registration', 'lccl-de' ); ?></h3>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'This helps us understand whether you are registering individually or on behalf of an organization.', 'lccl-de' ); ?></p>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'registering_as' ) ); ?>">
-				<label class="lccl-bdf__label" for="lccl-jpf-registering-as"><?php esc_html_e( 'I Am Registering As', 'lccl-de' ); ?></label>
+				<label class="lccl-bdf__label" for="lccl-jpf-registering-as"><?php esc_html_e( 'I am registering as', 'lccl-de' ); ?></label>
 				<select class="lccl-bdf__select" id="lccl-jpf-registering-as" name="registering_as">
 					<option value=""><?php esc_html_e( 'Please select', 'lccl-de' ); ?></option>
 					<?php LCCL_DE_Blood_Donor_Form::render_options( $form::registering_as_options(), $val( 'registering_as' ) ); ?>
@@ -244,11 +331,11 @@ $show_organisation = $form::needs_organisation( $values );
 				<div class="lccl-bdf__grid">
 					<div class="lccl-bdf__field">
 						<label class="lccl-bdf__label" for="lccl-jpf-company-name"><?php esc_html_e( 'Organization Name', 'lccl-de' ); ?></label>
-						<input class="lccl-bdf__input" type="text" id="lccl-jpf-company-name" name="company_name" value="<?php echo esc_attr( $val( 'company_name' ) ); ?>" maxlength="191">
+						<input class="lccl-bdf__input" type="text" id="lccl-jpf-company-name" name="company_name" value="<?php echo esc_attr( $val( 'company_name' ) ); ?>" placeholder="<?php esc_attr_e( 'Example Company', 'lccl-de' ); ?>" maxlength="191">
 					</div>
 					<div class="lccl-bdf__field">
 						<label class="lccl-bdf__label" for="lccl-jpf-designation"><?php esc_html_e( 'Position / Designation', 'lccl-de' ); ?></label>
-						<input class="lccl-bdf__input" type="text" id="lccl-jpf-designation" name="designation" value="<?php echo esc_attr( $val( 'designation' ) ); ?>" maxlength="191">
+						<input class="lccl-bdf__input" type="text" id="lccl-jpf-designation" name="designation" value="<?php echo esc_attr( $val( 'designation' ) ); ?>" placeholder="<?php esc_attr_e( 'Director', 'lccl-de' ); ?>" maxlength="191">
 					</div>
 					<div class="lccl-bdf__field lccl-bdf__field--full">
 						<label class="lccl-bdf__label" for="lccl-jpf-company-support"><?php esc_html_e( 'How Could Your Organization Support Community Projects?', 'lccl-de' ); ?></label>
@@ -259,9 +346,10 @@ $show_organisation = $form::needs_organisation( $values );
 		</section>
 
 		<section class="lccl-bdf__section">
-			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '6. Additional Message', 'lccl-de' ); ?></h3>
+			<h3 class="lccl-bdf__section-title"><?php esc_html_e( '5. Additional Message', 'lccl-de' ); ?></h3>
 			<p class="lccl-bdf__section-lede"><?php esc_html_e( 'Anything else you would like our team to know?', 'lccl-de' ); ?></p>
 			<div class="lccl-bdf__field lccl-bdf__field--full">
+				<label class="lccl-bdf__label" for="lccl-jpf-message"><?php esc_html_e( 'Additional Message', 'lccl-de' ); ?></label>
 				<textarea class="lccl-bdf__textarea" id="lccl-jpf-message" name="message" rows="4" maxlength="2000" placeholder="<?php esc_attr_e( 'Please share any additional information, suggestions or questions.', 'lccl-de' ); ?>"><?php echo esc_textarea( $val( 'message' ) ); ?></textarea>
 			</div>
 		</section>
@@ -288,7 +376,7 @@ $show_organisation = $form::needs_organisation( $values );
 		<?php wp_nonce_field( LCCL_DE_Join_Projects_Submissions::ACTION, 'lccl_de_nonce' ); ?>
 
 		<button class="lccl-bdf__submit" type="submit">
-			<?php esc_html_e( 'Register Your Interest', 'lccl-de' ); ?>
+			<?php esc_html_e( 'Register', 'lccl-de' ); ?>
 		</button>
 		<p class="lccl-bdf__foot-note">
 			<?php esc_html_e( 'Your information will be used to respond to your registration and coordinate relevant community service opportunities.', 'lccl-de' ); ?>

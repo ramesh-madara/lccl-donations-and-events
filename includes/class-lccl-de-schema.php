@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 5;
+	const VERSION = 6;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -175,9 +175,13 @@ class LCCL_DE_Schema {
 		$join_sql = "CREATE TABLE {$joins} (
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			full_name varchar(191) NOT NULL,
+			first_name varchar(100) NOT NULL DEFAULT '',
+			last_name varchar(100) NOT NULL DEFAULT '',
 			email varchar(191) NOT NULL,
 			phone varchar(30) NOT NULL,
+			address varchar(255) DEFAULT NULL,
 			city varchar(100) DEFAULT NULL,
+			postal_code varchar(20) DEFAULT NULL,
 			occupation varchar(191) DEFAULT NULL,
 			organisation varchar(191) DEFAULT NULL,
 			support_ways text,

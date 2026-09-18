@@ -153,11 +153,29 @@ class LCCL_DE_Join_Projects_Submissions {
 	 * @return array
 	 */
 	public static function sanitize_payload( array $source ) {
+		$first = self::clip_field( isset( $source['first_name'] ) ? $source['first_name'] : '', 100 );
+		$last  = self::clip_field( isset( $source['last_name'] ) ? $source['last_name'] : '', 100 );
+		$full  = self::clip_field( isset( $source['full_name'] ) ? $source['full_name'] : '', 191 );
+
+		if ( '' === $full ) {
+			$full = trim( $first . ' ' . $last );
+		} elseif ( '' === $first && '' === $last ) {
+			$parts = self::split_full_name( $full );
+			$first = $parts[0];
+			$last  = $parts[1];
+		} else {
+			$full = trim( $first . ' ' . $last );
+		}
+
 		return array(
-			'full_name'            => self::clip_field( isset( $source['full_name'] ) ? $source['full_name'] : '', 191 ),
+			'full_name'            => $full,
+			'first_name'           => $first,
+			'last_name'            => $last,
 			'email'                => LCCL_DE_Blood_Donor_Submissions::sanitize_email_field( isset( $source['email'] ) ? $source['email'] : '' ),
 			'phone'                => LCCL_DE_Blood_Donor_Submissions::sanitize_phone_field( isset( $source['phone'] ) ? $source['phone'] : '' ),
+			'address'              => self::clip_field( isset( $source['address'] ) ? $source['address'] : '', 255 ),
 			'city'                 => self::clip_field( isset( $source['city'] ) ? $source['city'] : '', 100 ),
+			'postal_code'          => LCCL_DE_Blood_Donor_Submissions::sanitize_postal_code( isset( $source['postal_code'] ) ? $source['postal_code'] : '' ),
 			'occupation'           => self::clip_field( isset( $source['occupation'] ) ? $source['occupation'] : '', 191 ),
 			'organisation'         => self::clip_field( isset( $source['organisation'] ) ? $source['organisation'] : '', 191 ),
 			'support_ways'         => self::sanitize_choice_list( isset( $source['support_ways'] ) ? $source['support_ways'] : array(), array_keys( LCCL_DE_Join_Projects_Form::support_ways() ) ),
@@ -191,7 +209,7 @@ class LCCL_DE_Join_Projects_Submissions {
 		$errors       = array();
 		$required_msg = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 
-		foreach ( array( 'full_name', 'email', 'phone' ) as $field ) {
+		foreach ( array( 'first_name', 'last_name', 'address', 'city', 'postal_code', 'email', 'phone' ) as $field ) {
 			if ( '' === $values[ $field ] ) {
 				$errors[ $field ] = $required_msg;
 			}
@@ -207,6 +225,10 @@ class LCCL_DE_Join_Projects_Submissions {
 
 		if ( '' !== $values['email'] && ! LCCL_DE_Blood_Donor_Submissions::is_valid_email_field( $values['email'] ) ) {
 			$errors['email'] = __( 'Please enter a valid email address.', 'lccl-de' );
+		}
+
+		if ( '' !== $values['postal_code'] && ! LCCL_DE_Blood_Donor_Submissions::is_valid_postal_code( $values['postal_code'] ) ) {
+			$errors['postal_code'] = LCCL_DE_Blood_Donor_Submissions::postal_error_message();
 		}
 
 		if ( empty( $values['support_ways'] ) || empty( $values['interest_areas'] ) ) {
@@ -259,7 +281,10 @@ class LCCL_DE_Join_Projects_Submissions {
 				$params[] = (int) $search;
 			} else {
 				$like     = '%' . $wpdb->esc_like( $search ) . '%';
-				$where[]  = '(full_name LIKE %s OR email LIKE %s OR phone LIKE %s OR city LIKE %s)';
+				$where[]  = '(full_name LIKE %s OR first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s OR city LIKE %s OR address LIKE %s)';
+				$params[] = $like;
+				$params[] = $like;
+				$params[] = $like;
 				$params[] = $like;
 				$params[] = $like;
 				$params[] = $like;
@@ -279,7 +304,7 @@ class LCCL_DE_Join_Projects_Submissions {
 		}
 
 		$offset      = ( $page - 1 ) * $per_page;
-		$list_sql    = "SELECT id, full_name, email, phone, city, created_at FROM {$table} WHERE {$where_sql} ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d";
+		$list_sql    = "SELECT id, full_name, first_name, last_name, email, phone, city, created_at FROM {$table} WHERE {$where_sql} ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d";
 		$list_params = $params;
 		$list_params[] = $per_page;
 		$list_params[] = $offset;
@@ -361,9 +386,13 @@ class LCCL_DE_Join_Projects_Submissions {
 			LCCL_DE_Schema::project_joins_table(),
 			array(
 				'full_name'            => $values['full_name'],
+				'first_name'           => $values['first_name'],
+				'last_name'            => $values['last_name'],
 				'email'                => $values['email'],
 				'phone'                => $values['phone'],
+				'address'              => '' !== $values['address'] ? $values['address'] : null,
 				'city'                 => '' !== $values['city'] ? $values['city'] : null,
+				'postal_code'          => '' !== $values['postal_code'] ? $values['postal_code'] : null,
 				'occupation'           => '' !== $values['occupation'] ? $values['occupation'] : null,
 				'organisation'         => '' !== $values['organisation'] ? $values['organisation'] : null,
 				'support_ways'         => self::encode_list( $values['support_ways'] ),
@@ -389,7 +418,7 @@ class LCCL_DE_Join_Projects_Submissions {
 			array(
 				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
 				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
-				'%s', '%s', '%d', '%s', '%s',
+				'%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s',
 			)
 		);
 
@@ -421,9 +450,13 @@ class LCCL_DE_Join_Projects_Submissions {
 			LCCL_DE_Schema::project_joins_table(),
 			array(
 				'full_name'           => $values['full_name'],
+				'first_name'          => $values['first_name'],
+				'last_name'           => $values['last_name'],
 				'email'               => $values['email'],
 				'phone'               => $values['phone'],
+				'address'             => '' !== $values['address'] ? $values['address'] : null,
 				'city'                => '' !== $values['city'] ? $values['city'] : null,
+				'postal_code'         => '' !== $values['postal_code'] ? $values['postal_code'] : null,
 				'occupation'          => '' !== $values['occupation'] ? $values['occupation'] : null,
 				'organisation'        => '' !== $values['organisation'] ? $values['organisation'] : null,
 				'support_ways'        => self::encode_list( $values['support_ways'] ),
@@ -447,7 +480,7 @@ class LCCL_DE_Join_Projects_Submissions {
 			array(
 				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
 				'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
-				'%s', '%d',
+				'%s', '%s', '%s', '%s', '%s', '%d',
 			),
 			array( '%d' )
 		);
@@ -463,11 +496,24 @@ class LCCL_DE_Join_Projects_Submissions {
 	 */
 	public static function present_list_row( array $row ) {
 		$created = isset( $row['created_at'] ) ? $row['created_at'] : '';
+		$first   = isset( $row['first_name'] ) ? (string) $row['first_name'] : '';
+		$last    = isset( $row['last_name'] ) ? (string) $row['last_name'] : '';
+		$full    = isset( $row['full_name'] ) ? (string) $row['full_name'] : '';
+		if ( '' === $first && '' === $last && '' !== $full ) {
+			$parts = self::split_full_name( $full );
+			$first = $parts[0];
+			$last  = $parts[1];
+		}
+		if ( '' === $full ) {
+			$full = trim( $first . ' ' . $last );
+		}
 
 		return array(
 			'id'            => (int) $row['id'],
-			'full_name'     => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
-			'name'          => isset( $row['full_name'] ) ? (string) $row['full_name'] : '',
+			'full_name'     => $full,
+			'first_name'    => $first,
+			'last_name'     => $last,
+			'name'          => $full,
 			'email'         => isset( $row['email'] ) ? (string) $row['email'] : '',
 			'phone'         => isset( $row['phone'] ) ? (string) $row['phone'] : '',
 			'city'          => isset( $row['city'] ) ? (string) $row['city'] : '',
@@ -495,28 +541,43 @@ class LCCL_DE_Join_Projects_Submissions {
 		$amount_key     = isset( $row['contribution_amount'] ) ? (string) $row['contribution_amount'] : '';
 		$amount_opts    = LCCL_DE_Join_Projects_Form::contribution_amounts();
 
+		$support_items  = self::label_items( $support, LCCL_DE_Join_Projects_Form::support_ways() );
+		$volunteer_items = self::label_items( $volunteer, LCCL_DE_Join_Projects_Form::volunteer_areas() );
+		$availability_items = self::label_items( $availability, LCCL_DE_Join_Projects_Form::availability() );
+		$financial_items = self::label_items( $financial, LCCL_DE_Join_Projects_Form::financial_support() );
+		$area_items     = self::label_items( $areas, LCCL_DE_Join_Projects_Form::interest_areas() );
+		$type_items     = self::label_items( $types, LCCL_DE_Join_Projects_Form::project_types() );
+
 		$payload = self::present_list_row( $row );
 
 		return array_merge(
 			$payload,
 			array(
+				'address'                   => isset( $row['address'] ) ? (string) $row['address'] : '',
+				'postal_code'               => isset( $row['postal_code'] ) ? (string) $row['postal_code'] : '',
 				'occupation'                => isset( $row['occupation'] ) ? (string) $row['occupation'] : '',
 				'organisation'              => isset( $row['organisation'] ) ? (string) $row['organisation'] : '',
 				'support_ways'              => $support,
-				'support_ways_label'        => self::labels_for( $support, LCCL_DE_Join_Projects_Form::support_ways() ),
+				'support_ways_items'        => $support_items,
+				'support_ways_label'        => implode( ', ', $support_items ),
 				'volunteer_areas'           => $volunteer,
-				'volunteer_areas_label'     => self::labels_for( $volunteer, LCCL_DE_Join_Projects_Form::volunteer_areas() ),
+				'volunteer_areas_items'     => $volunteer_items,
+				'volunteer_areas_label'     => implode( ', ', $volunteer_items ),
 				'skills'                    => isset( $row['skills'] ) ? (string) $row['skills'] : '',
 				'availability'              => $availability,
-				'availability_label'        => self::labels_for( $availability, LCCL_DE_Join_Projects_Form::availability() ),
+				'availability_items'        => $availability_items,
+				'availability_label'        => implode( ', ', $availability_items ),
 				'financial_support'         => $financial,
-				'financial_support_label'   => self::labels_for( $financial, LCCL_DE_Join_Projects_Form::financial_support() ),
+				'financial_support_items'   => $financial_items,
+				'financial_support_label'   => implode( ', ', $financial_items ),
 				'contribution_amount'       => $amount_key,
 				'contribution_amount_label' => ( $amount_key && isset( $amount_opts[ $amount_key ] ) ) ? $amount_opts[ $amount_key ] : $amount_key,
 				'interest_areas'            => $areas,
-				'interest_areas_label'      => self::labels_for( $areas, LCCL_DE_Join_Projects_Form::interest_areas() ),
+				'interest_areas_items'      => $area_items,
+				'interest_areas_label'      => implode( ', ', $area_items ),
 				'project_types'             => $types,
-				'project_types_label'       => self::labels_for( $types, LCCL_DE_Join_Projects_Form::project_types() ),
+				'project_types_items'       => $type_items,
+				'project_types_label'       => implode( ', ', $type_items ),
 				'specific_idea'             => isset( $row['specific_idea'] ) ? (string) $row['specific_idea'] : '',
 				'registering_as'            => $as_key,
 				'registering_as_label'      => ( $as_key && isset( $as_options[ $as_key ] ) ) ? $as_options[ $as_key ] : $as_key,
@@ -620,6 +681,45 @@ class LCCL_DE_Join_Projects_Submissions {
 	}
 
 	/**
+	 * Split a stored full name into first and last.
+	 *
+	 * @param string $full Full name.
+	 * @return array{0:string,1:string}
+	 */
+	private static function split_full_name( $full ) {
+		$full = trim( (string) $full );
+		if ( '' === $full ) {
+			return array( '', '' );
+		}
+
+		$pos = strpos( $full, ' ' );
+		if ( false === $pos ) {
+			return array( $full, '' );
+		}
+
+		return array(
+			substr( $full, 0, $pos ),
+			trim( substr( $full, $pos + 1 ) ),
+		);
+	}
+
+	/**
+	 * Labels for selected keys, in order.
+	 *
+	 * @param array $keys Selected keys.
+	 * @param array $map  Key => label.
+	 * @return string[]
+	 */
+	private static function label_items( array $keys, array $map ) {
+		$labels = array();
+		foreach ( $keys as $key ) {
+			$labels[] = isset( $map[ $key ] ) ? $map[ $key ] : $key;
+		}
+
+		return $labels;
+	}
+
+	/**
 	 * Join keys into a comma-separated label list.
 	 *
 	 * @param array $keys Selected keys.
@@ -627,12 +727,7 @@ class LCCL_DE_Join_Projects_Submissions {
 	 * @return string
 	 */
 	private static function labels_for( array $keys, array $map ) {
-		$labels = array();
-		foreach ( $keys as $key ) {
-			$labels[] = isset( $map[ $key ] ) ? $map[ $key ] : $key;
-		}
-
-		return implode( ', ', $labels );
+		return implode( ', ', self::label_items( $keys, $map ) );
 	}
 
 	/**

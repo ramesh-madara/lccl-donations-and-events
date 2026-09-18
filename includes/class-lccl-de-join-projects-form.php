@@ -129,6 +129,7 @@ class LCCL_DE_Join_Projects_Form {
 	 */
 	public static function interest_areas() {
 		return array(
+			'any-suitable'          => __( 'Any Suitable Community Project', 'lccl-de' ),
 			'health-medical'        => __( 'Health & Medical Care', 'lccl-de' ),
 			'vision-eye'            => __( 'Vision & Eye Care', 'lccl-de' ),
 			'diabetes'              => __( 'Diabetes Awareness & Screening', 'lccl-de' ),

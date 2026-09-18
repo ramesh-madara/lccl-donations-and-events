@@ -475,9 +475,9 @@
 	font-family: var(--lccl-bdf-font);
 	font-size: 20px;
 	font-weight: 400;
-	letter-spacing: 0;
+	letter-spacing: 0.04em;
 	line-height: 1.35;
-	text-transform: none;
+	text-transform: uppercase;
 }
 
 .lccl-bdf .lccl-bdf__section-lede {
@@ -534,12 +534,22 @@
 	display: none;
 }
 
+.lccl-bdf.lccl-bdf--join .lccl-bdf__intro {
+	margin-bottom: 8px;
+}
+
+.lccl-bdf.lccl-bdf--join .lccl-bdf__required-note {
+	margin-bottom: 0;
+}
+
 .lccl-bdf.lccl-bdf--join .lccl-bdf__conditional-title {
 	margin: 0 0 6px;
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
 	font-size: 17px;
 	font-weight: 400;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 }
 
 .lccl-bdf.lccl-bdf--join .lccl-bdf__optional {
@@ -586,8 +596,12 @@
 	margin: 14px 0 0;
 	color: #6b6b6b;
 	font-family: var(--lccl-bdf-font);
-	font-size: 13px;
-	line-height: 1.55;
+	font-size: 16px;
+	line-height: 1.6;
+}
+
+.lccl-bdf.lccl-bdf--join .lccl-bdf__foot-note {
+	font-size: 18px;
 }
 
 @media (max-width: 782px) {

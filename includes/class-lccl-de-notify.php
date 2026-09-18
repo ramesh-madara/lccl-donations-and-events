@@ -148,16 +148,20 @@ class LCCL_DE_Notify {
 		if ( self::is_projects() ) {
 			$values = array(
 				'full_name'            => 'Saman Padukka',
+				'first_name'           => 'Saman',
+				'last_name'            => 'Padukka',
 				'email'                => $to,
 				'phone'                => '+94712345678',
+				'address'              => 'No. 25, Main Street',
 				'city'                 => 'Colombo',
+				'postal_code'          => '00100',
 				'occupation'           => 'Engineer',
 				'organisation'         => 'Example Company',
 				'support_ways'         => array( 'volunteer-time', 'professional-skills' ),
 				'support_ways_other'   => '',
-				'interest_areas'       => array( 'health-medical', 'blood-donation' ),
+				'interest_areas'       => array( 'any-suitable', 'health-medical', 'blood-donation' ),
 				'interest_areas_other' => '',
-				'project_types'        => array( 'any-suitable' ),
+				'project_types'        => array(),
 				'specific_idea'        => 'Support a community health clinic.',
 				'registering_as'       => 'individual',
 				'message'              => 'Happy to help on weekends.',
@@ -252,7 +256,7 @@ class LCCL_DE_Notify {
 
 		$bank    = self::bank_label( $values );
 		$message = self::is_projects()
-			? 'Thank you for registering your interest in our community projects. Your registration has been successfully received.'
+			? 'Thank you for registering to support our community projects. Your registration has been successfully received.'
 			: sprintf(
 				'Thank you for registering as a blood donor. Your registration has been successfully received. Preferred blood bank : %s.',
 				$bank
@@ -657,7 +661,12 @@ class LCCL_DE_Notify {
 
 		$first = isset( $values['first_name'] ) ? $values['first_name'] : '';
 		$last  = isset( $values['last_name'] ) ? $values['last_name'] : '';
-		return trim( $first . ' ' . $last );
+		$joined = trim( $first . ' ' . $last );
+		if ( '' !== $joined ) {
+			return $joined;
+		}
+
+		return '';
 	}
 
 	/**
@@ -667,7 +676,7 @@ class LCCL_DE_Notify {
 	 */
 	private static function confirmation_subject() {
 		return self::is_projects()
-			? __( 'Join Our Projects registration confirmed', 'lccl-de' )
+			? __( 'JOIN OUR PROJECTS REGISTRATION CONFIRMED', 'lccl-de' )
 			: __( 'Blood donor registration confirmed', 'lccl-de' );
 	}
 
@@ -817,8 +826,8 @@ class LCCL_DE_Notify {
 				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">JOIN OUR PROJECTS REGISTRATION CONFIRMED</h1>
 				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Dear ' . esc_html( $who ) . ',</p>
 				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Thank you for registering your interest in supporting community projects through Lions Club of Colombo LEADS. Your registration has been successfully received.</p>
-				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">We will use the information you provided to get in touch about relevant community service opportunities, volunteering, donations, sponsorships and related activities.</p>
-				<p style="margin:0 0 28px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your willingness to help.</p>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">We will review the information you provided and contact you regarding relevant community service opportunities, volunteering activities, donations, sponsorships and other ways you can support our projects.</p>
+				<p style="margin:0 0 28px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your willingness to serve and make a meaningful difference in our community.</p>
 				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
 				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
 			</div>

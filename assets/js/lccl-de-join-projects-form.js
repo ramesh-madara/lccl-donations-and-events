@@ -130,6 +130,41 @@
 		showConditional( form, 'organisation', registering && 'company-organisation' === registering.value );
 	}
 
+	function isValidPostal( value ) {
+		return /^\d{5}$/.test( String( value || '' ) );
+	}
+
+	function constrainPostal( value ) {
+		return String( value || '' ).replace( /\D/g, '' ).substring( 0, 5 );
+	}
+
+	function bindPostalValidation( form ) {
+		var postal = form.querySelector( '[data-lccl-validate="postal"]' );
+		if ( ! postal ) {
+			return;
+		}
+
+		postal.addEventListener( 'input', function () {
+			var next = constrainPostal( postal.value );
+			if ( next !== postal.value ) {
+				postal.value = next;
+			}
+			if ( isValidPostal( postal.value ) ) {
+				markField( postal, false );
+				setNotice( form, 'postal_code', '' );
+			}
+		} );
+
+		postal.addEventListener( 'blur', function () {
+			if ( ! isFilled( postal ) ) {
+				return;
+			}
+			var ok = isValidPostal( postal.value );
+			markField( postal, ! ok );
+			setNotice( form, 'postal_code', ok ? '' : postal.getAttribute( 'data-invalid-message' ) || '' );
+		} );
+	}
+
 	function initForm( form ) {
 		var phone = form.querySelector( '[data-lccl-validate="phone"]' );
 		var email = form.querySelector( '[data-lccl-validate="email"]' );
@@ -192,6 +227,7 @@
 		}
 
 		updateConditionals( form );
+		bindPostalValidation( form );
 
 		form.addEventListener( 'submit', function ( event ) {
 			var required = form.querySelectorAll( '[required]' );
@@ -241,6 +277,17 @@
 					markField( email, false );
 					setNotice( form, 'email', '' );
 				}
+			}
+
+			var postal = form.querySelector( '[data-lccl-validate="postal"]' );
+			if ( postal && isFilled( postal ) && ! isValidPostal( postal.value ) ) {
+				markField( postal, true );
+				setNotice( form, 'postal_code', postal.getAttribute( 'data-invalid-message' ) || '' );
+				if ( ! firstInvalid ) {
+					firstInvalid = postal;
+				}
+			} else if ( postal && isFilled( postal ) ) {
+				setNotice( form, 'postal_code', '' );
 			}
 
 			var missingChoices = ! hasChecked( form, 'support_ways' ) || ! hasChecked( form, 'interest_areas' );
