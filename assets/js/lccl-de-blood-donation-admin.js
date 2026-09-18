@@ -23,6 +23,21 @@
 		return node;
 	}
 
+	function personFullName( item ) {
+		var name = '';
+		if ( ! item ) {
+			return '';
+		}
+		if ( item.name ) {
+			name = String( item.name );
+		} else if ( item.full_name ) {
+			name = String( item.full_name );
+		} else {
+			name = [ item.first_name, item.last_name ].filter( Boolean ).join( ' ' );
+		}
+		return name.replace( /^\s+|\s+$/g, '' );
+	}
+
 	function setBusy( node, busy ) {
 		if ( node ) {
 			node.hidden = ! busy;
@@ -1122,7 +1137,7 @@
 		function fillPersonPanel( panel, item, editing ) {
 			var head = el( 'div', 'lccl-bda__person-head' );
 			var heading = el( 'div', 'lccl-bda__person-title' );
-			var nameEl = el( 'p', 'lccl-bda__person-name', item.name || '' );
+			var nameEl = el( 'p', 'lccl-bda__person-name', personFullName( item ) );
 
 			editing = !! editing && canManage;
 			panel.textContent = '';

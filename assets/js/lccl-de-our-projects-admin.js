@@ -23,6 +23,20 @@
 		return node;
 	}
 
+	function personFullName( item ) {
+		var name = '';
+		if ( ! item ) {
+			return '';
+		}
+		if ( item.full_name ) {
+			name = String( item.full_name );
+		} else if ( item.name ) {
+			name = String( item.name );
+		}
+		name = name.replace( /^\s+|\s+$/g, '' );
+		return name || ( item.id ? 'Registration #' + item.id : '' );
+	}
+
 	function setBusy( node, busy ) {
 		if ( node ) {
 			node.hidden = ! busy;
@@ -267,7 +281,7 @@
 				return item;
 			}
 
-			head.appendChild( el( 'h3', 'lccl-bda__person-name', item.full_name || ( 'Registration #' + item.id ) ) );
+			head.appendChild( el( 'h3', 'lccl-bda__person-name', personFullName( item ) ) );
 			if ( canManage ) {
 				var actions = el( 'div', 'lccl-bda__person-actions' );
 				var del = el( 'button', 'lccl-bda__action lccl-bda__action--delete', 'Delete' );

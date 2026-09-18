@@ -373,22 +373,33 @@
 	cursor: pointer;
 	font-family: var(--lccl-bda-font);
 	font-size: 14px;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.04em;
 	text-decoration: none;
 	text-transform: none;
+	transition: border-color 0.2s ease;
 }
 
 .lccl-bda a.lccl-bda__nav-btn:hover,
 .lccl-bda a.lccl-bda__nav-btn:focus {
-	border-color: var(--lccl-bda-heading);
+	border-color: var(--lccl-bda-primary);
+	background: #fff;
 	box-shadow: none;
 	color: var(--lccl-bda-heading);
+	outline: none;
+	text-decoration: none;
 }
 
 .lccl-bda .lccl-bda__nav-btn.is-current,
 .lccl-bda a.lccl-bda__nav-btn.is-current {
 	border-color: var(--lccl-bda-primary);
 	background: var(--lccl-bda-primary);
+}
+
+.lccl-bda a.lccl-bda__nav-btn.is-current:hover,
+.lccl-bda a.lccl-bda__nav-btn.is-current:focus {
+	border-color: #c9a012;
+	background: var(--lccl-bda-primary);
+	color: var(--lccl-bda-heading);
 }
 
 .lccl-bda .lccl-bda__notify {
@@ -859,8 +870,9 @@
 	color: var(--lccl-bda-heading);
 	font-size: 20px;
 	font-weight: 400;
-	letter-spacing: 0.02em;
+	letter-spacing: 0.06em;
 	line-height: 1.3;
+	text-transform: uppercase;
 }
 
 .lccl-bda .lccl-bda__person-grid {

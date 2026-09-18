@@ -48,6 +48,11 @@ class LCCL_DE_Roles {
 	const JOIN_PAGE_OPTION = 'lccl_de_join_form_page_id';
 
 	/**
+	 * Once set, the plugin never looks up or deletes a public join form page.
+	 */
+	const JOIN_PAGE_RETIRED = 'lccl_de_join_form_page_retired';
+
+	/**
 	 * User meta: "1" means the reviewer cannot sign in.
 	 */
 	const DISABLED_META = 'lccl_de_reviewer_disabled';
@@ -261,42 +266,15 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Remove the plugin-created public form page. Editors drop the shortcode on their own page.
+	 * Forget the old plugin-owned public form page. Never delete editor pages.
 	 */
 	public static function remove_join_page() {
-		$ids = array();
-		$stored = (int) get_option( self::JOIN_PAGE_OPTION, 0 );
-		if ( $stored ) {
-			$ids[] = $stored;
-		}
-
-		$found = get_posts(
-			array(
-				'post_type'      => 'page',
-				'post_status'    => array( 'publish', 'private', 'draft', 'pending' ),
-				'posts_per_page' => 5,
-				'name'           => 'join-our-projects',
-			)
-		);
-		foreach ( $found as $page ) {
-			$ids[] = (int) $page->ID;
-		}
-
-		$ids = array_unique( array_filter( $ids ) );
-		foreach ( $ids as $page_id ) {
-			$page = get_post( $page_id );
-			if ( ! $page || 'page' !== $page->post_type ) {
-				continue;
-			}
-
-			$has_shortcode = false !== strpos( (string) $page->post_content, '[' . LCCL_DE_Join_Projects_Form::SHORTCODE );
-			$is_plugin_slug = 'join-our-projects' === $page->post_name;
-			if ( $has_shortcode || $is_plugin_slug ) {
-				wp_delete_post( $page_id, true );
-			}
+		if ( get_option( self::JOIN_PAGE_RETIRED ) ) {
+			return;
 		}
 
 		delete_option( self::JOIN_PAGE_OPTION );
+		update_option( self::JOIN_PAGE_RETIRED, 1, false );
 	}
 
 	/**
