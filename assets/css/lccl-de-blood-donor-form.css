@@ -611,10 +611,6 @@
 	line-height: 1.6;
 }
 
-.lccl-bdf.lccl-bdf--join .lccl-bdf__foot-note {
-	font-size: 18px;
-}
-
 @media (max-width: 782px) {
 	.lccl-bdf .lccl-bdf__choices {
 		grid-template-columns: minmax(0, 1fr);
