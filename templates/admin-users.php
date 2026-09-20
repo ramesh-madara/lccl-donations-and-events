@@ -12,6 +12,18 @@
 
 defined( 'ABSPATH' ) || exit;
 
+$action = isset( $action ) ? $action : 'list';
+?>
+<nav class="lccl-prog__crumbs" aria-label="<?php esc_attr_e( 'Breadcrumb', 'lccl-de' ); ?>">
+	<?php if ( 'add' === $action || 'edit' === $action ) : ?>
+		<a href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>" data-tab="users"><?php esc_html_e( 'User Management', 'lccl-de' ); ?></a>
+		<span class="lccl-prog__crumbs-sep" aria-hidden="true">/</span>
+		<span class="lccl-prog__crumbs-current"><?php echo 'edit' === $action ? esc_html__( 'Edit reviewer', 'lccl-de' ) : esc_html__( 'Add reviewer', 'lccl-de' ); ?></span>
+	<?php else : ?>
+		<span class="lccl-prog__crumbs-current"><?php esc_html_e( 'User Management', 'lccl-de' ); ?></span>
+	<?php endif; ?>
+</nav>
+<?php
 $notices = array(
 	'created'     => __( 'Reviewer created.', 'lccl-de' ),
 	'updated'     => __( 'Reviewer updated.', 'lccl-de' ),

@@ -140,16 +140,29 @@
 	background: var(--lccl-fv-wash);
 }
 
+.lccl-fv--image .lccl-fv__stage {
+	position: relative;
+}
+
 .lccl-fv--pdf .lccl-fv__stage {
 	overflow: hidden;
 }
 
+.lccl-fv__canvas {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 100%;
+	min-height: 100%;
+}
+
 .lccl-fv__image {
 	display: block;
-	width: 100%;
+	width: auto;
 	height: auto;
-	margin: 0 auto;
-	max-width: none;
+	max-width: 100%;
+	margin: 0;
+	flex: 0 0 auto;
 }
 
 .lccl-fv__frame {

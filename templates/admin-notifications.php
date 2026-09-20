@@ -50,28 +50,16 @@ $is_spectacles = LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES === $program;
 			<input type="checkbox" name="donor_sms" value="1" <?php checked( ! empty( $settings['donor_sms'] ) ); ?>>
 			<span><?php esc_html_e( 'Send an SMS to the person who registered (Dialog e-SMS).', 'lccl-de' ); ?></span>
 		</label>
-		<p>
-			<label for="lccl-de-sms-api-key"><strong><?php esc_html_e( 'SMS username', 'lccl-de' ); ?></strong></label><br>
-			<input
-				type="text"
-				id="lccl-de-sms-api-key"
-				name="sms_api_key"
-				value="<?php echo esc_attr( isset( $settings['sms_api_key'] ) ? $settings['sms_api_key'] : '' ); ?>"
-				autocomplete="off"
-			>
+		<p class="lccl-prog__hint">
+			<?php
+			if ( ! empty( $settings['sms_ready'] ) ) {
+				esc_html_e( 'Uses the shared Dialog login on the SMS tab.', 'lccl-de' );
+			} else {
+				esc_html_e( 'SMS cannot be sent until the shared Dialog username and password are saved on the SMS tab.', 'lccl-de' );
+			}
+			?>
+			<a href="<?php echo esc_url( LCCL_DE_Admin_Programs::sms_url() ); ?>" data-tab="sms"><?php esc_html_e( 'Open SMS', 'lccl-de' ); ?></a>
 		</p>
-		<p>
-			<label for="lccl-de-sms-password"><strong><?php esc_html_e( 'SMS password', 'lccl-de' ); ?></strong></label><br>
-			<input
-				type="password"
-				id="lccl-de-sms-password"
-				name="sms_password"
-				value=""
-				autocomplete="new-password"
-				placeholder="<?php echo ! empty( $settings['sms_password'] ) ? esc_attr__( 'Saved. Leave blank to keep it.', 'lccl-de' ) : ''; ?>"
-			>
-		</p>
-		<p class="lccl-prog__hint"><?php esc_html_e( 'Dialog e-SMS POST login. Username is the portal / API username (sometimes labelled API key). Leave the password blank when saving other settings if it is already stored. The LCCL sender mask is applied by Dialog — do not put it in the message.', 'lccl-de' ); ?></p>
 		<label class="lccl-prog__check">
 			<input type="checkbox" name="donor_email" value="1" <?php checked( ! empty( $settings['donor_email'] ) ); ?>>
 			<span><?php esc_html_e( 'Email the person who registered, if they entered an email address.', 'lccl-de' ); ?></span>

@@ -518,7 +518,7 @@ class LCCL_DE_Settings {
 	}
 
 	/**
-	 * Error if SMS is on but the Dialog credentials are incomplete.
+	 * Error if this program wants SMS but the shared Dialog login is missing.
 	 *
 	 * @return string
 	 */
@@ -527,6 +527,62 @@ class LCCL_DE_Settings {
 			return '';
 		}
 
+		if ( '' === self::sms_api_key() || '' === self::sms_password() ) {
+			return __( 'Save the Dialog SMS username and password on the SMS tab before turning SMS on.', 'lccl-de' );
+		}
+
+		return '';
+	}
+
+	/**
+	 * Persist only the shared Dialog login.
+	 *
+	 * @param array $input Raw values.
+	 * @return array{sms_api_key:string,sms_password:string}
+	 */
+	public static function save_sms( $input ) {
+		if ( ! is_array( $input ) ) {
+			$input = array();
+		}
+
+		$before = self::get();
+		$stored = get_option( self::OPTION, array() );
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+
+		$api_key = array_key_exists( 'sms_api_key', $input )
+			? trim( sanitize_text_field( (string) $input['sms_api_key'] ) )
+			: $before['sms_api_key'];
+
+		$password = $before['sms_password'];
+		if ( array_key_exists( 'sms_password', $input ) ) {
+			$posted = trim( (string) $input['sms_password'] );
+			if ( '' !== $posted ) {
+				$password = $posted;
+			}
+		}
+
+		$stored['sms_api_key']  = self::encrypt_secret( $api_key );
+		$stored['sms_password'] = self::encrypt_secret( $password );
+		update_option( self::OPTION, $stored );
+
+		if ( $before['sms_api_key'] !== $api_key || $before['sms_password'] !== $password ) {
+			delete_transient( LCCL_DE_Notify::TOKEN_TRANSIENT );
+		}
+
+		return array(
+			'sms_api_key'  => $api_key,
+			'sms_password' => $password,
+		);
+	}
+
+	/**
+	 * Error if the SMS tab is missing a username or password.
+	 *
+	 * @return string
+	 */
+	private static function invalid_sms_tab() {
 		$key = isset( $_POST['sms_api_key'] ) ? trim( sanitize_text_field( wp_unslash( $_POST['sms_api_key'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$posted_pass = isset( $_POST['sms_password'] ) ? trim( (string) wp_unslash( $_POST['sms_password'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$stored_pass = self::sms_password();
@@ -552,6 +608,34 @@ class LCCL_DE_Settings {
 		}
 
 		$program = self::posted_program();
+
+		if ( ! empty( $_POST['lccl_de_sms_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			check_admin_referer( self::NONCE );
+
+			$invalid = self::invalid_sms_tab();
+			if ( $invalid ) {
+				wp_safe_redirect(
+					LCCL_DE_Admin_Programs::sms_url(
+						array(
+							'message' => 'error',
+							'error'   => rawurlencode( $invalid ),
+						)
+					)
+				);
+				exit;
+			}
+
+			self::save_sms( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			wp_safe_redirect(
+				LCCL_DE_Admin_Programs::sms_url(
+					array(
+						'message' => 'saved',
+					)
+				)
+			);
+			exit;
+		}
 
 		if ( ! empty( $_POST['lccl_de_notify_test'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( self::NONCE );
@@ -641,7 +725,7 @@ class LCCL_DE_Settings {
 	 * Legacy renderer — the workspace now lives under LCCL Programs.
 	 */
 	public static function render() {
-		wp_safe_redirect( LCCL_DE_Admin_Programs::blood_url( array( 'tab' => 'notifications' ) ) );
+		wp_safe_redirect( LCCL_DE_Admin_Programs::blood_url() );
 		exit;
 	}
 }

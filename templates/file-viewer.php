@@ -65,7 +65,9 @@ $is_pdf        = 'pdf' === $kind;
 				<?php endif; ?>
 			</div>
 		<?php elseif ( $is_image ) : ?>
-			<img class="lccl-fv__image" data-file-image src="<?php echo esc_url( $raw_url ); ?>" alt="<?php echo esc_attr( $name ); ?>">
+			<div class="lccl-fv__canvas" data-file-canvas>
+				<img class="lccl-fv__image" data-file-image src="<?php echo esc_url( $raw_url ); ?>" alt="<?php echo esc_attr( $name ); ?>">
+			</div>
 		<?php elseif ( $is_pdf ) : ?>
 			<iframe class="lccl-fv__frame" src="<?php echo esc_url( $raw_url ); ?>" title="<?php echo esc_attr( $name ); ?>"></iframe>
 		<?php else : ?>

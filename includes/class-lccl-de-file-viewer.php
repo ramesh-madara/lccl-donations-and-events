@@ -20,9 +20,9 @@ class LCCL_DE_File_Viewer {
 	const QUERY_SOURCE = 'lccl_de_file';
 
 	/**
-	 * Query key for the row ID.
+	 * Query key for the hashed file token.
 	 */
-	const QUERY_ID = 'lccl_de_fid';
+	const QUERY_TOKEN = 'lccl_de_f';
 
 	/**
 	 * Query key that streams the file as an attachment.
@@ -45,14 +45,19 @@ class LCCL_DE_File_Viewer {
 	 * Viewer, raw, or download URL. Cookie auth is enough — no REST nonce.
 	 *
 	 * @param string $source spectacles.
-	 * @param int    $id     Row ID.
+	 * @param string $token  32-character hex token.
 	 * @param string $mode   view|raw|download.
 	 * @return string
 	 */
-	public static function url( $source, $id, $mode = 'view' ) {
+	public static function url( $source, $token, $mode = 'view' ) {
+		$token = LCCL_DE_Spectacles_Submissions::sanitize_letter_token( $token );
+		if ( '' === $token ) {
+			return '';
+		}
+
 		$args = array(
 			self::QUERY_SOURCE => sanitize_key( $source ),
-			self::QUERY_ID     => (int) $id,
+			self::QUERY_TOKEN  => $token,
 		);
 
 		if ( 'download' === $mode ) {
@@ -99,9 +104,11 @@ class LCCL_DE_File_Viewer {
 		}
 
 		$source = sanitize_key( wp_unslash( $_GET[ self::QUERY_SOURCE ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$id     = isset( $_GET[ self::QUERY_ID ] ) ? absint( $_GET[ self::QUERY_ID ] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$token  = LCCL_DE_Spectacles_Submissions::sanitize_letter_token(
+			isset( $_GET[ self::QUERY_TOKEN ] ) ? wp_unslash( $_GET[ self::QUERY_TOKEN ] ) : '' // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		);
 
-		if ( '' === $source || $id <= 0 ) {
+		if ( '' === $source || '' === $token ) {
 			return new WP_Error( 'lccl_de_file', __( 'File not found.', 'lccl-de' ), array( 'status' => 404 ) );
 		}
 
@@ -113,7 +120,7 @@ class LCCL_DE_File_Viewer {
 			return new WP_Error( 'lccl_de_file_forbidden', __( 'You are not allowed to view this file.', 'lccl-de' ), array( 'status' => 403 ) );
 		}
 
-		$found = self::locate( $source, $id );
+		$found = self::locate( $source, $token );
 		if ( ! $found ) {
 			return new WP_Error( 'lccl_de_file', __( 'File not found.', 'lccl-de' ), array( 'status' => 404 ) );
 		}
@@ -125,12 +132,12 @@ class LCCL_DE_File_Viewer {
 	 * Resolve a programme file record.
 	 *
 	 * @param string $source Source key.
-	 * @param int    $id     Row ID.
+	 * @param string $token  File token.
 	 * @return array|null
 	 */
-	private static function locate( $source, $id ) {
+	private static function locate( $source, $token ) {
 		if ( 'spectacles' === $source ) {
-			return LCCL_DE_Spectacles_Dashboard::viewer_file( $id );
+			return LCCL_DE_Spectacles_Dashboard::viewer_file( $token );
 		}
 
 		return null;
@@ -162,8 +169,8 @@ class LCCL_DE_File_Viewer {
 		nocache_headers();
 		status_header( 200 );
 
-		$file['raw_url']      = self::url( $file['source'], $file['id'], 'raw' );
-		$file['download_url'] = self::url( $file['source'], $file['id'], 'download' );
+		$file['raw_url']      = self::url( $file['source'], $file['token'], 'raw' );
+		$file['download_url'] = self::url( $file['source'], $file['token'], 'download' );
 
 		include LCCL_DE_PATH . 'templates/file-viewer.php';
 		exit;

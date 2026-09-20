@@ -12,9 +12,34 @@
 		}
 	}
 
+	function queryValue( name ) {
+		var match = new RegExp( '(?:\\?|&)' + name + '=([^&]+)' ).exec( window.location.search );
+		return match ? decodeURIComponent( match[ 1 ].replace( /\+/g, ' ' ) ) : '';
+	}
+
+	function knownTab( tab ) {
+		return 'users' === tab || 'sms' === tab ? tab : 'programs';
+	}
+
+	function knownProgram( program ) {
+		return ( 'blood-donation' === program || 'our-projects' === program || 'free-spectacles' === program ) ? program : '';
+	}
+
 	function tabFromUrl() {
-		var match = /(?:\?|&)tab=([^&]+)/.exec( window.location.search );
-		return match && 'users' === match[ 1 ] ? 'users' : 'programs';
+		return knownTab( queryValue( 'tab' ) );
+	}
+
+	function programFromUrl() {
+		if ( 'programs' !== tabFromUrl() ) {
+			return '';
+		}
+		return knownProgram( queryValue( 'program' ) );
+	}
+
+	function viewKey( tab, program ) {
+		tab = knownTab( tab );
+		program = 'programs' === tab ? knownProgram( program ) : '';
+		return program ? 'program:' + program : tab;
 	}
 
 	function isValidEmail( value ) {
@@ -95,6 +120,17 @@
 			return '';
 		}
 
+		if ( 'sms_api_key' === name ) {
+			return value ? '' : 'Please enter the SMS username.';
+		}
+
+		if ( 'sms_password' === name ) {
+			if ( ! value && field.required ) {
+				return 'Please enter the SMS password.';
+			}
+			return '';
+		}
+
 		if ( 'email' === field.type ) {
 			if ( ! value ) {
 				return field.required ? 'Please enter a valid email address.' : '';
@@ -116,7 +152,7 @@
 		if ( ! field || ! field.matches ) {
 			return false;
 		}
-		return field.matches( 'input[type="email"], input[name="user_login"], input[name="user_pass"], input[name="first_name"], input[name="last_name"]' );
+		return field.matches( 'input[type="email"], input[name="user_login"], input[name="user_pass"], input[name="first_name"], input[name="last_name"], input[name="sms_api_key"], input[name="sms_password"]' );
 	}
 
 	function validateForm( form ) {
@@ -160,7 +196,7 @@
 		if ( form.querySelector( 'input[name="lccl_de_user_action"][value="toggle"], input[name="lccl_de_user_action"][value="delete"]' ) ) {
 			return false;
 		}
-		return !! form.querySelector( 'input[type="email"], input[name="user_login"], input[name="user_pass"], input[name="first_name"]' );
+		return !! form.querySelector( 'input[type="email"], input[name="user_login"], input[name="user_pass"], input[name="first_name"], input[name="sms_api_key"]' );
 	}
 
 	function bindForms( root ) {
@@ -219,6 +255,7 @@
 		var loader = document.querySelector( '[data-lccl-tab-loader]' );
 		var cache;
 		var currentTab;
+		var currentProgram;
 		var requestId;
 
 		if ( workspace ) {
@@ -232,13 +269,20 @@
 
 		cache = {};
 		currentTab = tabFromUrl();
+		currentProgram = programFromUrl();
 		requestId = 0;
 
 		function links() {
 			return nav.querySelectorAll( '[data-tab]' );
 		}
 
-		function setCurrent( tab ) {
+		function currentKey() {
+			return viewKey( currentTab, currentProgram );
+		}
+
+		function setCurrent( tab, program ) {
+			tab = knownTab( tab );
+			program = 'programs' === tab ? knownProgram( program ) : '';
 			Array.prototype.forEach.call( links(), function ( el ) {
 				var on = el.getAttribute( 'data-tab' ) === tab;
 				el.classList.toggle( 'is-current', on );
@@ -247,6 +291,7 @@
 			} );
 			panel.setAttribute( 'aria-labelledby', 'lccl-prog-tab-' + tab );
 			currentTab = tab;
+			currentProgram = program;
 		}
 
 		function showLoader() {
@@ -285,49 +330,56 @@
 			if ( isBusy() || ! panel.firstChild || ! currentTab ) {
 				return;
 			}
-			cache[ currentTab ] = takePanel();
+			cache[ currentKey() ] = takePanel();
 		}
 
 		function bindPanel() {
 			bindWorkspace( panel );
 		}
 
-		function finish( tab, url, push ) {
-			setCurrent( tab );
+		function finish( tab, program, url, push ) {
+			setCurrent( tab, program );
 			hideLoader();
 			bindPanel();
 			if ( push && url && window.history && history.pushState ) {
-				history.pushState( { lcclTab: tab }, '', url );
+				history.pushState( { lcclTab: tab, lcclProgram: program || '' }, '', url );
 			}
 		}
 
-		function load( tab, url, push ) {
-			if ( tab === currentTab && ! isBusy() && panel.firstChild ) {
+		function load( tab, program, url, push ) {
+			tab = knownTab( tab );
+			program = 'programs' === tab ? knownProgram( program ) : '';
+
+			if ( tab === currentTab && program === currentProgram && ! isBusy() && panel.firstChild ) {
 				return;
 			}
 
 			stashCurrent();
 			requestId += 1;
 
-			if ( cache[ tab ] ) {
+			var destKey = viewKey( tab, program );
+			if ( cache[ destKey ] ) {
 				emptyPanel();
-				panel.appendChild( cache[ tab ] );
-				delete cache[ tab ];
-				finish( tab, url, push );
+				panel.appendChild( cache[ destKey ] );
+				delete cache[ destKey ];
+				finish( tab, program, url, push );
 				return;
 			}
 
 			var fromTab = currentTab;
-			var dest = tab;
+			var fromProgram = currentProgram;
+			var destTab = tab;
+			var destProgram = program;
 			var id = requestId;
 			emptyPanel();
-			setCurrent( dest );
+			setCurrent( destTab, destProgram );
 			showLoader();
 
 			var body = new window.FormData();
 			body.append( 'action', cfg.action );
 			body.append( 'nonce', cfg.nonce );
-			body.append( 'tab', dest );
+			body.append( 'tab', destTab );
+			body.append( 'program', destProgram );
 
 			window.fetch( cfg.ajaxUrl, {
 				method: 'POST',
@@ -338,7 +390,7 @@
 					return res.json();
 				} )
 				.then( function ( json ) {
-					if ( id !== requestId || dest !== currentTab ) {
+					if ( id !== requestId ) {
 						return;
 					}
 					if ( ! json || ! json.success || ! json.data || ! json.data.html ) {
@@ -346,16 +398,29 @@
 						return;
 					}
 					panel.innerHTML = json.data.html;
-					finish( dest, url, push );
+					finish( destTab, destProgram, url, push );
 				} )
 				.catch( function () {
-					if ( id !== requestId || dest !== currentTab ) {
+					if ( id !== requestId ) {
 						return;
 					}
 					hideLoader();
-					setCurrent( fromTab );
+					setCurrent( fromTab, fromProgram );
 					window.location.href = url;
 				} );
+		}
+
+		function openFromLink( link, push ) {
+			var program = link.getAttribute( 'data-program' ) || '';
+			var tab = knownTab( link.getAttribute( 'data-tab' ) || ( program ? 'programs' : '' ) );
+			if ( program ) {
+				tab = 'programs';
+			}
+			if ( ! tab && ! program ) {
+				return false;
+			}
+			load( tab, program, link.href, push );
+			return true;
 		}
 
 		Array.prototype.forEach.call( links(), function ( el ) {
@@ -370,12 +435,23 @@
 			if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button ) {
 				return;
 			}
-			var tab = link.getAttribute( 'data-tab' );
-			if ( ! tab ) {
+			event.preventDefault();
+			openFromLink( link, true );
+		} );
+
+		workspace.addEventListener( 'click', function ( event ) {
+			var link = event.target.closest ? event.target.closest( '[data-program], [data-lccl-tab-panel] [data-tab]' ) : null;
+			if ( ! link || ! workspace.contains( link ) || nav.contains( link ) ) {
+				return;
+			}
+			if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button ) {
+				return;
+			}
+			if ( ! link.getAttribute( 'data-program' ) && ! link.getAttribute( 'data-tab' ) ) {
 				return;
 			}
 			event.preventDefault();
-			load( tab, link.href, true );
+			openFromLink( link, true );
 		} );
 
 		nav.addEventListener( 'keydown', function ( event ) {
@@ -398,12 +474,15 @@
 			}
 			event.preventDefault();
 			tabs[ next ].focus();
-			load( tabs[ next ].getAttribute( 'data-tab' ), tabs[ next ].href, true );
+			openFromLink( tabs[ next ], true );
 		} );
 
 		window.addEventListener( 'popstate', function ( event ) {
-			var tab = event.state && event.state.lcclTab ? event.state.lcclTab : tabFromUrl();
-			load( tab, window.location.href, false );
+			var tab = event.state && event.state.lcclTab ? knownTab( event.state.lcclTab ) : tabFromUrl();
+			var program = event.state && Object.prototype.hasOwnProperty.call( event.state, 'lcclProgram' )
+				? knownProgram( event.state.lcclProgram )
+				: programFromUrl();
+			load( tab, program, window.location.href, false );
 		} );
 	} );
 }() );

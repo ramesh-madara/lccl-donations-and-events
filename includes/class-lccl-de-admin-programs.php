@@ -48,6 +48,11 @@ class LCCL_DE_Admin_Programs {
 	const TAB_USERS = 'users';
 
 	/**
+	 * Hub SMS credentials tab.
+	 */
+	const TAB_SMS = 'sms';
+
+	/**
 	 * Hook menu and assets.
 	 */
 	public static function init() {
@@ -102,9 +107,7 @@ class LCCL_DE_Admin_Programs {
 		}
 
 		if ( 'lccl-de-blood-notify' === $page ) {
-			$args        = self::query_without_page();
-			$args['tab'] = 'notifications';
-			wp_safe_redirect( self::blood_url( $args ) );
+			wp_safe_redirect( self::blood_url( self::query_without_page() ) );
 			exit;
 		}
 
@@ -184,7 +187,7 @@ class LCCL_DE_Admin_Programs {
 	}
 
 	/**
-	 * Hub, reviewers, or a programme workspace.
+	 * Hub, reviewers, SMS, or a programme workspace. Tabs stay visible.
 	 */
 	public static function render() {
 		if ( ! current_user_can( 'manage_options' ) ) {
@@ -195,80 +198,59 @@ class LCCL_DE_Admin_Programs {
 		$program = isset( $_GET['program'] ) ? sanitize_key( wp_unslash( $_GET['program'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$tab     = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		if ( self::PROGRAM_BLOOD === $program ) {
-			self::render_blood();
-			return;
+		$tab     = self::normalize_tab( ( self::SCREEN_USERS === $screen ) ? self::TAB_USERS : $tab );
+		$program = self::normalize_program_key( $program );
+
+		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab ) {
+			$program = '';
 		}
 
-		if ( self::PROGRAM_PROJECTS === $program ) {
-			self::render_projects();
-			return;
-		}
-
-		if ( self::PROGRAM_SPECTACLES === $program ) {
-			self::render_spectacles();
-			return;
-		}
-
-		$tab = ( self::SCREEN_USERS === $screen || self::TAB_USERS === $tab ) ? self::TAB_USERS : self::TAB_PROGRAMS;
+		$action  = 'list';
+		$message = '';
+		$error   = '';
+		$edit    = null;
+		$settings = array();
+		$log      = array();
+		$smtp     = false;
+		$notify_action = '';
 
 		if ( self::TAB_USERS === $tab ) {
 			extract( self::users_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
-		} else {
-			$action  = 'list';
-			$message = '';
-			$error   = '';
-			$edit    = null;
+		} elseif ( self::TAB_SMS === $tab ) {
+			extract( self::sms_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		} elseif ( '' !== $program ) {
+			extract( self::tab_vars( 'notifications', true, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			$tab = self::TAB_PROGRAMS;
 		}
 
 		include LCCL_DE_PATH . 'templates/admin-programs.php';
 	}
 
 	/**
-	 * Hub-level reviewer accounts.
-	 */
-	private static function render_users() {
-		extract( self::users_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
-		include LCCL_DE_PATH . 'templates/admin-program-users.php';
-	}
-
-	/**
-	 * Blood donation notifications.
-	 */
-	private static function render_blood() {
-		extract( self::tab_vars( 'notifications', true, self::PROGRAM_BLOOD ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
-		include LCCL_DE_PATH . 'templates/admin-program-blood.php';
-	}
-
-	/**
-	 * Join Our Projects workspace.
-	 */
-	private static function render_projects() {
-		extract( self::tab_vars( 'notifications', true, self::PROGRAM_PROJECTS ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
-		include LCCL_DE_PATH . 'templates/admin-program-projects.php';
-	}
-
-	/**
-	 * Free Spectacles workspace.
-	 */
-	private static function render_spectacles() {
-		extract( self::tab_vars( 'notifications', true, self::PROGRAM_SPECTACLES ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
-		include LCCL_DE_PATH . 'templates/admin-program-spectacles.php';
-	}
-
-	/**
-	 * HTML for one hub tab, used by AJAX.
+	 * HTML for one hub panel, used by AJAX.
 	 *
-	 * @param string $tab programs|users.
+	 * @param string $tab     programs|users|sms.
+	 * @param string $program Programme key when opening a card.
 	 * @return string
 	 */
-	public static function tab_html( $tab ) {
-		$tab = self::TAB_USERS === $tab ? self::TAB_USERS : self::TAB_PROGRAMS;
+	public static function tab_html( $tab, $program = '' ) {
+		$tab     = self::normalize_tab( $tab );
+		$program = self::normalize_program_key( $program );
+
+		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab ) {
+			$program = '';
+		}
 
 		ob_start();
 		if ( self::TAB_USERS === $tab ) {
 			extract( self::users_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-users.php';
+		} elseif ( self::TAB_SMS === $tab ) {
+			extract( self::sms_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			include LCCL_DE_PATH . 'templates/admin-sms.php';
+		} elseif ( '' !== $program ) {
+			extract( self::tab_vars( 'notifications', false, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			include LCCL_DE_PATH . 'templates/admin-program-workspace.php';
 		} else {
 			include LCCL_DE_PATH . 'templates/admin-programs-grid.php';
 		}
@@ -286,17 +268,72 @@ class LCCL_DE_Admin_Programs {
 
 		check_ajax_referer( 'lccl_de_program_tab', 'nonce' );
 
-		$tab = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : self::TAB_PROGRAMS;
-		if ( self::TAB_USERS !== $tab ) {
-			$tab = self::TAB_PROGRAMS;
-		}
+		$tab     = isset( $_POST['tab'] ) ? sanitize_key( wp_unslash( $_POST['tab'] ) ) : self::TAB_PROGRAMS;
+		$program = isset( $_POST['program'] ) ? sanitize_key( wp_unslash( $_POST['program'] ) ) : '';
+		$tab     = self::normalize_tab( $tab );
+		$program = ( self::TAB_PROGRAMS === $tab ) ? self::normalize_program_key( $program ) : '';
 
 		wp_send_json_success(
 			array(
-				'tab'  => $tab,
-				'html' => self::tab_html( $tab ),
+				'tab'     => $tab,
+				'program' => $program,
+				'html'    => self::tab_html( $tab, $program ),
 			)
 		);
+	}
+
+	/**
+	 * programs, users, or sms.
+	 *
+	 * @param string $tab Raw tab.
+	 * @return string
+	 */
+	public static function normalize_tab( $tab ) {
+		$tab = sanitize_key( (string) $tab );
+		if ( self::TAB_USERS === $tab ) {
+			return self::TAB_USERS;
+		}
+		if ( self::TAB_SMS === $tab ) {
+			return self::TAB_SMS;
+		}
+
+		return self::TAB_PROGRAMS;
+	}
+
+	/**
+	 * Known programme key, or empty.
+	 *
+	 * @param string $program Raw key.
+	 * @return string
+	 */
+	public static function normalize_program_key( $program ) {
+		$program = sanitize_key( (string) $program );
+		if ( in_array( $program, array( self::PROGRAM_BLOOD, self::PROGRAM_PROJECTS, self::PROGRAM_SPECTACLES ), true ) ) {
+			return $program;
+		}
+
+		return '';
+	}
+
+	/**
+	 * Label for a programme card or breadcrumb.
+	 *
+	 * @param string $program Programme key.
+	 * @return string
+	 */
+	public static function program_label( $program ) {
+		$program = self::normalize_program_key( $program );
+		if ( self::PROGRAM_PROJECTS === $program ) {
+			return __( 'Join Our Projects', 'lccl-de' );
+		}
+		if ( self::PROGRAM_SPECTACLES === $program ) {
+			return __( 'Free Spectacles', 'lccl-de' );
+		}
+		if ( self::PROGRAM_BLOOD === $program ) {
+			return __( 'Blood Donation', 'lccl-de' );
+		}
+
+		return '';
 	}
 
 	/**
@@ -357,7 +394,7 @@ class LCCL_DE_Admin_Programs {
 		}
 
 		return array(
-			'tab'           => 'notifications' === $tab ? 'notifications' : 'users',
+			'tab'           => self::TAB_PROGRAMS,
 			'program'       => $program,
 			'notify_action' => self::notify_url( $program ),
 			'action'        => 'list',
@@ -367,6 +404,33 @@ class LCCL_DE_Admin_Programs {
 			'settings'      => LCCL_DE_Settings::get( $program ),
 			'log'           => LCCL_DE_Notify::log( $program ),
 			'smtp'          => class_exists( 'WPMailSMTP\Core' ) || defined( 'WPMS_PLUGIN_VER' ),
+		);
+	}
+
+	/**
+	 * Variables the shared SMS tab expects.
+	 *
+	 * @param bool $from_get Read flash from the request.
+	 * @return array
+	 */
+	private static function sms_vars( $from_get ) {
+		$message = '';
+		$error   = '';
+
+		if ( $from_get ) {
+			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error   = isset( $_GET['error'] ) ? sanitize_text_field( wp_unslash( $_GET['error'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $error ) {
+				$error = rawurldecode( $error );
+			}
+		}
+
+		return array(
+			'tab'      => self::TAB_SMS,
+			'program'  => '',
+			'message'  => $message,
+			'error'    => $error,
+			'settings' => LCCL_DE_Settings::get(),
 		);
 	}
 
@@ -394,6 +458,37 @@ class LCCL_DE_Admin_Programs {
 	}
 
 	/**
+	 * Shared Dialog e-SMS credentials URL.
+	 *
+	 * @param array $args Query args.
+	 * @return string
+	 */
+	public static function sms_url( $args = array() ) {
+		$args['tab'] = self::TAB_SMS;
+		unset( $args['program'], $args['screen'] );
+		return self::url( $args );
+	}
+
+	/**
+	 * Workspace URL for a programme.
+	 *
+	 * @param string $program Programme key.
+	 * @param array  $args    Query args.
+	 * @return string
+	 */
+	public static function program_url( $program, $args = array() ) {
+		$program = LCCL_DE_Settings::normalize_program( $program );
+		if ( self::PROGRAM_PROJECTS === $program ) {
+			return self::projects_url( $args );
+		}
+		if ( self::PROGRAM_SPECTACLES === $program ) {
+			return self::spectacles_url( $args );
+		}
+
+		return self::blood_url( $args );
+	}
+
+	/**
 	 * Blood donation workspace URL.
 	 *
 	 * @param array $args Query args.
@@ -401,7 +496,7 @@ class LCCL_DE_Admin_Programs {
 	 */
 	public static function blood_url( $args = array() ) {
 		$args['program'] = self::PROGRAM_BLOOD;
-		unset( $args['screen'] );
+		unset( $args['screen'], $args['tab'] );
 		return self::url( $args );
 	}
 
@@ -413,7 +508,7 @@ class LCCL_DE_Admin_Programs {
 	 */
 	public static function projects_url( $args = array() ) {
 		$args['program'] = self::PROGRAM_PROJECTS;
-		unset( $args['screen'] );
+		unset( $args['screen'], $args['tab'] );
 		return self::url( $args );
 	}
 
@@ -425,7 +520,7 @@ class LCCL_DE_Admin_Programs {
 	 */
 	public static function spectacles_url( $args = array() ) {
 		$args['program'] = self::PROGRAM_SPECTACLES;
-		unset( $args['screen'] );
+		unset( $args['screen'], $args['tab'] );
 		return self::url( $args );
 	}
 
@@ -437,17 +532,43 @@ class LCCL_DE_Admin_Programs {
 	 * @return string
 	 */
 	public static function notify_url( $program, $args = array() ) {
-		$program = LCCL_DE_Settings::normalize_program( $program );
+		return self::program_url( $program, $args );
+	}
+
+	/**
+	 * Public dashboard URL for a programme.
+	 *
+	 * @param string $program Programme key.
+	 * @return string
+	 */
+	public static function program_dashboard_url( $program ) {
+		$program = self::normalize_program_key( $program );
 		if ( self::PROGRAM_PROJECTS === $program ) {
-			return self::projects_url( $args );
+			return LCCL_DE_Roles::projects_dashboard_url();
 		}
-
 		if ( self::PROGRAM_SPECTACLES === $program ) {
-			return self::spectacles_url( $args );
+			return LCCL_DE_Roles::spectacles_dashboard_url();
 		}
 
-		$args['tab'] = 'notifications';
-		return self::blood_url( $args );
+		return LCCL_DE_Roles::dashboard_url();
+	}
+
+	/**
+	 * Intro copy for a programme workspace.
+	 *
+	 * @param string $program Programme key.
+	 * @return string
+	 */
+	public static function program_lede( $program ) {
+		$program = self::normalize_program_key( $program );
+		if ( self::PROGRAM_PROJECTS === $program ) {
+			return __( 'Choose which emails and SMS go out after someone registers their interest. Place the [lccl_join_our_projects] shortcode on any page to show the registration form.', 'lccl-de' );
+		}
+		if ( self::PROGRAM_SPECTACLES === $program ) {
+			return __( 'Choose which emails and SMS go out after someone registers a child. Place the [lccl_spectacles_registration] shortcode on any page to show the registration form.', 'lccl-de' );
+		}
+
+		return __( 'Choose which emails and SMS go out after someone signs up.', 'lccl-de' );
 	}
 
 	/**

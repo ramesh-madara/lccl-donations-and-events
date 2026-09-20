@@ -74,6 +74,78 @@ class LCCL_DE_Spectacles_Submissions {
 	}
 
 	/**
+	 * Random 32-character hex token used in viewer URLs.
+	 *
+	 * @return string
+	 */
+	public static function generate_letter_token() {
+		return bin2hex( random_bytes( 16 ) );
+	}
+
+	/**
+	 * Keep only a 32-character hex token.
+	 *
+	 * @param mixed $token Raw token.
+	 * @return string
+	 */
+	public static function sanitize_letter_token( $token ) {
+		$token = strtolower( preg_replace( '/[^a-f0-9]/i', '', (string) $token ) );
+		return 32 === strlen( $token ) ? $token : '';
+	}
+
+	/**
+	 * Persist a token on a row that has a letter but no hash yet.
+	 *
+	 * @param array $row Database row.
+	 * @return string
+	 */
+	public static function ensure_letter_token( array $row ) {
+		global $wpdb;
+
+		if ( empty( $row['letter_file'] ) ) {
+			return '';
+		}
+
+		$existing = self::sanitize_letter_token( isset( $row['letter_token'] ) ? $row['letter_token'] : '' );
+		if ( '' !== $existing ) {
+			return $existing;
+		}
+
+		$id = isset( $row['id'] ) ? (int) $row['id'] : 0;
+		if ( $id <= 0 ) {
+			return '';
+		}
+
+		$token = self::generate_letter_token();
+		$wpdb->update(
+			LCCL_DE_Schema::spectacles_table(),
+			array( 'letter_token' => $token ),
+			array( 'id' => $id ),
+			array( '%s' ),
+			array( '%d' )
+		);
+
+		return $token;
+	}
+
+	/**
+	 * Fill missing letter tokens after a schema upgrade.
+	 */
+	public static function backfill_letter_tokens() {
+		global $wpdb;
+
+		$table = LCCL_DE_Schema::spectacles_table();
+		$rows  = $wpdb->get_results(
+			"SELECT id, letter_file, letter_token FROM {$table} WHERE letter_file IS NOT NULL AND letter_file <> '' AND (letter_token IS NULL OR letter_token = '')",
+			ARRAY_A
+		);
+
+		foreach ( (array) $rows as $row ) {
+			self::ensure_letter_token( $row );
+		}
+	}
+
+	/**
 	 * Message shown when date of birth is missing or not a real past date.
 	 *
 	 * @return string
@@ -205,6 +277,7 @@ class LCCL_DE_Spectacles_Submissions {
 		$values['letter_file']      = $upload['file'];
 		$values['letter_file_name'] = $upload['name'];
 		$values['letter_mime']      = $upload['mime'];
+		$values['letter_token']     = '' !== $values['letter_file'] ? self::generate_letter_token() : '';
 
 		$errors = self::validate( $values );
 		if ( ! empty( $errors ) ) {
@@ -292,6 +365,7 @@ class LCCL_DE_Spectacles_Submissions {
 			'letter_file'           => isset( $source['letter_file'] ) ? sanitize_text_field( (string) $source['letter_file'] ) : '',
 			'letter_file_name'      => isset( $source['letter_file_name'] ) ? sanitize_file_name( (string) $source['letter_file_name'] ) : '',
 			'letter_mime'           => isset( $source['letter_mime'] ) ? sanitize_text_field( (string) $source['letter_mime'] ) : '',
+			'letter_token'          => self::sanitize_letter_token( isset( $source['letter_token'] ) ? $source['letter_token'] : '' ),
 		);
 	}
 
@@ -620,9 +694,10 @@ class LCCL_DE_Spectacles_Submissions {
 		);
 
 		if ( $create ) {
-			$row['consent']    = 1;
-			$row['ip_address'] = self::request_ip();
-			$row['created_at'] = current_time( 'mysql' );
+			$row['letter_token'] = ! empty( $values['letter_token'] ) ? $values['letter_token'] : ( '' !== $values['letter_file'] ? self::generate_letter_token() : null );
+			$row['consent']      = 1;
+			$row['ip_address']   = self::request_ip();
+			$row['created_at']   = current_time( 'mysql' );
 		}
 
 		return $row;
@@ -642,6 +717,7 @@ class LCCL_DE_Spectacles_Submissions {
 		);
 
 		if ( $create ) {
+			$formats[] = '%s';
 			$formats[] = '%d';
 			$formats[] = '%s';
 			$formats[] = '%s';

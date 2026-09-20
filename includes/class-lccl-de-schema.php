@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 7;
+	const VERSION = 8;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -267,6 +267,7 @@ class LCCL_DE_Schema {
 			letter_file varchar(255) DEFAULT NULL,
 			letter_file_name varchar(255) DEFAULT NULL,
 			letter_mime varchar(100) DEFAULT NULL,
+			letter_token char(32) DEFAULT NULL,
 			consent tinyint(1) NOT NULL DEFAULT 0,
 			ip_address varchar(45) DEFAULT NULL,
 			created_at datetime NOT NULL,
@@ -279,11 +280,13 @@ class LCCL_DE_Schema {
 			KEY school_letter (school_letter),
 			KEY created_at (created_at),
 			KEY phone (phone),
-			KEY email (email)
+			KEY email (email),
+			UNIQUE KEY letter_token (letter_token)
 		) {$charset};";
 
 		dbDelta( $spectacles_sql );
 		self::$table_names = array();
+		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();
 		update_option( self::OPTION, self::VERSION );
 	}
 }

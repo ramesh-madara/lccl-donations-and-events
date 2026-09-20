@@ -269,7 +269,7 @@ class LCCL_DE_Notify {
 					'kind'   => 'sms',
 					'ok'     => 0,
 					'to'     => $phone,
-					'detail' => 'SMS username or password is not saved in Notifications.',
+					'detail' => 'SMS username or password is not saved on the SMS tab.',
 				)
 			);
 			return;

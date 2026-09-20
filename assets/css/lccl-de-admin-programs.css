@@ -99,6 +99,10 @@
 	margin: 0 0 2px;
 }
 
+.lccl-prog .lccl-prog__panel > .lccl-prog__crumbs:first-child {
+	margin-top: 0;
+}
+
 .lccl-prog .lccl-prog__crumbs {
 	display: flex;
 	flex-wrap: wrap;
@@ -323,6 +327,15 @@
 
 .lccl-prog .lccl-prog__stage {
 	position: relative;
+}
+
+.lccl-prog .lccl-prog__panel-title {
+	margin: 0 0 8px;
+	color: var(--lccl-prog-heading);
+	font-size: 20px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	line-height: 1.3;
 }
 
 .lccl-prog .lccl-prog__panel {

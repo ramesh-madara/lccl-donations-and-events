@@ -538,14 +538,20 @@ class LCCL_DE_Spectacles_Dashboard {
 				isset( $row['letter_mime'] ) ? $row['letter_mime'] : ''
 			),
 			'letter_url'               => ! empty( $row['letter_file'] ) ? rest_url( self::REST_NS . '/spectacles/' . (int) $row['id'] . '/letter' ) : '',
-			'letter_view_url'          => ! empty( $row['letter_file'] ) ? LCCL_DE_File_Viewer::url( 'spectacles', (int) $row['id'] ) : '',
-			'letter_download_url'      => ! empty( $row['letter_file'] ) ? LCCL_DE_File_Viewer::url( 'spectacles', (int) $row['id'], 'download' ) : '',
+			'letter_view_url'          => '',
+			'letter_download_url'      => '',
 			'consent'                  => (int) $row['consent'],
 			'updated_at'               => $updated,
 			'updated_label'            => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
 			'updated_by'               => isset( $row['updated_by'] ) ? (int) $row['updated_by'] : 0,
 			'updated_by_label'         => self::present_updater( isset( $row['updated_by'] ) ? $row['updated_by'] : 0 ),
 		);
+
+		$token = LCCL_DE_Spectacles_Submissions::ensure_letter_token( $row );
+		if ( '' !== $token ) {
+			$more['letter_view_url']     = LCCL_DE_File_Viewer::url( 'spectacles', $token );
+			$more['letter_download_url'] = LCCL_DE_File_Viewer::url( 'spectacles', $token, 'download' );
+		}
 
 		if ( current_user_can( 'manage_options' ) ) {
 			$more['ip_address'] = $row['ip_address'];
@@ -593,11 +599,11 @@ class LCCL_DE_Spectacles_Dashboard {
 	/**
 	 * School letter payload for the reusable file viewer.
 	 *
-	 * @param int $id Row ID.
+	 * @param string $token 32-character hex token.
 	 * @return array|null
 	 */
-	public static function viewer_file( $id ) {
-		$row = self::get_row( (int) $id );
+	public static function viewer_file( $token ) {
+		$row = self::get_row_by_token( $token );
 		if ( ! $row || empty( $row['letter_file'] ) ) {
 			return null;
 		}
@@ -615,15 +621,42 @@ class LCCL_DE_Spectacles_Dashboard {
 			$filename = 'school-letter.' . $kind;
 		}
 
+		$token = LCCL_DE_Spectacles_Submissions::ensure_letter_token( $row );
+
 		return array(
 			'source'   => 'spectacles',
-			'id'       => (int) $row['id'],
+			'token'    => $token,
 			'path'     => $path,
 			'name'     => $name,
 			'filename' => $filename,
 			'kind'     => $kind,
 			'mime'     => $mimes[ $kind ],
 		);
+	}
+
+	/**
+	 * Load one row by its letter token.
+	 *
+	 * @param string $token 32-character hex token.
+	 * @return array|null
+	 */
+	private static function get_row_by_token( $token ) {
+		global $wpdb;
+
+		$token = LCCL_DE_Spectacles_Submissions::sanitize_letter_token( $token );
+		if ( '' === $token ) {
+			return null;
+		}
+
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM ' . LCCL_DE_Schema::spectacles_table() . ' WHERE letter_token = %s',
+				$token
+			),
+			ARRAY_A
+		);
+
+		return is_array( $row ) ? $row : null;
 	}
 
 	/**
