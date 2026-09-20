@@ -33,6 +33,47 @@ class LCCL_DE_Spectacles_Submissions {
 	const LETTER_MAX_BYTES = 10485760;
 
 	/**
+	 * Allowed school-letter extensions and MIME types.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function allowed_letter_mimes() {
+		return array(
+			'pdf'  => 'application/pdf',
+			'jpg'  => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'png'  => 'image/png',
+		);
+	}
+
+	/**
+	 * Normalised letter kind: pdf, jpg, or png. Empty if the file is not allowed.
+	 *
+	 * @param string $name Original or stored file name.
+	 * @param string $mime Stored MIME type.
+	 * @return string
+	 */
+	public static function letter_kind( $name, $mime = '' ) {
+		$ext = strtolower( pathinfo( (string) $name, PATHINFO_EXTENSION ) );
+		if ( isset( self::allowed_letter_mimes()[ $ext ] ) ) {
+			return 'jpeg' === $ext ? 'jpg' : $ext;
+		}
+
+		$mime = strtolower( (string) $mime );
+		if ( 'application/pdf' === $mime ) {
+			return 'pdf';
+		}
+		if ( 'image/jpeg' === $mime ) {
+			return 'jpg';
+		}
+		if ( 'image/png' === $mime ) {
+			return 'png';
+		}
+
+		return '';
+	}
+
+	/**
 	 * Message shown when date of birth is missing or not a real past date.
 	 *
 	 * @return string
@@ -464,17 +505,12 @@ class LCCL_DE_Spectacles_Submissions {
 		$check = wp_check_filetype_and_ext(
 			$file['tmp_name'],
 			$file['name'],
-			array(
-				'pdf'  => 'application/pdf',
-				'jpg'  => 'image/jpeg',
-				'jpeg' => 'image/jpeg',
-				'png'  => 'image/png',
-			)
+			self::allowed_letter_mimes()
 		);
 
 		$ext  = isset( $check['ext'] ) ? strtolower( (string) $check['ext'] ) : '';
 		$mime = isset( $check['type'] ) ? (string) $check['type'] : '';
-		if ( ! in_array( $ext, array( 'pdf', 'jpg', 'jpeg', 'png' ), true ) ) {
+		if ( ! self::letter_kind( $file['name'], $mime ) || ! isset( self::allowed_letter_mimes()[ $ext ] ) ) {
 			$empty['error'] = self::letter_type_message();
 			return $empty;
 		}

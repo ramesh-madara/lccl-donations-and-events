@@ -201,6 +201,20 @@ if ( $can_view && $user instanceof WP_User ) {
 		</div>
 	</section>
 
+	<div class="lccl-bda__dialog lccl-bda__dialog--letter" data-letter-dialog hidden>
+		<div class="lccl-bda__dialog-backdrop" data-letter-close></div>
+		<div class="lccl-bda__dialog-card" role="dialog" aria-modal="true" aria-labelledby="lccl-bda-letter-title">
+			<div class="lccl-bda__letter-head">
+				<h3 class="lccl-bda__dialog-title" id="lccl-bda-letter-title" data-letter-title><?php esc_html_e( 'School letter', 'lccl-de' ); ?></h3>
+				<button class="lccl-bda__action" type="button" data-letter-close><?php esc_html_e( 'Close', 'lccl-de' ); ?></button>
+			</div>
+			<p class="lccl-bda__banner lccl-bda__banner--error" data-letter-error hidden></p>
+			<div class="lccl-bda__letter-stage">
+				<iframe class="lccl-bda__letter-frame" data-letter-frame title="<?php esc_attr_e( 'School letter preview', 'lccl-de' ); ?>" hidden></iframe>
+				<img class="lccl-bda__letter-image" data-letter-image alt="<?php esc_attr_e( 'School letter preview', 'lccl-de' ); ?>" hidden>
+			</div>
+		</div>
+	</div>
 	<div class="lccl-bda__dialog" data-delete-dialog hidden>
 		<div class="lccl-bda__dialog-backdrop" data-delete-cancel></div>
 		<div class="lccl-bda__dialog-card" role="dialog" aria-modal="true" aria-labelledby="lccl-bda-delete-title">

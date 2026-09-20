@@ -66,6 +66,7 @@
 		var COLS = 9;
 		var canManage = !! parseInt( cfg.canManage, 10 );
 		var pendingDelete = null;
+		var letterObjectUrl = '';
 		var state = {
 			nonce: cfg.nonce || '',
 			page: 1,
@@ -979,10 +980,173 @@
 			grid.appendChild( item );
 		}
 
+		function letterType( item ) {
+			if ( item && item.letter_type ) {
+				return String( item.letter_type );
+			}
+			var name = String( ( item && ( item.letter_file_name || item.letter_file ) ) || '' ).toLowerCase();
+			if ( -1 !== name.indexOf( '.pdf' ) ) {
+				return 'pdf';
+			}
+			if ( /\.jpe?g$/.test( name ) ) {
+				return 'jpg';
+			}
+			if ( -1 !== name.indexOf( '.png' ) ) {
+				return 'png';
+			}
+			return 'file';
+		}
+
+		function revokeLetterUrl() {
+			if ( letterObjectUrl ) {
+				URL.revokeObjectURL( letterObjectUrl );
+				letterObjectUrl = '';
+			}
+		}
+
+		function fetchLetter( item ) {
+			if ( ! item || ! item.letter_url ) {
+				return Promise.reject( new Error( 'School letter not found.' ) );
+			}
+			return fetch( item.letter_url, {
+				credentials: 'include',
+				headers: {
+					'X-WP-Nonce': state.nonce
+				}
+			} ).then( function ( response ) {
+				if ( ! response.ok ) {
+					throw new Error( 'The school letter could not be opened.' );
+				}
+				return response.blob();
+			} );
+		}
+
+		function closeLetterPreview() {
+			var dialog = root.querySelector( '[data-letter-dialog]' );
+			var frame = root.querySelector( '[data-letter-frame]' );
+			var image = root.querySelector( '[data-letter-image]' );
+			var error = root.querySelector( '[data-letter-error]' );
+			if ( dialog ) {
+				dialog.hidden = true;
+			}
+			if ( frame ) {
+				frame.hidden = true;
+				frame.removeAttribute( 'src' );
+			}
+			if ( image ) {
+				image.hidden = true;
+				image.removeAttribute( 'src' );
+			}
+			if ( error ) {
+				error.hidden = true;
+				error.textContent = '';
+			}
+			revokeLetterUrl();
+		}
+
+		function openLetterPreview( item ) {
+			var dialog = root.querySelector( '[data-letter-dialog]' );
+			var frame = root.querySelector( '[data-letter-frame]' );
+			var image = root.querySelector( '[data-letter-image]' );
+			var title = root.querySelector( '[data-letter-title]' );
+			var error = root.querySelector( '[data-letter-error]' );
+			var kind = letterType( item );
+			if ( ! dialog ) {
+				return;
+			}
+			if ( title ) {
+				title.textContent = item.letter_file_name || 'School letter';
+			}
+			if ( error ) {
+				error.hidden = true;
+				error.textContent = '';
+			}
+			dialog.hidden = false;
+			fetchLetter( item ).then( function ( blob ) {
+				revokeLetterUrl();
+				letterObjectUrl = URL.createObjectURL( blob );
+				if ( 'pdf' === kind && frame ) {
+					if ( image ) {
+						image.hidden = true;
+						image.removeAttribute( 'src' );
+					}
+					frame.hidden = false;
+					frame.src = letterObjectUrl;
+					return;
+				}
+				if ( image ) {
+					if ( frame ) {
+						frame.hidden = true;
+						frame.removeAttribute( 'src' );
+					}
+					image.hidden = false;
+					image.src = letterObjectUrl;
+				}
+			} ).catch( function ( err ) {
+				if ( error ) {
+					error.textContent = err.message || 'The school letter could not be opened.';
+					error.hidden = false;
+				}
+			} );
+		}
+
+		function downloadLetter( item ) {
+			fetchLetter( item ).then( function ( blob ) {
+				var url = URL.createObjectURL( blob );
+				var link = document.createElement( 'a' );
+				link.href = url;
+				link.download = item.letter_file_name || ( 'school-letter.' + letterType( item ) );
+				document.body.appendChild( link );
+				link.click();
+				link.parentNode.removeChild( link );
+				window.setTimeout( function () {
+					URL.revokeObjectURL( url );
+				}, 1000 );
+			} ).catch( function ( err ) {
+				showToast( err.message || 'The school letter could not be downloaded.', 'error' );
+			} );
+		}
+
+		function addLetterField( grid, item ) {
+			var wrap;
+			var file;
+			var icon;
+			var meta;
+			var actions;
+			var preview;
+			var download;
+			if ( ! item || ! item.letter_url || ! item.letter_file_name ) {
+				return;
+			}
+			wrap = el( 'div', 'lccl-bda__person-item lccl-bda__person-item--wide' );
+			wrap.appendChild( el( 'span', 'lccl-bda__person-label', 'Uploaded letter' ) );
+			file = el( 'div', 'lccl-bda__file' );
+			icon = el( 'span', 'lccl-bda__file-icon lccl-bda__file-icon--' + letterType( item ), letterType( item ).toUpperCase() );
+			icon.setAttribute( 'aria-hidden', 'true' );
+			meta = el( 'div', 'lccl-bda__file-meta' );
+			meta.appendChild( el( 'span', 'lccl-bda__file-name', item.letter_file_name ) );
+			actions = el( 'div', 'lccl-bda__file-actions' );
+			preview = el( 'button', 'lccl-bda__action', 'Preview' );
+			preview.type = 'button';
+			preview.addEventListener( 'click', function () {
+				openLetterPreview( item );
+			} );
+			download = el( 'button', 'lccl-bda__action', 'Download' );
+			download.type = 'button';
+			download.addEventListener( 'click', function () {
+				downloadLetter( item );
+			} );
+			actions.appendChild( preview );
+			actions.appendChild( download );
+			file.appendChild( icon );
+			file.appendChild( meta );
+			file.appendChild( actions );
+			wrap.appendChild( file );
+			grid.appendChild( wrap );
+		}
+
 		function fillPersonView( panel, item ) {
 			var grid = el( 'div', 'lccl-bda__person-grid' );
-			var letterItem;
-			var letterLink;
 			addPersonField( grid, 'Date of birth', item.dob_label || item.dob );
 			addPersonField( grid, 'Age', item.age_label || item.age );
 			addPersonField( grid, 'Gender', item.gender_label );
@@ -1004,15 +1168,7 @@
 			addPersonList( grid, 'Vision difficulties', item.vision_difficulty_labels );
 			addPersonField( grid, 'Other vision difficulty', item.vision_other, 'lccl-bda__person-item--wide' );
 			addPersonField( grid, 'School letter', item.school_letter_label );
-			if ( item.letter_url && item.letter_file_name ) {
-				letterItem = el( 'div', 'lccl-bda__person-item' );
-				letterItem.appendChild( el( 'span', 'lccl-bda__person-label', 'Uploaded letter' ) );
-				letterLink = el( 'a', 'lccl-bda__person-value' );
-				letterLink.href = item.letter_url;
-				letterLink.textContent = item.letter_file_name;
-				letterItem.appendChild( letterLink );
-				grid.appendChild( letterItem );
-			}
+			addLetterField( grid, item );
 			addPersonField( grid, 'Registration date', item.created_label );
 			addPersonField( grid, 'Updated', item.updated_label );
 			addPersonField( grid, 'Updated by', item.updated_by_label );
@@ -1063,9 +1219,7 @@
 			addEditControl( grid, 'vision_other', 'Other vision difficulty', textInput( item.vision_other, 255 ), 'lccl-bda__person-item--wide' );
 			addEditControl( grid, 'school_letter', 'School letter', optionSelect( 'school_letter', 'Letter', cfg.schoolLetters || {}, item.school_letter, 'Select an option' ) );
 
-			if ( item.letter_url && item.letter_file_name ) {
-				addPersonField( grid, 'Uploaded letter', item.letter_file_name );
-			}
+			addLetterField( grid, item );
 
 			addPersonField( grid, 'Registration date', item.created_label );
 			addPersonField( grid, 'Updated', item.updated_label );
@@ -1474,6 +1628,21 @@
 				setDeleting( false );
 			} );
 		}
+
+		( function bindLetterDialog() {
+			var dialog = root.querySelector( '[data-letter-dialog]' );
+			if ( ! dialog ) {
+				return;
+			}
+			Array.prototype.forEach.call( root.querySelectorAll( '[data-letter-close]' ), function ( btn ) {
+				btn.addEventListener( 'click', closeLetterPreview );
+			} );
+			document.addEventListener( 'keydown', function ( event ) {
+				if ( 'Escape' === event.key && ! dialog.hidden ) {
+					closeLetterPreview();
+				}
+			} );
+		}() );
 
 		( function bindDeleteDialog() {
 			var dialog = root.querySelector( '[data-delete-dialog]' );

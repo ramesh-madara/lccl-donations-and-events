@@ -180,7 +180,17 @@ class LCCL_DE_Spectacles_Dashboard {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => array( __CLASS__, 'rest_letter' ),
 				'permission_callback' => array( 'LCCL_DE_Dashboard', 'rest_can_view' ),
-				'args'                => $id_args,
+				'args'                => array_merge(
+					$id_args,
+					array(
+						'disposition' => array(
+							'type'              => 'string',
+							'enum'              => array( 'inline', 'attachment' ),
+							'default'           => 'inline',
+							'sanitize_callback' => 'sanitize_key',
+						),
+					)
+				),
 			)
 		);
 	}
@@ -391,7 +401,10 @@ class LCCL_DE_Spectacles_Dashboard {
 	}
 
 	/**
-	 * Stream the stored school letter.
+	 * Stream the stored school letter for preview or download.
+	 *
+	 * Reviewers must be signed in. Opening this URL in a new tab without a
+	 * REST nonce returns 401 — the dashboard fetches it with X-WP-Nonce.
 	 *
 	 * @param WP_REST_Request $request Request.
 	 * @return WP_REST_Response|WP_Error
@@ -407,13 +420,24 @@ class LCCL_DE_Spectacles_Dashboard {
 			return new WP_Error( 'lccl_de_missing', __( 'School letter not found.', 'lccl-de' ), array( 'status' => 404 ) );
 		}
 
-		$mime = ! empty( $row['letter_mime'] ) ? $row['letter_mime'] : 'application/octet-stream';
 		$name = ! empty( $row['letter_file_name'] ) ? $row['letter_file_name'] : basename( $path );
+		$kind = LCCL_DE_Spectacles_Submissions::letter_kind( $name, isset( $row['letter_mime'] ) ? $row['letter_mime'] : '' );
+		$mimes = LCCL_DE_Spectacles_Submissions::allowed_letter_mimes();
+		if ( '' === $kind || ! isset( $mimes[ $kind ] ) ) {
+			return new WP_Error( 'lccl_de_missing', __( 'School letter not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
 
-		header( 'Content-Type: ' . $mime );
-		header( 'Content-Disposition: attachment; filename="' . sanitize_file_name( $name ) . '"' );
+		$disposition = 'attachment' === $request->get_param( 'disposition' ) ? 'attachment' : 'inline';
+		$filename    = sanitize_file_name( $name );
+		if ( '' === $filename ) {
+			$filename = 'school-letter.' . $kind;
+		}
+
+		header( 'Content-Type: ' . $mimes[ $kind ] );
+		header( 'Content-Disposition: ' . $disposition . '; filename="' . $filename . '"' );
 		header( 'Content-Length: ' . (string) filesize( $path ) );
 		header( 'X-Content-Type-Options: nosniff' );
+		header( 'Cache-Control: private, no-store' );
 		readfile( $path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_readfile
 		exit;
 	}
@@ -509,6 +533,10 @@ class LCCL_DE_Spectacles_Dashboard {
 			'school_letter_label'      => self::label_of( LCCL_DE_Spectacles_Form::school_letters(), $row['school_letter'] ),
 			'letter_file'              => $row['letter_file'],
 			'letter_file_name'         => $row['letter_file_name'],
+			'letter_type'              => LCCL_DE_Spectacles_Submissions::letter_kind(
+				! empty( $row['letter_file_name'] ) ? $row['letter_file_name'] : $row['letter_file'],
+				isset( $row['letter_mime'] ) ? $row['letter_mime'] : ''
+			),
 			'letter_url'               => ! empty( $row['letter_file'] ) ? rest_url( self::REST_NS . '/spectacles/' . (int) $row['id'] . '/letter' ) : '',
 			'consent'                  => (int) $row['consent'],
 			'updated_at'               => $updated,
