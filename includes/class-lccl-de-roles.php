@@ -53,6 +53,16 @@ class LCCL_DE_Roles {
 	const SPECTACLES_PAGE_OPTION = 'lccl_de_spectacles_admin_page_id';
 
 	/**
+	 * Bump when a new plugin-owned dashboard page is added so it is created once.
+	 */
+	const PAGES_VERSION = 1;
+
+	/**
+	 * Option that stores the dashboard-page bootstrap version.
+	 */
+	const PAGES_OPTION = 'lccl_de_pages_version';
+
+	/**
 	 * Once set, the plugin never looks up or deletes a public join form page.
 	 */
 	const JOIN_PAGE_RETIRED = 'lccl_de_join_form_page_retired';
@@ -63,9 +73,10 @@ class LCCL_DE_Roles {
 	const DISABLED_META = 'lccl_de_reviewer_disabled';
 
 	/**
-	 * Install or upgrade the role if the stored version is behind, then the pages.
+	 * Install or upgrade the role if the stored version is behind.
 	 *
-	 * Must run on init or later — wp_insert_post needs rewrite rules.
+	 * Dashboard pages are created once (activation or a pages-version bump),
+	 * never rewritten or deleted on ordinary requests.
 	 */
 	public static function maybe_install() {
 		$installed = (int) get_option( self::OPTION, 0 );
@@ -74,11 +85,21 @@ class LCCL_DE_Roles {
 			self::install();
 		}
 
-		self::ensure_pages();
+		if ( (int) get_option( self::PAGES_OPTION, 0 ) < self::PAGES_VERSION ) {
+			self::bootstrap_pages();
+		}
 	}
 
 	/**
-	 * Create the role and strip read. Page creation happens on init.
+	 * Activation: role plus a one-shot page bootstrap.
+	 */
+	public static function activate() {
+		self::install();
+		self::bootstrap_pages();
+	}
+
+	/**
+	 * Create the role and strip read.
 	 */
 	public static function install() {
 		$label = __( 'LCCL Program Reviewer', 'lccl-de' );
@@ -207,7 +228,7 @@ class LCCL_DE_Roles {
 	 * @return string
 	 */
 	public static function dashboard_url() {
-		return self::page_url( self::ensure_page() );
+		return self::page_url( self::stored_page_id( self::PAGE_OPTION ) );
 	}
 
 	/**
@@ -216,7 +237,7 @@ class LCCL_DE_Roles {
 	 * @return string
 	 */
 	public static function projects_dashboard_url() {
-		return self::page_url( self::ensure_projects_page() );
+		return self::page_url( self::stored_page_id( self::PROJECTS_PAGE_OPTION ) );
 	}
 
 	/**
@@ -225,7 +246,7 @@ class LCCL_DE_Roles {
 	 * @return string
 	 */
 	public static function spectacles_dashboard_url() {
-		return self::page_url( self::ensure_spectacles_page() );
+		return self::page_url( self::stored_page_id( self::SPECTACLES_PAGE_OPTION ) );
 	}
 
 	/**
@@ -243,13 +264,16 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Create or recover every frontend page this plugin owns.
+	 * Create missing dashboard pages once, then remember that bootstrap ran.
+	 *
+	 * Never edits or deletes an existing page.
 	 */
-	public static function ensure_pages() {
+	public static function bootstrap_pages() {
 		self::ensure_page();
 		self::ensure_projects_page();
 		self::ensure_spectacles_page();
 		self::remove_join_page();
+		update_option( self::PAGES_OPTION, self::PAGES_VERSION, false );
 	}
 
 	/**
@@ -295,7 +319,7 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Forget the old plugin-owned public form page. Never delete editor pages.
+	 * Forget the old plugin-owned public form page option. Never delete the page.
 	 */
 	public static function remove_join_page() {
 		if ( get_option( self::JOIN_PAGE_RETIRED ) ) {
@@ -304,6 +328,22 @@ class LCCL_DE_Roles {
 
 		delete_option( self::JOIN_PAGE_OPTION );
 		update_option( self::JOIN_PAGE_RETIRED, 1, false );
+	}
+
+	/**
+	 * Stored dashboard page ID if the post is still a usable page. Read-only.
+	 *
+	 * @param string $option Option that stores the page ID.
+	 * @return int
+	 */
+	private static function stored_page_id( $option ) {
+		$page_id = (int) get_option( $option, 0 );
+
+		if ( $page_id && self::is_usable_page( get_post( $page_id ) ) ) {
+			return $page_id;
+		}
+
+		return 0;
 	}
 
 	/**
@@ -326,7 +366,7 @@ class LCCL_DE_Roles {
 	}
 
 	/**
-	 * Create the plugin dashboard page if it is missing. Never edit or delete editor pages.
+	 * Create the plugin dashboard page if the slug is free. Never edit or delete pages.
 	 *
 	 * @param string $option  Option that stores the page ID.
 	 * @param string $slug    post_name.
@@ -335,13 +375,9 @@ class LCCL_DE_Roles {
 	 * @return int Page ID or 0.
 	 */
 	private static function ensure_named_page( $option, $slug, $title, $content ) {
-		$page_id = (int) get_option( $option, 0 );
-
+		$page_id = self::stored_page_id( $option );
 		if ( $page_id ) {
-			$page = get_post( $page_id );
-			if ( self::is_usable_page( $page ) ) {
-				return $page_id;
-			}
+			return $page_id;
 		}
 
 		$existing = get_posts(
@@ -354,11 +390,11 @@ class LCCL_DE_Roles {
 		);
 
 		foreach ( $existing as $page ) {
-			if ( ! self::is_usable_page( $page ) || ! self::page_has_shortcode( $page, $content ) ) {
+			if ( ! self::is_usable_page( $page ) ) {
 				continue;
 			}
 
-			update_option( $option, (int) $page->ID );
+			update_option( $option, (int) $page->ID, false );
 			return (int) $page->ID;
 		}
 
@@ -377,7 +413,7 @@ class LCCL_DE_Roles {
 			return 0;
 		}
 
-		update_option( $option, (int) $page_id );
+		update_option( $option, (int) $page_id, false );
 
 		return (int) $page_id;
 	}
@@ -390,22 +426,6 @@ class LCCL_DE_Roles {
 	 */
 	private static function is_usable_page( $page ) {
 		return $page instanceof WP_Post && 'page' === $page->post_type && 'trash' !== $page->post_status;
-	}
-
-	/**
-	 * Whether page content already hosts this plugin shortcode.
-	 *
-	 * @param WP_Post $page    Page.
-	 * @param string  $content Shortcode markup such as [lccl_blood_donation_admin].
-	 * @return bool
-	 */
-	private static function page_has_shortcode( $page, $content ) {
-		$tag = trim( (string) $content, '[]' );
-		if ( '' === $tag ) {
-			return false;
-		}
-
-		return false !== strpos( (string) $page->post_content, '[' . $tag );
 	}
 
 	/**

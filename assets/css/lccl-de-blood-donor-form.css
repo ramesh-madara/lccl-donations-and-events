@@ -147,7 +147,8 @@
 	appearance: none;
 }
 
-.lccl-bdf .lccl-bdf__input::placeholder {
+.lccl-bdf .lccl-bdf__input::placeholder,
+.lccl-bdf .lccl-bdf__textarea::placeholder {
 	color: var(--lccl-bdf-field-text);
 	opacity: 0.7;
 }

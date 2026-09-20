@@ -39,6 +39,8 @@ $show_condition = 'yes' === $val( 'eye_condition' );
 $show_other     = in_array( 'other', $list( 'vision_difficulties' ), true );
 $show_letter    = 'submitted-herewith' === $val( 'school_letter' );
 $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
+$max_dob        = current_time( 'Y-m-d' );
+$min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 ?>
 <div class="lccl-bdf lccl-bdf--spectacles">
 	<form
@@ -48,6 +50,7 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 		enctype="multipart/form-data"
 		data-required-message="<?php echo esc_attr( $required_msg ); ?>"
 		data-choice-message="<?php esc_attr_e( 'Please select at least one vision difficulty.', 'lccl-de' ); ?>"
+		data-letter-max="<?php echo (int) LCCL_DE_Spectacles_Submissions::LETTER_MAX_BYTES; ?>"
 		novalidate
 	>
 
@@ -96,7 +99,17 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-child-first">
 					<?php esc_html_e( 'Child First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-child-first" name="child_first_name" value="<?php echo esc_attr( $val( 'child_first_name' ) ); ?>" placeholder="<?php esc_attr_e( 'Amal', 'lccl-de' ); ?>" maxlength="100" required>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-child-first"
+					name="child_first_name"
+					value="<?php echo esc_attr( $val( 'child_first_name' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
+					autocomplete="given-name"
+					maxlength="100"
+					required
+				>
 				<?php $notice( 'child_first_name' ); ?>
 			</div>
 
@@ -104,7 +117,17 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-child-last">
 					<?php esc_html_e( 'Child Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-child-last" name="child_last_name" value="<?php echo esc_attr( $val( 'child_last_name' ) ); ?>" placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>" maxlength="100" required>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-child-last"
+					name="child_last_name"
+					value="<?php echo esc_attr( $val( 'child_last_name' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
+					autocomplete="family-name"
+					maxlength="100"
+					required
+				>
 				<?php $notice( 'child_last_name' ); ?>
 			</div>
 
@@ -112,14 +135,26 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-dob">
 					<?php esc_html_e( 'Date of Birth', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="date" id="lccl-spf-dob" name="dob" value="<?php echo esc_attr( $val( 'dob' ) ); ?>" required>
+				<input
+					class="lccl-bdf__input"
+					type="date"
+					id="lccl-spf-dob"
+					name="dob"
+					value="<?php echo esc_attr( $val( 'dob' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'YYYY-MM-DD', 'lccl-de' ); ?>"
+					min="<?php echo esc_attr( $min_dob ); ?>"
+					max="<?php echo esc_attr( $max_dob ); ?>"
+					data-lccl-validate="dob"
+					data-invalid-message="<?php echo esc_attr( LCCL_DE_Spectacles_Submissions::dob_error_message() ); ?>"
+					required
+				>
 				<?php $notice( 'dob' ); ?>
 			</div>
 
 			<div class="lccl-bdf__field">
 				<label class="lccl-bdf__label" for="lccl-spf-age"><?php esc_html_e( 'Age', 'lccl-de' ); ?></label>
 				<select class="lccl-bdf__select" id="lccl-spf-age" name="age">
-					<option value=""><?php esc_html_e( 'Select Age', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select age', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::ages(), $val( 'age' ) ); ?>
 				</select>
 			</div>
@@ -129,7 +164,7 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 					<?php esc_html_e( 'Gender', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-gender" name="gender" required>
-					<option value=""><?php esc_html_e( 'Select Gender', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select gender', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::genders(), $val( 'gender' ) ); ?>
 				</select>
 				<?php $notice( 'gender' ); ?>
@@ -140,7 +175,7 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 					<?php esc_html_e( 'Grade / Year', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-grade" name="grade" required>
-					<option value=""><?php esc_html_e( 'Select Grade / Year', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select grade / year', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::grades(), $val( 'grade' ) ); ?>
 				</select>
 				<?php $notice( 'grade' ); ?>
@@ -150,7 +185,17 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-school">
 					<?php esc_html_e( 'School Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-school" name="school_name" value="<?php echo esc_attr( $val( 'school_name' ) ); ?>" maxlength="191" required>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-school"
+					name="school_name"
+					value="<?php echo esc_attr( $val( 'school_name' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Royal College', 'lccl-de' ); ?>"
+					autocomplete="organization"
+					maxlength="191"
+					required
+				>
 				<?php $notice( 'school_name' ); ?>
 			</div>
 
@@ -158,7 +203,16 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-school-area">
 					<?php esc_html_e( 'School Area', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-school-area" name="school_area" value="<?php echo esc_attr( $val( 'school_area' ) ); ?>" maxlength="191" required>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-school-area"
+					name="school_area"
+					value="<?php echo esc_attr( $val( 'school_area' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Colombo 07', 'lccl-de' ); ?>"
+					maxlength="191"
+					required
+				>
 				<?php $notice( 'school_area' ); ?>
 			</div>
 
@@ -167,7 +221,7 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 					<?php esc_html_e( 'District', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-district" name="district" required>
-					<option value=""><?php esc_html_e( 'Select District', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select your district', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::districts(), $val( 'district' ) ); ?>
 				</select>
 				<?php $notice( 'district' ); ?>
@@ -177,7 +231,17 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-guardian">
 					<?php esc_html_e( 'Parent / Guardian Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-guardian" name="guardian_name" value="<?php echo esc_attr( $val( 'guardian_name' ) ); ?>" maxlength="191" required>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-guardian"
+					name="guardian_name"
+					value="<?php echo esc_attr( $val( 'guardian_name' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Saman Perera', 'lccl-de' ); ?>"
+					autocomplete="name"
+					maxlength="191"
+					required
+				>
 				<?php $notice( 'guardian_name' ); ?>
 			</div>
 
@@ -206,7 +270,17 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-city">
 					<?php esc_html_e( 'City / Area', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-city" name="city" value="<?php echo esc_attr( $val( 'city' ) ); ?>" placeholder="<?php esc_attr_e( 'Colombo', 'lccl-de' ); ?>" maxlength="100" required>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-city"
+					name="city"
+					value="<?php echo esc_attr( $val( 'city' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Colombo', 'lccl-de' ); ?>"
+					autocomplete="address-level2"
+					maxlength="100"
+					required
+				>
 				<?php $notice( 'city' ); ?>
 			</div>
 
@@ -215,7 +289,7 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 					<?php esc_html_e( 'Relationship to Child', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-relationship" name="relationship" required>
-					<option value=""><?php esc_html_e( 'Select Relationship', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select a relationship', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::relationships(), $val( 'relationship' ) ); ?>
 				</select>
 				<?php $notice( 'relationship' ); ?>
@@ -291,8 +365,17 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 			</div>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'eye_condition_details' ) ); ?>" data-lccl-show-when="eye_condition:yes"<?php echo $show_condition ? '' : ' hidden'; ?>>
-				<label class="lccl-bdf__label" for="lccl-spf-condition-details"><?php esc_html_e( 'Please provide details', 'lccl-de' ); ?></label>
-				<textarea class="lccl-bdf__textarea" id="lccl-spf-condition-details" name="eye_condition_details" rows="4"><?php echo esc_textarea( $val( 'eye_condition_details' ) ); ?></textarea>
+				<label class="lccl-bdf__label" for="lccl-spf-condition-details">
+					<?php esc_html_e( 'Please provide details', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+				</label>
+				<textarea
+					class="lccl-bdf__textarea"
+					id="lccl-spf-condition-details"
+					name="eye_condition_details"
+					rows="4"
+					placeholder="<?php esc_attr_e( 'Short-sightedness diagnosed last year', 'lccl-de' ); ?>"
+					<?php echo $show_condition ? 'required' : ''; ?>
+				><?php echo esc_textarea( $val( 'eye_condition_details' ) ); ?></textarea>
 				<?php $notice( 'eye_condition_details' ); ?>
 			</div>
 
@@ -314,8 +397,19 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 			</div>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'vision_other' ) ); ?>" data-lccl-show-when="vision_other"<?php echo $show_other ? '' : ' hidden'; ?>>
-				<label class="lccl-bdf__label" for="lccl-spf-vision-other"><?php esc_html_e( 'Please specify the other vision difficulty', 'lccl-de' ); ?></label>
-				<input class="lccl-bdf__input" type="text" id="lccl-spf-vision-other" name="vision_other" value="<?php echo esc_attr( $val( 'vision_other' ) ); ?>" maxlength="255">
+				<label class="lccl-bdf__label" for="lccl-spf-vision-other">
+					<?php esc_html_e( 'Please specify the other vision difficulty', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+				</label>
+				<input
+					class="lccl-bdf__input"
+					type="text"
+					id="lccl-spf-vision-other"
+					name="vision_other"
+					value="<?php echo esc_attr( $val( 'vision_other' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'Please describe the other difficulty', 'lccl-de' ); ?>"
+					maxlength="255"
+					<?php echo $show_other ? 'required' : ''; ?>
+				>
 				<?php $notice( 'vision_other' ); ?>
 			</div>
 
@@ -324,7 +418,7 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 					<?php esc_html_e( 'Letter from School', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-letter" name="school_letter" required>
-					<option value=""><?php esc_html_e( 'Select an option', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select how the letter will be submitted', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::school_letters(), $val( 'school_letter' ) ); ?>
 				</select>
 				<?php $notice( 'school_letter' ); ?>
@@ -334,7 +428,16 @@ $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 				<label class="lccl-bdf__label" for="lccl-spf-letter-file">
 					<?php esc_html_e( 'Upload School Letter', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
-				<input class="lccl-bdf__file" type="file" id="lccl-spf-letter-file" name="school_letter_file" accept=".pdf,.jpg,.jpeg,.png">
+				<input
+					class="lccl-bdf__file"
+					type="file"
+					id="lccl-spf-letter-file"
+					name="school_letter_file"
+					accept=".pdf,.jpg,.jpeg,.png"
+					data-invalid-type="<?php echo esc_attr( LCCL_DE_Spectacles_Submissions::letter_type_message() ); ?>"
+					data-invalid-size="<?php echo esc_attr( LCCL_DE_Spectacles_Submissions::letter_size_message() ); ?>"
+					<?php echo $show_letter ? 'required' : ''; ?>
+				>
 				<p class="lccl-bdf__hint"><?php esc_html_e( 'Accepted formats: PDF, JPG, JPEG and PNG. Maximum file size: 10 MB.', 'lccl-de' ); ?></p>
 				<?php $notice( 'school_letter_file' ); ?>
 			</div>

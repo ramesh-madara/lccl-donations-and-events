@@ -33,6 +33,42 @@ class LCCL_DE_Spectacles_Submissions {
 	const LETTER_MAX_BYTES = 10485760;
 
 	/**
+	 * Message shown when date of birth is missing or not a real past date.
+	 *
+	 * @return string
+	 */
+	public static function dob_error_message() {
+		return __( 'Enter a valid date of birth.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when a school letter file is required but missing.
+	 *
+	 * @return string
+	 */
+	public static function letter_required_message() {
+		return __( 'Please upload the school letter.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when the school letter is larger than 10 MB.
+	 *
+	 * @return string
+	 */
+	public static function letter_size_message() {
+		return __( 'The school letter must be 10 MB or smaller.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when the school letter is the wrong file type.
+	 *
+	 * @return string
+	 */
+	public static function letter_type_message() {
+		return __( 'Accepted formats: PDF, JPG, JPEG and PNG.', 'lccl-de' );
+	}
+
+	/**
 	 * Hook the public and logged-in POST handlers.
 	 */
 	public static function init() {
@@ -268,7 +304,7 @@ class LCCL_DE_Spectacles_Submissions {
 		}
 
 		if ( '' !== $values['dob'] && ! self::is_valid_dob( $values['dob'] ) ) {
-			$errors['dob'] = __( 'Enter a valid date of birth.', 'lccl-de' );
+			$errors['dob'] = self::dob_error_message();
 		}
 
 		self::assert_option( $errors, $values, 'age', LCCL_DE_Spectacles_Form::ages() );
@@ -296,7 +332,7 @@ class LCCL_DE_Spectacles_Submissions {
 		}
 
 		if ( $require_letter && 'submitted-herewith' === $values['school_letter'] && '' === $values['letter_file'] ) {
-			$errors['school_letter_file'] = __( 'Please upload the school letter.', 'lccl-de' );
+			$errors['school_letter_file'] = self::letter_required_message();
 		}
 
 		return $errors;
@@ -421,7 +457,7 @@ class LCCL_DE_Spectacles_Submissions {
 		}
 
 		if ( (int) $file['size'] > self::LETTER_MAX_BYTES ) {
-			$empty['error'] = __( 'The school letter must be 10 MB or smaller.', 'lccl-de' );
+			$empty['error'] = self::letter_size_message();
 			return $empty;
 		}
 
@@ -439,7 +475,7 @@ class LCCL_DE_Spectacles_Submissions {
 		$ext  = isset( $check['ext'] ) ? strtolower( (string) $check['ext'] ) : '';
 		$mime = isset( $check['type'] ) ? (string) $check['type'] : '';
 		if ( ! in_array( $ext, array( 'pdf', 'jpg', 'jpeg', 'png' ), true ) ) {
-			$empty['error'] = __( 'Accepted formats: PDF, JPG, JPEG and PNG.', 'lccl-de' );
+			$empty['error'] = self::letter_type_message();
 			return $empty;
 		}
 

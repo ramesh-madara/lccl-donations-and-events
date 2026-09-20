@@ -121,14 +121,48 @@
 		return String( age );
 	}
 
+	function isValidDob( value ) {
+		if ( ! /^\d{4}-\d{2}-\d{2}$/.test( value ) ) {
+			return false;
+		}
+		var parts = value.split( '-' );
+		var year = parseInt( parts[ 0 ], 10 );
+		var month = parseInt( parts[ 1 ], 10 ) - 1;
+		var day = parseInt( parts[ 2 ], 10 );
+		var born = new Date( year, month, day );
+		if ( isNaN( born.getTime() ) || born.getFullYear() !== year || born.getMonth() !== month || born.getDate() !== day ) {
+			return false;
+		}
+		var today = new Date();
+		today.setHours( 0, 0, 0, 0 );
+		born.setHours( 0, 0, 0, 0 );
+		return born <= today;
+	}
+
+	function letterFileError( field, maxBytes ) {
+		if ( ! field || ! field.files || ! field.files.length ) {
+			return '';
+		}
+		var file = field.files[ 0 ];
+		var name = String( file.name || '' ).toLowerCase();
+		if ( ! /\.(pdf|jpe?g|png)$/.test( name ) ) {
+			return field.getAttribute( 'data-invalid-type' ) || '';
+		}
+		if ( file.size > maxBytes ) {
+			return field.getAttribute( 'data-invalid-size' ) || '';
+		}
+		return '';
+	}
+
 	function toggleRow( row, show ) {
 		if ( ! row ) {
 			return;
 		}
 		row.hidden = ! show;
 		Array.prototype.forEach.call( row.querySelectorAll( 'input, textarea, select' ), function ( field ) {
-			if ( 'file' === field.type ) {
-				field.required = show;
+			field.required = show;
+			if ( ! show ) {
+				markField( field, false );
 			}
 		} );
 	}
@@ -147,6 +181,8 @@
 		var choiceBanner = form.querySelector( '[data-lccl-notice="choices"]' );
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
 		var choiceMsg = form.getAttribute( 'data-choice-message' ) || '';
+		var letterMax = parseInt( form.getAttribute( 'data-letter-max' ) || '10485760', 10 );
+		var letterFile = form.querySelector( '[name="school_letter_file"]' );
 
 		function visionChecked() {
 			return form.querySelectorAll( 'input[name="vision_difficulties[]"]:checked' ).length > 0;
@@ -205,12 +241,20 @@
 			} );
 		}
 
-		if ( dob && age ) {
+		if ( dob ) {
 			dob.addEventListener( 'change', function () {
-				var next = ageFromDob( dob.value );
-				if ( next && ! age.value ) {
-					age.value = next;
+				if ( age ) {
+					var next = ageFromDob( dob.value );
+					if ( next && ! age.value ) {
+						age.value = next;
+					}
 				}
+				if ( ! isFilled( dob ) ) {
+					return;
+				}
+				var ok = isValidDob( dob.value );
+				markField( dob, ! ok );
+				setNotice( form, 'dob', ok ? '' : dob.getAttribute( 'data-invalid-message' ) || '' );
 			} );
 		}
 
@@ -261,6 +305,25 @@
 				setNotice( form, 'email', email.getAttribute( 'data-invalid-message' ) || '' );
 				if ( ! firstInvalid ) {
 					firstInvalid = email;
+				}
+			}
+
+			if ( dob && isFilled( dob ) && ! isValidDob( dob.value ) ) {
+				markField( dob, true );
+				setNotice( form, 'dob', dob.getAttribute( 'data-invalid-message' ) || '' );
+				if ( ! firstInvalid ) {
+					firstInvalid = dob;
+				}
+			}
+
+			if ( letterFile && ! letterFile.closest( '[hidden]' ) && isFilled( letterFile ) ) {
+				var letterError = letterFileError( letterFile, letterMax );
+				if ( letterError ) {
+					markField( letterFile, true );
+					setNotice( form, 'school_letter_file', letterError );
+					if ( ! firstInvalid ) {
+						firstInvalid = letterFile;
+					}
 				}
 			}
 
