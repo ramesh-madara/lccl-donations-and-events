@@ -23,7 +23,8 @@ if ( empty( $notify_action ) ) {
 	$notify_action = LCCL_DE_Admin_Programs::notify_url( $program );
 }
 
-$is_projects = LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program;
+$is_projects   = LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program;
+$is_spectacles = LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES === $program;
 ?>
 <?php if ( 'saved' === $message ) : ?>
 	<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Notification settings saved.', 'lccl-de' ); ?></p></div>
@@ -117,7 +118,7 @@ $is_projects = LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program;
 	<h2><?php esc_html_e( 'Send a test email', 'lccl-de' ); ?></h2>
 	<p class="lccl-prog__hint">
 		<?php
-		if ( $is_projects ) {
+		if ( $is_projects || $is_spectacles ) {
 			esc_html_e( 'Sends the live registrant and/or staff templates with sample registration data, using the same wp_mail path as a real signup.', 'lccl-de' );
 		} else {
 			esc_html_e( 'Sends the live donor and/or staff templates with sample registration data, using the same wp_mail path as a real signup.', 'lccl-de' );
@@ -150,7 +151,7 @@ $is_projects = LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program;
 		</p>
 		<label class="lccl-prog__check">
 			<input type="radio" name="test_kind" value="donor">
-			<span><?php echo $is_projects ? esc_html__( 'Registrant confirmation email', 'lccl-de' ) : esc_html__( 'Donor confirmation email', 'lccl-de' ); ?></span>
+			<span><?php echo ( $is_projects || $is_spectacles ) ? esc_html__( 'Registrant confirmation email', 'lccl-de' ) : esc_html__( 'Donor confirmation email', 'lccl-de' ); ?></span>
 		</label>
 		<label class="lccl-prog__check">
 			<input type="radio" name="test_kind" value="staff">

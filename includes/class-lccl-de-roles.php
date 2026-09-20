@@ -48,6 +48,11 @@ class LCCL_DE_Roles {
 	const JOIN_PAGE_OPTION = 'lccl_de_join_form_page_id';
 
 	/**
+	 * Option that stores the Free Spectacles admin page ID.
+	 */
+	const SPECTACLES_PAGE_OPTION = 'lccl_de_spectacles_admin_page_id';
+
+	/**
 	 * Once set, the plugin never looks up or deletes a public join form page.
 	 */
 	const JOIN_PAGE_RETIRED = 'lccl_de_join_form_page_retired';
@@ -215,6 +220,15 @@ class LCCL_DE_Roles {
 	}
 
 	/**
+	 * Free Spectacles review dashboard URL.
+	 *
+	 * @return string
+	 */
+	public static function spectacles_dashboard_url() {
+		return self::page_url( self::ensure_spectacles_page() );
+	}
+
+	/**
 	 * Public form URL if a host page still exists. The form is a shortcode now.
 	 *
 	 * @return string
@@ -234,6 +248,7 @@ class LCCL_DE_Roles {
 	public static function ensure_pages() {
 		self::ensure_page();
 		self::ensure_projects_page();
+		self::ensure_spectacles_page();
 		self::remove_join_page();
 	}
 
@@ -262,6 +277,20 @@ class LCCL_DE_Roles {
 			'our-projects-admin',
 			__( 'OUR PROJECTS ADMIN', 'lccl-de' ),
 			'[lccl_our_projects_admin]'
+		);
+	}
+
+	/**
+	 * Create or recover the page that hosts [lccl_spectacles_registration_admin].
+	 *
+	 * @return int Page ID or 0.
+	 */
+	public static function ensure_spectacles_page() {
+		return self::ensure_named_page(
+			self::SPECTACLES_PAGE_OPTION,
+			'spectacles-registration-admin',
+			__( 'SPECTACLES REGISTRATION ADMIN', 'lccl-de' ),
+			'[lccl_spectacles_registration_admin]'
 		);
 	}
 

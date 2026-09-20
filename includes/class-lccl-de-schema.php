@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 6;
+	const VERSION = 7;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -69,7 +69,7 @@ class LCCL_DE_Schema {
 	public static function maybe_install() {
 		$installed = (int) get_option( self::OPTION, 0 );
 
-		if ( $installed >= self::VERSION && self::table_exists() && self::project_joins_exist() ) {
+		if ( $installed >= self::VERSION && self::table_exists() && self::project_joins_exist() && self::spectacles_exist() ) {
 			return;
 		}
 
@@ -96,6 +96,31 @@ class LCCL_DE_Schema {
 		global $wpdb;
 
 		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_project_joins' );
+	}
+
+	/**
+	 * Free Spectacles registrations table, including the WP prefix.
+	 *
+	 * @return string
+	 */
+	public static function spectacles_table() {
+		global $wpdb;
+
+		$wanted   = $wpdb->prefix . 'lccl_de_spectacles';
+		$existing = self::existing_table_name( $wanted );
+
+		return $existing ? $existing : $wanted;
+	}
+
+	/**
+	 * Whether the Free Spectacles table is present, ignoring identifier case.
+	 *
+	 * @return bool
+	 */
+	public static function spectacles_exist() {
+		global $wpdb;
+
+		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_spectacles' );
 	}
 
 	/**
@@ -212,6 +237,52 @@ class LCCL_DE_Schema {
 		) {$charset};";
 
 		dbDelta( $join_sql );
+
+		$spectacles = self::spectacles_table();
+		$spectacles_sql = "CREATE TABLE {$spectacles} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			child_first_name varchar(100) NOT NULL,
+			child_last_name varchar(100) NOT NULL,
+			dob date NOT NULL,
+			age varchar(8) DEFAULT NULL,
+			gender varchar(16) NOT NULL,
+			grade varchar(32) NOT NULL,
+			school_name varchar(191) NOT NULL,
+			school_area varchar(191) NOT NULL,
+			district varchar(64) NOT NULL,
+			guardian_name varchar(191) NOT NULL,
+			phone varchar(30) NOT NULL,
+			city varchar(100) NOT NULL,
+			relationship varchar(32) NOT NULL,
+			email varchar(191) DEFAULT NULL,
+			eye_exam varchar(16) NOT NULL,
+			wear_spectacles varchar(16) NOT NULL,
+			difficulty_seeing varchar(16) NOT NULL,
+			last_eye_exam varchar(32) DEFAULT NULL,
+			eye_condition varchar(16) NOT NULL,
+			eye_condition_details text,
+			vision_difficulties text,
+			vision_other varchar(255) DEFAULT NULL,
+			school_letter varchar(32) NOT NULL,
+			letter_file varchar(255) DEFAULT NULL,
+			letter_file_name varchar(255) DEFAULT NULL,
+			letter_mime varchar(100) DEFAULT NULL,
+			consent tinyint(1) NOT NULL DEFAULT 0,
+			ip_address varchar(45) DEFAULT NULL,
+			created_at datetime NOT NULL,
+			updated_at datetime DEFAULT NULL,
+			updated_by bigint(20) unsigned DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY district (district),
+			KEY grade (grade),
+			KEY gender (gender),
+			KEY school_letter (school_letter),
+			KEY created_at (created_at),
+			KEY phone (phone),
+			KEY email (email)
+		) {$charset};";
+
+		dbDelta( $spectacles_sql );
 		self::$table_names = array();
 		update_option( self::OPTION, self::VERSION );
 	}

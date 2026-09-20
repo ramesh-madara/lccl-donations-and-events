@@ -28,6 +28,11 @@ class LCCL_DE_Admin_Programs {
 	const PROGRAM_PROJECTS = 'our-projects';
 
 	/**
+	 * Free Spectacles programme query value.
+	 */
+	const PROGRAM_SPECTACLES = 'free-spectacles';
+
+	/**
 	 * Hub-level reviewers screen query value.
 	 */
 	const SCREEN_USERS = 'users';
@@ -200,6 +205,11 @@ class LCCL_DE_Admin_Programs {
 			return;
 		}
 
+		if ( self::PROGRAM_SPECTACLES === $program ) {
+			self::render_spectacles();
+			return;
+		}
+
 		$tab = ( self::SCREEN_USERS === $screen || self::TAB_USERS === $tab ) ? self::TAB_USERS : self::TAB_PROGRAMS;
 
 		if ( self::TAB_USERS === $tab ) {
@@ -236,6 +246,14 @@ class LCCL_DE_Admin_Programs {
 	private static function render_projects() {
 		extract( self::tab_vars( 'notifications', true, self::PROGRAM_PROJECTS ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		include LCCL_DE_PATH . 'templates/admin-program-projects.php';
+	}
+
+	/**
+	 * Free Spectacles workspace.
+	 */
+	private static function render_spectacles() {
+		extract( self::tab_vars( 'notifications', true, self::PROGRAM_SPECTACLES ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		include LCCL_DE_PATH . 'templates/admin-program-spectacles.php';
 	}
 
 	/**
@@ -400,6 +418,18 @@ class LCCL_DE_Admin_Programs {
 	}
 
 	/**
+	 * Free Spectacles workspace URL.
+	 *
+	 * @param array $args Query args.
+	 * @return string
+	 */
+	public static function spectacles_url( $args = array() ) {
+		$args['program'] = self::PROGRAM_SPECTACLES;
+		unset( $args['screen'] );
+		return self::url( $args );
+	}
+
+	/**
 	 * Notifications POST/redirect URL for a programme.
 	 *
 	 * @param string $program blood-donation|our-projects.
@@ -410,6 +440,10 @@ class LCCL_DE_Admin_Programs {
 		$program = LCCL_DE_Settings::normalize_program( $program );
 		if ( self::PROGRAM_PROJECTS === $program ) {
 			return self::projects_url( $args );
+		}
+
+		if ( self::PROGRAM_SPECTACLES === $program ) {
+			return self::spectacles_url( $args );
 		}
 
 		$args['tab'] = 'notifications';

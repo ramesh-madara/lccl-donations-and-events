@@ -611,6 +611,53 @@
 	line-height: 1.6;
 }
 
+.lccl-bdf .lccl-bdf__hint {
+	margin: 0 0 10px;
+	color: #6b6b6b;
+	font-family: var(--lccl-bdf-font);
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.lccl-bdf .lccl-bdf__file {
+	display: block;
+	width: 100%;
+	padding: 8px 0;
+	color: var(--lccl-bdf-field-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+}
+
+.lccl-bdf .lccl-bdf__templates {
+	margin-top: 8px;
+}
+
+.lccl-bdf .lccl-bdf__template-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 20px;
+}
+
+.lccl-bdf .lccl-bdf__template-links a {
+	color: var(--lccl-bdf-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	text-decoration: underline;
+	text-decoration-color: var(--lccl-bdf-gold-light);
+	text-underline-offset: 3px;
+}
+
+.lccl-bdf .lccl-bdf__template-links a:hover,
+.lccl-bdf .lccl-bdf__template-links a:focus {
+	color: var(--lccl-bdf-heading);
+}
+
+.lccl-bdf.lccl-bdf--spectacles .lccl-bdf__consent {
+	margin-top: 28px;
+	padding-top: 8px;
+	border-top: none;
+}
+
 @media (max-width: 782px) {
 	.lccl-bdf .lccl-bdf__choices {
 		grid-template-columns: minmax(0, 1fr);

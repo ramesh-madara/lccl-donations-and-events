@@ -28,6 +28,11 @@ class LCCL_DE_Settings {
 	const OPTION_PROJECTS = 'lccl_de_projects_notify';
 
 	/**
+	 * Option that stores Free Spectacles notification switches.
+	 */
+	const OPTION_SPECTACLES = 'lccl_de_spectacles_notify';
+
+	/**
 	 * Nonce for saving.
 	 */
 	const NONCE = 'lccl_de_save_notify';
@@ -67,6 +72,11 @@ class LCCL_DE_Settings {
 			if ( ! is_array( $stored ) ) {
 				$stored = array();
 			}
+		} elseif ( LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES === $program ) {
+			$stored = get_option( self::OPTION_SPECTACLES, array() );
+			if ( ! is_array( $stored ) ) {
+				$stored = array();
+			}
 		}
 
 		$settings = wp_parse_args(
@@ -100,6 +110,10 @@ class LCCL_DE_Settings {
 		$program = sanitize_key( (string) $program );
 		if ( LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program ) {
 			return LCCL_DE_Admin_Programs::PROGRAM_PROJECTS;
+		}
+
+		if ( LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES === $program ) {
+			return LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES;
 		}
 
 		return LCCL_DE_Admin_Programs::PROGRAM_BLOOD;
@@ -148,6 +162,9 @@ class LCCL_DE_Settings {
 		if ( LCCL_DE_Admin_Programs::PROGRAM_PROJECTS === $program ) {
 			update_option( self::OPTION, $blood );
 			update_option( self::OPTION_PROJECTS, $toggles );
+		} elseif ( LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES === $program ) {
+			update_option( self::OPTION, $blood );
+			update_option( self::OPTION_SPECTACLES, $toggles );
 		} else {
 			update_option( self::OPTION, array_merge( $blood, $toggles ) );
 		}

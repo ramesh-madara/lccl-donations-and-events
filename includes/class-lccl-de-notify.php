@@ -145,6 +145,27 @@ class LCCL_DE_Notify {
 	 * @return array{name:string,bank:string,id:int,values:array}
 	 */
 	private static function sample_registration( $to ) {
+		if ( self::is_spectacles() ) {
+			$values = array(
+				'child_first_name'  => 'Amal',
+				'child_last_name'   => 'Perera',
+				'guardian_name'     => 'Saman Perera',
+				'email'             => $to,
+				'phone'             => '+94712345678',
+				'district'          => 'Colombo',
+				'school_name'       => 'Royal College',
+				'grade'             => 'grade-5',
+				'city'              => 'Colombo',
+			);
+
+			return array(
+				'name'   => 'Saman Perera',
+				'bank'   => '',
+				'id'     => 1001,
+				'values' => $values,
+			);
+		}
+
 		if ( self::is_projects() ) {
 			$values = array(
 				'full_name'            => 'Saman Padukka',
@@ -255,12 +276,16 @@ class LCCL_DE_Notify {
 		}
 
 		$bank    = self::bank_label( $values );
-		$message = self::is_projects()
-			? 'Thank you for registering to support our community projects. Your registration has been successfully received.'
-			: sprintf(
+		if ( self::is_spectacles() ) {
+			$message = 'Thank you for registering your child for the free spectacles programme. Your registration has been successfully received.';
+		} elseif ( self::is_projects() ) {
+			$message = 'Thank you for registering to support our community projects. Your registration has been successfully received.';
+		} else {
+			$message = sprintf(
 				'Thank you for registering as a blood donor. Your registration has been successfully received. Preferred blood bank : %s.',
 				$bank
 			);
+		}
 
 		$payload = array(
 			'message'        => $message,
@@ -649,12 +674,25 @@ class LCCL_DE_Notify {
 	}
 
 	/**
+	 * Whether the current send belongs to Free Spectacles.
+	 *
+	 * @return bool
+	 */
+	private static function is_spectacles() {
+		return LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES === self::$program;
+	}
+
+	/**
 	 * Display name on confirmation emails.
 	 *
 	 * @param array $values Sanitised registration.
 	 * @return string
 	 */
 	private static function registrant_name( array $values ) {
+		if ( ! empty( $values['guardian_name'] ) ) {
+			return trim( (string) $values['guardian_name'] );
+		}
+
 		if ( ! empty( $values['full_name'] ) ) {
 			return trim( (string) $values['full_name'] );
 		}
@@ -675,6 +713,10 @@ class LCCL_DE_Notify {
 	 * @return string
 	 */
 	private static function confirmation_subject() {
+		if ( self::is_spectacles() ) {
+			return __( 'FREE SPECTACLES REGISTRATION CONFIRMED', 'lccl-de' );
+		}
+
 		return self::is_projects()
 			? __( 'JOIN OUR PROJECTS REGISTRATION CONFIRMED', 'lccl-de' )
 			: __( 'Blood donor registration confirmed', 'lccl-de' );
@@ -687,6 +729,10 @@ class LCCL_DE_Notify {
 	 * @return string
 	 */
 	private static function staff_subject( $name ) {
+		if ( self::is_spectacles() ) {
+			return sprintf( __( 'New free spectacles registration: %s', 'lccl-de' ), $name );
+		}
+
 		return self::is_projects()
 			? sprintf( __( 'New Join Our Projects registration: %s', 'lccl-de' ), $name )
 			: sprintf( __( 'New blood donor registration: %s', 'lccl-de' ), $name );
@@ -699,6 +745,10 @@ class LCCL_DE_Notify {
 	 * @return string
 	 */
 	private static function confirmation_html( array $sample ) {
+		if ( self::is_spectacles() ) {
+			return self::spectacles_registrant_html( $sample['name'], $sample['values'] );
+		}
+
 		if ( self::is_projects() ) {
 			return self::projects_registrant_html( $sample['name'] );
 		}
@@ -714,11 +764,86 @@ class LCCL_DE_Notify {
 	 */
 	private static function staff_html( array $sample ) {
 		$phone = isset( $sample['values']['phone'] ) ? $sample['values']['phone'] : '';
+		if ( self::is_spectacles() ) {
+			return self::spectacles_admin_html( $sample['name'], $sample['values'], $phone, $sample['id'] );
+		}
+
 		if ( self::is_projects() ) {
 			return self::projects_admin_html( $sample['name'], $sample['values'], $phone, $sample['id'] );
 		}
 
 		return self::admin_html( $sample['name'], $sample['values'], $sample['bank'], $phone, $sample['id'] );
+	}
+
+	/**
+	 * Registrant confirmation for Free Spectacles.
+	 *
+	 * @param string $name   Guardian name.
+	 * @param array  $values Sanitised registration.
+	 * @return string
+	 */
+	private static function spectacles_registrant_html( $name, array $values ) {
+		$logo  = 'https://registration.colomboleads.org/lccclLOGO.png';
+		$who   = '' !== $name ? $name : __( 'Friend', 'lccl-de' );
+		$child = trim(
+			( isset( $values['child_first_name'] ) ? $values['child_first_name'] : '' ) . ' ' .
+			( isset( $values['child_last_name'] ) ? $values['child_last_name'] : '' )
+		);
+
+		return '<html><body style="margin:0;padding:0;background-color:#F3F3F3;">
+			<div style="background-color:#F3F3F3;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;">
+				<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
+				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">FREE SPECTACLES REGISTRATION CONFIRMED</h1>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Dear ' . esc_html( $who ) . ',</p>
+				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Thank you for registering ' . esc_html( '' !== $child ? $child : __( 'your child', 'lccl-de' ) ) . ' for the free spectacles programme through Lions Club of Colombo LEADS. Your registration has been successfully received.</p>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">We will review the information you provided and contact you regarding the next steps for this programme.</p>
+				<p style="margin:0 0 28px;color:#555555;font-size:15px;line-height:1.6;">Thank you for helping us support children who need spectacles.</p>
+				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
+				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
+			</div>
+		</body></html>';
+	}
+
+	/**
+	 * Staff copy for a Free Spectacles registration.
+	 *
+	 * @param string $name      Guardian name.
+	 * @param array  $values    Sanitised registration.
+	 * @param string $phone     Phone.
+	 * @param int    $insert_id Row ID.
+	 * @return string
+	 */
+	private static function spectacles_admin_html( $name, array $values, $phone, $insert_id ) {
+		$logo  = 'https://registration.colomboleads.org/lccclLOGO.png';
+		$child = trim(
+			( isset( $values['child_first_name'] ) ? $values['child_first_name'] : '' ) . ' ' .
+			( isset( $values['child_last_name'] ) ? $values['child_last_name'] : '' )
+		);
+		$grades = LCCL_DE_Spectacles_Form::grades();
+		$grade  = isset( $values['grade'] ) ? $values['grade'] : '';
+
+		$details  = self::email_detail( __( 'Registration ID', 'lccl-de' ), (string) (int) $insert_id );
+		$details .= self::email_detail( __( 'Child', 'lccl-de' ), '' !== $child ? $child : '—' );
+		$details .= self::email_detail( __( 'Parent / Guardian', 'lccl-de' ), '' !== $name ? $name : '' );
+		$details .= self::email_detail( __( 'Phone', 'lccl-de' ), $phone );
+		$details .= self::email_detail( __( 'Email', 'lccl-de' ), isset( $values['email'] ) ? $values['email'] : '' );
+		$details .= self::email_detail( __( 'School', 'lccl-de' ), isset( $values['school_name'] ) ? $values['school_name'] : '' );
+		$details .= self::email_detail( __( 'Grade', 'lccl-de' ), ( $grade && isset( $grades[ $grade ] ) ) ? $grades[ $grade ] : $grade );
+		$details .= self::email_detail( __( 'District', 'lccl-de' ), isset( $values['district'] ) ? $values['district'] : '' );
+		$details .= self::email_detail( __( 'City / Area', 'lccl-de' ), isset( $values['city'] ) ? $values['city'] : '' );
+
+		return '<html><body style="margin:0;padding:0;background-color:#F3F3F3;">
+			<div style="background-color:#F3F3F3;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;">
+				<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
+				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">NEW FREE SPECTACLES REGISTRATION</h1>
+				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Someone has registered a child for the free spectacles programme through Lions Club of Colombo LEADS. The registration has been successfully received.</p>
+				<h2 style="margin:0 0 10px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.08em;">REGISTRATION DETAILS</h2>
+				' . $details . '
+				<p style="margin:22px 0 28px;color:#555555;font-size:15px;line-height:1.6;">Please follow up using the contact details above, as needed.</p>
+				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
+				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
+			</div>
+		</body></html>';
 	}
 
 	/**
