@@ -538,6 +538,8 @@ class LCCL_DE_Spectacles_Dashboard {
 				isset( $row['letter_mime'] ) ? $row['letter_mime'] : ''
 			),
 			'letter_url'               => ! empty( $row['letter_file'] ) ? rest_url( self::REST_NS . '/spectacles/' . (int) $row['id'] . '/letter' ) : '',
+			'letter_view_url'          => ! empty( $row['letter_file'] ) ? LCCL_DE_File_Viewer::url( 'spectacles', (int) $row['id'] ) : '',
+			'letter_download_url'      => ! empty( $row['letter_file'] ) ? LCCL_DE_File_Viewer::url( 'spectacles', (int) $row['id'], 'download' ) : '',
 			'consent'                  => (int) $row['consent'],
 			'updated_at'               => $updated,
 			'updated_label'            => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
@@ -586,6 +588,42 @@ class LCCL_DE_Spectacles_Dashboard {
 		);
 
 		return is_array( $row ) ? $row : null;
+	}
+
+	/**
+	 * School letter payload for the reusable file viewer.
+	 *
+	 * @param int $id Row ID.
+	 * @return array|null
+	 */
+	public static function viewer_file( $id ) {
+		$row = self::get_row( (int) $id );
+		if ( ! $row || empty( $row['letter_file'] ) ) {
+			return null;
+		}
+
+		$path = LCCL_DE_Spectacles_Submissions::letter_path( $row['letter_file'] );
+		$name = ! empty( $row['letter_file_name'] ) ? $row['letter_file_name'] : basename( (string) $path );
+		$kind = LCCL_DE_Spectacles_Submissions::letter_kind( $name, isset( $row['letter_mime'] ) ? $row['letter_mime'] : '' );
+		$mimes = LCCL_DE_Spectacles_Submissions::allowed_letter_mimes();
+		if ( ! $path || ! file_exists( $path ) || '' === $kind || ! isset( $mimes[ $kind ] ) ) {
+			return null;
+		}
+
+		$filename = sanitize_file_name( $name );
+		if ( '' === $filename ) {
+			$filename = 'school-letter.' . $kind;
+		}
+
+		return array(
+			'source'   => 'spectacles',
+			'id'       => (int) $row['id'],
+			'path'     => $path,
+			'name'     => $name,
+			'filename' => $filename,
+			'kind'     => $kind,
+			'mime'     => $mimes[ $kind ],
+		);
 	}
 
 	/**

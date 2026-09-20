@@ -66,7 +66,6 @@
 		var COLS = 9;
 		var canManage = !! parseInt( cfg.canManage, 10 );
 		var pendingDelete = null;
-		var letterObjectUrl = '';
 		var state = {
 			nonce: cfg.nonce || '',
 			page: 1,
@@ -597,6 +596,12 @@
 			if ( 'cancel' === name ) {
 				return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 			}
+			if ( 'preview' === name ) {
+				return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>';
+			}
+			if ( 'download' === name ) {
+				return '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+			}
 			return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 9.5 17 19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 		}
 
@@ -997,114 +1002,17 @@
 			return 'file';
 		}
 
-		function revokeLetterUrl() {
-			if ( letterObjectUrl ) {
-				URL.revokeObjectURL( letterObjectUrl );
-				letterObjectUrl = '';
+		function iconLink( kind, label, href, extraClass ) {
+			var link = el( 'a', 'lccl-bda__action lccl-bda__action--icon' + ( extraClass ? ' ' + extraClass : '' ) );
+			link.href = href;
+			link.title = label;
+			link.setAttribute( 'aria-label', label );
+			link.innerHTML = iconMarkup( kind );
+			if ( 'preview' === kind ) {
+				link.target = '_blank';
+				link.rel = 'noopener noreferrer';
 			}
-		}
-
-		function fetchLetter( item ) {
-			if ( ! item || ! item.letter_url ) {
-				return Promise.reject( new Error( 'School letter not found.' ) );
-			}
-			return fetch( item.letter_url, {
-				credentials: 'include',
-				headers: {
-					'X-WP-Nonce': state.nonce
-				}
-			} ).then( function ( response ) {
-				if ( ! response.ok ) {
-					throw new Error( 'The school letter could not be opened.' );
-				}
-				return response.blob();
-			} );
-		}
-
-		function closeLetterPreview() {
-			var dialog = root.querySelector( '[data-letter-dialog]' );
-			var frame = root.querySelector( '[data-letter-frame]' );
-			var image = root.querySelector( '[data-letter-image]' );
-			var error = root.querySelector( '[data-letter-error]' );
-			if ( dialog ) {
-				dialog.hidden = true;
-			}
-			if ( frame ) {
-				frame.hidden = true;
-				frame.removeAttribute( 'src' );
-			}
-			if ( image ) {
-				image.hidden = true;
-				image.removeAttribute( 'src' );
-			}
-			if ( error ) {
-				error.hidden = true;
-				error.textContent = '';
-			}
-			revokeLetterUrl();
-		}
-
-		function openLetterPreview( item ) {
-			var dialog = root.querySelector( '[data-letter-dialog]' );
-			var frame = root.querySelector( '[data-letter-frame]' );
-			var image = root.querySelector( '[data-letter-image]' );
-			var title = root.querySelector( '[data-letter-title]' );
-			var error = root.querySelector( '[data-letter-error]' );
-			var kind = letterType( item );
-			if ( ! dialog ) {
-				return;
-			}
-			if ( title ) {
-				title.textContent = item.letter_file_name || 'School letter';
-			}
-			if ( error ) {
-				error.hidden = true;
-				error.textContent = '';
-			}
-			dialog.hidden = false;
-			fetchLetter( item ).then( function ( blob ) {
-				revokeLetterUrl();
-				letterObjectUrl = URL.createObjectURL( blob );
-				if ( 'pdf' === kind && frame ) {
-					if ( image ) {
-						image.hidden = true;
-						image.removeAttribute( 'src' );
-					}
-					frame.hidden = false;
-					frame.src = letterObjectUrl;
-					return;
-				}
-				if ( image ) {
-					if ( frame ) {
-						frame.hidden = true;
-						frame.removeAttribute( 'src' );
-					}
-					image.hidden = false;
-					image.src = letterObjectUrl;
-				}
-			} ).catch( function ( err ) {
-				if ( error ) {
-					error.textContent = err.message || 'The school letter could not be opened.';
-					error.hidden = false;
-				}
-			} );
-		}
-
-		function downloadLetter( item ) {
-			fetchLetter( item ).then( function ( blob ) {
-				var url = URL.createObjectURL( blob );
-				var link = document.createElement( 'a' );
-				link.href = url;
-				link.download = item.letter_file_name || ( 'school-letter.' + letterType( item ) );
-				document.body.appendChild( link );
-				link.click();
-				link.parentNode.removeChild( link );
-				window.setTimeout( function () {
-					URL.revokeObjectURL( url );
-				}, 1000 );
-			} ).catch( function ( err ) {
-				showToast( err.message || 'The school letter could not be downloaded.', 'error' );
-			} );
+			return link;
 		}
 
 		function addLetterField( grid, item ) {
@@ -1113,9 +1021,14 @@
 			var icon;
 			var meta;
 			var actions;
-			var preview;
-			var download;
-			if ( ! item || ! item.letter_url || ! item.letter_file_name ) {
+			var viewUrl;
+			var downloadUrl;
+			if ( ! item || ! item.letter_file_name ) {
+				return;
+			}
+			viewUrl = item.letter_view_url || '';
+			downloadUrl = item.letter_download_url || '';
+			if ( ! viewUrl && ! downloadUrl ) {
 				return;
 			}
 			wrap = el( 'div', 'lccl-bda__person-item lccl-bda__person-item--wide' );
@@ -1126,18 +1039,12 @@
 			meta = el( 'div', 'lccl-bda__file-meta' );
 			meta.appendChild( el( 'span', 'lccl-bda__file-name', item.letter_file_name ) );
 			actions = el( 'div', 'lccl-bda__file-actions' );
-			preview = el( 'button', 'lccl-bda__action', 'Preview' );
-			preview.type = 'button';
-			preview.addEventListener( 'click', function () {
-				openLetterPreview( item );
-			} );
-			download = el( 'button', 'lccl-bda__action', 'Download' );
-			download.type = 'button';
-			download.addEventListener( 'click', function () {
-				downloadLetter( item );
-			} );
-			actions.appendChild( preview );
-			actions.appendChild( download );
+			if ( viewUrl ) {
+				actions.appendChild( iconLink( 'preview', 'Preview', viewUrl ) );
+			}
+			if ( downloadUrl ) {
+				actions.appendChild( iconLink( 'download', 'Download', downloadUrl ) );
+			}
 			file.appendChild( icon );
 			file.appendChild( meta );
 			file.appendChild( actions );
@@ -1628,21 +1535,6 @@
 				setDeleting( false );
 			} );
 		}
-
-		( function bindLetterDialog() {
-			var dialog = root.querySelector( '[data-letter-dialog]' );
-			if ( ! dialog ) {
-				return;
-			}
-			Array.prototype.forEach.call( root.querySelectorAll( '[data-letter-close]' ), function ( btn ) {
-				btn.addEventListener( 'click', closeLetterPreview );
-			} );
-			document.addEventListener( 'keydown', function ( event ) {
-				if ( 'Escape' === event.key && ! dialog.hidden ) {
-					closeLetterPreview();
-				}
-			} );
-		}() );
 
 		( function bindDeleteDialog() {
 			var dialog = root.querySelector( '[data-delete-dialog]' );
