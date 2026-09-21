@@ -442,7 +442,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field lccl-bdf__field--full lccl-bdf__templates">
 				<span class="lccl-bdf__subtitle"><?php esc_html_e( 'School Letter Templates', 'lccl-de' ); ?></span>
-				<p class="lccl-bdf__hint"><?php esc_html_e( 'Schools may use either template depending on whether the letter is for an individual student or multiple students.', 'lccl-de' ); ?></p>
+				<p class="lccl-bdf__hint"><?php esc_html_e( "Schools may use either template depending on whether the letter is for an individual student or multiple students. The letter should be prepared on the school's official letterhead and signed by the Principal or an authorized officer.", 'lccl-de' ); ?></p>
 				<div class="lccl-bdf__template-links">
 					<?php foreach ( $form::letter_templates() as $url => $label ) : ?>
 						<a href="<?php echo esc_url( $url ); ?>" download target="_blank" rel="noopener noreferrer"><?php echo esc_html( $label ); ?></a>
