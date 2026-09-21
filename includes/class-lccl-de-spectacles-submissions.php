@@ -436,16 +436,14 @@ class LCCL_DE_Spectacles_Submissions {
 		self::assert_option( $errors, $values, 'eye_condition', LCCL_DE_Spectacles_Form::yes_no_unsure() );
 		self::assert_option( $errors, $values, 'school_letter', LCCL_DE_Spectacles_Form::school_letters() );
 
-		if ( empty( $values['vision_difficulties'] ) ) {
-			$errors['vision_difficulties'] = __( 'Please select at least one vision difficulty.', 'lccl-de' );
-		}
+		if ( 'yes' === $values['eye_condition'] ) {
+			if ( empty( $values['vision_difficulties'] ) ) {
+				$errors['vision_difficulties'] = __( 'Please select at least one vision difficulty.', 'lccl-de' );
+			}
 
-		if ( in_array( 'other', $values['vision_difficulties'], true ) && '' === $values['vision_other'] ) {
-			$errors['vision_other'] = $required_msg;
-		}
-
-		if ( 'yes' === $values['eye_condition'] && '' === $values['eye_condition_details'] ) {
-			$errors['eye_condition_details'] = $required_msg;
+			if ( in_array( 'other', $values['vision_difficulties'], true ) && '' === $values['vision_other'] ) {
+				$errors['vision_other'] = $required_msg;
+			}
 		}
 
 		if ( $require_letter && 'submitted-herewith' === $values['school_letter'] && '' === $values['letter_file'] ) {
@@ -686,9 +684,9 @@ class LCCL_DE_Spectacles_Submissions {
 			'difficulty_seeing'     => $values['difficulty_seeing'],
 			'last_eye_exam'         => '' !== $values['last_eye_exam'] ? $values['last_eye_exam'] : null,
 			'eye_condition'         => $values['eye_condition'],
-			'eye_condition_details' => '' !== $values['eye_condition_details'] ? $values['eye_condition_details'] : null,
-			'vision_difficulties'   => self::encode_list( $values['vision_difficulties'] ),
-			'vision_other'          => '' !== $values['vision_other'] ? $values['vision_other'] : null,
+			'eye_condition_details' => null,
+			'vision_difficulties'   => self::encode_list( 'yes' === $values['eye_condition'] ? $values['vision_difficulties'] : array() ),
+			'vision_other'          => ( 'yes' === $values['eye_condition'] && '' !== $values['vision_other'] ) ? $values['vision_other'] : null,
 			'school_letter'         => $values['school_letter'],
 			'letter_file'           => '' !== $values['letter_file'] ? $values['letter_file'] : null,
 			'letter_file_name'      => '' !== $values['letter_file_name'] ? $values['letter_file_name'] : null,

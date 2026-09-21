@@ -160,6 +160,13 @@
 		}
 		row.hidden = ! show;
 		Array.prototype.forEach.call( row.querySelectorAll( 'input, textarea, select' ), function ( field ) {
+			if ( 'checkbox' === field.type ) {
+				if ( ! show ) {
+					field.checked = false;
+					markField( field, false );
+				}
+				return;
+			}
 			field.required = show;
 			if ( ! show ) {
 				markField( field, false );
@@ -174,7 +181,7 @@
 		var age = form.querySelector( '[name="age"]' );
 		var condition = form.querySelector( '[name="eye_condition"]' );
 		var letter = form.querySelector( '[name="school_letter"]' );
-		var conditionRow = form.querySelector( '[data-lccl-show-when="eye_condition:yes"]' );
+		var visionRow = form.querySelector( '[data-lccl-show-when="eye_condition:yes"]' );
 		var otherRow = form.querySelector( '[data-lccl-show-when="vision_other"]' );
 		var letterRow = form.querySelector( '[data-lccl-show-when="school_letter:submitted-herewith"]' );
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
@@ -196,8 +203,12 @@
 		}
 
 		function syncConditionals() {
-			toggleRow( conditionRow, condition && 'yes' === condition.value );
-			toggleRow( otherRow, otherChecked() );
+			var showVision = condition && 'yes' === condition.value;
+			toggleRow( visionRow, showVision );
+			if ( ! showVision ) {
+				setNotice( form, 'vision_difficulties', '' );
+			}
+			toggleRow( otherRow, showVision && otherChecked() );
 			toggleRow( letterRow, letter && 'submitted-herewith' === letter.value );
 		}
 
@@ -327,7 +338,7 @@
 				}
 			}
 
-			if ( ! visionChecked() ) {
+			if ( visionRow && ! visionRow.hidden && ! visionChecked() ) {
 				if ( visionBox ) {
 					markField( visionBox, true );
 				}

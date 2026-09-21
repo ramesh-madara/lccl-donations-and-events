@@ -764,7 +764,11 @@
 			}
 			var boxes = form.querySelectorAll( 'input[name="vision_difficulties[]"]:checked' );
 			var vision = [];
+			var showVision = 'yes' === val( 'eye_condition' );
 			Array.prototype.forEach.call( boxes, function ( box ) {
+				if ( ! showVision || box.closest( '[hidden]' ) ) {
+					return;
+				}
 				vision.push( box.value );
 			} );
 			return {
@@ -787,9 +791,8 @@
 				difficulty_seeing: val( 'difficulty_seeing' ),
 				last_eye_exam: val( 'last_eye_exam' ),
 				eye_condition: val( 'eye_condition' ),
-				eye_condition_details: val( 'eye_condition_details' ),
 				vision_difficulties: vision,
-				vision_other: val( 'vision_other' ),
+				vision_other: ( showVision && -1 !== vision.indexOf( 'other' ) ) ? val( 'vision_other' ) : '',
 				school_letter: val( 'school_letter' )
 			};
 		}
@@ -826,14 +829,11 @@
 			if ( values.email && ! isValidEmail( values.email ) ) {
 				errors.email = 'Please enter a valid email address, or leave it blank.';
 			}
-			if ( ! values.vision_difficulties.length ) {
+			if ( 'yes' === values.eye_condition && ! values.vision_difficulties.length ) {
 				errors.vision_difficulties = 'Please select at least one vision difficulty.';
 			}
-			if ( -1 !== values.vision_difficulties.indexOf( 'other' ) && ! values.vision_other ) {
+			if ( 'yes' === values.eye_condition && -1 !== values.vision_difficulties.indexOf( 'other' ) && ! values.vision_other ) {
 				errors.vision_other = 'This field is required.';
-			}
-			if ( 'yes' === values.eye_condition && ! values.eye_condition_details ) {
-				errors.eye_condition_details = 'This field is required.';
 			}
 			clearFieldNotices( form );
 			Object.keys( errors ).forEach( function ( name ) {
@@ -1071,15 +1071,69 @@
 			addPersonField( grid, 'Difficulty seeing clearly', item.difficulty_seeing_label );
 			addPersonField( grid, 'Last eye examination', item.last_eye_exam_label );
 			addPersonField( grid, 'Known eye condition', item.eye_condition_label );
-			addPersonField( grid, 'Eye condition details', item.eye_condition_details, 'lccl-bda__person-item--wide' );
-			addPersonList( grid, 'Vision difficulties', item.vision_difficulty_labels );
-			addPersonField( grid, 'Other vision difficulty', item.vision_other, 'lccl-bda__person-item--wide' );
+			if ( item.eye_condition_details ) {
+				addPersonField( grid, 'Eye condition details', item.eye_condition_details, 'lccl-bda__person-item--wide' );
+			}
+			if ( 'yes' === item.eye_condition ) {
+				addPersonList( grid, 'Vision difficulties', item.vision_difficulty_labels );
+				addPersonField( grid, 'Other vision difficulty', item.vision_other, 'lccl-bda__person-item--wide' );
+			}
 			addPersonField( grid, 'School letter', item.school_letter_label );
 			addLetterField( grid, item );
 			addPersonField( grid, 'Registration date', item.created_label );
 			addPersonField( grid, 'Updated', item.updated_label );
 			addPersonField( grid, 'Updated by', item.updated_by_label );
 			panel.appendChild( grid );
+		}
+
+		function bindEyeConditionFields( form ) {
+			var condition = form.querySelector( '[name="eye_condition"]' );
+			var visionNotice = form.querySelector( '[data-lccl-notice="vision_difficulties"]' );
+			var otherNotice = form.querySelector( '[data-lccl-notice="vision_other"]' );
+			var visionItem = visionNotice ? visionNotice.closest( '.lccl-bda__person-item' ) : null;
+			var otherItem = otherNotice ? otherNotice.closest( '.lccl-bda__person-item' ) : null;
+
+			function otherChecked() {
+				var boxes = form.querySelectorAll( 'input[name="vision_difficulties[]"]' );
+				return Array.prototype.some.call( boxes, function ( box ) {
+					return box.checked && 'other' === box.value;
+				} );
+			}
+
+			function toggleItem( item, name, show, clearBoxes ) {
+				if ( ! item ) {
+					return;
+				}
+				item.hidden = ! show;
+				if ( show ) {
+					return;
+				}
+				setFieldNotice( form, name, '' );
+				if ( clearBoxes ) {
+					Array.prototype.forEach.call( item.querySelectorAll( 'input[type="checkbox"]' ), function ( box ) {
+						box.checked = false;
+					} );
+				}
+				Array.prototype.forEach.call( item.querySelectorAll( 'input:not([type="checkbox"]), textarea, select' ), function ( field ) {
+					field.value = '';
+					field.classList.remove( 'lccl-bda__input--error' );
+					field.setAttribute( 'aria-invalid', 'false' );
+				} );
+			}
+
+			function sync() {
+				var showVision = condition && 'yes' === condition.value;
+				toggleItem( visionItem, 'vision_difficulties', showVision, true );
+				toggleItem( otherItem, 'vision_other', showVision && otherChecked(), false );
+			}
+
+			if ( condition ) {
+				condition.addEventListener( 'change', sync );
+			}
+			Array.prototype.forEach.call( form.querySelectorAll( 'input[name="vision_difficulties[]"]' ), function ( box ) {
+				box.addEventListener( 'change', sync );
+			} );
+			sync();
 		}
 
 		function fillPersonEdit( panel, item ) {
@@ -1116,12 +1170,6 @@
 			addEditControl( grid, 'difficulty_seeing', 'Difficulty seeing clearly', optionSelect( 'difficulty_seeing', 'Difficulty', cfg.yesNoUnsure || {}, item.difficulty_seeing, 'Select an option' ) );
 			addEditControl( grid, 'last_eye_exam', 'Last eye examination', optionSelect( 'last_eye_exam', 'Last exam', cfg.lastEyeExams || {}, item.last_eye_exam, 'Select an option' ) );
 			addEditControl( grid, 'eye_condition', 'Known eye condition', optionSelect( 'eye_condition', 'Condition', cfg.yesNoUnsure || {}, item.eye_condition, 'Select an option' ) );
-			addEditControl( grid, 'eye_condition_details', 'Eye condition details', ( function () {
-				var area = el( 'textarea', 'lccl-bda__input' );
-				area.rows = 3;
-				area.value = item.eye_condition_details || '';
-				return area;
-			}() ), 'lccl-bda__person-item--wide' );
 			addEditControl( grid, 'vision_difficulties', 'Vision difficulties', checkboxGroup( 'vision_difficulties', cfg.visionDifficulties || {}, item.vision_difficulties || [] ), 'lccl-bda__person-item--wide' );
 			addEditControl( grid, 'vision_other', 'Other vision difficulty', textInput( item.vision_other, 255 ), 'lccl-bda__person-item--wide' );
 			addEditControl( grid, 'school_letter', 'School letter', optionSelect( 'school_letter', 'Letter', cfg.schoolLetters || {}, item.school_letter, 'Select an option' ) );
@@ -1143,6 +1191,7 @@
 			} );
 
 			form.appendChild( grid );
+			bindEyeConditionFields( form );
 			panel.appendChild( form );
 		}
 

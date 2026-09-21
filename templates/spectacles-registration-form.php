@@ -36,7 +36,7 @@ $notice = static function ( $key ) use ( $err ) {
 };
 
 $show_condition = 'yes' === $val( 'eye_condition' );
-$show_other     = in_array( 'other', $list( 'vision_difficulties' ), true );
+$show_other     = $show_condition && in_array( 'other', $list( 'vision_difficulties' ), true );
 $show_letter    = 'submitted-herewith' === $val( 'school_letter' );
 $required_msg   = LCCL_DE_Blood_Donor_Submissions::required_field_message();
 $max_dob        = current_time( 'Y-m-d' );
@@ -362,22 +362,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<?php $notice( 'eye_condition' ); ?>
 			</div>
 
-			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'eye_condition_details' ) ); ?>" data-lccl-show-when="eye_condition:yes"<?php echo $show_condition ? '' : ' hidden'; ?>>
-				<label class="lccl-bdf__label" for="lccl-spf-condition-details">
-					<?php esc_html_e( 'Please provide details', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-				</label>
-				<textarea
-					class="lccl-bdf__textarea"
-					id="lccl-spf-condition-details"
-					name="eye_condition_details"
-					rows="4"
-					placeholder="<?php esc_attr_e( 'Short-sightedness diagnosed last year', 'lccl-de' ); ?>"
-					<?php echo $show_condition ? 'required' : ''; ?>
-				><?php echo esc_textarea( $val( 'eye_condition_details' ) ); ?></textarea>
-				<?php $notice( 'eye_condition_details' ); ?>
-			</div>
-
-			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'vision_difficulties' ) ); ?>">
+			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'vision_difficulties' ) ); ?>" data-lccl-show-when="eye_condition:yes"<?php echo $show_condition ? '' : ' hidden'; ?>>
 				<span class="lccl-bdf__label">
 					<?php esc_html_e( 'What vision difficulties does the child experience?', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</span>
@@ -385,7 +370,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<div class="lccl-bdf__choices">
 					<?php foreach ( $form::vision_difficulties() as $key => $label ) : ?>
 						<label class="lccl-bdf__checkbox">
-							<input type="checkbox" name="vision_difficulties[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $list( 'vision_difficulties' ), true ) ); ?>>
+							<input type="checkbox" name="vision_difficulties[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( $show_condition && in_array( $key, $list( 'vision_difficulties' ), true ) ); ?>>
 							<span class="lccl-bdf__check" aria-hidden="true"></span>
 							<span><?php echo esc_html( $label ); ?></span>
 						</label>
