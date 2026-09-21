@@ -103,7 +103,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					id="lccl-spf-child-first"
 					name="child_first_name"
 					value="<?php echo esc_attr( $val( 'child_first_name' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'Nipuni', 'lccl-de' ); ?>"
 					autocomplete="given-name"
 					maxlength="100"
 					required

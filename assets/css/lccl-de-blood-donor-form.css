@@ -620,6 +620,12 @@
 	line-height: 1.5;
 }
 
+.lccl-bdf .lccl-bdf__templates .lccl-bdf__hint {
+	color: var(--lccl-bdf-text);
+	font-size: 16px;
+	line-height: 1.5;
+}
+
 .lccl-bdf .lccl-bdf__file {
 	display: block;
 	width: 100%;
