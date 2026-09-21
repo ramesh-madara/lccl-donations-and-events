@@ -366,7 +366,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<span class="lccl-bdf__label">
 					<?php esc_html_e( 'What vision difficulties does the child experience?', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</span>
-				<p class="lccl-bdf__hint"><?php esc_html_e( 'Please select all that apply.', 'lccl-de' ); ?></p>
+				<p class="lccl-bdf__hint lccl-bdf__hint--label"><?php esc_html_e( 'Please select all that apply.', 'lccl-de' ); ?></p>
 				<div class="lccl-bdf__choices">
 					<?php foreach ( $form::vision_difficulties() as $key => $label ) : ?>
 						<label class="lccl-bdf__checkbox">
