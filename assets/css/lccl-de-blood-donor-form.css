@@ -629,44 +629,69 @@
 	font-size: 16px;
 }
 
+.lccl-bdf .lccl-bdf__file::file-selector-button,
+.lccl-bdf .lccl-bdf__file::-webkit-file-upload-button {
+	margin-right: 20px;
+}
+
 .lccl-bdf .lccl-bdf__templates {
 	margin-top: 8px;
 }
 
 .lccl-bdf .lccl-bdf__template-links {
 	display: flex;
-	flex-wrap: wrap;
-	gap: 10px 20px;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 10px;
 }
 
-.lccl-bdf .lccl-bdf__templates .lccl-bdf__subtitle {
-	display: inline-block;
-	text-decoration: underline;
-	text-decoration-color: var(--lccl-bdf-gold-light);
-	text-underline-offset: 3px;
-	font-weight: 400;
-}
-
+.lccl-bdf .lccl-bdf__templates .lccl-bdf__subtitle,
 .lccl-bdf .lccl-bdf__template-links a {
+	border-bottom: none;
+	box-shadow: none;
+	background-image: none;
 	color: var(--lccl-bdf-text);
 	font-family: var(--lccl-bdf-font);
 	font-size: 16px;
 	font-weight: 400;
 	text-decoration: underline;
 	text-decoration-color: var(--lccl-bdf-gold-light);
+	text-decoration-thickness: 1px;
 	text-underline-offset: 3px;
+}
+
+.lccl-bdf .lccl-bdf__templates .lccl-bdf__subtitle {
+	display: inline-block;
+}
+
+.lccl-bdf .lccl-bdf__template-links a:after,
+.lccl-bdf .lccl-bdf__template-links a:before,
+.lccl-bdf .lccl-bdf__template-links a:hover:after,
+.lccl-bdf .lccl-bdf__template-links a:hover:before,
+.lccl-bdf .lccl-bdf__template-links a:focus:after,
+.lccl-bdf .lccl-bdf__template-links a:focus:before {
+	content: none;
+	display: none;
+	background: none;
+	width: 0;
+	height: 0;
 }
 
 .lccl-bdf .lccl-bdf__templates .lccl-bdf__subtitle:hover,
 .lccl-bdf .lccl-bdf__template-links a:hover,
-.lccl-bdf .lccl-bdf__template-links a:focus {
+.lccl-bdf .lccl-bdf__template-links a:focus,
+.lccl-bdf .lccl-bdf__template-links a:focus-visible,
+.lccl-bdf .lccl-bdf__template-links a:active {
+	border: none;
+	border-bottom: none;
+	box-shadow: none;
+	background-image: none;
 	color: var(--lccl-bdf-text);
-	font-weight: 600;
+	font-weight: 500;
 	text-decoration: underline;
 	text-decoration-color: var(--lccl-bdf-gold-light);
-	text-decoration-thickness: from-font;
-	border-bottom: 0;
-	box-shadow: none;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
 }
 
 .lccl-bdf.lccl-bdf--spectacles .lccl-bdf__header {

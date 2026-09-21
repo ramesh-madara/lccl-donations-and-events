@@ -416,7 +416,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					<?php esc_html_e( 'School Letter', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-letter" name="school_letter" required>
-					<option value=""><?php esc_html_e( 'Select how the school letter will be submitted', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select how the letter will be submitted', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::school_letters(), $val( 'school_letter' ) ); ?>
 				</select>
 				<?php $notice( 'school_letter' ); ?>
@@ -436,7 +436,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					data-invalid-size="<?php echo esc_attr( LCCL_DE_Spectacles_Submissions::letter_size_message() ); ?>"
 					<?php echo $show_letter ? 'required' : ''; ?>
 				>
-				<p class="lccl-bdf__hint"><?php esc_html_e( 'Accepted formats: PDF, JPG, JPEG and PNG. Maximum file size: 10 MB.', 'lccl-de' ); ?></p>
+				<p class="lccl-bdf__hint"><?php esc_html_e( 'Accepted file formats: PDF, JPG, JPEG and PNG. Maximum file size: 10 MB.', 'lccl-de' ); ?></p>
 				<?php $notice( 'school_letter_file' ); ?>
 			</div>
 
@@ -445,7 +445,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<p class="lccl-bdf__hint"><?php esc_html_e( 'Schools may use either template depending on whether the letter is for an individual student or multiple students.', 'lccl-de' ); ?></p>
 				<div class="lccl-bdf__template-links">
 					<?php foreach ( $form::letter_templates() as $url => $label ) : ?>
-						<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $label ); ?></a>
+						<a href="<?php echo esc_url( $url ); ?>" download target="_blank" rel="noopener noreferrer"><?php echo esc_html( $label ); ?></a>
 					<?php endforeach; ?>
 				</div>
 			</div>

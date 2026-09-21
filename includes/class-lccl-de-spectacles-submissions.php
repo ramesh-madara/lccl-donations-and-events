@@ -307,6 +307,8 @@ class LCCL_DE_Spectacles_Submissions {
 			);
 		}
 
+		$values['created_at'] = current_time( 'mysql' );
+
 		LCCL_DE_Notify::after_registration( $values, $inserted, LCCL_DE_Admin_Programs::PROGRAM_SPECTACLES );
 
 		self::redirect_with_flash(

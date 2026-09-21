@@ -201,20 +201,24 @@ class LCCL_DE_Spectacles_Form {
 	 */
 	public static function school_letters() {
 		return array(
-			'submitted-herewith'   => __( 'Submitted Herewith', 'lccl-de' ),
-			'submitted-separately' => __( 'Submitted Separately', 'lccl-de' ),
+			'submitted-herewith'   => __( 'Submitted with this registration', 'lccl-de' ),
+			'submitted-separately' => __( 'Submitted separately', 'lccl-de' ),
 		);
 	}
 
 	/**
-	 * School letter Word templates.
+	 * School letter Word and PDF templates.
 	 *
 	 * @return array
 	 */
 	public static function letter_templates() {
+		$base = LCCL_DE_URL . 'assets/templates/';
+
 		return array(
-			'https://colomboleads.org/school-letter-individual.docx' => __( 'Download – Individual Student Letter', 'lccl-de' ),
-			'https://colomboleads.org/school-letter-multiple.docx'   => __( 'Download – Multiple Student Letter', 'lccl-de' ),
+			$base . 'school-letter-individual.docx' => __( 'Download – Individual Student Letter (.docx)', 'lccl-de' ),
+			$base . 'school-letter-individual.pdf'  => __( 'Download – Individual Student Letter (PDF)', 'lccl-de' ),
+			$base . 'school-letter-multiple.docx'   => __( 'Download – Multiple Student Letter (.docx)', 'lccl-de' ),
+			$base . 'school-letter-multiple.pdf'    => __( 'Download – Multiple Student Letter (PDF)', 'lccl-de' ),
 		);
 	}
 
