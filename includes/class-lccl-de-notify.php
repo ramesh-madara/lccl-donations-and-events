@@ -828,7 +828,7 @@ class LCCL_DE_Notify {
 		$details .= self::email_detail( __( 'Phone', 'lccl-de' ), $phone );
 		$details .= self::email_detail( __( 'Email', 'lccl-de' ), isset( $values['email'] ) ? $values['email'] : '' );
 		$details .= self::email_detail( __( 'School', 'lccl-de' ), isset( $values['school_name'] ) ? $values['school_name'] : '' );
-		$details .= self::email_detail( __( 'Grade', 'lccl-de' ), ( $grade && isset( $grades[ $grade ] ) ) ? $grades[ $grade ] : $grade );
+		$details .= self::email_detail( __( 'Year', 'lccl-de' ), ( $grade && isset( $grades[ $grade ] ) ) ? $grades[ $grade ] : $grade );
 		$details .= self::email_detail( __( 'District', 'lccl-de' ), isset( $values['district'] ) ? $values['district'] : '' );
 		$details .= self::email_detail( __( 'City / Area', 'lccl-de' ), isset( $values['city'] ) ? $values['city'] : '' );
 

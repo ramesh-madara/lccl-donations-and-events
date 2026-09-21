@@ -73,31 +73,29 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 		<p class="lccl-bdf__banner lccl-bdf__banner--error" data-lccl-notice="required" role="alert" hidden>
 			<?php esc_html_e( 'Please complete all fields marked with an *.', 'lccl-de' ); ?>
 		</p>
-		<p class="lccl-bdf__banner lccl-bdf__banner--error" data-lccl-notice="choices" role="alert"<?php echo empty( $errors['vision_difficulties'] ) ? ' hidden' : ''; ?>>
-			<?php echo esc_html( ! empty( $errors['vision_difficulties'] ) ? $errors['vision_difficulties'] : '' ); ?>
-		</p>
 
 		<header class="lccl-bdf__header">
 			<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-			<p class="lccl-bdf__required-note">
-				<?php
-				printf(
-					/* translators: %s: required field asterisk. */
-					esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
-					'<span class="lccl-bdf__req">*</span>'
-				);
-				?>
-			</p>
 			<?php if ( '' !== $atts['intro'] ) : ?>
 				<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
 			<?php endif; ?>
 		</header>
 
+		<p class="lccl-bdf__required-note">
+			<?php
+			printf(
+				/* translators: %s: required field asterisk. */
+				esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
+				'<span class="lccl-bdf__req">*</span>'
+			);
+			?>
+		</p>
+
 		<div class="lccl-bdf__grid">
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'child_first_name' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-child-first">
-					<?php esc_html_e( 'Child First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					<?php esc_html_e( 'Child\'s First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<input
 					class="lccl-bdf__input"
@@ -115,7 +113,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'child_last_name' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-child-last">
-					<?php esc_html_e( 'Child Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					<?php esc_html_e( 'Child\'s Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<input
 					class="lccl-bdf__input"
@@ -172,10 +170,10 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'grade' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-grade">
-					<?php esc_html_e( 'Grade / Year', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					<?php esc_html_e( 'Year', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-grade" name="grade" required>
-					<option value=""><?php esc_html_e( 'Select grade / year', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select year', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::grades(), $val( 'grade' ) ); ?>
 				</select>
 				<?php $notice( 'grade' ); ?>
@@ -191,7 +189,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					id="lccl-spf-school"
 					name="school_name"
 					value="<?php echo esc_attr( $val( 'school_name' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Royal College', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'Dharmapala Vidyalaya', 'lccl-de' ); ?>"
 					autocomplete="organization"
 					maxlength="191"
 					required
@@ -209,7 +207,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					id="lccl-spf-school-area"
 					name="school_area"
 					value="<?php echo esc_attr( $val( 'school_area' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'Colombo 07', 'lccl-de' ); ?>"
+					placeholder="<?php esc_attr_e( 'Pannipitiya', 'lccl-de' ); ?>"
 					maxlength="191"
 					required
 				>
@@ -247,7 +245,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-phone">
-					<?php esc_html_e( 'Mobile / WhatsApp', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<input
 					class="lccl-bdf__input"
@@ -381,7 +379,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'vision_difficulties' ) ); ?>">
 				<span class="lccl-bdf__label">
-					<?php esc_html_e( 'What vision difficulty does the child experience?', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					<?php esc_html_e( 'What vision difficulties does the child experience?', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</span>
 				<p class="lccl-bdf__hint"><?php esc_html_e( 'Please select all that apply.', 'lccl-de' ); ?></p>
 				<div class="lccl-bdf__choices">
@@ -415,10 +413,10 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'school_letter' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-letter">
-					<?php esc_html_e( 'Letter from School', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					<?php esc_html_e( 'School Letter', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 				</label>
 				<select class="lccl-bdf__select" id="lccl-spf-letter" name="school_letter" required>
-					<option value=""><?php esc_html_e( 'Select how the letter will be submitted', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'Select how the school letter will be submitted', 'lccl-de' ); ?></option>
 					<?php $form::render_options( $form::school_letters(), $val( 'school_letter' ) ); ?>
 				</select>
 				<?php $notice( 'school_letter' ); ?>
@@ -444,7 +442,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 
 			<div class="lccl-bdf__field lccl-bdf__field--full lccl-bdf__templates">
 				<span class="lccl-bdf__subtitle"><?php esc_html_e( 'School Letter Templates', 'lccl-de' ); ?></span>
-				<p class="lccl-bdf__hint"><?php esc_html_e( 'Schools may use either template depending on whether the application is for an individual student or multiple students.', 'lccl-de' ); ?></p>
+				<p class="lccl-bdf__hint"><?php esc_html_e( 'Schools may use either template depending on whether the letter is for an individual student or multiple students.', 'lccl-de' ); ?></p>
 				<div class="lccl-bdf__template-links">
 					<?php foreach ( $form::letter_templates() as $url => $label ) : ?>
 						<a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $label ); ?></a>
@@ -459,7 +457,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<input type="checkbox" name="consent" value="1" <?php checked( (int) $val( 'consent' ), 1 ); ?> required>
 				<span class="lccl-bdf__check" aria-hidden="true"></span>
 				<span>
-					<?php esc_html_e( 'I confirm that I am the parent, legal guardian or authorized representative of the child named above, and I give permission for the Lions Club of Colombo LEADS to contact me regarding this programme and to use the information provided for assessing and coordinating spectacle assistance.', 'lccl-de' ); ?>
+					<?php esc_html_e( 'I confirm that I am the parent, legal guardian or authorized representative of the child named above, and I give permission for the Lions Club of Colombo LEADS to contact me regarding this programme and use the information provided to assess and coordinate the provision of spectacles.', 'lccl-de' ); ?>
 					<span class="lccl-bdf__req">*</span>
 				</span>
 			</label>

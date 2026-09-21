@@ -1057,7 +1057,7 @@
 			addPersonField( grid, 'Date of birth', item.dob_label || item.dob );
 			addPersonField( grid, 'Age', item.age_label || item.age );
 			addPersonField( grid, 'Gender', item.gender_label );
-			addPersonField( grid, 'Grade / Year', item.grade_label );
+			addPersonField( grid, 'Year', item.grade_label );
 			addPersonField( grid, 'School name', item.school_name, '', true );
 			addPersonField( grid, 'School area', item.school_area, '', true );
 			addPersonField( grid, 'District', item.district, '', true );
@@ -1102,7 +1102,7 @@
 			addEditControl( grid, 'dob', 'Date of birth', textInput( item.dob, 10, 'date' ) );
 			addEditControl( grid, 'age', 'Age', optionSelect( 'age', 'Age', cfg.ages || {}, item.age, 'Select Age' ) );
 			addEditControl( grid, 'gender', 'Gender', optionSelect( 'gender', 'Gender', cfg.genders || {}, item.gender, 'Select Gender' ) );
-			addEditControl( grid, 'grade', 'Grade / Year', optionSelect( 'grade', 'Grade', cfg.grades || {}, item.grade, 'Select Grade / Year' ) );
+			addEditControl( grid, 'grade', 'Year', optionSelect( 'grade', 'Year', cfg.grades || {}, item.grade, 'Select year' ) );
 			addEditControl( grid, 'school_name', 'School name', textInput( item.school_name, 191 ) );
 			addEditControl( grid, 'school_area', 'School area', textInput( item.school_area, 191 ) );
 			addEditControl( grid, 'district', 'District', optionSelect( 'district', 'District', districtMap, item.district, 'Select District' ) );

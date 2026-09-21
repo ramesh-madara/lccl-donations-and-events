@@ -93,7 +93,18 @@ class LCCL_DE_Spectacles_Form {
 	}
 
 	/**
-	 * Grade / year options.
+	 * Intro copy shown under the registration heading.
+	 *
+	 * @return string
+	 */
+	public static function default_intro() {
+		return __( 'Please provide the information below to register a school child who may require free spectacles. Our team will review the information and contact the parent or guardian regarding the next steps.', 'lccl-de' );
+	}
+
+	/**
+	 * Year options.
+	 *
+	 * Stored keys stay grade-1 … grade-13 so existing rows keep matching.
 	 *
 	 * @return array
 	 */
@@ -101,8 +112,8 @@ class LCCL_DE_Spectacles_Form {
 		$grades = array();
 		for ( $i = 1; $i <= 13; $i++ ) {
 			$grades[ 'grade-' . $i ] = sprintf(
-				/* translators: %d: school grade number. */
-				__( 'Grade %d', 'lccl-de' ),
+				/* translators: %d: school year number. */
+				__( 'Year %d', 'lccl-de' ),
 				$i
 			);
 		}
@@ -157,7 +168,7 @@ class LCCL_DE_Spectacles_Form {
 	public static function last_eye_exams() {
 		return array(
 			'within-6-months' => __( 'Within the last 6 months', 'lccl-de' ),
-			'6-12-months'     => __( '6–12 months ago', 'lccl-de' ),
+			'6-12-months'     => __( '6–12 months', 'lccl-de' ),
 			'more-than-1-year' => __( 'More than 1 year ago', 'lccl-de' ),
 			'never'           => __( 'Never', 'lccl-de' ),
 			'not-sure'        => __( 'Not Sure', 'lccl-de' ),
@@ -234,11 +245,16 @@ class LCCL_DE_Spectacles_Form {
 		$atts = shortcode_atts(
 			array(
 				'title' => __( 'Registration Form', 'lccl-de' ),
-				'intro' => __( 'Please provide the information below to register your child for the free spectacles programme.', 'lccl-de' ),
+				'intro' => self::default_intro(),
 			),
 			$atts,
 			self::SHORTCODE
 		);
+
+		$legacy_intro = 'Please provide the information below to register your child for the free spectacles programme.';
+		if ( '' === $atts['intro'] || $atts['intro'] === $legacy_intro ) {
+			$atts['intro'] = self::default_intro();
+		}
 
 		wp_enqueue_style(
 			'lccl-de-blood-donor-form',
@@ -293,7 +309,7 @@ class LCCL_DE_Spectacles_Form {
 						'type'       => 'textarea',
 						'heading'    => __( 'Intro text', 'lccl-de' ),
 						'param_name' => 'intro',
-						'value'      => __( 'Please provide the information below to register your child for the free spectacles programme.', 'lccl-de' ),
+						'value'      => self::default_intro(),
 					),
 				),
 			)

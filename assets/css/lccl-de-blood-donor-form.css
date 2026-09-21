@@ -639,18 +639,46 @@
 	gap: 10px 20px;
 }
 
+.lccl-bdf .lccl-bdf__templates .lccl-bdf__subtitle {
+	display: inline-block;
+	text-decoration: underline;
+	text-decoration-color: var(--lccl-bdf-gold-light);
+	text-underline-offset: 3px;
+	font-weight: 400;
+}
+
 .lccl-bdf .lccl-bdf__template-links a {
 	color: var(--lccl-bdf-text);
 	font-family: var(--lccl-bdf-font);
 	font-size: 16px;
+	font-weight: 400;
 	text-decoration: underline;
 	text-decoration-color: var(--lccl-bdf-gold-light);
 	text-underline-offset: 3px;
 }
 
+.lccl-bdf .lccl-bdf__templates .lccl-bdf__subtitle:hover,
 .lccl-bdf .lccl-bdf__template-links a:hover,
 .lccl-bdf .lccl-bdf__template-links a:focus {
-	color: var(--lccl-bdf-heading);
+	color: var(--lccl-bdf-text);
+	font-weight: 600;
+	text-decoration: underline;
+	text-decoration-color: var(--lccl-bdf-gold-light);
+	text-decoration-thickness: from-font;
+	border-bottom: 0;
+	box-shadow: none;
+}
+
+.lccl-bdf.lccl-bdf--spectacles .lccl-bdf__header {
+	margin-bottom: 20px;
+}
+
+.lccl-bdf.lccl-bdf--spectacles .lccl-bdf__intro {
+	margin: 0;
+}
+
+.lccl-bdf.lccl-bdf--spectacles .lccl-bdf__required-note {
+	margin: 0 0 20px;
 }
 
 .lccl-bdf.lccl-bdf--spectacles .lccl-bdf__consent {

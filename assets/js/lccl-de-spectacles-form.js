@@ -178,11 +178,11 @@
 		var otherRow = form.querySelector( '[data-lccl-show-when="vision_other"]' );
 		var letterRow = form.querySelector( '[data-lccl-show-when="school_letter:submitted-herewith"]' );
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
-		var choiceBanner = form.querySelector( '[data-lccl-notice="choices"]' );
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
 		var choiceMsg = form.getAttribute( 'data-choice-message' ) || '';
 		var letterMax = parseInt( form.getAttribute( 'data-letter-max' ) || '10485760', 10 );
 		var letterFile = form.querySelector( '[name="school_letter_file"]' );
+		var visionBox = form.querySelector( 'input[name="vision_difficulties[]"]' );
 
 		function visionChecked() {
 			return form.querySelectorAll( 'input[name="vision_difficulties[]"]:checked' ).length > 0;
@@ -328,16 +328,17 @@
 			}
 
 			if ( ! visionChecked() ) {
-				if ( choiceBanner ) {
-					choiceBanner.textContent = choiceMsg;
-					choiceBanner.hidden = false;
+				if ( visionBox ) {
+					markField( visionBox, true );
 				}
+				setNotice( form, 'vision_difficulties', choiceMsg );
 				if ( ! firstInvalid ) {
-					firstInvalid = form.querySelector( 'input[name="vision_difficulties[]"]' );
+					firstInvalid = visionBox;
 				}
 				missingRequired = true;
-			} else if ( choiceBanner ) {
-				choiceBanner.hidden = true;
+			} else if ( visionBox ) {
+				markField( visionBox, false );
+				setNotice( form, 'vision_difficulties', '' );
 			}
 
 			if ( firstInvalid ) {
@@ -372,8 +373,11 @@
 				markField( event.target, false );
 				setNotice( form, event.target.getAttribute( 'name' ) || '', '' );
 			}
-			if ( 'vision_difficulties[]' === event.target.getAttribute( 'name' ) && visionChecked() && choiceBanner ) {
-				choiceBanner.hidden = true;
+			if ( 'vision_difficulties[]' === event.target.getAttribute( 'name' ) && visionChecked() ) {
+				if ( visionBox ) {
+					markField( visionBox, false );
+				}
+				setNotice( form, 'vision_difficulties', '' );
 			}
 		} );
 	}

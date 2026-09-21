@@ -136,9 +136,9 @@ if ( $can_view && $user instanceof WP_User ) {
 				</select>
 			</div>
 			<div class="lccl-bda__field">
-				<label class="lccl-bda__label" for="lccl-sra-grade"><?php esc_html_e( 'Grade', 'lccl-de' ); ?></label>
+				<label class="lccl-bda__label" for="lccl-sra-grade"><?php esc_html_e( 'Year', 'lccl-de' ); ?></label>
 				<select class="lccl-bda__select" id="lccl-sra-grade" name="grade">
-					<option value=""><?php esc_html_e( 'All grades', 'lccl-de' ); ?></option>
+					<option value=""><?php esc_html_e( 'All years', 'lccl-de' ); ?></option>
 				</select>
 			</div>
 			<div class="lccl-bda__field">
@@ -171,7 +171,7 @@ if ( $can_view && $user instanceof WP_User ) {
 								<th class="lccl-bda__col-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-district"><?php esc_html_e( 'District', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-bank"><?php esc_html_e( 'School', 'lccl-de' ); ?></th>
-								<th><?php esc_html_e( 'Grade', 'lccl-de' ); ?></th>
+								<th><?php esc_html_e( 'Year', 'lccl-de' ); ?></th>
 								<th><?php esc_html_e( 'Registered', 'lccl-de' ); ?></th>
 								<th class="lccl-bda__col-expand"><span class="screen-reader-text"><?php esc_html_e( 'Details', 'lccl-de' ); ?></span></th>
 							</tr>
