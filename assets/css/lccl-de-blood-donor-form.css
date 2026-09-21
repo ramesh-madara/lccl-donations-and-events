@@ -687,7 +687,8 @@
 	box-shadow: none;
 	background-image: none;
 	color: var(--lccl-bdf-text);
-	font-weight: 500;
+	font-weight: 400;
+	-webkit-text-stroke: 0.35px currentColor;
 	text-decoration: underline;
 	text-decoration-color: var(--lccl-bdf-gold-light);
 	text-decoration-thickness: 1px;
