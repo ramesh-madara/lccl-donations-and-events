@@ -701,6 +701,58 @@
 	text-underline-offset: 3px;
 }
 
+.lccl-bdf .lccl-bdf__amount {
+	display: flex;
+	align-items: stretch;
+	width: 100%;
+}
+
+.lccl-bdf .lccl-bdf__amount .lccl-bdf__input {
+	flex: 1 1 auto;
+	min-width: 0;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.lccl-bdf .lccl-bdf__amount-suffix {
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+	padding: 0 16px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-left: none;
+	border-radius: 0 3px 3px 0;
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-field-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 17px;
+	font-weight: 400;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+
+.lccl-bdf .lccl-bdf__amount:focus-within .lccl-bdf__input,
+.lccl-bdf .lccl-bdf__amount:focus-within .lccl-bdf__amount-suffix {
+	border-color: var(--lccl-bdf-border-focus);
+}
+
+.lccl-bdf .lccl-bdf__field--invalid .lccl-bdf__amount .lccl-bdf__input,
+.lccl-bdf .lccl-bdf__field--invalid .lccl-bdf__amount-suffix {
+	border-color: var(--lccl-bdf-required);
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__header {
+	margin-bottom: 20px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__intro {
+	margin: 0;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__required-note {
+	margin: 0 0 20px;
+}
+
 .lccl-bdf.lccl-bdf--spectacles .lccl-bdf__header {
 	margin-bottom: 20px;
 }
