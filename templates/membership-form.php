@@ -207,8 +207,5 @@ $count = '' !== $count ? $count : '2';
 		<button class="lccl-bdf__submit lccl-df__submit" type="submit">
 			<?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?>
 		</button>
-		<p class="lccl-mf__small">
-			<?php esc_html_e( 'The exchange rate and District/Club payment amounts should be updated according to the current approved rates and fees.', 'lccl-de' ); ?>
-		</p>
 	</form>
 </div>

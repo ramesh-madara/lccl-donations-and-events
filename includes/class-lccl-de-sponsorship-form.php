@@ -36,7 +36,7 @@ class LCCL_DE_Sponsorship_Form {
 	 * @return string
 	 */
 	public static function default_banner_title() {
-		return __( 'Project Sponsorship', 'lccl-de' );
+		return '';
 	}
 
 	/**
@@ -45,7 +45,7 @@ class LCCL_DE_Sponsorship_Form {
 	 * @return string
 	 */
 	public static function default_banner_intro() {
-		return __( 'Support a specific Lions Club of Colombo LEADS project and help us make a meaningful difference in the lives of those in need.', 'lccl-de' );
+		return '';
 	}
 
 	/**
