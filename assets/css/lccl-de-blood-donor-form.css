@@ -746,16 +746,350 @@
 	border-color: var(--lccl-bdf-required);
 }
 
+.lccl-bdf.lccl-bdf--donation {
+	width: 100%;
+	max-width: 580px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-bottom: 0;
+	border: 3px solid #f7f7f7;
+}
+
 .lccl-bdf.lccl-bdf--donation .lccl-bdf__header {
-	margin-bottom: 20px;
+	margin: 0;
+	padding: 28px 28px 0;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__title {
+	font-size: 22px;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-bdf__intro {
 	margin: 0;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-bdf__required-note {
-	margin: 0 0 20px;
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__form {
+	overflow: hidden;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df {
+	padding: 24px 28px 8px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-row {
+	display: flex;
+	align-items: stretch;
+	max-width: 240px;
+	margin: 0 0 8px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-input,
+.lccl-bdf.lccl-bdf--donation input.lccl-df__amount-input {
+	width: 150px;
+	min-width: 150px;
+	max-width: 150px;
+	height: 49px;
+	min-height: 49px;
+	margin: 0;
+	padding: 0 10px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-right: none;
+	border-radius: 0;
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 28px;
+	font-weight: 400;
+	line-height: 1.2;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-input:focus,
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-input:focus-visible {
+	border-color: var(--lccl-bdf-border-focus);
+	outline: none;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 80px;
+	min-width: 80px;
+	height: 49px;
+	background-color: var(--lccl-bdf-gold-dark);
+	color: #ffffff;
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input {
+	border-color: var(--lccl-bdf-required);
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__presets {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	margin: 10px 0 0;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset-row {
+	display: flex;
+	gap: 5px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset,
+.lccl-bdf.lccl-bdf--donation button.lccl-df__preset {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 1 1 0;
+	width: 100%;
+	min-height: 66px;
+	margin: 0;
+	padding: 8px 6px;
+	border: none;
+	border-radius: 0;
+	background-color: var(--lccl-bdf-gold-light);
+	box-shadow: none;
+	color: #ffffff;
+	cursor: pointer;
+	font-family: var(--lccl-bdf-font);
+	font-size: 17px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+	line-height: 1.2;
+	text-transform: none;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset:focus,
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset:focus-visible {
+	background-color: var(--lccl-bdf-gold-hover);
+	color: #ffffff;
+	outline: none;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset.is-active {
+	background-color: var(--lccl-bdf-gold-dark);
+	color: #ffffff;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__causes {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	justify-content: flex-start;
+	gap: 6px 1.3%;
+	margin: 20px 0 8px;
+	padding: 8px 0 16px;
+	background-color: var(--lccl-bdf-gold-light);
+	color: #333333;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	flex: 1 1 29%;
+	width: 29%;
+	max-width: 32%;
+	gap: 8px;
+	margin: 0;
+	padding: 6px 0 4px 3%;
+	color: #333333;
+	cursor: pointer;
+	font-family: var(--lccl-bdf-font);
+	font-size: 15px;
+	font-weight: 400;
+	line-height: 1.35;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"] {
+	position: absolute;
+	z-index: 1;
+	width: 18px;
+	height: 18px;
+	margin: 2px 0 0;
+	padding: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause .lccl-bdf__check {
+	border-color: #8a8a8a;
+	background-color: #ffffff;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"]:checked + .lccl-bdf__check {
+	border-color: var(--lccl-bdf-gold-dark);
+	background-color: var(--lccl-bdf-gold-dark);
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"]:checked + .lccl-bdf__check::after {
+	transform: rotate(45deg) scale(1);
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"]:focus + .lccl-bdf__check,
+.lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"]:focus-visible + .lccl-bdf__check {
+	border-color: var(--lccl-bdf-heading);
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__names {
+	display: flex;
+	gap: 23px;
+	margin-top: 8px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__names .lccl-bdf__field {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__field {
+	margin-top: 18px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__label {
+	margin-bottom: 10px;
+	color: var(--lccl-bdf-heading);
+	font-weight: 700;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__input,
+.lccl-bdf.lccl-bdf--donation input.lccl-bdf__input {
+	height: 40px;
+	min-height: 40px;
+	padding: 8px 13px;
+	border-radius: 0;
+	font-size: 17px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__message-hint {
+	margin: 0 0 10px;
+	color: #6b6b6b;
+	font-family: var(--lccl-bdf-font);
+	font-size: 13px;
+	font-weight: 700;
+	line-height: 1.45;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__message,
+.lccl-bdf.lccl-bdf--donation textarea.lccl-df__message {
+	min-height: 40px;
+	height: 72px;
+	padding: 8px 13px;
+	border-radius: 0;
+	resize: vertical;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__total {
+	display: flex;
+	align-items: flex-end;
+	gap: 0;
+	margin: 22px 0 10px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__total-label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 150px;
+	min-width: 150px;
+	height: 40px;
+	background-color: var(--lccl-bdf-gold-light);
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__total-input,
+.lccl-bdf.lccl-bdf--donation input.lccl-df__total-input {
+	width: 200px;
+	max-width: 100%;
+	height: 40px;
+	min-height: 40px;
+	margin: 0;
+	padding: 0 20px 0 10px;
+	border: none;
+	border-radius: 0;
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 22px;
+	font-weight: 400;
+	line-height: 1.2;
+	text-align: right;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__submit,
+.lccl-bdf.lccl-bdf--donation button.lccl-df__submit {
+	display: block;
+	width: 100%;
+	min-height: 0;
+	margin: 20px 0 0;
+	padding: 20px;
+	border: none;
+	border-radius: 0;
+	background-color: var(--lccl-bdf-gold-light);
+	color: #ffffff;
+	font-size: 22px;
+	font-weight: 400;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__submit:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__submit:focus,
+.lccl-bdf.lccl-bdf--donation .lccl-df__submit:focus-visible {
+	background-color: var(--lccl-bdf-gold-hover);
+	color: #ffffff;
+}
+
+@media (max-width: 600px) {
+	.lccl-bdf.lccl-bdf--donation {
+		max-width: none;
+		border-width: 0;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-bdf__header,
+	.lccl-bdf.lccl-bdf--donation .lccl-df {
+		padding-left: 20px;
+		padding-right: 20px;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-df__names {
+		display: block;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-df__preset {
+		min-height: 58px;
+		font-size: 15px;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-df__cause {
+		flex: 1 1 46%;
+		width: 46%;
+		max-width: none;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-df__total {
+		flex-wrap: wrap;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-df__total-input {
+		flex: 1 1 auto;
+		width: auto;
+	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-bdf__input,
+	.lccl-bdf.lccl-bdf--donation input.lccl-bdf__input {
+		height: 36px;
+		min-height: 36px;
+	}
 }
 
 .lccl-bdf.lccl-bdf--spectacles .lccl-bdf__header {

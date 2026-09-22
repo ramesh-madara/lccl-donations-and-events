@@ -53,6 +53,47 @@ class LCCL_DE_Donation_Form {
 	}
 
 	/**
+	 * Message shown when the email is missing or invalid.
+	 *
+	 * @return string
+	 */
+	public static function email_error_message() {
+		return __( 'Please enter a valid email address.', 'lccl-de' );
+	}
+
+	/**
+	 * Cause checkboxes, matching the live donation page.
+	 *
+	 * @return array<string,string>
+	 */
+	public static function causes() {
+		return array(
+			'diabetes'        => __( 'Diabetes', 'lccl-de' ),
+			'vision'          => __( 'Vision', 'lccl-de' ),
+			'hunger'          => __( 'Hunger', 'lccl-de' ),
+			'environment'     => __( 'Environment', 'lccl-de' ),
+			'child-cancer'    => __( 'Child Cancer', 'lccl-de' ),
+			'youth'           => __( 'Youth', 'lccl-de' ),
+			'disaster-relief' => __( 'Disaster Relief', 'lccl-de' ),
+			'humanitarian'    => __( 'Humanitarian', 'lccl-de' ),
+		);
+	}
+
+	/**
+	 * Display amount with thousands separators and LKR.
+	 *
+	 * @param string $amount Raw amount.
+	 * @return string
+	 */
+	public static function format_amount( $amount ) {
+		$raw = preg_replace( '/[^\d.]/', '', (string) $amount );
+		if ( '' === $raw || ! is_numeric( $raw ) ) {
+			return '';
+		}
+		return number_format( (float) $raw ) . ' LKR';
+	}
+
+	/**
 	 * Render the sample donation form.
 	 *
 	 * @param array|string $atts Shortcode attributes.
