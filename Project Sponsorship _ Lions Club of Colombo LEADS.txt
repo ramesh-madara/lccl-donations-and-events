@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)https://www.colomboleads.org/project-sponsorship.php -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Project Sponsorship | Lions Club of Colombo LEADS</title>
+<style>
+:root{--yellow:#f7c016;--dark-yellow:#d9aa00;--heading:#333;--text:#555;--border:#ddd}*{box-sizing:border-box}body{margin:0;background:#fff;font-family:Arial,Helvetica,sans-serif;color:var(--text)}
+.page-banner{text-align:center;padding:40px 20px 35px}.page-banner h1{margin:0 0 10px;color:var(--heading);font-size:30px;font-weight:400}.page-banner p{max-width:780px;margin:0 auto;font-size:16px;line-height:1.55}
+.main-layout{width:min(1120px,calc(100% - 40px));margin:0 auto 50px;display:grid;grid-template-columns:55% 45%;gap:24px;align-items:start}
+.form-card{padding:30px;border:1px solid #eee;background:#fff;box-shadow:0 0 8px rgba(0,0,0,.04)}.form-card h1{margin:0 0 8px;color:var(--heading);font-size:25px;font-weight:400}.form-intro{margin:0 0 27px;color:var(--text);font-size:16px;line-height:1.6}
+.project-heading{color:var(--heading);font-size:17px;margin:0 0 8px}.project-select{width:100%;height:50px;border:1px solid #ccc;background:#f8f8f8;padding:0 12px;color:#555;font-size:16px;margin-bottom:20px}
+.amount-row{display:flex;margin-bottom:10px}.amount-input{width:150px;height:50px;border:1px solid #ccc;background:#f8f8f8;padding:0 12px;font-size:16px;color:#555}.currency{width:80px;height:50px;display:flex;align-items:center;justify-content:center;background:var(--yellow);color:#fff;font-size:16px}
+.amount-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-bottom:25px}.amount-button{height:66px;border:0;background:var(--yellow);color:#fff;font-size:16px;cursor:pointer}.amount-button:nth-child(1),.amount-button:nth-child(2),.amount-button:nth-child(3){grid-column:span 2}.amount-button:nth-child(4),.amount-button:nth-child(5){grid-column:span 3}.amount-button:nth-child(6){grid-column:1/-1}
+.amount-button:hover,.project-button:hover,.support-button:hover{background:var(--dark-yellow)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:22px}.field{margin-bottom:20px}.field label{display:block;color:var(--heading);font-size:16px;margin-bottom:8px}.required{color:#d00000}.field input,.field textarea{width:100%;border:1px solid #ccc;background:#f8f8f8;padding:11px 13px;color:#555;font-size:16px}.field input{height:48px}.field textarea{min-height:105px;resize:vertical}
+.total{display:flex;width:368px;max-width:100%;margin:2px 0 38px}.total-label{min-width:168px;height:40px;padding:10px 14px;background:var(--yellow);color:#333;font-size:15px}.total-value{flex:1;height:40px;background:#f8f8f8;padding:10px 14px;color:#555;font-size:15px}.support-button{width:calc(100% + 60px);margin-left:-30px;margin-bottom:-30px;height:72px;border:0;background:var(--yellow);color:#fff;font-size:23px;font-weight:400;letter-spacing:1px;cursor:pointer}
+.projects-panel h2{margin:0 0 8px;color:var(--heading);font-size:22px;font-weight:400}.projects-panel>p{margin:0 0 18px;font-size:15px;line-height:1.5}.project-card{border:1px solid #eee;padding:20px;background:#fff;margin-bottom:14px;box-shadow:0 0 8px rgba(0,0,0,.04)}.project-status{display:inline-block;background:var(--yellow);color:#333;font-size:12px;font-weight:600;padding:5px 9px;margin-bottom:11px}.project-card h3{margin:0 0 9px;color:var(--heading);font-size:18px;line-height:1.35;font-weight:400}.project-card p{margin:0 0 11px;font-size:14px;line-height:1.5}.project-details{font-size:13px;line-height:1.65}.project-details strong{color:var(--heading)}.progress{height:7px;background:#eee;margin:10px 0 14px}.progress span{display:block;height:100%;background:var(--yellow)}.project-button{width:100%;height:44px;margin-top:14px;border:0;background:var(--yellow);color:#fff;font-size:14px;font-weight:600;cursor:pointer}
+@media(max-width:900px){.main-layout{grid-template-columns:1fr}.projects-panel{order:2}.form-card{order:1}}@media(max-width:600px){.main-layout{width:calc(100% - 20px)}.form-card{padding:22px 18px}.field-row{grid-template-columns:1fr;gap:0}.amount-grid{grid-template-columns:repeat(2,1fr)}.amount-button:nth-child(n){grid-column:span 1}.amount-button:last-child{grid-column:1/-1}.support-button{width:calc(100% + 36px);margin-left:-18px;margin-bottom:-18px}.page-banner h1{font-size:25px}}
+</style></head><body data-new-gr-c-s-check-loaded="14.1151.0" data-gr-ext-installed="">
+<section class="page-banner"><h1>PROJECT SPONSORSHIP</h1><p>Support a specific Lions Club of Colombo LEADS project and help us make a meaningful difference in the lives of those in need.</p></section>
+<div class="main-layout">
+<div class="form-card" id="support-form"><h1>SUPPORT A PROJECT</h1><p class="form-intro">Please provide the information below to support your selected project.</p>
+<div class="project-heading">PROJECT <span class="required">*</span></div>
+<select id="project" class="project-select"><option value="spectacles">200 SPECTACLES FOR SCHOOL CHILDREN</option><option value="cataract">CATARACT SURGERY SUPPORT</option><option value="health">COMMUNITY HEALTH PROGRAMME</option></select>
+<div class="amount-row"><input id="amount" class="amount-input" type="number" min="1" value="5000"><div class="currency">LKR</div></div>
+<div class="amount-grid"><button type="button" class="amount-button" data-amount="1000">1,000 LKR</button><button type="button" class="amount-button" data-amount="5000">5,000 LKR</button><button type="button" class="amount-button" data-amount="10000">10,000 LKR</button><button type="button" class="amount-button" data-amount="25000">25,000 LKR</button><button type="button" class="amount-button" data-amount="50000">50,000 LKR</button><button type="button" class="amount-button" data-amount="custom">CUSTOM VALUE</button></div>
+<div class="field-row"><div class="field"><label>First Name <span class="required">*</span></label><input type="text" placeholder="Saman"></div><div class="field"><label>Last Name <span class="required">*</span></label><input type="text" placeholder="Perera"></div></div>
+<div class="field-row"><div class="field"><label>Email <span class="required">*</span></label><input type="email" placeholder="name@example.com"></div><div class="field"><label>Mobile / WhatsApp Number <span class="required">*</span></label><input type="text" placeholder="+94712345678"></div></div>
+<div class="field"><label>Message <span>(Optional)</span></label><textarea placeholder="If you would like to share any additional information, please enter it here."></textarea></div>
+<div class="total"><div class="total-label">SUPPORT TOTAL</div><div class="total-value"><span id="total">5,000</span> LKR</div></div><button type="button" class="support-button">SUPPORT THIS PROJECT</button></div>
+<div class="projects-panel"><h2>PROJECTS YOU CAN SUPPORT</h2><p>Select a project below to support it. The selected project will automatically be shown in the payment form.</p>
+<div class="project-card"><span class="project-status">ONGOING</span><h3>200 SPECTACLES FOR SCHOOL CHILDREN</h3><p>Help provide 200 pairs of spectacles to school children who require vision correction.</p><div class="project-details"><strong>Project Value:</strong> Rs. 1,000,000.00<br><strong>Raised:</strong> Rs. 425,000.00<br><strong>Remaining:</strong> Rs. 575,000.00</div><div class="progress"><span style="width:42.5%"></span></div><button type="button" class="project-button" onclick="selectProject(&#39;spectacles&#39;)">SUPPORT THIS PROJECT</button></div><div class="project-card"><span class="project-status">UPCOMING</span><h3>CATARACT SURGERY SUPPORT</h3><p>Support cataract surgery for patients identified through our community health initiatives.</p><div class="project-details"><strong>Project Value:</strong> Rs. 750,000.00<br><strong>Raised:</strong> Rs. 180,000.00<br><strong>Remaining:</strong> Rs. 570,000.00</div><div class="progress"><span style="width:24%"></span></div><button type="button" class="project-button" onclick="selectProject(&#39;cataract&#39;)">SUPPORT THIS PROJECT</button></div><div class="project-card"><span class="project-status">UPCOMING</span><h3>COMMUNITY HEALTH PROGRAMME</h3><p>Support medical screening, consultations and essential health services for communities in need.</p><div class="project-details"><strong>Project Value:</strong> Rs. 500,000.00<br><strong>Raised:</strong> Rs. 95,000.00<br><strong>Remaining:</strong> Rs. 405,000.00</div><div class="progress"><span style="width:19%"></span></div><button type="button" class="project-button" onclick="selectProject(&#39;health&#39;)">SUPPORT THIS PROJECT</button></div></div>
+</div>
+<script>
+const amountInput=document.getElementById('amount'),total=document.getElementById('total');
+function updateAmount(value){if(value==='custom'){amountInput.focus();amountInput.select();return;}amountInput.value=value;total.textContent=Number(value).toLocaleString('en-LK');}
+document.querySelectorAll('.amount-button').forEach(button=>button.addEventListener('click',function(){updateAmount(this.dataset.amount);}));
+amountInput.addEventListener('input',function(){total.textContent=(Number(this.value)||0).toLocaleString('en-LK');});
+function selectProject(id){document.getElementById('project').value=id;document.getElementById('support-form').scrollIntoView({behavior:'smooth',block:'start'});}
+</script>
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

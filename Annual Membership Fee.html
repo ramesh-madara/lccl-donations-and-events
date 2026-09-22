@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<!-- saved from url=(0047)https://www.colomboleads.org/membership-fee.php -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Annual Membership Fee</title>
+<style>
+:root{--y:#f7c016;--t:#555;--h:#333;--b:#ddd}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;color:var(--t);background:#fff}
+.card{width:min(620px,calc(100% - 24px));margin:35px auto;padding:30px;border:1px solid #eee;box-shadow:0 0 8px #0000000a}
+h1{margin:0 0 10px;color:var(--h);font-size:25px;font-weight:400}
+.intro{line-height:1.55;margin:0 0 25px}
+.title{font-size:16px;font-weight:700;color:var(--h);margin:25px 0 12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.field{margin-bottom:18px}
+label{display:block;color:var(--h);font-size:15px;font-weight:600;margin-bottom:7px}
+input,select{width:100%;height:45px;border:1px solid var(--b);background:#fafafa;padding:0 12px;font-size:16px;color:var(--h)}
+.family{display:none;background:#fff9df;border-left:4px solid var(--y);padding:16px;margin:0 0 22px}
+.note{font-size:13px;line-height:1.5;margin:10px 0 0}
+.info{background:#fafafa;border:1px solid #eee;padding:15px;margin:12px 0 20px;line-height:1.7}
+.table{width:100%;border-collapse:collapse}
+.table td{padding:10px 4px;border-bottom:1px solid #eee}
+.table td:last-child{text-align:right;color:var(--h);font-weight:600}
+.total{display:flex;margin:25px 0}
+.total-label{background:var(--y);padding:15px 18px;color:#333;font-weight:700;min-width:180px}
+.total-value{flex:1;border:1px solid #eee;background:#fafafa;padding:15px 18px;text-align:right;font-size:22px;color:var(--h);font-weight:600}
+.pay{width:100%;height:65px;border:0;background:var(--y);color:#fff;font-size:20px;font-weight:600}
+.small{font-size:12px;color:#777;margin-top:12px}
+@media(max-width:600px){.card{padding:22px 18px}.row{grid-template-columns:1fr;gap:0}.total-label{min-width:145px}}
+</style>
+</head>
+<body data-new-gr-c-s-check-loaded="14.1151.0" data-gr-ext-installed="">
+<div class="card">
+
+<h1>ANNUAL MEMBERSHIP FEE</h1>
+
+<p class="intro">
+Please complete the details below to pay your annual membership fee to Lions Club of Colombo LEADS.
+</p>
+
+<div class="title">MEMBERSHIP TYPE</div>
+
+<div class="field">
+<label for="type">Select Membership Type:<span style="color:#c00">*</span></label>
+<select id="type">
+<option value="">Select membership type</option>
+<option value="member">Member</option>
+<option value="family">Family Membership</option>
+</select>
+</div>
+
+<div id="family" class="family" style="display: none;">
+<label for="count">Number of Family Members (Including Main Member):<span style="color:#c00">*</span></label>
+
+<select id="count">
+<option value="2">2 Family Members</option>
+<option value="3">3 Family Members</option>
+<option value="4">4 Family Members</option>
+<option value="5">5 Family Members</option>
+</select>
+
+<p class="note">
+The main member is responsible for the payment of the annual membership fees for all family members included in the membership.
+</p>
+</div>
+
+<div class="title">MEMBER INFORMATION</div>
+
+<div class="row">
+<div class="field">
+<label>First Name:<span style="color:#c00">*</span></label>
+<input type="text" placeholder="First Name">
+</div>
+
+<div class="field">
+<label>Last Name:<span style="color:#c00">*</span></label>
+<input type="text" placeholder="Last Name">
+</div>
+</div>
+
+<div class="row">
+<div class="field">
+<label>Email:<span style="color:#c00">*</span></label>
+<input type="email" placeholder="name@example.com">
+</div>
+
+<div class="field">
+<label>Mobile / WhatsApp Number:</label>
+<input type="text" placeholder="07X XXX XXXX">
+</div>
+</div>
+
+<div class="title">FEE CALCULATION</div>
+
+<div class="info">
+<strong>Exchange Rate:</strong> 1 USD = LKR <span id="rate">330.80</span><br>
+<strong>Main Member Fee:</strong> USD 50.00<br>
+<strong>Additional Family Member Fee:</strong> USD 25.00 per additional family member
+</div>
+
+<table class="table">
+
+<tbody><tr>
+<td>Lions International Membership Fee</td>
+<td id="intl">LKR 16,540.00</td>
+</tr>
+
+<tr id="familyLine" style="display: none;">
+<td>Additional Family Member Fee</td>
+<td id="familyFee">LKR 0.00</td>
+</tr>
+
+<tr>
+<td>District Payment</td>
+<td id="district">LKR 3,500.00</td>
+</tr>
+
+<tr>
+<td>Club Payment</td>
+<td id="club">LKR 6,000.00</td>
+</tr>
+
+</tbody></table>
+
+<div class="total">
+<div class="total-label">TOTAL AMOUNT</div>
+<div class="total-value">LKR <span id="total">26,040.00</span></div>
+</div>
+
+<button class="pay" type="button">PAY MEMBERSHIP FEE</button>
+
+<p class="small">
+The exchange rate and District/Club payment amounts should be updated according to the current approved rates and fees.
+</p>
+
+</div>
+
+<script>
+const rate = 330.8;
+const principalUSD = 50;
+const familyUSD = 25;
+const district = 3500;
+const club = 6000;
+
+const type = document.getElementById('type');
+const family = document.getElementById('family');
+const count = document.getElementById('count');
+
+const money = n => 'LKR ' + n.toLocaleString('en-LK', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
+document.getElementById('rate').textContent =
+    rate.toLocaleString('en-LK', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+function calculate() {
+
+    // Member = one main member.
+    // Family Membership = main member + additional family members.
+    const members = type.value === 'family'
+        ? Number(count.value || 2)
+        : 1;
+
+    const additionalMembers = Math.max(0, members - 1);
+
+    // International membership component:
+    // Main member = USD 50
+    // Each additional family member = USD 25
+    const internationalUSD =
+        principalUSD + (additionalMembers * familyUSD);
+
+    // District Payment is charged for EACH member.
+    const totalDistrictPayment =
+        members * district;
+
+    // Club Payment is charged ONCE for the family.
+    const totalClubPayment =
+        club;
+
+    const internationalLKR =
+        internationalUSD * rate;
+
+    const total =
+        internationalLKR +
+        totalDistrictPayment +
+        totalClubPayment;
+
+    document.getElementById('intl').textContent =
+        money(principalUSD * rate);
+
+    document.getElementById('familyFee').textContent =
+        money(additionalMembers * familyUSD * rate);
+
+    document.getElementById('familyLine').style.display =
+        type.value === 'family' && additionalMembers > 0
+            ? ''
+            : 'none';
+
+    document.getElementById('district').textContent =
+        money(totalDistrictPayment);
+
+    document.getElementById('club').textContent =
+        money(totalClubPayment);
+
+    document.getElementById('total').textContent =
+        total.toLocaleString('en-LK', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+}
+
+type.addEventListener('change', () => {
+    family.style.display =
+        type.value === 'family' ? 'block' : 'none';
+
+    calculate();
+});
+
+count.addEventListener('change', calculate);
+
+calculate();
+</script>
+
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>
