@@ -43,6 +43,7 @@ $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount 
 		data-required-message="<?php echo esc_attr( $required_msg ); ?>"
 		data-amount-message="<?php echo esc_attr( LCCL_DE_Donation_Form::amount_error_message() ); ?>"
 		data-email-message="<?php echo esc_attr( LCCL_DE_Donation_Form::email_error_message() ); ?>"
+		data-phone-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
 		novalidate
 	>
 
@@ -121,20 +122,24 @@ $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount 
 				</div>
 			</div>
 
-			<div class="lccl-df__causes" role="group" aria-label="<?php esc_attr_e( 'Causes', 'lccl-de' ); ?>">
-				<?php foreach ( LCCL_DE_Donation_Form::causes() as $key => $label ) : ?>
-					<label class="lccl-df__cause">
-						<input type="checkbox" name="causes[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $causes, true ) ); ?>>
-						<span class="lccl-bdf__check" aria-hidden="true"></span>
-						<span><?php echo esc_html( $label ); ?></span>
-					</label>
-				<?php endforeach; ?>
+			<div class="lccl-df__areas">
+				<h3 class="lccl-df__areas-title"><?php esc_html_e( 'Areas you would like your donation to support', 'lccl-de' ); ?></h3>
+				<p class="lccl-df__areas-lede"><?php esc_html_e( 'Please select the area(s) you would like your donation to support.', 'lccl-de' ); ?></p>
+				<div class="lccl-df__causes" role="group" aria-label="<?php esc_attr_e( 'Areas you would like your donation to support', 'lccl-de' ); ?>">
+					<?php foreach ( LCCL_DE_Donation_Form::causes() as $key => $label ) : ?>
+						<label class="lccl-df__cause">
+							<input type="checkbox" name="causes[]" value="<?php echo esc_attr( $key ); ?>" <?php checked( in_array( $key, $causes, true ) ); ?>>
+							<span class="lccl-bdf__check" aria-hidden="true"></span>
+							<span><?php echo esc_html( $label ); ?></span>
+						</label>
+					<?php endforeach; ?>
+				</div>
 			</div>
 
-			<div class="lccl-df__names">
+			<div class="lccl-df__pair">
 				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 					<label class="lccl-bdf__label" for="lccl-df-first-name">
-						<?php esc_html_e( 'First Name:', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+						<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 					</label>
 					<input
 						class="lccl-bdf__input"
@@ -151,7 +156,7 @@ $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount 
 				</div>
 				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 					<label class="lccl-bdf__label" for="lccl-df-last-name">
-						<?php esc_html_e( 'Last Name:', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+						<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 					</label>
 					<input
 						class="lccl-bdf__input"
@@ -168,37 +173,57 @@ $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount 
 				</div>
 			</div>
 
-			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
-				<label class="lccl-bdf__label" for="lccl-df-email">
-					<?php esc_html_e( 'Email:', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-				</label>
-				<input
-					class="lccl-bdf__input"
-					type="email"
-					id="lccl-df-email"
-					name="email"
-					value="<?php echo esc_attr( $val( 'email' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
-					autocomplete="email"
-					maxlength="191"
-					data-lccl-validate="email"
-					data-invalid-message="<?php echo esc_attr( LCCL_DE_Donation_Form::email_error_message() ); ?>"
-					required
-				>
-				<?php $notice( 'email' ); ?>
+			<div class="lccl-df__pair">
+				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-df-email">
+						<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					</label>
+					<input
+						class="lccl-bdf__input"
+						type="email"
+						id="lccl-df-email"
+						name="email"
+						value="<?php echo esc_attr( $val( 'email' ) ); ?>"
+						placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
+						autocomplete="email"
+						maxlength="191"
+						data-lccl-validate="email"
+						data-invalid-message="<?php echo esc_attr( LCCL_DE_Donation_Form::email_error_message() ); ?>"
+						required
+					>
+					<?php $notice( 'email' ); ?>
+				</div>
+				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
+					<label class="lccl-bdf__label" for="lccl-df-phone">
+						<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+					</label>
+					<input
+						class="lccl-bdf__input"
+						type="tel"
+						id="lccl-df-phone"
+						name="phone"
+						value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
+						placeholder="<?php esc_attr_e( '+94712345678', 'lccl-de' ); ?>"
+						inputmode="tel"
+						autocomplete="tel"
+						maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
+						data-lccl-validate="phone"
+						data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
+						required
+					>
+					<?php $notice( 'phone' ); ?>
+				</div>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'message' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-df-message">
-					<?php esc_html_e( 'Message:', 'lccl-de' ); ?>
+					<?php esc_html_e( 'Message (Optional)', 'lccl-de' ); ?>
 				</label>
-				<p class="lccl-df__message-hint">
-					<?php esc_html_e( '*If you have a contact person within the Lions Club, please provide his/her name here.', 'lccl-de' ); ?>
-				</p>
 				<textarea
 					class="lccl-bdf__textarea lccl-df__message"
 					id="lccl-df-message"
 					name="message"
+					placeholder="<?php esc_attr_e( 'If you would like to share any additional information, please enter it here.', 'lccl-de' ); ?>"
 					maxlength="1000"
 					rows="2"
 				><?php echo esc_textarea( $val( 'message' ) ); ?></textarea>
@@ -207,7 +232,7 @@ $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount 
 
 			<div class="lccl-df__total">
 				<div class="lccl-df__total-label">
-					<span><?php esc_html_e( 'Donation Total:', 'lccl-de' ); ?></span>
+					<span><?php esc_html_e( 'Donation Total', 'lccl-de' ); ?></span>
 				</div>
 				<input
 					class="lccl-df__total-input"

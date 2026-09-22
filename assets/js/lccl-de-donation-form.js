@@ -64,6 +64,56 @@
 		return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test( value ) && -1 === value.indexOf( '..' );
 	}
 
+	function constrainPhone( value ) {
+		value = String( value || '' );
+		var typed = value.replace( /[^\d+]/g, '' );
+		var digits = typed.replace( /\D/g, '' );
+		var international = 0 === typed.indexOf( '+' ) || 0 === digits.indexOf( '94' );
+
+		if ( ! international ) {
+			return digits.substring( 0, 10 );
+		}
+		if ( '+' === typed ) {
+			return '+';
+		}
+		if ( 0 === typed.indexOf( '+9' ) && 0 !== typed.indexOf( '+94' ) ) {
+			return '+9' === typed ? '+9' : '+94';
+		}
+		if ( 0 === typed.indexOf( '+' ) && 0 !== typed.indexOf( '+9' ) ) {
+			return '+';
+		}
+		if ( 0 === digits.indexOf( '94' ) ) {
+			digits = digits.substring( 2 );
+		}
+		if ( 0 === digits.indexOf( '0' ) ) {
+			digits = digits.substring( 1 );
+		}
+		return '+94' + digits.substring( 0, 9 );
+	}
+
+	function isValidPhone( value ) {
+		var raw = String( value || '' ).replace( /^\s+|\s+$/g, '' );
+		if ( '' === raw ) {
+			return false;
+		}
+		var digits = raw.replace( /\D/g, '' );
+		var international = 0 === raw.indexOf( '+' ) || 0 === digits.indexOf( '94' );
+		if ( international ) {
+			if ( 0 === digits.indexOf( '94' ) ) {
+				digits = digits.substring( 2 );
+			}
+			if ( 0 === digits.indexOf( '0' ) ) {
+				digits = digits.substring( 1 );
+			}
+			return /^[1-9][0-9]{8}$/.test( digits );
+		}
+		return /^0[1-9][0-9]{8}$/.test( digits );
+	}
+
+	function syncPhoneMax( field ) {
+		field.setAttribute( 'maxlength', 0 === field.value.indexOf( '+' ) ? '12' : '10' );
+	}
+
 	function validateAmount( form, amount, requireIfEmpty ) {
 		if ( ! amount ) {
 			return true;
@@ -83,6 +133,28 @@
 
 		markField( amount, '' !== message );
 		setNotice( form, 'amount', message );
+		return '' === message;
+	}
+
+	function validatePhone( form, phone, requireIfEmpty ) {
+		if ( ! phone ) {
+			return true;
+		}
+
+		var requiredMsg = form.getAttribute( 'data-required-message' ) || '';
+		var invalidMsg = phone.getAttribute( 'data-invalid-message' ) || form.getAttribute( 'data-phone-message' ) || '';
+		var message = '';
+
+		if ( ! isFilled( phone ) ) {
+			if ( requireIfEmpty ) {
+				message = requiredMsg;
+			}
+		} else if ( ! isValidPhone( phone.value ) ) {
+			message = invalidMsg;
+		}
+
+		markField( phone, '' !== message );
+		setNotice( form, 'phone', message );
 		return '' === message;
 	}
 
@@ -111,6 +183,7 @@
 	function initForm( form ) {
 		var amount = form.querySelector( '[data-lccl-validate="amount"]' );
 		var email = form.querySelector( '[data-lccl-validate="email"]' );
+		var phone = form.querySelector( '[data-lccl-validate="phone"]' );
 		var total = form.querySelector( '.lccl-df__total-input' );
 		var presets = form.querySelectorAll( '[data-lccl-preset]' );
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
@@ -170,6 +243,26 @@
 			} );
 		}
 
+		if ( phone ) {
+			syncPhoneMax( phone );
+			phone.addEventListener( 'input', function () {
+				var next = constrainPhone( phone.value );
+				if ( next !== phone.value ) {
+					phone.value = next;
+				}
+				syncPhoneMax( phone );
+				if ( isFilled( phone ) && isValidPhone( phone.value ) ) {
+					markField( phone, false );
+					setNotice( form, 'phone', '' );
+				}
+			} );
+			phone.addEventListener( 'blur', function () {
+				if ( isFilled( phone ) ) {
+					validatePhone( form, phone, false );
+				}
+			} );
+		}
+
 		Array.prototype.forEach.call( presets, function ( btn ) {
 			btn.addEventListener( 'click', function () {
 				var preset = btn.getAttribute( 'data-lccl-preset' );
@@ -195,7 +288,7 @@
 			var missingRequired = false;
 
 			Array.prototype.forEach.call( required, function ( field ) {
-				if ( 'amount' === field.getAttribute( 'data-lccl-validate' ) || 'email' === field.getAttribute( 'data-lccl-validate' ) ) {
+				if ( field.getAttribute( 'data-lccl-validate' ) ) {
 					return;
 				}
 				var invalid = ! isFilled( field );
@@ -220,6 +313,13 @@
 			if ( ! validateEmail( form, email, true ) && email && ! firstInvalid ) {
 				firstInvalid = email;
 				if ( ! isFilled( email ) ) {
+					missingRequired = true;
+				}
+			}
+
+			if ( ! validatePhone( form, phone, true ) && phone && ! firstInvalid ) {
+				firstInvalid = phone;
+				if ( ! isFilled( phone ) ) {
 					missingRequired = true;
 				}
 			}
@@ -252,7 +352,7 @@
 			if ( ! event.target || ! event.target.hasAttribute( 'required' ) ) {
 				return;
 			}
-			if ( 'amount' === event.target.getAttribute( 'data-lccl-validate' ) || 'email' === event.target.getAttribute( 'data-lccl-validate' ) ) {
+			if ( event.target.getAttribute( 'data-lccl-validate' ) ) {
 				return;
 			}
 			if ( isFilled( event.target ) ) {

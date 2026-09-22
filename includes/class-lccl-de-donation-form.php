@@ -26,12 +26,21 @@ class LCCL_DE_Donation_Form {
 	}
 
 	/**
+	 * Default form heading.
+	 *
+	 * @return string
+	 */
+	public static function default_title() {
+		return __( 'Make a Donation', 'lccl-de' );
+	}
+
+	/**
 	 * Default heading intro.
 	 *
 	 * @return string
 	 */
 	public static function default_intro() {
-		return __( 'Please provide the information below to make a donation to the Lions Club of Colombo LEADS.', 'lccl-de' );
+		return __( 'Thank you for supporting the community service work of the Lions Club of Colombo LEADS. Please provide the information below to make your donation.', 'lccl-de' );
 	}
 
 	/**
@@ -68,14 +77,14 @@ class LCCL_DE_Donation_Form {
 	 */
 	public static function causes() {
 		return array(
-			'diabetes'        => __( 'Diabetes', 'lccl-de' ),
-			'vision'          => __( 'Vision', 'lccl-de' ),
-			'hunger'          => __( 'Hunger', 'lccl-de' ),
+			'diabetes'        => __( 'Diabetes Awareness & Screening', 'lccl-de' ),
+			'vision'          => __( 'Vision & Eye Care', 'lccl-de' ),
+			'hunger'          => __( 'Hunger & Food Assistance', 'lccl-de' ),
 			'environment'     => __( 'Environment', 'lccl-de' ),
-			'child-cancer'    => __( 'Child Cancer', 'lccl-de' ),
-			'youth'           => __( 'Youth', 'lccl-de' ),
+			'child-cancer'    => __( 'Childhood Cancer Support', 'lccl-de' ),
+			'youth'           => __( 'Youth & Education', 'lccl-de' ),
 			'disaster-relief' => __( 'Disaster Relief', 'lccl-de' ),
-			'humanitarian'    => __( 'Humanitarian', 'lccl-de' ),
+			'humanitarian'    => __( 'Humanitarian Assistance', 'lccl-de' ),
 		);
 	}
 
@@ -102,7 +111,7 @@ class LCCL_DE_Donation_Form {
 	public static function render( $atts ) {
 		$atts = shortcode_atts(
 			array(
-				'title' => __( 'Donation to Lions Club of Colombo LEADS', 'lccl-de' ),
+				'title' => self::default_title(),
 				'intro' => self::default_intro(),
 			),
 			$atts,
@@ -154,7 +163,7 @@ class LCCL_DE_Donation_Form {
 						'type'        => 'textfield',
 						'heading'     => __( 'Title', 'lccl-de' ),
 						'param_name'  => 'title',
-						'value'       => __( 'Donation to Lions Club of Colombo LEADS', 'lccl-de' ),
+						'value'       => self::default_title(),
 						'admin_label' => true,
 					),
 					array(

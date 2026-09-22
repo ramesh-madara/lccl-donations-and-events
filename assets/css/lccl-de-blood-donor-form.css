@@ -798,7 +798,7 @@
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 28px;
+	font-size: 16px;
 	font-weight: 400;
 	line-height: 1.2;
 }
@@ -877,13 +877,38 @@
 	color: #ffffff;
 }
 
+.lccl-bdf.lccl-bdf--donation .lccl-df__areas {
+	margin: 22px 0 8px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__areas-title {
+	margin: 0 0 8px;
+	padding: 0;
+	color: var(--lccl-bdf-heading);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	letter-spacing: 0.04em;
+	line-height: 1.35;
+	text-transform: uppercase;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__areas-lede {
+	margin: 0 0 12px;
+	color: var(--lccl-bdf-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 400;
+	line-height: 1.5;
+}
+
 .lccl-bdf.lccl-bdf--donation .lccl-df__causes {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: flex-start;
 	justify-content: flex-start;
 	gap: 6px 1.3%;
-	margin: 20px 0 8px;
+	margin: 0;
 	padding: 8px 0 16px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #333333;
@@ -902,7 +927,7 @@
 	color: #333333;
 	cursor: pointer;
 	font-family: var(--lccl-bdf-font);
-	font-size: 15px;
+	font-size: 14px;
 	font-weight: 400;
 	line-height: 1.35;
 }
@@ -937,13 +962,13 @@
 	border-color: var(--lccl-bdf-heading);
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__names {
+.lccl-bdf.lccl-bdf--donation .lccl-df__pair {
 	display: flex;
 	gap: 23px;
 	margin-top: 8px;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__names .lccl-bdf__field {
+.lccl-bdf.lccl-bdf--donation .lccl-df__pair .lccl-bdf__field {
 	flex: 1 1 0;
 	min-width: 0;
 }
@@ -996,14 +1021,16 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 150px;
-	min-width: 150px;
+	width: 168px;
+	min-width: 168px;
 	height: 40px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
 	font-size: 14px;
 	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__total-input,
@@ -1061,7 +1088,7 @@
 		padding-right: 20px;
 	}
 
-	.lccl-bdf.lccl-bdf--donation .lccl-df__names {
+	.lccl-bdf.lccl-bdf--donation .lccl-df__pair {
 		display: block;
 	}
 
