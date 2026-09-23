@@ -53,11 +53,17 @@ class LCCL_DE_Admin_Programs {
 	const TAB_SMS = 'sms';
 
 	/**
+	 * Hub Payment Gateway credentials tab.
+	 */
+	const TAB_GATEWAY = 'gateway';
+
+	/**
 	 * Hook menu and assets.
 	 */
 	public static function init() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
 		add_action( 'admin_init', array( __CLASS__, 'redirect_legacy' ) );
+		add_action( 'admin_init', array( __CLASS__, 'handle_gateway_post' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_action( 'wp_ajax_lccl_de_program_tab', array( __CLASS__, 'ajax_tab' ) );
 	}
@@ -201,7 +207,7 @@ class LCCL_DE_Admin_Programs {
 		$tab     = self::normalize_tab( ( self::SCREEN_USERS === $screen ) ? self::TAB_USERS : $tab );
 		$program = self::normalize_program_key( $program );
 
-		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab ) {
+		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab || self::TAB_GATEWAY === $tab ) {
 			$program = '';
 		}
 
@@ -218,6 +224,8 @@ class LCCL_DE_Admin_Programs {
 			extract( self::users_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_SMS === $tab ) {
 			extract( self::sms_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		} elseif ( self::TAB_GATEWAY === $tab ) {
+			extract( self::gateway_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', true, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			$tab = self::TAB_PROGRAMS;
@@ -248,6 +256,9 @@ class LCCL_DE_Admin_Programs {
 		} elseif ( self::TAB_SMS === $tab ) {
 			extract( self::sms_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-sms.php';
+		} elseif ( self::TAB_GATEWAY === $tab ) {
+			extract( self::gateway_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			include LCCL_DE_PATH . 'templates/admin-gateway.php';
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', false, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-program-workspace.php';
@@ -295,6 +306,9 @@ class LCCL_DE_Admin_Programs {
 		}
 		if ( self::TAB_SMS === $tab ) {
 			return self::TAB_SMS;
+		}
+		if ( self::TAB_GATEWAY === $tab ) {
+			return self::TAB_GATEWAY;
 		}
 
 		return self::TAB_PROGRAMS;
@@ -581,4 +595,66 @@ class LCCL_DE_Admin_Programs {
 		unset( $args['page'] );
 		return is_array( $args ) ? $args : array();
 	}
+
+	// ------------------------------------------------------------------
+	// Payment Gateway tab helpers
+	// ------------------------------------------------------------------
+
+	/**
+	 * URL for the Payment Gateway tab.
+	 *
+	 * @param array $extra Extra query args.
+	 * @return string
+	 */
+	public static function gateway_url( $extra = array() ) {
+		return add_query_arg(
+			array_merge( array( 'page' => self::PAGE, 'tab' => self::TAB_GATEWAY ), $extra ),
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Variables the gateway template expects.
+	 *
+	 * @param bool $from_get Read message/error from $_GET.
+	 * @return array
+	 */
+	private static function gateway_vars( $from_get ) {
+		$message = '';
+		$error   = '';
+
+		if ( $from_get ) {
+			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error   = isset( $_GET['error'] ) ? sanitize_text_field( rawurldecode( wp_unslash( $_GET['error'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+
+		return array(
+			'tab'     => self::TAB_GATEWAY,
+			'message' => $message,
+			'error'   => $error,
+		);
+	}
+
+	/**
+	 * Handle POST from the Payment Gateway settings form.
+	 */
+	public static function handle_gateway_post() {
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( empty( $_POST['lccl_de_mpgs_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return;
+		}
+
+		check_admin_referer( 'lccl_de_mpgs_save', 'lccl_de_mpgs_nonce' );
+
+		LCCL_DE_Settings::save_mpgs( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		wp_safe_redirect(
+			self::gateway_url( array( 'message' => 'saved' ) )
+		);
+		exit;
+	}
 }
+

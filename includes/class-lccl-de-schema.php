@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 8;
+	const VERSION = 9;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -69,7 +69,7 @@ class LCCL_DE_Schema {
 	public static function maybe_install() {
 		$installed = (int) get_option( self::OPTION, 0 );
 
-		if ( $installed >= self::VERSION && self::table_exists() && self::project_joins_exist() && self::spectacles_exist() ) {
+		if ( $installed >= self::VERSION && self::table_exists() && self::project_joins_exist() && self::spectacles_exist() && self::payments_exist() ) {
 			return;
 		}
 
@@ -121,6 +121,31 @@ class LCCL_DE_Schema {
 		global $wpdb;
 
 		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_spectacles' );
+	}
+
+	/**
+	 * Membership fee payments table, including the WP prefix.
+	 *
+	 * @return string
+	 */
+	public static function payments_table() {
+		global $wpdb;
+
+		$wanted   = $wpdb->prefix . 'lccl_de_payments';
+		$existing = self::existing_table_name( $wanted );
+
+		return $existing ? $existing : $wanted;
+	}
+
+	/**
+	 * Whether the membership fee payments table is present, ignoring identifier case.
+	 *
+	 * @return bool
+	 */
+	public static function payments_exist() {
+		global $wpdb;
+
+		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_payments' );
 	}
 
 	/**
@@ -285,6 +310,34 @@ class LCCL_DE_Schema {
 		) {$charset};";
 
 		dbDelta( $spectacles_sql );
+
+		$payments     = self::payments_table();
+		$payments_sql = "CREATE TABLE {$payments} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			order_ref varchar(64) NOT NULL,
+			member_first_name varchar(100) NOT NULL DEFAULT '',
+			member_last_name varchar(100) NOT NULL DEFAULT '',
+			member_email varchar(191) NOT NULL DEFAULT '',
+			member_phone varchar(30) NOT NULL DEFAULT '',
+			membership_type varchar(32) NOT NULL DEFAULT 'member',
+			family_count tinyint(3) unsigned NOT NULL DEFAULT 1,
+			amount_lkr decimal(12,2) NOT NULL DEFAULT 0.00,
+			status varchar(32) NOT NULL DEFAULT 'pending',
+			session_id varchar(128) DEFAULT NULL,
+			success_indicator varchar(64) DEFAULT NULL,
+			gateway_receipt varchar(128) DEFAULT NULL,
+			gateway_response longtext,
+			ip_address varchar(45) DEFAULT NULL,
+			created_at datetime NOT NULL,
+			paid_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY order_ref (order_ref),
+			KEY status (status),
+			KEY member_email (member_email),
+			KEY created_at (created_at)
+		) {$charset};";
+
+		dbDelta( $payments_sql );
 		self::$table_names = array();
 		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();
 		update_option( self::OPTION, self::VERSION );

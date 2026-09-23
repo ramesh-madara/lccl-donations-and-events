@@ -1,12 +1,13 @@
 <?php
 /**
- * Sample annual membership fee markup. No payment or database write.
+ * Annual membership fee form.
  *
  * @package LCCL_Donations_And_Events
  *
- * @var array $atts   Shortcode attributes.
- * @var array $values Previously entered values, keyed by field name.
- * @var array $fees   Calculated sample fee breakdown.
+ * @var array  $atts   Shortcode attributes (title, intro).
+ * @var array  $values Previously entered values, keyed by field name.
+ * @var array  $fees   Calculated fee breakdown.
+ * @var array  $errors Validation error messages to display.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -18,12 +19,23 @@ $val = static function ( $key ) use ( $values ) {
 $type  = $val( 'membership_type' );
 $count = $val( 'family_count' );
 $count = '' !== $count ? $count : '2';
+
+$gateway_configured = LCCL_DE_MPGS_Client::is_configured();
 ?>
 <div class="lccl-bdf lccl-bdf--membership">
+
+	<?php if ( ! empty( $errors ) ) : ?>
+		<div class="lccl-mf__notice lccl-mf__notice--error" role="alert">
+			<?php foreach ( $errors as $err ) : ?>
+				<p><?php echo esc_html( $err ); ?></p>
+			<?php endforeach; ?>
+		</div>
+	<?php endif; ?>
+
 	<form
 		class="lccl-bdf__form"
 		method="post"
-		action="#"
+		action="<?php echo esc_url( get_permalink() ); ?>"
 		data-rate="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::RATE ); ?>"
 		data-principal-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::PRINCIPAL_USD ); ?>"
 		data-family-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::FAMILY_USD ); ?>"
@@ -31,6 +43,8 @@ $count = '' !== $count ? $count : '2';
 		data-club="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::CLUB_LKR ); ?>"
 		novalidate
 	>
+		<?php wp_nonce_field( LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD ); ?>
+
 		<?php if ( '' !== $atts['title'] || '' !== $atts['intro'] ) : ?>
 			<header class="lccl-bdf__header">
 				<?php if ( '' !== $atts['title'] ) : ?>
@@ -49,7 +63,7 @@ $count = '' !== $count ? $count : '2';
 					<label class="lccl-bdf__label" for="lccl-mf-type">
 						<?php esc_html_e( 'Select Membership Type', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 					</label>
-					<select class="lccl-bdf__select" id="lccl-mf-type" name="membership_type">
+					<select class="lccl-bdf__select" id="lccl-mf-type" name="membership_type" required>
 						<option value=""><?php esc_html_e( 'Select membership type', 'lccl-de' ); ?></option>
 						<?php foreach ( LCCL_DE_Membership_Form::types() as $key => $label ) : ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $type, $key ); ?>>
@@ -94,6 +108,7 @@ $count = '' !== $count ? $count : '2';
 							placeholder="<?php esc_attr_e( 'Saman', 'lccl-de' ); ?>"
 							autocomplete="given-name"
 							maxlength="100"
+							required
 						>
 					</div>
 					<div class="lccl-bdf__field lccl-mf__field--first">
@@ -109,6 +124,7 @@ $count = '' !== $count ? $count : '2';
 							placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
 							autocomplete="family-name"
 							maxlength="100"
+							required
 						>
 					</div>
 				</div>
@@ -127,6 +143,7 @@ $count = '' !== $count ? $count : '2';
 							placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
 							autocomplete="email"
 							maxlength="191"
+							required
 						>
 					</div>
 					<div class="lccl-bdf__field">
@@ -204,8 +221,25 @@ $count = '' !== $count ? $count : '2';
 			</div>
 		</div>
 
-		<button class="lccl-bdf__submit lccl-df__submit" type="submit">
-			<?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?>
+		<?php if ( ! $gateway_configured ) : ?>
+			<div class="lccl-mf__notice lccl-mf__notice--warning">
+				<p><?php esc_html_e( 'Online payment is currently being configured. Please check back shortly or contact the club administrator.', 'lccl-de' ); ?></p>
+			</div>
+		<?php endif; ?>
+
+		<button
+			class="lccl-bdf__submit lccl-df__submit lccl-mf__pay-btn"
+			type="submit"
+			id="lccl-mf-submit-btn"
+			<?php echo $gateway_configured ? '' : 'disabled aria-disabled="true"'; ?>
+		>
+			<span class="lccl-mf__pay-label"><?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?></span>
+			<span class="lccl-mf__pay-spinner" aria-hidden="true" hidden></span>
 		</button>
+
+		<p class="lccl-mf__secure-note">
+			<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+			<?php esc_html_e( 'Payments are processed securely by Mastercard Payment Gateway Services.', 'lccl-de' ); ?>
+		</p>
 	</form>
 </div>

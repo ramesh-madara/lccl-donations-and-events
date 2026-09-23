@@ -15,7 +15,7 @@
 // ramesh 4.4
 defined( 'ABSPATH' ) || exit;
 
-define( 'LCCL_DE_VERSION', '0.9.24' );
+define( 'LCCL_DE_VERSION', '0.9.25' );
 define( 'LCCL_DE_FILE', __FILE__ );
 define( 'LCCL_DE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LCCL_DE_URL', plugin_dir_url( __FILE__ ) );
@@ -26,6 +26,7 @@ require_once LCCL_DE_PATH . 'includes/class-lccl-de-access.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-admin-users.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-admin-programs.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-settings.php';
+require_once LCCL_DE_PATH . 'includes/class-lccl-de-mpgs-client.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-shortcodes.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-blood-donor-form.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-blood-donor-submissions.php';

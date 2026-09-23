@@ -1876,3 +1876,241 @@
 		min-height: 36px;
 	}
 }
+
+/* ==========================================================================
+   MPGS Membership Fee Payment – Notices, Spinner, Receipt, Result
+   ========================================================================== */
+
+/* Inline notices (error / warning above the form) */
+.lccl-bdf--membership .lccl-mf__notice {
+	margin: 0 0 24px;
+	padding: 14px 18px;
+	border-radius: 6px;
+	font-size: 15px;
+	line-height: 1.55;
+}
+
+.lccl-bdf--membership .lccl-mf__notice p {
+	margin: 0 0 6px;
+}
+
+.lccl-bdf--membership .lccl-mf__notice p:last-child {
+	margin-bottom: 0;
+}
+
+.lccl-bdf--membership .lccl-mf__notice--error {
+	background: #fff5f5;
+	border-left: 4px solid #c62828;
+	color: #7b1a1a;
+}
+
+.lccl-bdf--membership .lccl-mf__notice--warning {
+	background: #fffde7;
+	border-left: 4px solid #f9a825;
+	color: #6d4c00;
+}
+
+/* Submit button spinner */
+.lccl-bdf--membership .lccl-mf__pay-btn {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.lccl-bdf--membership .lccl-mf__pay-btn:disabled,
+.lccl-bdf--membership .lccl-mf__pay-btn[aria-disabled="true"] {
+	opacity: 0.65;
+	cursor: not-allowed;
+}
+
+.lccl-bdf--membership .lccl-mf__pay-spinner {
+	display: inline-block;
+	width: 18px;
+	height: 18px;
+	border: 2px solid rgba(51,51,51,0.25);
+	border-top-color: #333333;
+	border-radius: 50%;
+	animation: lccl-spin 0.7s linear infinite;
+	flex-shrink: 0;
+}
+
+@keyframes lccl-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Secure payment note below the button */
+.lccl-bdf--membership .lccl-mf__secure-note {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 12px 0 0;
+	font-size: 13px;
+	color: #888888;
+}
+
+/* ==========================================================================
+   Receipt / Loading Page
+   ========================================================================== */
+
+.lccl-mf--receipt {
+	padding-bottom: 64px;
+	text-align: center;
+}
+
+.lccl-mf__loading-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	padding: 48px 24px;
+}
+
+.lccl-mf__loading-icon svg {
+	display: block;
+}
+
+.lccl-mf__loading-title {
+	margin: 0;
+	font-size: 22px;
+	font-weight: 400;
+	color: var(--lccl-bdf-heading, #333333);
+	letter-spacing: 0.02em;
+}
+
+.lccl-mf__loading-sub {
+	max-width: 420px;
+	margin: 0;
+	font-size: 15px;
+	color: var(--lccl-bdf-text, #555555);
+}
+
+.lccl-mf__spinner {
+	display: block;
+	width: 40px;
+	height: 40px;
+	margin: 8px auto 0;
+	border: 3px solid rgba(247,192,22,0.25);
+	border-top-color: #f7c016;
+	border-radius: 50%;
+	animation: lccl-spin 0.8s linear infinite;
+}
+
+.lccl-mf__back-link {
+	color: var(--lccl-bdf-gold-light, #f7c016);
+	text-decoration: none;
+	font-size: 15px;
+}
+
+.lccl-mf__back-link:hover {
+	text-decoration: underline;
+}
+
+/* ==========================================================================
+   Payment Result Page
+   ========================================================================== */
+
+.lccl-mf--result {
+	padding-bottom: 64px;
+}
+
+.lccl-mf__result {
+	padding: 36px 32px;
+	border-radius: 10px;
+	text-align: center;
+}
+
+.lccl-mf__result--success {
+	background: #f1f8f1;
+	border: 1px solid #a5d6a7;
+}
+
+.lccl-mf__result--warning {
+	background: #fff8e1;
+	border: 1px solid #ffe082;
+}
+
+.lccl-mf__result--error {
+	background: #fff5f5;
+	border: 1px solid #ef9a9a;
+}
+
+.lccl-mf__result-icon {
+	margin: 0 auto 20px;
+	width: 64px;
+	height: 64px;
+}
+
+.lccl-mf__result-icon svg {
+	width: 100%;
+	height: 100%;
+}
+
+.lccl-mf__result-title {
+	margin: 0 0 10px;
+	font-size: 26px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	color: var(--lccl-bdf-heading, #333333);
+}
+
+.lccl-mf__result--success .lccl-mf__result-title { color: #1b5e20; }
+.lccl-mf__result--warning .lccl-mf__result-title { color: #e65100; }
+.lccl-mf__result--error   .lccl-mf__result-title { color: #b71c1c; }
+
+.lccl-mf__result-lead {
+	margin: 0 0 24px;
+	font-size: 17px;
+	color: var(--lccl-bdf-text, #555555);
+}
+
+.lccl-mf__result-details {
+	display: inline-grid;
+	grid-template-columns: auto auto;
+	gap: 8px 20px;
+	margin: 0 auto 24px;
+	text-align: left;
+	font-size: 15px;
+}
+
+.lccl-mf__result-row {
+	display: contents;
+}
+
+.lccl-mf__result-details dt {
+	color: #888;
+	white-space: nowrap;
+}
+
+.lccl-mf__result-details dd {
+	margin: 0;
+	font-weight: 600;
+	color: var(--lccl-bdf-heading, #333333);
+}
+
+.lccl-mf__result-details code {
+	background: rgba(0,0,0,0.06);
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 13px;
+	letter-spacing: 0.04em;
+}
+
+.lccl-mf__result-note {
+	font-size: 14px;
+	color: #888;
+	margin: 0;
+}
+
+.lccl-mf__result-error-detail,
+.lccl-mf__result-ref {
+	font-size: 15px;
+	color: var(--lccl-bdf-text, #555555);
+	margin: 0 0 16px;
+}
+
+.lccl-mf__result-btn {
+	display: inline-block;
+	margin-top: 20px;
+	text-decoration: none;
+}

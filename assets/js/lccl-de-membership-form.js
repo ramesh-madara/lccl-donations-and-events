@@ -1,5 +1,5 @@
 /**
- * Sample membership fee form: live total only. Never submits payment.
+ * Membership fee form: live fee calculation + submit loading state.
  */
 ( function () {
 	'use strict';
@@ -30,23 +30,23 @@
 	}
 
 	function calculate( form ) {
-		var type = form.querySelector( '[name="membership_type"]' );
-		var count = form.querySelector( '[name="family_count"]' );
+		var type       = form.querySelector( '[name="membership_type"]' );
+		var count      = form.querySelector( '[name="family_count"]' );
 		var familyWrap = form.querySelector( '[data-lccl-family]' );
 		var familyLine = form.querySelector( '[data-lccl-family-line]' );
-		var typeValue = type ? type.value : '';
-		var isFamily = 'family' === typeValue;
-		var members = isFamily ? num( count ? count.value : 2, 2 ) : 1;
+		var typeValue  = type ? type.value : '';
+		var isFamily   = 'family' === typeValue;
+		var members    = isFamily ? num( count ? count.value : 2, 2 ) : 1;
 		var additional = isFamily ? Math.max( 0, members - 1 ) : 0;
-		var rate = num( form.getAttribute( 'data-rate' ), 330.8 );
-		var principalUsd = num( form.getAttribute( 'data-principal-usd' ), 50 );
-		var familyUsd = num( form.getAttribute( 'data-family-usd' ), 25 );
-		var district = num( form.getAttribute( 'data-district' ), 3500 );
-		var club = num( form.getAttribute( 'data-club' ), 6000 );
+		var rate           = num( form.getAttribute( 'data-rate' ), 330.8 );
+		var principalUsd   = num( form.getAttribute( 'data-principal-usd' ), 50 );
+		var familyUsd      = num( form.getAttribute( 'data-family-usd' ), 25 );
+		var district       = num( form.getAttribute( 'data-district' ), 3500 );
+		var club           = num( form.getAttribute( 'data-club' ), 6000 );
 		var internationalMain = principalUsd * rate;
-		var familyFee = additional * familyUsd * rate;
-		var districtTotal = members * district;
-		var total = internationalMain + familyFee + districtTotal + club;
+		var familyFee         = additional * familyUsd * rate;
+		var districtTotal     = members * district;
+		var total             = internationalMain + familyFee + districtTotal + club;
 
 		if ( familyWrap ) {
 			familyWrap.hidden = ! isFamily;
@@ -55,17 +55,20 @@
 			familyLine.hidden = ! ( isFamily && additional > 0 );
 		}
 
-		setText( form.querySelector( '[data-lccl-rate]' ), number( rate ) );
-		setText( form.querySelector( '[data-lccl-intl]' ), money( internationalMain ) );
+		setText( form.querySelector( '[data-lccl-rate]' ),       number( rate ) );
+		setText( form.querySelector( '[data-lccl-intl]' ),       money( internationalMain ) );
 		setText( form.querySelector( '[data-lccl-family-fee]' ), money( familyFee ) );
-		setText( form.querySelector( '[data-lccl-district]' ), money( districtTotal ) );
-		setText( form.querySelector( '[data-lccl-club]' ), money( club ) );
-		setText( form.querySelector( '[data-lccl-total]' ), number( total ) );
+		setText( form.querySelector( '[data-lccl-district]' ),   money( districtTotal ) );
+		setText( form.querySelector( '[data-lccl-club]' ),       money( club ) );
+		setText( form.querySelector( '[data-lccl-total]' ),      number( total ) );
 	}
 
 	function initForm( form ) {
-		var type = form.querySelector( '[name="membership_type"]' );
+		var type  = form.querySelector( '[name="membership_type"]' );
 		var count = form.querySelector( '[name="family_count"]' );
+		var btn   = form.querySelector( '#lccl-mf-submit-btn' );
+		var label = btn ? btn.querySelector( '.lccl-mf__pay-label' )  : null;
+		var spin  = btn ? btn.querySelector( '.lccl-mf__pay-spinner' ) : null;
 
 		if ( type ) {
 			type.addEventListener( 'change', function () {
@@ -78,8 +81,14 @@
 			} );
 		}
 
-		form.addEventListener( 'submit', function ( event ) {
-			event.preventDefault();
+		// Show loading spinner on submit, prevent double-submission.
+		form.addEventListener( 'submit', function () {
+			if ( btn && ! btn.disabled ) {
+				btn.disabled = true;
+				btn.setAttribute( 'aria-disabled', 'true' );
+				if ( label ) { label.textContent = label.dataset.loadingText || label.textContent; }
+				if ( spin )  { spin.hidden = false; }
+			}
 		} );
 
 		calculate( form );

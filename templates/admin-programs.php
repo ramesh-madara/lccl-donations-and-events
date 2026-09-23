@@ -63,6 +63,17 @@ if ( LCCL_DE_Admin_Programs::TAB_PROGRAMS !== $tab ) {
 		>
 			<?php esc_html_e( 'SMS', 'lccl-de' ); ?>
 		</a>
+		<a
+			class="lccl-prog__tab<?php echo LCCL_DE_Admin_Programs::TAB_GATEWAY === $tab ? ' is-current' : ''; ?>"
+			id="lccl-prog-tab-gateway"
+			href="<?php echo esc_url( LCCL_DE_Admin_Programs::gateway_url() ); ?>"
+			role="tab"
+			data-tab="gateway"
+			aria-selected="<?php echo LCCL_DE_Admin_Programs::TAB_GATEWAY === $tab ? 'true' : 'false'; ?>"
+			aria-controls="lccl-prog-tab-panel"
+		>
+			<?php esc_html_e( 'Payment Gateway', 'lccl-de' ); ?>
+		</a>
 	</nav>
 
 	<div class="lccl-prog__stage">
@@ -81,6 +92,8 @@ if ( LCCL_DE_Admin_Programs::TAB_PROGRAMS !== $tab ) {
 				<?php include LCCL_DE_PATH . 'templates/admin-users.php'; ?>
 			<?php elseif ( LCCL_DE_Admin_Programs::TAB_SMS === $tab ) : ?>
 				<?php include LCCL_DE_PATH . 'templates/admin-sms.php'; ?>
+			<?php elseif ( LCCL_DE_Admin_Programs::TAB_GATEWAY === $tab ) : ?>
+				<?php include LCCL_DE_PATH . 'templates/admin-gateway.php'; ?>
 			<?php elseif ( '' !== $program ) : ?>
 				<?php include LCCL_DE_PATH . 'templates/admin-program-workspace.php'; ?>
 			<?php else : ?>

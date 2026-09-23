@@ -33,6 +33,11 @@ class LCCL_DE_Settings {
 	const OPTION_SPECTACLES = 'lccl_de_spectacles_notify';
 
 	/**
+	 * Option that stores MPGS payment gateway credentials.
+	 */
+	const OPTION_MPGS = 'lccl_de_mpgs';
+
+	/**
 	 * Nonce for saving.
 	 */
 	const NONCE = 'lccl_de_save_notify';
@@ -727,5 +732,109 @@ class LCCL_DE_Settings {
 	public static function render() {
 		wp_safe_redirect( LCCL_DE_Admin_Programs::blood_url() );
 		exit;
+	}
+
+	// ------------------------------------------------------------------
+	// MPGS Payment Gateway credentials
+	// ------------------------------------------------------------------
+
+	/**
+	 * Default / blank MPGS configuration.
+	 *
+	 * @return array{gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 */
+	private static function mpgs_defaults() {
+		return array(
+			'gateway_url'  => 'https://ap-gateway.mastercard.com/',
+			'api_version'  => LCCL_DE_MPGS_Client::DEFAULT_API_VERSION,
+			'merchant_id'  => '',
+			'api_password' => '',
+		);
+	}
+
+	/**
+	 * Retrieve MPGS credentials from wp_options (api_password decrypted).
+	 *
+	 * @return array{gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 */
+	public static function get_mpgs() {
+		$stored = get_option( self::OPTION_MPGS, array() );
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+
+		$defaults = self::mpgs_defaults();
+		$cfg      = wp_parse_args( $stored, $defaults );
+
+		$cfg['gateway_url']  = esc_url_raw( (string) $cfg['gateway_url'] );
+		$cfg['api_version']  = (int) $cfg['api_version'];
+		$cfg['merchant_id']  = sanitize_text_field( (string) $cfg['merchant_id'] );
+		$cfg['api_password'] = self::decrypt_secret( isset( $stored['api_password'] ) ? (string) $stored['api_password'] : '' );
+
+		return $cfg;
+	}
+
+	/**
+	 * Persist MPGS credentials. api_password is AES-256-GCM encrypted at rest.
+	 *
+	 * @param array $input Raw posted values.
+	 * @return array Saved (decrypted) values.
+	 */
+	public static function save_mpgs( $input ) {
+		if ( ! is_array( $input ) ) {
+			$input = array();
+		}
+
+		$before = self::get_mpgs();
+
+		$gateway_url = array_key_exists( 'gateway_url', $input )
+			? esc_url_raw( trim( (string) $input['gateway_url'] ) )
+			: $before['gateway_url'];
+
+		$api_version = array_key_exists( 'api_version', $input )
+			? (int) $input['api_version']
+			: $before['api_version'];
+
+		$merchant_id = array_key_exists( 'merchant_id', $input )
+			? sanitize_text_field( trim( (string) $input['merchant_id'] ) )
+			: $before['merchant_id'];
+
+		// Only update the password if a non-empty value was posted.
+		$api_password = $before['api_password'];
+		if ( array_key_exists( 'api_password', $input ) ) {
+			$posted = trim( (string) $input['api_password'] );
+			if ( '' !== $posted ) {
+				$api_password = $posted;
+			}
+		}
+
+		update_option(
+			self::OPTION_MPGS,
+			array(
+				'gateway_url'  => $gateway_url,
+				'api_version'  => $api_version,
+				'merchant_id'  => $merchant_id,
+				'api_password' => self::encrypt_secret( $api_password ),
+			)
+		);
+
+		return array(
+			'gateway_url'  => $gateway_url,
+			'api_version'  => $api_version,
+			'merchant_id'  => $merchant_id,
+			'api_password' => $api_password,
+		);
+	}
+
+	/**
+	 * Whether all required MPGS credentials are saved and non-empty.
+	 *
+	 * @return bool
+	 */
+	public static function mpgs_is_configured() {
+		$cfg = self::get_mpgs();
+		return '' !== $cfg['gateway_url']
+			&& '' !== $cfg['merchant_id']
+			&& '' !== $cfg['api_password'];
 	}
 }
