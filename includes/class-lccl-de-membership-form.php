@@ -204,6 +204,20 @@ class LCCL_DE_Membership_Form {
 			return;
 		}
 
+		// Rate limiting: max 10 checkout session initiations per IP per 10 minutes.
+		$ip_key = 'lccl_mf_rate_' . md5( self::client_ip() );
+		$hits   = (int) get_transient( $ip_key );
+		if ( $hits >= 10 ) {
+			wp_safe_redirect(
+				add_query_arg(
+					array( 'lccl_mf_error' => rawurlencode( __( 'Too many payment attempts. Please wait a few minutes before trying again.', 'lccl-de' ) ) ),
+					wp_get_referer() ?: get_permalink()
+				)
+			);
+			exit;
+		}
+		set_transient( $ip_key, $hits + 1, 10 * MINUTE_IN_SECONDS );
+
 		self::handle_submit();
 	}
 
@@ -331,6 +345,15 @@ class LCCL_DE_Membership_Form {
 		);
 
 		if ( is_wp_error( $session ) ) {
+			// Log technical details securely to server logs for diagnostics.
+			error_log(
+				sprintf(
+					'[LCCL MPGS Error] Order %s failed to initiate session: %s',
+					$order_ref,
+					$session->get_error_message()
+				)
+			);
+
 			// Mark row as failed so it can be audited.
 			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
@@ -340,9 +363,14 @@ class LCCL_DE_Membership_Form {
 				array( '%s' )
 			);
 
+			// Provide user-friendly masked error on frontend.
+			$user_msg = ( 'lccl_mpgs_disabled' === $session->get_error_code() )
+				? __( 'Online payment is currently unavailable. Please contact the club administrator.', 'lccl-de' )
+				: __( 'Unable to connect to the payment gateway. Please try again or contact the club administrator.', 'lccl-de' );
+
 			wp_safe_redirect(
 				add_query_arg(
-					array( 'lccl_mf_error' => rawurlencode( $session->get_error_message() ) ),
+					array( 'lccl_mf_error' => rawurlencode( $user_msg ) ),
 					wp_get_referer() ?: get_permalink()
 				)
 			);
@@ -442,9 +470,9 @@ class LCCL_DE_Membership_Form {
 			'error_message' => '',
 		);
 
-		// If already processed (user refreshed), just return current state.
-		if ( in_array( $row['status'], array( 'paid', 'failed', 'cancelled' ), true ) ) {
-			$base_result['status']  = $row['status'];
+		// If already paid, return current paid state immediately (idempotent for refreshes).
+		if ( 'paid' === $row['status'] ) {
+			$base_result['status']  = 'paid';
 			$base_result['receipt'] = (string) $row['gateway_receipt'];
 			return $base_result;
 		}
@@ -453,14 +481,8 @@ class LCCL_DE_Membership_Form {
 		// Verify resultIndicator against stored successIndicator
 		// ----------------------------------------------------------------
 		if ( '' === $result_indicator ) {
-			// No indicator = user cancelled on the gateway page.
-			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-				$table,
-				array( 'status' => 'cancelled' ),
-				array( 'order_ref' => $order_ref ),
-				array( '%s' ),
-				array( '%s' )
-			);
+			// No indicator in URL: display cancellation message to the visitor without
+			// permanently corrupting the DB record, in case legitimate confirmation arrives.
 			$base_result['status'] = 'cancelled';
 			return $base_result;
 		}
@@ -494,6 +516,35 @@ class LCCL_DE_Membership_Form {
 			return $base_result;
 		}
 
+		// ----------------------------------------------------------------
+		// Verify amount and currency returned by the gateway match billed amount
+		// ----------------------------------------------------------------
+		$gateway_amount   = isset( $order_data['amount'] ) ? round( (float) $order_data['amount'], 2 ) : 0.0;
+		$gateway_currency = isset( $order_data['currency'] ) ? strtoupper( trim( (string) $order_data['currency'] ) ) : '';
+		$expected_amount  = round( (float) $row['amount_lkr'], 2 );
+
+		if ( abs( $gateway_amount - $expected_amount ) > 0.01 || 'LKR' !== $gateway_currency ) {
+			$mismatch_msg = sprintf(
+				'Amount/currency mismatch. Expected: %s %s, Gateway returned: %s %s',
+				$expected_amount,
+				'LKR',
+				$gateway_amount,
+				$gateway_currency
+			);
+			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+				$table,
+				array(
+					'status'           => 'failed',
+					'gateway_response' => $mismatch_msg,
+				),
+				array( 'order_ref' => $order_ref ),
+				array( '%s', '%s' ),
+				array( '%s' )
+			);
+			$base_result['error_message'] = __( 'Payment amount or currency mismatch. Please contact the club administrator.', 'lccl-de' );
+			return $base_result;
+		}
+
 		$receipt = LCCL_DE_MPGS_Client::extract_receipt( $order_data );
 
 		if ( '' === $receipt ) {
@@ -513,23 +564,27 @@ class LCCL_DE_Membership_Form {
 		}
 
 		// ----------------------------------------------------------------
-		// Mark paid!
+		// Atomic transition to 'paid' (prevents race conditions / duplicate emails)
 		// ----------------------------------------------------------------
-		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-			$table,
-			array(
-				'status'           => 'paid',
-				'gateway_receipt'  => $receipt,
-				'gateway_response' => wp_json_encode( $order_data ),
-				'paid_at'          => current_time( 'mysql' ),
-			),
-			array( 'order_ref' => $order_ref ),
-			array( '%s', '%s', '%s', '%s' ),
-			array( '%s' )
+		$updated = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare(
+				"UPDATE `{$table}`
+				 SET status = 'paid',
+				     gateway_receipt = %s,
+				     gateway_response = %s,
+				     paid_at = %s
+				 WHERE order_ref = %s AND status != 'paid'",
+				$receipt,
+				wp_json_encode( $order_data ),
+				current_time( 'mysql' ),
+				$order_ref
+			)
 		);
 
-		// Send confirmation email to member.
-		self::send_payment_confirmation( $row, $receipt );
+		// Send confirmation email only if this request performed the transition.
+		if ( $updated > 0 ) {
+			self::send_payment_confirmation( $row, $receipt );
+		}
 
 		return array(
 			'status'        => 'paid',
@@ -708,12 +763,18 @@ class LCCL_DE_Membership_Form {
 		$ip = '';
 
 		if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$parts = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
-			$ip    = trim( $parts[0] );
+			$parts     = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+			$candidate = trim( $parts[0] );
+			if ( filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
+				$ip = $candidate;
+			}
 		}
 
 		if ( '' === $ip && ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			$ip = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+			$candidate = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+			if ( filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
+				$ip = $candidate;
+			}
 		}
 
 		return $ip;

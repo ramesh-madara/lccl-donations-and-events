@@ -647,7 +647,7 @@ class LCCL_DE_Admin_Programs {
 	 * Handle POST from the Payment Gateway settings form.
 	 */
 	public static function handle_gateway_post() {
-		if ( ! is_admin() || ! current_user_can( 'read' ) ) {
+		if ( ! is_admin() || ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'edit_posts' ) ) ) {
 			return;
 		}
 

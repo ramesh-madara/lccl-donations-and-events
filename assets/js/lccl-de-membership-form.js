@@ -83,11 +83,23 @@
 
 		// Show loading spinner on submit, prevent double-submission.
 		form.addEventListener( 'submit', function () {
+			if ( form.checkValidity && ! form.checkValidity() ) {
+				return;
+			}
 			if ( btn && ! btn.disabled ) {
-				btn.disabled = true;
-				btn.setAttribute( 'aria-disabled', 'true' );
-				if ( label ) { label.textContent = label.dataset.loadingText || label.textContent; }
-				if ( spin )  { spin.hidden = false; }
+				btn.classList.add( 'is-loading' );
+				if ( label ) {
+					label.dataset.originalText = label.textContent;
+					label.textContent = label.dataset.loadingText || 'Redirecting to payment...';
+				}
+				if ( spin ) {
+					spin.hidden = false;
+					spin.removeAttribute( 'hidden' );
+				}
+				setTimeout( function () {
+					btn.disabled = true;
+					btn.setAttribute( 'aria-disabled', 'true' );
+				}, 20 );
 			}
 		} );
 

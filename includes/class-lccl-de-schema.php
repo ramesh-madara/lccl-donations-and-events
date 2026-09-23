@@ -69,7 +69,7 @@ class LCCL_DE_Schema {
 	public static function maybe_install() {
 		$installed = (int) get_option( self::OPTION, 0 );
 
-		if ( $installed >= self::VERSION && self::table_exists() && self::project_joins_exist() && self::spectacles_exist() && self::payments_exist() ) {
+		if ( $installed >= self::VERSION ) {
 			return;
 		}
 

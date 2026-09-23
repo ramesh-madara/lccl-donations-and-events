@@ -217,6 +217,13 @@ class LCCL_DE_MPGS_Client {
 			);
 		}
 
+		if ( 0 !== stripos( $cfg['gateway_url'], 'https://' ) ) {
+			return new WP_Error(
+				'lccl_mpgs_insecure_url',
+				__( 'MPGS payment gateway URL must use HTTPS.', 'lccl-de' )
+			);
+		}
+
 		return $cfg;
 	}
 

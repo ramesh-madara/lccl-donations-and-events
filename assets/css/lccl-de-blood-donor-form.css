@@ -1924,8 +1924,14 @@
 	cursor: not-allowed;
 }
 
+.lccl-bdf--membership .lccl-mf__pay-btn.is-loading {
+	opacity: 0.85;
+	cursor: wait;
+	pointer-events: none;
+}
+
 .lccl-bdf--membership .lccl-mf__pay-spinner {
-	display: inline-block;
+	display: none;
 	width: 18px;
 	height: 18px;
 	border: 2px solid rgba(51,51,51,0.25);
@@ -1933,6 +1939,15 @@
 	border-radius: 50%;
 	animation: lccl-spin 0.7s linear infinite;
 	flex-shrink: 0;
+}
+
+.lccl-bdf--membership .lccl-mf__pay-spinner[hidden] {
+	display: none !important;
+}
+
+.lccl-bdf--membership .lccl-mf__pay-btn.is-loading .lccl-mf__pay-spinner,
+.lccl-bdf--membership .lccl-mf__pay-spinner:not([hidden]) {
+	display: inline-block !important;
 }
 
 @keyframes lccl-spin {

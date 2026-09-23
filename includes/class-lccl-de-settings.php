@@ -877,6 +877,16 @@ class LCCL_DE_Settings {
 			? esc_url_raw( trim( (string) $input['gateway_url'] ) )
 			: $before['gateway_url'];
 
+		// Enforce HTTPS protocol
+		if ( '' !== $gateway_url ) {
+			if ( 0 !== stripos( $gateway_url, 'https://' ) ) {
+				$gateway_url = preg_replace( '#^http://#i', 'https://', $gateway_url );
+				if ( 0 !== stripos( $gateway_url, 'https://' ) ) {
+					$gateway_url = 'https://' . ltrim( $gateway_url, '/' );
+				}
+			}
+		}
+
 		$api_version = array_key_exists( 'api_version', $input )
 			? (int) $input['api_version']
 			: $before['api_version'];

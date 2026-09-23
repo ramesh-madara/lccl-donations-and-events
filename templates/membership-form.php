@@ -233,7 +233,7 @@ $gateway_configured = LCCL_DE_MPGS_Client::is_configured();
 			id="lccl-mf-submit-btn"
 			<?php echo $gateway_configured ? '' : 'disabled aria-disabled="true"'; ?>
 		>
-			<span class="lccl-mf__pay-label"><?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?></span>
+			<span class="lccl-mf__pay-label" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>"><?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?></span>
 			<span class="lccl-mf__pay-spinner" aria-hidden="true" hidden></span>
 		</button>
 
