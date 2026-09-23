@@ -33,9 +33,19 @@ class LCCL_DE_Settings {
 	const OPTION_SPECTACLES = 'lccl_de_spectacles_notify';
 
 	/**
-	 * Option that stores MPGS payment gateway credentials.
+	 * Option that stores legacy MPGS payment gateway credentials.
 	 */
 	const OPTION_MPGS = 'lccl_de_mpgs';
+
+	/**
+	 * Option that stores multi-merchant MPGS payment gateway profiles.
+	 */
+	const OPTION_MPGS_PROFILES = 'lccl_de_mpgs_profiles';
+
+	const PROFILE_DONATIONS  = 'donations';
+	const PROFILE_MEMBERSHIP = 'membership';
+	const PROFILE_PROJECT_1  = 'project_1';
+	const PROFILE_PROJECT_2  = 'project_2';
 
 	/**
 	 * Nonce for saving.
@@ -739,13 +749,64 @@ class LCCL_DE_Settings {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Default / blank MPGS configuration.
+	 * Known MPGS profiles and default metadata.
 	 *
-	 * @return array{gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 * @return array<string, array{key:string,default_label:string,description:string}>
 	 */
-	private static function mpgs_defaults() {
+	public static function known_mpgs_profiles() {
 		return array(
-			'gateway_url'  => 'https://ap-gateway.mastercard.com/',
+			self::PROFILE_DONATIONS  => array(
+				'key'           => self::PROFILE_DONATIONS,
+				'default_label' => __( 'Donations', 'lccl-de' ),
+				'description'   => __( 'Merchant account for public donations and donor contributions.', 'lccl-de' ),
+			),
+			self::PROFILE_MEMBERSHIP => array(
+				'key'           => self::PROFILE_MEMBERSHIP,
+				'default_label' => __( 'Member Payments', 'lccl-de' ),
+				'description'   => __( 'Merchant account for club membership fee payments.', 'lccl-de' ),
+			),
+			self::PROFILE_PROJECT_1  => array(
+				'key'           => self::PROFILE_PROJECT_1,
+				'default_label' => __( 'Future Project 1', 'lccl-de' ),
+				'description'   => __( 'Dedicated merchant account reserved for upcoming community projects.', 'lccl-de' ),
+			),
+			self::PROFILE_PROJECT_2  => array(
+				'key'           => self::PROFILE_PROJECT_2,
+				'default_label' => __( 'Future Project 2', 'lccl-de' ),
+				'description'   => __( 'Dedicated merchant account reserved for special events and future campaigns.', 'lccl-de' ),
+			),
+		);
+	}
+
+	/**
+	 * Normalize a profile key, falling back to member payments.
+	 *
+	 * @param string $profile Candidate profile key.
+	 * @return string
+	 */
+	public static function normalize_mpgs_profile( $profile ) {
+		$profile = sanitize_key( (string) $profile );
+		$known   = array_keys( self::known_mpgs_profiles() );
+		if ( in_array( $profile, $known, true ) ) {
+			return $profile;
+		}
+
+		return self::PROFILE_MEMBERSHIP;
+	}
+
+	/**
+	 * Default / blank MPGS configuration for a profile.
+	 *
+	 * @param string $profile Profile key.
+	 * @return array{label:string,gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 */
+	private static function mpgs_defaults( $profile = self::PROFILE_MEMBERSHIP ) {
+		$known = self::known_mpgs_profiles();
+		$label = isset( $known[ $profile ]['default_label'] ) ? $known[ $profile ]['default_label'] : '';
+
+		return array(
+			'label'        => $label,
+			'gateway_url'  => 'https://cbcmpgs.gateway.mastercard.com/',
 			'api_version'  => LCCL_DE_MPGS_Client::DEFAULT_API_VERSION,
 			'merchant_id'  => '',
 			'api_password' => '',
@@ -753,39 +814,60 @@ class LCCL_DE_Settings {
 	}
 
 	/**
-	 * Retrieve MPGS credentials from wp_options (api_password decrypted).
+	 * Retrieve MPGS credentials for a profile from wp_options (api_password decrypted).
 	 *
-	 * @return array{gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 * @param string $profile Profile key (donations, membership, project_1, project_2).
+	 * @return array{label:string,gateway_url:string,api_version:int,merchant_id:string,api_password:string}
 	 */
-	public static function get_mpgs() {
-		$stored = get_option( self::OPTION_MPGS, array() );
-		if ( ! is_array( $stored ) ) {
-			$stored = array();
+	public static function get_mpgs( $profile = self::PROFILE_MEMBERSHIP ) {
+		$profile = self::normalize_mpgs_profile( $profile );
+
+		$stored_profiles = get_option( self::OPTION_MPGS_PROFILES, null );
+
+		// Transparent auto-migration from legacy single-profile option.
+		if ( ! is_array( $stored_profiles ) ) {
+			$stored_profiles = array();
+			$legacy = get_option( self::OPTION_MPGS, array() );
+			if ( is_array( $legacy ) && ! empty( $legacy ) ) {
+				$stored_profiles[ self::PROFILE_MEMBERSHIP ] = $legacy;
+			}
+			update_option( self::OPTION_MPGS_PROFILES, $stored_profiles );
 		}
 
-		$defaults = self::mpgs_defaults();
-		$cfg      = wp_parse_args( $stored, $defaults );
+		$stored_item = isset( $stored_profiles[ $profile ] ) && is_array( $stored_profiles[ $profile ] )
+			? $stored_profiles[ $profile ]
+			: array();
 
+		$defaults = self::mpgs_defaults( $profile );
+		$cfg      = wp_parse_args( $stored_item, $defaults );
+
+		$cfg['label']        = sanitize_text_field( (string) $cfg['label'] );
 		$cfg['gateway_url']  = esc_url_raw( (string) $cfg['gateway_url'] );
 		$cfg['api_version']  = (int) $cfg['api_version'];
 		$cfg['merchant_id']  = sanitize_text_field( (string) $cfg['merchant_id'] );
-		$cfg['api_password'] = self::decrypt_secret( isset( $stored['api_password'] ) ? (string) $stored['api_password'] : '' );
+		$cfg['api_password'] = self::decrypt_secret( isset( $stored_item['api_password'] ) ? (string) $stored_item['api_password'] : '' );
 
 		return $cfg;
 	}
 
 	/**
-	 * Persist MPGS credentials. api_password is AES-256-GCM encrypted at rest.
+	 * Persist MPGS credentials for a specific profile. api_password is AES-256-GCM encrypted.
 	 *
-	 * @param array $input Raw posted values.
+	 * @param array  $input   Raw posted values.
+	 * @param string $profile Target profile key.
 	 * @return array Saved (decrypted) values.
 	 */
-	public static function save_mpgs( $input ) {
+	public static function save_mpgs( $input, $profile = self::PROFILE_MEMBERSHIP ) {
 		if ( ! is_array( $input ) ) {
 			$input = array();
 		}
 
-		$before = self::get_mpgs();
+		$profile = self::normalize_mpgs_profile( $profile );
+		$before  = self::get_mpgs( $profile );
+
+		$label = array_key_exists( 'profile_label', $input )
+			? sanitize_text_field( trim( (string) $input['profile_label'] ) )
+			: $before['label'];
 
 		$gateway_url = array_key_exists( 'gateway_url', $input )
 			? esc_url_raw( trim( (string) $input['gateway_url'] ) )
@@ -799,7 +881,7 @@ class LCCL_DE_Settings {
 			? sanitize_text_field( trim( (string) $input['merchant_id'] ) )
 			: $before['merchant_id'];
 
-		// Only update the password if a non-empty value was posted.
+		// Only update password if a non-empty value was posted.
 		$api_password = $before['api_password'];
 		if ( array_key_exists( 'api_password', $input ) ) {
 			$posted = trim( (string) $input['api_password'] );
@@ -808,17 +890,36 @@ class LCCL_DE_Settings {
 			}
 		}
 
-		update_option(
-			self::OPTION_MPGS,
-			array(
-				'gateway_url'  => $gateway_url,
-				'api_version'  => $api_version,
-				'merchant_id'  => $merchant_id,
-				'api_password' => self::encrypt_secret( $api_password ),
-			)
+		$stored_profiles = get_option( self::OPTION_MPGS_PROFILES, array() );
+		if ( ! is_array( $stored_profiles ) ) {
+			$stored_profiles = array();
+		}
+
+		$stored_profiles[ $profile ] = array(
+			'label'        => $label,
+			'gateway_url'  => $gateway_url,
+			'api_version'  => $api_version,
+			'merchant_id'  => $merchant_id,
+			'api_password' => self::encrypt_secret( $api_password ),
 		);
 
+		update_option( self::OPTION_MPGS_PROFILES, $stored_profiles );
+
+		// Keep legacy single option in sync for membership profile.
+		if ( self::PROFILE_MEMBERSHIP === $profile ) {
+			update_option(
+				self::OPTION_MPGS,
+				array(
+					'gateway_url'  => $gateway_url,
+					'api_version'  => $api_version,
+					'merchant_id'  => $merchant_id,
+					'api_password' => self::encrypt_secret( $api_password ),
+				)
+			);
+		}
+
 		return array(
+			'label'        => $label,
 			'gateway_url'  => $gateway_url,
 			'api_version'  => $api_version,
 			'merchant_id'  => $merchant_id,
@@ -827,14 +928,41 @@ class LCCL_DE_Settings {
 	}
 
 	/**
-	 * Whether all required MPGS credentials are saved and non-empty.
+	 * Whether all required MPGS credentials for a profile are saved and non-empty.
 	 *
+	 * @param string $profile Profile key.
 	 * @return bool
 	 */
-	public static function mpgs_is_configured() {
-		$cfg = self::get_mpgs();
+	public static function mpgs_is_configured( $profile = self::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_mpgs( $profile );
 		return '' !== $cfg['gateway_url']
 			&& '' !== $cfg['merchant_id']
 			&& '' !== $cfg['api_password'];
+	}
+
+	/**
+	 * Retrieve list of all known profiles with their configuration and state.
+	 *
+	 * @return array<string, array{key:string,label:string,default_label:string,description:string,is_configured:bool,config:array}>
+	 */
+	public static function get_all_mpgs_profiles() {
+		$known    = self::known_mpgs_profiles();
+		$profiles = array();
+
+		foreach ( $known as $key => $meta ) {
+			$cfg   = self::get_mpgs( $key );
+			$label = ! empty( $cfg['label'] ) ? $cfg['label'] : $meta['default_label'];
+
+			$profiles[ $key ] = array(
+				'key'           => $key,
+				'label'         => $label,
+				'default_label' => $meta['default_label'],
+				'description'   => $meta['description'],
+				'is_configured' => self::mpgs_is_configured( $key ),
+				'config'        => $cfg,
+			);
+		}
+
+		return $profiles;
 	}
 }

@@ -51,8 +51,23 @@ class LCCL_DE_MPGS_Client {
 	 * }
 	 * @return array{session_id:string,success_indicator:string}|WP_Error
 	 */
-	public static function initiate_checkout( array $args ) {
-		$cfg = self::get_config();
+	/**
+	 * Send INITIATE_CHECKOUT to MPGS and return key fields on success.
+	 *
+	 * @param array  $args {
+	 *     Required values for the session request.
+	 *
+	 *     @type string $order_ref   Unique merchant order reference (e.g. 'LCCL-MF-20260923-ABC12345').
+	 *     @type float  $amount      Total in LKR (e.g. 22540.00).
+	 *     @type string $currency    ISO 4217 code (default 'LKR').
+	 *     @type string $return_url  Full URL MPGS redirects the browser to after payment.
+	 *     @type string $description Optional short description shown on the gateway page.
+	 * }
+	 * @param string $profile Merchant profile key (membership, donations, project_1, project_2).
+	 * @return array{session_id:string,success_indicator:string}|WP_Error
+	 */
+	public static function initiate_checkout( array $args, $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_config( $profile );
 		if ( is_wp_error( $cfg ) ) {
 			return $cfg;
 		}
@@ -113,10 +128,11 @@ class LCCL_DE_MPGS_Client {
 	 * Retrieve order details from MPGS to confirm a completed payment server-side.
 	 *
 	 * @param string $order_ref Merchant order reference.
-	 * @return array|WP_Error  Full decoded MPGS order array, or WP_Error.
+	 * @param string $profile   Merchant profile key.
+	 * @return array|WP_Error   Full decoded MPGS order array, or WP_Error.
 	 */
-	public static function retrieve_order( $order_ref ) {
-		$cfg = self::get_config();
+	public static function retrieve_order( $order_ref, $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_config( $profile );
 		if ( is_wp_error( $cfg ) ) {
 			return $cfg;
 		}
@@ -167,12 +183,13 @@ class LCCL_DE_MPGS_Client {
 	}
 
 	/**
-	 * Decrypted MPGS configuration from wp_options.
+	 * Decrypted MPGS configuration for a profile from wp_options.
 	 *
-	 * @return array{gateway_url:string,api_version:int,merchant_id:string,api_password:string}|WP_Error
+	 * @param string $profile Merchant profile key.
+	 * @return array{label:string,gateway_url:string,api_version:int,merchant_id:string,api_password:string}|WP_Error
 	 */
-	public static function get_config() {
-		$cfg = LCCL_DE_Settings::get_mpgs();
+	public static function get_config( $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
+		$cfg = LCCL_DE_Settings::get_mpgs( $profile );
 
 		if (
 			empty( $cfg['gateway_url'] ) ||
@@ -181,7 +198,11 @@ class LCCL_DE_MPGS_Client {
 		) {
 			return new WP_Error(
 				'lccl_mpgs_not_configured',
-				__( 'MPGS payment gateway is not fully configured. Please enter credentials in LCCL Programs → Payment Gateway.', 'lccl-de' )
+				sprintf(
+					/* translators: %s: profile label */
+					__( 'MPGS payment gateway is not configured for "%s". Please enter credentials in LCCL Programs → Payment Gateway.', 'lccl-de' ),
+					! empty( $cfg['label'] ) ? $cfg['label'] : $profile
+				)
 			);
 		}
 
@@ -189,24 +210,23 @@ class LCCL_DE_MPGS_Client {
 	}
 
 	/**
-	 * Whether all required credentials have been saved.
+	 * Whether all required credentials for a profile have been saved.
 	 *
+	 * @param string $profile Merchant profile key.
 	 * @return bool
 	 */
-	public static function is_configured() {
-		return ! is_wp_error( self::get_config() );
+	public static function is_configured( $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
+		return ! is_wp_error( self::get_config( $profile ) );
 	}
 
 	/**
 	 * Full JS URL for the modern Hosted Checkout script (v63+).
 	 *
-	 * Legacy: https://ap-gateway.mastercard.com/checkout/version/57/checkout.js
-	 * Modern: https://ap-gateway.mastercard.com/static/checkout/checkout.min.js
-	 *
+	 * @param string $profile Merchant profile key.
 	 * @return string
 	 */
-	public static function checkout_js_url() {
-		$cfg = self::get_config();
+	public static function checkout_js_url( $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_config( $profile );
 		if ( is_wp_error( $cfg ) ) {
 			return '';
 		}

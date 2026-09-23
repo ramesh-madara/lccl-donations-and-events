@@ -616,22 +616,30 @@ class LCCL_DE_Admin_Programs {
 	/**
 	 * Variables the gateway template expects.
 	 *
-	 * @param bool $from_get Read message/error from $_GET.
+	 * @param bool $from_get Read message/error/subtab from $_GET.
 	 * @return array
 	 */
 	private static function gateway_vars( $from_get ) {
 		$message = '';
 		$error   = '';
+		$subtab  = LCCL_DE_Settings::PROFILE_DONATIONS;
 
 		if ( $from_get ) {
 			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$error   = isset( $_GET['error'] ) ? sanitize_text_field( rawurldecode( wp_unslash( $_GET['error'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( ! empty( $_GET['subtab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$subtab = sanitize_key( wp_unslash( $_GET['subtab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			}
 		}
 
+		$subtab = LCCL_DE_Settings::normalize_mpgs_profile( $subtab );
+
 		return array(
-			'tab'     => self::TAB_GATEWAY,
-			'message' => $message,
-			'error'   => $error,
+			'tab'      => self::TAB_GATEWAY,
+			'subtab'   => $subtab,
+			'profiles' => LCCL_DE_Settings::get_all_mpgs_profiles(),
+			'message'  => $message,
+			'error'    => $error,
 		);
 	}
 
@@ -649,10 +657,18 @@ class LCCL_DE_Admin_Programs {
 
 		check_admin_referer( 'lccl_de_mpgs_save', 'lccl_de_mpgs_nonce' );
 
-		LCCL_DE_Settings::save_mpgs( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$profile = isset( $_POST['gateway_profile'] ) ? sanitize_key( wp_unslash( $_POST['gateway_profile'] ) ) : LCCL_DE_Settings::PROFILE_DONATIONS; // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$profile = LCCL_DE_Settings::normalize_mpgs_profile( $profile );
+
+		LCCL_DE_Settings::save_mpgs( wp_unslash( $_POST ), $profile ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		wp_safe_redirect(
-			self::gateway_url( array( 'message' => 'saved' ) )
+			self::gateway_url(
+				array(
+					'subtab'  => $profile,
+					'message' => 'saved',
+				)
+			)
 		);
 		exit;
 	}
