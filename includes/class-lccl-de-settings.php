@@ -762,18 +762,18 @@ class LCCL_DE_Settings {
 			),
 			self::PROFILE_MEMBERSHIP => array(
 				'key'           => self::PROFILE_MEMBERSHIP,
-				'default_label' => __( 'Member Payments', 'lccl-de' ),
+				'default_label' => __( 'Member Fees', 'lccl-de' ),
 				'description'   => __( 'Merchant account for club membership fee payments.', 'lccl-de' ),
 			),
 			self::PROFILE_PROJECT_1  => array(
 				'key'           => self::PROFILE_PROJECT_1,
-				'default_label' => __( 'Future Project 1', 'lccl-de' ),
-				'description'   => __( 'Dedicated merchant account reserved for upcoming community projects.', 'lccl-de' ),
+				'default_label' => __( 'Fundraisers', 'lccl-de' ),
+				'description'   => __( 'Dedicated merchant account for club fundraisers.', 'lccl-de' ),
 			),
 			self::PROFILE_PROJECT_2  => array(
 				'key'           => self::PROFILE_PROJECT_2,
-				'default_label' => __( 'Future Project 2', 'lccl-de' ),
-				'description'   => __( 'Dedicated merchant account reserved for special events and future campaigns.', 'lccl-de' ),
+				'default_label' => __( 'Future Project', 'lccl-de' ),
+				'description'   => __( 'Dedicated merchant account reserved for future projects.', 'lccl-de' ),
 			),
 		);
 	}
@@ -798,7 +798,7 @@ class LCCL_DE_Settings {
 	 * Default / blank MPGS configuration for a profile.
 	 *
 	 * @param string $profile Profile key.
-	 * @return array{label:string,gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 * @return array{label:string,enabled:int,gateway_url:string,api_version:int,merchant_id:string,api_password:string}
 	 */
 	private static function mpgs_defaults( $profile = self::PROFILE_MEMBERSHIP ) {
 		$known = self::known_mpgs_profiles();
@@ -806,6 +806,7 @@ class LCCL_DE_Settings {
 
 		return array(
 			'label'        => $label,
+			'enabled'      => 1,
 			'gateway_url'  => 'https://cbcmpgs.gateway.mastercard.com/',
 			'api_version'  => LCCL_DE_MPGS_Client::DEFAULT_API_VERSION,
 			'merchant_id'  => '',
@@ -817,7 +818,7 @@ class LCCL_DE_Settings {
 	 * Retrieve MPGS credentials for a profile from wp_options (api_password decrypted).
 	 *
 	 * @param string $profile Profile key (donations, membership, project_1, project_2).
-	 * @return array{label:string,gateway_url:string,api_version:int,merchant_id:string,api_password:string}
+	 * @return array{label:string,enabled:int,gateway_url:string,api_version:int,merchant_id:string,api_password:string}
 	 */
 	public static function get_mpgs( $profile = self::PROFILE_MEMBERSHIP ) {
 		$profile = self::normalize_mpgs_profile( $profile );
@@ -842,6 +843,7 @@ class LCCL_DE_Settings {
 		$cfg      = wp_parse_args( $stored_item, $defaults );
 
 		$cfg['label']        = sanitize_text_field( (string) $cfg['label'] );
+		$cfg['enabled']      = array_key_exists( 'enabled', $stored_item ) ? (int) ! empty( $stored_item['enabled'] ) : 1;
 		$cfg['gateway_url']  = esc_url_raw( (string) $cfg['gateway_url'] );
 		$cfg['api_version']  = (int) $cfg['api_version'];
 		$cfg['merchant_id']  = sanitize_text_field( (string) $cfg['merchant_id'] );
@@ -868,6 +870,8 @@ class LCCL_DE_Settings {
 		$label = array_key_exists( 'profile_label', $input )
 			? sanitize_text_field( trim( (string) $input['profile_label'] ) )
 			: $before['label'];
+
+		$enabled = ! empty( $input['enabled'] ) ? 1 : 0;
 
 		$gateway_url = array_key_exists( 'gateway_url', $input )
 			? esc_url_raw( trim( (string) $input['gateway_url'] ) )
@@ -897,6 +901,7 @@ class LCCL_DE_Settings {
 
 		$stored_profiles[ $profile ] = array(
 			'label'        => $label,
+			'enabled'      => $enabled,
 			'gateway_url'  => $gateway_url,
 			'api_version'  => $api_version,
 			'merchant_id'  => $merchant_id,
@@ -910,6 +915,7 @@ class LCCL_DE_Settings {
 			update_option(
 				self::OPTION_MPGS,
 				array(
+					'enabled'      => $enabled,
 					'gateway_url'  => $gateway_url,
 					'api_version'  => $api_version,
 					'merchant_id'  => $merchant_id,
@@ -920,6 +926,7 @@ class LCCL_DE_Settings {
 
 		return array(
 			'label'        => $label,
+			'enabled'      => $enabled,
 			'gateway_url'  => $gateway_url,
 			'api_version'  => $api_version,
 			'merchant_id'  => $merchant_id,
@@ -928,14 +935,28 @@ class LCCL_DE_Settings {
 	}
 
 	/**
-	 * Whether all required MPGS credentials for a profile are saved and non-empty.
+	 * Whether credentials have been entered for a profile (irrespective of toggle state).
+	 *
+	 * @param string $profile Profile key.
+	 * @return bool
+	 */
+	public static function mpgs_has_credentials( $profile = self::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_mpgs( $profile );
+		return '' !== $cfg['gateway_url']
+			&& '' !== $cfg['merchant_id']
+			&& '' !== $cfg['api_password'];
+	}
+
+	/**
+	 * Whether all required MPGS credentials for a profile are saved and the route is enabled.
 	 *
 	 * @param string $profile Profile key.
 	 * @return bool
 	 */
 	public static function mpgs_is_configured( $profile = self::PROFILE_MEMBERSHIP ) {
 		$cfg = self::get_mpgs( $profile );
-		return '' !== $cfg['gateway_url']
+		return ! empty( $cfg['enabled'] )
+			&& '' !== $cfg['gateway_url']
 			&& '' !== $cfg['merchant_id']
 			&& '' !== $cfg['api_password'];
 	}
@@ -946,20 +967,25 @@ class LCCL_DE_Settings {
 	 * @return array<string, array{key:string,label:string,default_label:string,description:string,is_configured:bool,config:array}>
 	 */
 	public static function get_all_mpgs_profiles() {
-		$known    = self::known_mpgs_profiles();
-		$profiles = array();
+		$known        = self::known_mpgs_profiles();
+		$old_defaults = array( 'Member Payments', 'Future Project 1', 'Future Project 2' );
+		$profiles     = array();
 
 		foreach ( $known as $key => $meta ) {
 			$cfg   = self::get_mpgs( $key );
-			$label = ! empty( $cfg['label'] ) ? $cfg['label'] : $meta['default_label'];
+			$label = ( ! empty( $cfg['label'] ) && ! in_array( $cfg['label'], $old_defaults, true ) )
+				? $cfg['label']
+				: $meta['default_label'];
 
 			$profiles[ $key ] = array(
-				'key'           => $key,
-				'label'         => $label,
-				'default_label' => $meta['default_label'],
-				'description'   => $meta['description'],
-				'is_configured' => self::mpgs_is_configured( $key ),
-				'config'        => $cfg,
+				'key'             => $key,
+				'label'           => $label,
+				'default_label'   => $meta['default_label'],
+				'description'     => $meta['description'],
+				'has_credentials' => self::mpgs_has_credentials( $key ),
+				'is_configured'   => self::mpgs_is_configured( $key ),
+				'enabled'         => ! empty( $cfg['enabled'] ),
+				'config'          => $cfg,
 			);
 		}
 

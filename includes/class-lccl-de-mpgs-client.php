@@ -191,6 +191,17 @@ class LCCL_DE_MPGS_Client {
 	public static function get_config( $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
 		$cfg = LCCL_DE_Settings::get_mpgs( $profile );
 
+		if ( empty( $cfg['enabled'] ) ) {
+			return new WP_Error(
+				'lccl_mpgs_disabled',
+				sprintf(
+					/* translators: %s: profile label */
+					__( 'Online payments for "%s" are currently turned off. Please contact the club administrator.', 'lccl-de' ),
+					! empty( $cfg['label'] ) ? $cfg['label'] : $profile
+				)
+			);
+		}
+
 		if (
 			empty( $cfg['gateway_url'] ) ||
 			empty( $cfg['merchant_id'] ) ||

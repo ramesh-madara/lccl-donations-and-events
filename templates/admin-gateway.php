@@ -53,9 +53,22 @@ $error   = isset( $error ) ? $error : '';
 	<div class="lccl-gw-subnav" role="tablist" aria-label="<?php esc_attr_e( 'Merchant Accounts', 'lccl-de' ); ?>">
 		<?php foreach ( $profiles as $p_key => $p_data ) : ?>
 			<?php
-			$is_active     = ( $p_key === $subtab );
-			$is_configured = ! empty( $p_data['is_configured'] );
-			$subtab_url    = LCCL_DE_Admin_Programs::gateway_url( array( 'subtab' => $p_key ) );
+			$is_active       = ( $p_key === $subtab );
+			$has_credentials = ! empty( $p_data['has_credentials'] );
+			$is_enabled      = ! empty( $p_data['enabled'] );
+			$is_configured   = ! empty( $p_data['is_configured'] );
+			$subtab_url      = LCCL_DE_Admin_Programs::gateway_url( array( 'subtab' => $p_key ) );
+
+			if ( $is_configured ) {
+				$dot_class = 'lccl-gw-subnav__dot--ok';
+				$dot_title = __( 'Active and accepting payments', 'lccl-de' );
+			} elseif ( $has_credentials && ! $is_enabled ) {
+				$dot_class = 'lccl-gw-subnav__dot--paused';
+				$dot_title = __( 'Temporarily turned off', 'lccl-de' );
+			} else {
+				$dot_class = 'lccl-gw-subnav__dot--empty';
+				$dot_title = __( 'Not yet configured', 'lccl-de' );
+			}
 			?>
 			<a
 				href="<?php echo esc_url( $subtab_url ); ?>"
@@ -67,16 +80,11 @@ $error   = isset( $error ) ? $error : '';
 				data-gw-subtab-link="<?php echo esc_attr( $p_key ); ?>"
 			>
 				<span
-					class="lccl-gw-subnav__dot <?php echo $is_configured ? 'lccl-gw-subnav__dot--ok' : 'lccl-gw-subnav__dot--empty'; ?>"
-					title="<?php echo $is_configured ? esc_attr__( 'Configured and ready', 'lccl-de' ) : esc_attr__( 'Not yet configured', 'lccl-de' ); ?>"
+					class="lccl-gw-subnav__dot <?php echo esc_attr( $dot_class ); ?>"
+					title="<?php echo esc_attr( $dot_title ); ?>"
 					aria-hidden="true"
 				></span>
 				<span class="lccl-gw-subnav__label"><?php echo esc_html( $p_data['label'] ); ?></span>
-				<?php if ( LCCL_DE_Settings::PROFILE_DONATIONS === $p_key ) : ?>
-					<span class="lccl-gw-subnav__badge"><?php esc_html_e( 'Donations', 'lccl-de' ); ?></span>
-				<?php elseif ( LCCL_DE_Settings::PROFILE_MEMBERSHIP === $p_key ) : ?>
-					<span class="lccl-gw-subnav__badge"><?php esc_html_e( 'Members', 'lccl-de' ); ?></span>
-				<?php endif; ?>
 			</a>
 		<?php endforeach; ?>
 	</div>
@@ -85,9 +93,11 @@ $error   = isset( $error ) ? $error : '';
 	<div class="lccl-gw-panels">
 		<?php foreach ( $profiles as $p_key => $p_data ) : ?>
 			<?php
-			$is_active     = ( $p_key === $subtab );
-			$is_configured = ! empty( $p_data['is_configured'] );
-			$cfg           = $p_data['config'];
+			$is_active       = ( $p_key === $subtab );
+			$has_credentials = ! empty( $p_data['has_credentials'] );
+			$is_enabled      = ! empty( $p_data['enabled'] );
+			$is_configured   = ! empty( $p_data['is_configured'] );
+			$cfg             = $p_data['config'];
 			?>
 			<div
 				class="lccl-gw-panel<?php echo $is_active ? ' is-active' : ''; ?>"
@@ -106,10 +116,15 @@ $error   = isset( $error ) ? $error : '';
 					<?php if ( $is_configured ) : ?>
 						<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--ok">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
-							<?php esc_html_e( 'Account configured and active', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Account active & accepting payments', 'lccl-de' ); ?>
+						</div>
+					<?php elseif ( $has_credentials && ! $is_enabled ) : ?>
+						<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--warn">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
+							<?php esc_html_e( 'Payment route temporarily turned off', 'lccl-de' ); ?>
 						</div>
 					<?php else : ?>
-						<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--warn">
+						<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--muted">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
 							<?php esc_html_e( 'Account not yet configured', 'lccl-de' ); ?>
 						</div>
@@ -123,6 +138,30 @@ $error   = isset( $error ) ? $error : '';
 
 					<table class="form-table lccl-prog__form-table" role="presentation">
 						<tbody>
+
+							<tr>
+								<th scope="row">
+									<label for="lccl-gw-enabled-<?php echo esc_attr( $p_key ); ?>"><?php esc_html_e( 'Payment Route Status', 'lccl-de' ); ?></label>
+								</th>
+								<td>
+									<label class="lccl-gw-switch">
+										<input
+											id="lccl-gw-enabled-<?php echo esc_attr( $p_key ); ?>"
+											name="enabled"
+											type="checkbox"
+											value="1"
+											<?php checked( ! empty( $cfg['enabled'] ) ); ?>
+										>
+										<span class="lccl-gw-switch__slider" aria-hidden="true"></span>
+										<span class="lccl-gw-switch__text">
+											<?php echo ! empty( $cfg['enabled'] ) ? esc_html__( 'Enabled (accepting payments)', 'lccl-de' ) : esc_html__( 'Turned off (payments paused)', 'lccl-de' ); ?>
+										</span>
+									</label>
+									<p class="description">
+										<?php esc_html_e( 'Turn this off to temporarily disable payments through this merchant account. When turned off, the public checkout form will display the configuration notice and disable the payment button.', 'lccl-de' ); ?>
+									</p>
+								</td>
+							</tr>
 
 							<tr>
 								<th scope="row">
@@ -196,7 +235,7 @@ $error   = isset( $error ) ? $error : '';
 										type="text"
 										class="regular-text"
 										value="<?php echo esc_attr( $cfg['merchant_id'] ); ?>"
-										placeholder="<?php esc_attr_e( 'e.g. COLOMLEADLKR', 'lccl-de' ); ?>"
+										placeholder="<?php esc_attr_e( 'Enter Merchant ID', 'lccl-de' ); ?>"
 										autocomplete="off"
 										required
 									>
@@ -319,6 +358,19 @@ $error   = isset( $error ) ? $error : '';
 			event.preventDefault();
 			var key = link.getAttribute( 'data-gw-subtab-link' );
 			switchSubtab( key, true );
+		} );
+	} );
+
+	// Dynamically update switch label when user toggles
+	var switches = root.querySelectorAll( '.lccl-gw-switch input' );
+	Array.prototype.forEach.call( switches, function( sw ) {
+		sw.addEventListener( 'change', function() {
+			var text = sw.closest( '.lccl-gw-switch' ).querySelector( '.lccl-gw-switch__text' );
+			if ( text ) {
+				text.textContent = sw.checked
+					? '<?php echo esc_js( __( 'Enabled (accepting payments)', 'lccl-de' ) ); ?>'
+					: '<?php echo esc_js( __( 'Turned off (payments paused)', 'lccl-de' ) ); ?>';
+			}
 		} );
 	} );
 } )();
