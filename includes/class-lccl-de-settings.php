@@ -603,7 +603,7 @@ class LCCL_DE_Settings {
 	 * Save toggles or send a test email.
 	 */
 	public static function handle_post() {
-		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! is_admin() || ! current_user_can( 'read' ) ) {
 			return;
 		}
 

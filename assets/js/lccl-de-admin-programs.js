@@ -18,7 +18,7 @@
 	}
 
 	function knownTab( tab ) {
-		return 'users' === tab || 'sms' === tab ? tab : 'programs';
+		return 'users' === tab || 'sms' === tab || 'gateway' === tab ? tab : 'programs';
 	}
 
 	function knownProgram( program ) {

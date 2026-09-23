@@ -75,7 +75,7 @@ class LCCL_DE_Admin_Programs {
 		add_menu_page(
 			__( 'LCCL Programs', 'lccl-de' ),
 			__( 'LCCL Programs', 'lccl-de' ),
-			'manage_options',
+			'read',
 			self::PAGE,
 			array( __CLASS__, 'render' ),
 			'dashicons-screenoptions',
@@ -86,7 +86,7 @@ class LCCL_DE_Admin_Programs {
 			self::PAGE,
 			__( 'LCCL Programs', 'lccl-de' ),
 			__( 'LCCL Programs', 'lccl-de' ),
-			'manage_options',
+			'read',
 			self::PAGE,
 			array( __CLASS__, 'render' )
 		);
@@ -196,7 +196,7 @@ class LCCL_DE_Admin_Programs {
 	 * Hub, reviewers, SMS, or a programme workspace. Tabs stay visible.
 	 */
 	public static function render() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'read' ) ) {
 			wp_die( esc_html__( 'You do not have permission to manage LCCL programs.', 'lccl-de' ) );
 		}
 
@@ -245,7 +245,7 @@ class LCCL_DE_Admin_Programs {
 		$tab     = self::normalize_tab( $tab );
 		$program = self::normalize_program_key( $program );
 
-		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab ) {
+		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab || self::TAB_GATEWAY === $tab ) {
 			$program = '';
 		}
 
@@ -273,7 +273,7 @@ class LCCL_DE_Admin_Programs {
 	 * Fetch a tab without reloading wp-admin.
 	 */
 	public static function ajax_tab() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( 'read' ) ) {
 			wp_send_json_error( array( 'message' => __( 'You do not have permission to manage LCCL programs.', 'lccl-de' ) ), 403 );
 		}
 
@@ -639,7 +639,7 @@ class LCCL_DE_Admin_Programs {
 	 * Handle POST from the Payment Gateway settings form.
 	 */
 	public static function handle_gateway_post() {
-		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! is_admin() || ! current_user_can( 'read' ) ) {
 			return;
 		}
 
