@@ -47,6 +47,11 @@ class LCCL_DE_Settings {
 	 */
 	const OPTION_PAYCENTER = 'lccl_de_paycenter';
 
+	/**
+	 * Option that stores multi-client CBC Paycenter Web 4.0 profiles.
+	 */
+	const OPTION_PAYCENTER_PROFILES = 'lccl_de_paycenter_profiles';
+
 	const PROFILE_DONATIONS  = 'donations';
 	const PROFILE_MEMBERSHIP = 'membership';
 	const PROFILE_PROJECT_1  = 'project_1';
@@ -1008,70 +1013,137 @@ class LCCL_DE_Settings {
 	}
 
 	// ------------------------------------------------------------------
-	// CBC Paycenter Web 4.0 credentials
+	// CBC Paycenter Web 4.0 credentials (Multi-client support)
 	// ------------------------------------------------------------------
 
 	/**
-	 * Default / blank CBC Paycenter configuration.
+	 * Known CBC Paycenter profiles and default metadata.
 	 *
-	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string}
+	 * @return array<string, array{key:string,default_label:string,description:string}>
 	 */
-	private static function paycenter_defaults() {
+	public static function known_paycenter_profiles() {
 		return array(
-			'label'      => __( 'CBC Paycenter', 'lccl-de' ),
-			'enabled'    => 0,
-			'endpoint'   => 'https://paycorp-cbc.prod.aws.paycorp.lk/rest/service/proxy/',
-			'client_id'  => '',
-			'auth_token' => '',
+			self::PROFILE_DONATIONS  => array(
+				'key'           => self::PROFILE_DONATIONS,
+				'default_label' => __( 'Donations', 'lccl-de' ),
+				'description'   => __( 'Client credentials for public donations and donor contributions.', 'lccl-de' ),
+			),
+			self::PROFILE_MEMBERSHIP => array(
+				'key'           => self::PROFILE_MEMBERSHIP,
+				'default_label' => __( 'Member Fees', 'lccl-de' ),
+				'description'   => __( 'Client credentials for club membership fee payments.', 'lccl-de' ),
+			),
+			self::PROFILE_PROJECT_1  => array(
+				'key'           => self::PROFILE_PROJECT_1,
+				'default_label' => __( 'Fundraisers', 'lccl-de' ),
+				'description'   => __( 'Dedicated client credentials for club fundraisers.', 'lccl-de' ),
+			),
+			self::PROFILE_PROJECT_2  => array(
+				'key'           => self::PROFILE_PROJECT_2,
+				'default_label' => __( 'Future Project', 'lccl-de' ),
+				'description'   => __( 'Dedicated client credentials reserved for future projects.', 'lccl-de' ),
+			),
 		);
 	}
 
 	/**
-	 * Retrieve CBC Paycenter credentials from wp_options (auth_token decrypted).
+	 * Normalize a Paycenter profile key, falling back to donations.
 	 *
-	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string}
+	 * @param string $profile Candidate profile key.
+	 * @return string
 	 */
-	public static function get_paycenter() {
-		$stored   = get_option( self::OPTION_PAYCENTER, array() );
-		$defaults = self::paycenter_defaults();
-
-		if ( ! is_array( $stored ) ) {
-			$stored = array();
+	public static function normalize_paycenter_profile( $profile ) {
+		$profile = sanitize_key( (string) $profile );
+		$known   = array_keys( self::known_paycenter_profiles() );
+		if ( in_array( $profile, $known, true ) ) {
+			return $profile;
 		}
 
-		$cfg = wp_parse_args( $stored, $defaults );
+		return self::PROFILE_DONATIONS;
+	}
 
-		$cfg['label']      = sanitize_text_field( (string) $cfg['label'] );
-		$cfg['enabled']    = array_key_exists( 'enabled', $stored ) ? (int) ! empty( $stored['enabled'] ) : 0;
-		$cfg['endpoint']   = esc_url_raw( (string) $cfg['endpoint'] );
-		$cfg['client_id']  = sanitize_text_field( (string) $cfg['client_id'] );
-		$cfg['auth_token'] = self::decrypt_secret( isset( $stored['auth_token'] ) ? (string) $stored['auth_token'] : '' );
+	/**
+	 * Default / blank CBC Paycenter configuration for a profile.
+	 *
+	 * @param string $profile Profile key.
+	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string,hmac_secret:string}
+	 */
+	private static function paycenter_defaults( $profile = self::PROFILE_MEMBERSHIP ) {
+		$known = self::known_paycenter_profiles();
+		$label = isset( $known[ $profile ]['default_label'] ) ? $known[ $profile ]['default_label'] : __( 'CBC Paycenter', 'lccl-de' );
+
+		return array(
+			'label'       => $label,
+			'enabled'     => ( self::PROFILE_MEMBERSHIP === $profile ) ? 1 : 0,
+			'endpoint'    => 'https://paycorp-cbc.prod.aws.paycorp.lk/rest/service/proxy/',
+			'client_id'   => '',
+			'auth_token'  => '',
+			'hmac_secret' => '',
+		);
+	}
+
+	/**
+	 * Retrieve CBC Paycenter credentials from wp_options (auth_token & hmac_secret decrypted).
+	 *
+	 * @param string $profile Target profile key (donations, membership, project_1, project_2).
+	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string,hmac_secret:string}
+	 */
+	public static function get_paycenter( $profile = self::PROFILE_MEMBERSHIP ) {
+		$profile = self::normalize_paycenter_profile( $profile );
+
+		$stored_profiles = get_option( self::OPTION_PAYCENTER_PROFILES, null );
+
+		// Transparent auto-migration from legacy single-profile option.
+		if ( ! is_array( $stored_profiles ) ) {
+			$stored_profiles = array();
+			$legacy = get_option( self::OPTION_PAYCENTER, array() );
+			if ( is_array( $legacy ) && ! empty( $legacy ) ) {
+				$stored_profiles[ self::PROFILE_MEMBERSHIP ] = $legacy;
+			}
+			update_option( self::OPTION_PAYCENTER_PROFILES, $stored_profiles );
+		}
+
+		$stored_item = isset( $stored_profiles[ $profile ] ) && is_array( $stored_profiles[ $profile ] )
+			? $stored_profiles[ $profile ]
+			: array();
+
+		$defaults = self::paycenter_defaults( $profile );
+		$cfg      = wp_parse_args( $stored_item, $defaults );
+
+		$cfg['label']       = sanitize_text_field( (string) $cfg['label'] );
+		$cfg['enabled']     = array_key_exists( 'enabled', $stored_item ) ? (int) ! empty( $stored_item['enabled'] ) : ( ( self::PROFILE_MEMBERSHIP === $profile ) ? 1 : 0 );
+		$cfg['endpoint']    = esc_url_raw( (string) $cfg['endpoint'] );
+		$cfg['client_id']   = sanitize_text_field( (string) $cfg['client_id'] );
+		$cfg['auth_token']  = self::decrypt_secret( isset( $stored_item['auth_token'] ) ? (string) $stored_item['auth_token'] : '' );
+		$cfg['hmac_secret'] = self::decrypt_secret( isset( $stored_item['hmac_secret'] ) ? (string) $stored_item['hmac_secret'] : '' );
 
 		return $cfg;
 	}
 
 	/**
-	 * Persist CBC Paycenter credentials. auth_token is AES-256-GCM encrypted.
+	 * Persist CBC Paycenter credentials. auth_token and hmac_secret are AES-256-GCM encrypted.
 	 *
-	 * @param array $input Raw posted values.
+	 * @param array  $input   Raw posted values.
+	 * @param string $profile Target profile key.
 	 * @return array Saved (decrypted) values.
 	 */
-	public static function save_paycenter( $input ) {
+	public static function save_paycenter( $input, $profile = self::PROFILE_MEMBERSHIP ) {
 		if ( ! is_array( $input ) ) {
 			$input = array();
 		}
 
-		$before = self::get_paycenter();
+		$profile = self::normalize_paycenter_profile( $profile );
+		$before  = self::get_paycenter( $profile );
 
 		$label = array_key_exists( 'paycenter_label', $input )
 			? sanitize_text_field( trim( (string) $input['paycenter_label'] ) )
-			: $before['label'];
+			: ( array_key_exists( 'profile_label', $input ) ? sanitize_text_field( trim( (string) $input['profile_label'] ) ) : $before['label'] );
 
-		$enabled = ! empty( $input['paycenter_enabled'] ) ? 1 : 0;
+		$enabled = ( ! empty( $input['paycenter_enabled'] ) || ! empty( $input['enabled'] ) ) ? 1 : 0;
 
 		$endpoint = array_key_exists( 'paycenter_endpoint', $input )
 			? esc_url_raw( trim( (string) $input['paycenter_endpoint'] ) )
-			: $before['endpoint'];
+			: ( array_key_exists( 'endpoint', $input ) ? esc_url_raw( trim( (string) $input['endpoint'] ) ) : $before['endpoint'] );
 
 		// Enforce HTTPS on the endpoint.
 		if ( '' !== $endpoint && 0 !== stripos( $endpoint, 'https://' ) ) {
@@ -1083,44 +1155,71 @@ class LCCL_DE_Settings {
 
 		$client_id = array_key_exists( 'paycenter_client_id', $input )
 			? sanitize_text_field( trim( (string) $input['paycenter_client_id'] ) )
-			: $before['client_id'];
+			: ( array_key_exists( 'client_id', $input ) ? sanitize_text_field( trim( (string) $input['client_id'] ) ) : $before['client_id'] );
 
 		// Only update auth_token if a non-empty value was posted.
-		$auth_token = $before['auth_token'];
-		if ( array_key_exists( 'paycenter_auth_token', $input ) ) {
-			$posted = trim( (string) $input['paycenter_auth_token'] );
-			if ( '' !== $posted ) {
-				$auth_token = $posted;
-			}
+		$auth_token  = $before['auth_token'];
+		$posted_auth = isset( $input['paycenter_auth_token'] ) ? trim( (string) $input['paycenter_auth_token'] ) : ( isset( $input['auth_token'] ) ? trim( (string) $input['auth_token'] ) : '' );
+		if ( '' !== $posted_auth ) {
+			$auth_token = $posted_auth;
 		}
 
-		update_option(
-			self::OPTION_PAYCENTER,
-			array(
-				'label'      => $label,
-				'enabled'    => $enabled,
-				'endpoint'   => $endpoint,
-				'client_id'  => $client_id,
-				'auth_token' => self::encrypt_secret( $auth_token ),
-			)
+		// Only update hmac_secret if a non-empty value was posted.
+		$hmac_secret = $before['hmac_secret'];
+		$posted_hmac = isset( $input['paycenter_hmac_secret'] ) ? trim( (string) $input['paycenter_hmac_secret'] ) : ( isset( $input['hmac_secret'] ) ? trim( (string) $input['hmac_secret'] ) : '' );
+		if ( '' !== $posted_hmac ) {
+			$hmac_secret = $posted_hmac;
+		}
+
+		$stored_profiles = get_option( self::OPTION_PAYCENTER_PROFILES, array() );
+		if ( ! is_array( $stored_profiles ) ) {
+			$stored_profiles = array();
+		}
+
+		$stored_profiles[ $profile ] = array(
+			'label'       => $label,
+			'enabled'     => $enabled,
+			'endpoint'    => $endpoint,
+			'client_id'   => $client_id,
+			'auth_token'  => self::encrypt_secret( $auth_token ),
+			'hmac_secret' => self::encrypt_secret( $hmac_secret ),
 		);
 
+		update_option( self::OPTION_PAYCENTER_PROFILES, $stored_profiles );
+
+		// Keep legacy single option in sync for membership profile.
+		if ( self::PROFILE_MEMBERSHIP === $profile ) {
+			update_option(
+				self::OPTION_PAYCENTER,
+				array(
+					'label'       => $label,
+					'enabled'     => $enabled,
+					'endpoint'    => $endpoint,
+					'client_id'   => $client_id,
+					'auth_token'  => self::encrypt_secret( $auth_token ),
+					'hmac_secret' => self::encrypt_secret( $hmac_secret ),
+				)
+			);
+		}
+
 		return array(
-			'label'      => $label,
-			'enabled'    => $enabled,
-			'endpoint'   => $endpoint,
-			'client_id'  => $client_id,
-			'auth_token' => $auth_token,
+			'label'       => $label,
+			'enabled'     => $enabled,
+			'endpoint'    => $endpoint,
+			'client_id'   => $client_id,
+			'auth_token'  => $auth_token,
+			'hmac_secret' => $hmac_secret,
 		);
 	}
 
 	/**
-	 * Whether credentials have been entered for CBC Paycenter.
+	 * Whether credentials have been entered for a CBC Paycenter profile.
 	 *
+	 * @param string $profile Target profile key.
 	 * @return bool
 	 */
-	public static function paycenter_has_credentials() {
-		$cfg = self::get_paycenter();
+	public static function paycenter_has_credentials( $profile = self::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_paycenter( $profile );
 		return '' !== $cfg['endpoint']
 			&& '' !== $cfg['client_id']
 			&& '' !== $cfg['auth_token'];
@@ -1129,13 +1228,42 @@ class LCCL_DE_Settings {
 	/**
 	 * Whether all required CBC Paycenter credentials are saved and route is enabled.
 	 *
+	 * @param string $profile Target profile key.
 	 * @return bool
 	 */
-	public static function paycenter_is_configured() {
-		$cfg = self::get_paycenter();
+	public static function paycenter_is_configured( $profile = self::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_paycenter( $profile );
 		return ! empty( $cfg['enabled'] )
 			&& '' !== $cfg['endpoint']
 			&& '' !== $cfg['client_id']
 			&& '' !== $cfg['auth_token'];
+	}
+
+	/**
+	 * Retrieve list of all known Paycenter profiles with their configuration and state.
+	 *
+	 * @return array<string, array{key:string,label:string,default_label:string,description:string,is_configured:bool,has_credentials:bool,enabled:bool,config:array}>
+	 */
+	public static function get_all_paycenter_profiles() {
+		$known    = self::known_paycenter_profiles();
+		$profiles = array();
+
+		foreach ( $known as $key => $meta ) {
+			$cfg   = self::get_paycenter( $key );
+			$label = ! empty( $cfg['label'] ) ? $cfg['label'] : $meta['default_label'];
+
+			$profiles[ $key ] = array(
+				'key'             => $key,
+				'label'           => $label,
+				'default_label'   => $meta['default_label'],
+				'description'     => $meta['description'],
+				'has_credentials' => self::paycenter_has_credentials( $key ),
+				'is_configured'   => self::paycenter_is_configured( $key ),
+				'enabled'         => ! empty( $cfg['enabled'] ),
+				'config'          => $cfg,
+			);
+		}
+
+		return $profiles;
 	}
 }

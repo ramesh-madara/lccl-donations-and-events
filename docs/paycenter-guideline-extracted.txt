@@ -1,0 +1,837 @@
+=== PAGE 1 ===
+ 
+ 
+Technical Guide 
+Paycenter Web 4.0 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+2025_V1.3 
+ 
+Bancstac Confidential 
+
+=== PAGE 2 ===
+ 
+ 
+ 
+Table Of Contents 
+Table Of Contents....................................................................................................................................................................2 
+1.​Introduction to Paycenter Web............................................................................................................................................3 
+2.​Reference points for the intended audience....................................................................................................................... 3 
+3.​Paycenter Web features.......................................................................................................................................................3 
+4.​Payment Configuration Options...........................................................................................................................................5 
+4.1.​Embedded Iframe........................................................................................................................................................ 5 
+Why use an Iframe?............................................................................................................................................................5 
+4.2.​Prepopulated Hosted Redirect Page (Prepopulated Hosted Payment Page)............................................................... 6 
+Why Use a Prepopulated Hosted Redirect?........................................................................................................................6 
+4.3.​Open Field Hosted Redirect Page (Open Field Hosted Payment Page)........................................................................ 6 
+Why use an Open field Hosted Redirect?........................................................................................................................... 6 
+4.4.​Form Post.....................................................................................................................................................................6 
+Why use a Form post?........................................................................................................................................................ 6 
+5.​Add Ons and Additional Features........................................................................................................................................ 7 
+5.1.​Tokenization..................................................................................................................................................................7 
+5.2.​3D Secure......................................................................................................................................................................8 
+Use with: Any payment method......................................................................................................................................... 8 
+5.3​Hosted HTML & CSS...................................................................................................................................................... 8 
+Use with: Iframes or Hosted Pages..................................................................................................................................... 8 
+6.​Transaction Processing.........................................................................................................................................................9 
+6.1.​Iframe Page.................................................................................................................................................................. 9 
+6.2.​Hosted Page................................................................................................................................................................. 9 
+6.3.​Form post.....................................................................................................................................................................9 
+6.4.​Payment Workflow.....................................................................................................................................................10 
+6.5.​Payment Initialization message structure.................................................................................................................. 11 
+6.6.​Payment Init Request Fields.......................................................................................................................................11 
+6.7.​ Payment init Response fields.................................................................................................................................... 13 
+6.8.​Payment Complete Message Structure......................................................................................................................14 
+6.8.1​Sample Payment_complete request generated by the API for you......................................................................... 14 
+6.9.​PAYMENT_COMPLETE Response................................................................................................................................15 
+6.9.1​Sample payment_Complete Response.................................................................................................................... 16 
+7.​Form Post.......................................................................................................................................................................... 17 
+7.1.​Form Post Data Fields.................................................................................................................................................17 
+8.​Tokenization......................................................................................................................................................................18 
+8.1.​Storing a card and obtaining a token......................................................................................................................... 18 
+8.1.1.​Tokenization Request.......................................................................................................................................... 18 
+8.1.2.​ Performing a purchase and obtaining token simultaneously............................................................................ 19 
+8.1.3.​Tokenization Responses...................................................................................................................................... 20 
+9.​Making Payments Using Tokens........................................................................................................................................ 21 
+10.​Support and Troubleshooting............................................................................................................................................ 22 
+ 
+
+=== PAGE 3 ===
+ 
+ Introduction to Paycenter Web 
+This guide provides technical information about integrating and configuring Bancstac’s Paycenter 
+Web Solution to your website or application. Paycenter Web v.4.0 allows merchants to process credit 
+card payments in a PCI DSS compliant manner. 
+ Reference points for the intended audience 
+This guide is intended to act as a reference point for web/application developers seeking to 
+implement Bancstac transaction functionality into merchant websites and for web applications using 
+the Bancstac API for Bancstac's REST web services. 
+Our API will generate the json messages for you and handle marshaling and unmarshaling of json 
+messages so that the merchant does not have to spend time writing code for these tasks. 
+ 
+Our Sample codes are currently available in Java, .NET and PHP. However, if you are using any other 
+language, you may directly integrate into our REST web services. 
+It is assumed that the parties implementing this product will be experienced in the development and 
+implementation of websites and web applications, this document is written principally toward 
+parties with such expertise. Therefore, you should understand, 
+●​ JSON based Web Services 
+●​ Https protocols 
+ 
+ Paycenter Web features 
+ 
+●​ Fully customized, responsive payment pages 
+●​ Card Tokenization can be enabled here for token creation 
+●​ Sample code provided for easy integration resources for your reference 
+      
+ 
+                                                                                                                                                                                                                           Page 3 
+
+=== PAGE 4 ===
+ 
+ 
+ 
+ 
+ 
+When setting up an instance of a Payment Page, you will be provided with the following information & 
+resources: 
+ 
+●​ This Documentation 
+●​ Client Id 
+●​ Authtoken 
+●​ HMAC Secret 
+●​ End point 
+●​ Response codes 
+●​ Sample Cards 
+ 
+ 
+We will require the following information from you: 
+ 
+●​ The Location of any CSS you want to be applied to an iframe or Hosted Page by Default, an 
+advanced Payment Page instance is set up with the following Configuration. 
+ 
+ 
+ 
+PLEASE ENSURE YOU USE THE CORRECT CLIENT ID, AUTHTOKEN, HMAC SECRET AND ENDPOINT AS 
+PROVIDED TO YOU BY BANCSTAC. 
+      
+ 
+                                                                                                                                                                                                                           Page 4 
+Parameter 
+Value 
+Permitted Card Types 
+Visa, Master Card, Amex, UPI, Diners, Discover 
+Page Type 
+Iframe 
+Transaction Type 
+Purchase 
+CVV Required 
+True 
+Tokenize 
+True 
+3D Secure 
+Disabled 
+Surcharging 
+Disabled 
+
+=== PAGE 5 ===
+ 
+ 
+ 
+ Payment Configuration Options 
+The Paycenter Web v.4.0 supports a wide variety of configurations to suit most Merchant 
+Implementations. Review the below options to consider which implementation style suits your 
+requirements. 
+ 
+Before you do the integration, please check that the server is having TLS 1.2 protocol enabled and 
+having the compatible curl version 7.3.0 or above. 
+ 
+4.1.​Embedded Iframe 
+ 
+●​ Why use an Iframe? 
+Iframes are a good blend of security and compliance while causing minimal disruption to page layout. 
+Iframe based payments are compliant according to PCI DSS v3, and can significantly reduce scope for 
+PCI compliance, unlike a Form Post or API. Iframe is the only method to keep your web service out of 
+scope while maintaining a seamless appearance to your payment page. 
+Bancstac’s iframe option is highly customizable, you can bring your own CSS and even HTML to fully 
+customize the page. 
+ 
+Example page with embedded iframe 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 5 
+
+=== PAGE 6 ===
+ 
+ 
+ 
+4.2.​Prepopulated Hosted Redirect Page (Prepopulated Hosted Payment Page)  
+●​ Why Use a Prepopulated Hosted Redirect? 
+The Prepopulated Hosted Redirect brings the user off the merchant website and onto a discrete secure 
+payment page hosted by Bancstac. The Prepopulated Hosted Redirect has many of the same 
+advantages of the iframe, being highly secure, fully PCI compliant and customizable using CSS and 
+HTML. This can be a good option for small merchants wishing to leverage the trust and brand visibility 
+of Bancstac. 
+ 
+4.3.​Open Field Hosted Redirect Page (Open Field Hosted Payment Page) 
+ 
+●​ Why use an Open field Hosted Redirect? 
+The Difference between the Open Field Hosted Redirect page and the Prepopulated one is that the 
+metadata fields remain open to be entered by the cardholder. This can be a simpler implementation 
+for small merchants. This is also useful where you need the cardholder to enter information about 
+their payment themselves. 
+ 
+ 
+4.4.​Form Post 
+ 
+●​ Why Use a Form Post? 
+This option is only for PCI compliant merchants only. The Form post gives the Merchant the most 
+control over the Customer Experience when making their payment. However, this comes at the 
+significant cost of bringing the entire web server, and its associated devices and servers on the same 
+network into PCI DSS scope. Form post is recommended only where the Merchant is already PCI DSS 
+certified. 
+      
+ 
+                                                                                                                                                                                                                           Page 6 
+
+=== PAGE 7 ===
+ 
+ 
+ Add Ons and Additional Features 
+In addition to the fundamental payment process, the Advanced Payment page also allows for a 
+number of separate features. 
+ 
+ 
+5.1.​Tokenization 
+ 
+In addition to processing Payments directly, Paycenter Web v.4.0 includes a tokenization service which 
+enables you to store credit cards in Bancstac’s secure encrypted vault. Here the card is stored in 
+Bancstac's encrypted PCI compliant servers and we issue the merchant a code called a Token which 
+represents the stored card. 
+Paycenter Web v.4.0 can be used for storing cards with Bancstac's secure CardVault and obtaining 
+tokens. However, in order to process tokens, you must use Real Time payments. 
+ 
+ 
+The Bancstac tokens are numeric non-mod10 values which retain the same first 6 and last 4 digits of 
+the credit card they replace. There is a 1 to 1 relationship between the token and the card. 
+This enables the merchant to use the token in the same fields and locations as a credit card, displaying 
+a masked token will look the same as a card and they will fit in the same database fields as a real card. 
+We will discuss Tokenization and making payments using Tokens in detail in section 08. 
+      
+ 
+                                                                                                                                                                                                                           Page 7 
+
+=== PAGE 8 ===
+ 
+ 
+ 
+ 
+5.2.​3D Secure 
+ 
+Use with: Any payment method 
+ 
+3D Secure is an additional security layer which allows the Issuer or the card to check that the 
+transaction about to take place isn’t fraudulent before the actual payment takes place. The other 
+major advantage of 3D secure is that the chargeback liability can be shifted away from the Merchant 
+and back to the issuer. This is a great tool for high-risk payments or where security is paramount. The 
+disadvantage of 3D secure is that the process can disrupt the checkout process. 
+Speak to your Bancstac Implementation Agent to get more information about how 3D secure can help 
+your business. 
+ 
+5.3​Hosted HTML & CSS 
+ 
+Use with: Iframes or Hosted Pages 
+ 
+One of the key advantages of Bancstac PCI Compliant payment solutions is that they remain PCI 
+compliant whilst being highly customizable and integrate seamlessly into your own website. 
+ 
+CSS: The Bancstac page can reference an externally available CSS file hosted in the merchant 
+environment. This way there is no need to contact Bancstac for any minor CSS updates. 
+ 
+HTML: Bancstac can also host an HTML template file to further customize the iframe or Hosted page, 
+ensuring the page fits within your style guides and branding. For security purposes, this needs to be 
+hosted by Bancstac, though can be easily updated. 
+      
+ 
+                                                                                                                                                                                                                           Page 8 
+
+=== PAGE 9 ===
+ 
+ 
+ Transaction Processing 
+Bancstac advanced payment pages offer three technical methods of processing transactions for 
+merchants. 
+ 
+6.1.​Iframe Page 
+Merchants will embed a Bancstac hosted page as an iframe to their website. Merchants can host CSS 
+for iframe, so they have full control over the look and feel of the page. A Merchant may also supply 
+Bancstac with a HTML template to improve page seamlessness. 
+ 
+6.2.​Hosted Page 
+Merchants will redirect the payer to the Bancstac hosted page. Bancstac URL will be visible on the 
+page. Like the iframe page, this method also enables merchants to have full control over the look and 
+feel of the page. 
+6.3.​Form post 
+ 
+Merchants who are already PCI DSS compliant can manage their own html and post payer's card 
+information to Bancstac. 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 9 
+
+=== PAGE 10 ===
+ 
+ 
+ 
+ 
+6.4.​Payment Workflow 
+ 
+The page is a highly customizable PCI compliant Payment, that uses two JSON based web service calls 
+and one https call in order to complete the Payment Request. 
+The First call is the Payment Initialization. 
+ 
+The response to this message is the Paymentinit Response. This response contains the 
+paymentPageUrl. This is the URL you would embed in the iframe or redirect to in the case of a redirect 
+method (Hosted payment pages). For the iframe option you will embed the URL as follows, 
+ 
+ 
+After the card data is entered by the customer in the capture page and submitted, the merchant will 
+receive a response to the Receipt URL specified in the Payment Initialization request 'Redirect' 
+parameter. This response will be via http GET with a parameter called ReqID. 
+The Second Call is the Payment Complete call. This call is the trigger to submit the full bundle 
+comprising the first two calls to Merchant’s acquiring Bank. The Merchant submits the ReqID and is 
+returned with a full transaction response, including any/all metadata sent in the first call, the Token, if 
+it was requested, sanitized version of the cardholder data (Truncated card, expiry date, no CVC). At this 
+point the payment is complete. 
+ 
+1.​ Merchant submits Payment_Init call. 
+2.​ Bancstac responds back with ReqID & Payment URL. 
+3.​ Merchant’s web server delivers the payment page to the 
+Browser, including the Payment URL embedded as an 
+iframe. 
+4.​ Cardholder 
+completes 
+payment, 
+cardholder data 
+captured by Bancstac. 
+5.​ Response returned to Receipt URL specified in Call one. 
+6.​ Merchant submits Payment_complete call. 
+7.​ Bancstac confirms payment processed, returned full 
+transaction bundle, including token if any. 
+8.​ Merchant Web server serves browser with receipt 
+pagePayment Initialization message structure. 
+      
+ 
+                                                                                                                                                                                                                           Page 10 
+
+=== PAGE 11 ===
+ 
+ 
+ 
+6.5.​Payment Initialization message structure 
+ 
+This method initializes a payment and returns a unique request id. Operation: PAYMENT_INIT 
+6.6.​Payment Init Request Fields 
+ 
+Property 
+Type 
+Description 
+clientId 
+Integer 
+ClientId provided by Bancstac required. 
+type 
+String 
+Options: PURCHASE, AUTHORISATION, TOKEN 
+Default: PURCHASE 
+tokenize 
+Boolean 
+Flag to tokenize cards with PURCHASE and 
+AUTHORISATION. If you only want to tokenize use 
+type as TOKEN. 
+tokenReference 
+String 
+Reference used in conjunction with a tokenization 
+request. 
+amount 
+Object 
+Transaction amount and currency.  
+paymentAmount: Type - Decimal  
+currency: 3 character ISO code required  
+(e.g., LKR, USD) 
+redirect 
+Object 
+Set of redirect URLs you provide for Bancstac to 
+redirect payers to the merchant website.  
+returnUrl: The payer is redirected to this URL after 
+submitting the payment. 
+clientRef 
+String 
+(50 Chars Max) 
+Merchant specified field 
+comment 
+String 
+(100 Chars Max) 
+Merchant specified field 
+extraData 
+Map 
+(100 Chars Max) 
+Merchant specified key value pair metadata. 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 11 
+
+=== PAGE 12 ===
+ 
+ 
+ 
+Sample Payment INIT Request generated by the API for you 
+ 
+POST /paycorp-webservice/InterfaceServlet 
+HTTP/1.1 Host: https://paycorp-cbc.prod.aws.paycorp.lk/rest/service/proxy  
+Content-Type: application/json  
+Cache-Control: no-cache 
+{ 
+    "version": "1.5", 
+    "msgId": "AD32B8FC-0D72-41D3-8F6B-51FB2107835E", 
+    "operation": "PAYMENT_INIT", 
+    "requestDate":"2024-09-02T09:31:43.920+0530", 
+    "validateOnly": false, 
+    "requestData": { 
+        "clientId": "14000190", 
+        "clientIdHash": "", 
+        "transactionType": "PURCHASE", 
+        "transactionAmount": { 
+            "totalAmount": 400, 
+            "paymentAmount": 0, 
+            "serviceFeeAmount": 0, 
+            "currency": "LKR" 
+        }, 
+        "redirect": { 
+            "returnUrl": "www.test.com", 
+            "cancelUrl": "", 
+            "returnMethod": "GET" 
+        }, 
+        "clientRef": "BancstacTest001", 
+        "comment": "", 
+        "tokenize": false, 
+        "cssLocation1": "", 
+        "cssLocation2": "", 
+        "useReliability": true, 
+        "extraData ": "{1,2,3}" 
+    } 
+ } 
+} 
+ 
+ 
+Note: To get a successful response in the test environment you need to put at least 200 (2.00) (your 
+currency) as PaymentAmount. And decimal values are not supported as payment amounts in the 
+testing environment. 
+i.e.: Use Amount Values like 200, 300, 5000 etc. 
+      
+ 
+                                                                                                                                                                                                                           Page 12 
+
+=== PAGE 13 ===
+ 
+ 
+ 
+ 
+6.7.​ Payment init Response fields 
+ 
+ 
+Property 
+Type 
+Description 
+reqid 
+Integer 
+A unique payment id provided by Bancstac. 
+expireAt 
+String 
+Time at which this request will expire. Currently valid
+for 30 mins. 
+paymentPageUrl 
+Object 
+URL to get Iframe and hosted payment pages, not 
+used for form post solutions. 
+ 
+ 
+Sample Payment_INIT Response raw json message 
+ 
+ 
+{ 
+    "msgId": "AD32B8FC-0D72-41D3-8F6B-51FB2107835E", 
+    "responseData": { 
+        "reqid": "pfp7QimaS12SQy2kSfBG", 
+        "expireAt": "2024-10-13T03:11:24.739+0000", 
+        "paymentPageUrl": 
+"https://paycorp-cbc.prod.aws.paycorp.lk/webinterface/app/payment?reqid=pfp7QimaS12SQy2kSfBG" 
+    } 
+} 
+ 
+ 
+ 
+Note: It is strongly recommended to implement additional validation during the integration process, 
+specifically incorporating the use of client references and request IDs. While the client reference is an 
+optional parameter provided to the merchant for assistance, the request ID is a unique identifier 
+generated for each payment transaction. We emphasize the importance of validating both client 
+references and request IDs from the merchant end to enhance the security and integrity of the 
+integration. 
+      
+ 
+                                                                                                                                                                                                                           Page 13 
+
+=== PAGE 14 ===
+ 
+ 
+ 
+ 
+6.8.​Payment Complete Message Structure 
+Completes payment and returns final transaction response. 
+Operation: PAYMENT_COMPLETE 
+Payment Complete Request Fields 
+Property 
+Type 
+Description 
+clientId 
+Integer 
+ClientId provided by Bancstac is Required. 
+Reqid 
+String 
+Request id provided by Bancstac in 
+payment_init request 
+ 
+6.8.1​Sample Payment_complete request generated by the API for you 
+ 
+ 
+ 
+POST /paycorp-webservice/InterfaceServlet HTTP/1.1 
+Host:https://paycorp-cbc.prod.aws.paycorp.lk/rest/service/proxy  
+Content-Type: application/json  
+Cache-Control: no-cache 
+ 
+{   
+    "version": "1.5", 
+    "operation":"PAYMENT_COMPLETE", 
+    "msgId": "AD32B8FC-0D72-41D3-8F6B-51FB2107835E", 
+    "requestDate":"2024-10-12T13:39:45.920+0530" , 
+    "validateOnly": false, 
+   "requestData":{   
+      "clientId":"14000189",       
+      "reqid": "pfp7QimaS12SQy2kSfBG"       
+    } 
+} 
+      
+ 
+                                                                                                                                                                                                                           Page 14 
+
+=== PAGE 15 ===
+ 
+ 
+ 
+6.9.​PAYMENT_COMPLETE Response 
+ 
+Property 
+Type 
+Description 
+clientId 
+Integer 
+ClientId provided by Bancstac. 
+type 
+String 
+Transaction type as provided in payment init 
+request 
+tokenize 
+Boolean 
+Flag to tokenize card with PURCHASE and 
+AUTHORISATION transaction type 
+tokenReference 
+String 
+Reference used in conjunction with 
+tokenization request. 
+creditCard 
+object 
+Credit Card info submitted by 
+payer cardType 
+holderName 
+number 
+expiry 
+amount 
+object 
+Transaction amount in CENTS and currency 
+type as submitted by merchant in payment 
+init request. E.g.: 
+initRequest.transactionAmount = new 
+TransactionAmount (1010,” AUD”); 
+clientRef 
+String 
+Merchant specified field 
+comment 
+String 
+Merchant specified field 
+extraData 
+String 
+Merchant specified key value pair metadata. 
+txnReference 
+Integer 
+Response Field - Bancstac 
+transaction reference 
+responseCode 
+String 
+Response Field - Bank Response Code 
+responseText 
+String 
+Response Field - Bank Response Test 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 15 
+
+=== PAGE 16 ===
+ 
+ 
+ 
+6.9.1​Sample payment_Complete Response 
+ 
+{ 
+    "msgId": "AD32B8FC-0D72-41D3-8F6B-51FB2107835E", 
+    "responseData": { 
+        "clientId": 14000189, 
+        "clientIdHash": "BL9ECcVL2hMR5K4yCogR2hbWcM", 
+        "transactionType": "PURCHASE", 
+        "creditCard": { 
+            "type": "VISA", 
+            "holderName": "Test", 
+            "number": "426445******4564", 
+            "expiry": "0135" 
+        }, 
+        "transactionAmount": { 
+            "totalAmount": 0, 
+            "originalAmount": 0, 
+            "paymentAmount": 400, 
+            "serviceFeeAmount": 0, 
+            "withholdingAmount": 0, 
+            "currency": "LKR" 
+        }, 
+        "clientRef": "BancstacTest001", 
+        "extraData": {}, 
+        "txnReference": "2024200000001024", 
+        "responseCode": "00", 
+        "responseText": "TRANSACTION APPROVED", 
+        "tokenized": false, 
+        "authCode": "623353", 
+        "cvcResponse": "", 
+        "authenticationValue": "AAUDBYWGkgAAAAGQFEKGdQAAAAA=", 
+        "dsTransID": "3a3057e2-f638-46f5-9948-82e88b35ef1b", 
+        "threeDSServerTransID": "710b9318-607d-4328-9cb5-bc984b54cb45", 
+        "transStatus": "Y", 
+        "transStatusCode": "", 
+        "transStatusDescription": "", 
+        "eci": "05", 
+        "qrTypes": "[null]" 
+    } 
+} 
+ 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 16 
+
+=== PAGE 17 ===
+ 
+ 
+ Form Post 
+ 
+7.1.​ Form Post Data Fields 
+The form post method is only for Merchants who are PCI compliant. 
+ 
+Fields For Form Post Request 
+ 
+Property 
+Type 
+Description 
+cardType 
+String 
+The card type entered by the customer.  
+Accepted cardTypes: 
+VISA, MASTERCARD, AMEX, UPI, DINERS 
+cardHolderName 
+String 
+The card holder name entered by the customer. 
+cardNo 
+String 
+The card number entered by the customer. 
+cardExpiry 
+String 
+The card expiry in format MM/YY. 
+cardSecureId 
+String 
+The CVC2/CVV2 number entered by the customer. 
+ 
+Sample Form Posting Request 
+ 
+ 
+After submitting, Bancstac will store payment details and redirect payer to return URL using return 
+method as provided in payment init request. Only parameters which will pass in the return URL will be 
+reqid. 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 17 
+
+=== PAGE 18 ===
+ 
+ 
+ Tokenization 
+8.1.​Storing a card and obtaining a token 
+8.1.1.​Tokenization Request 
+ 
+ 
+●​ JAVA 
+ 
+●​ .NET 
+ 
+●​ PHP 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 18 
+
+=== PAGE 19 ===
+ 
+ 
+ 
+ 
+8.1.2.​ Performing a purchase and obtaining token simultaneously 
+ 
+●​
+JAVA 
+ 
+ 
+●​
+.NET 
+●​
+PHP 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 19 
+
+=== PAGE 20 ===
+ 
+ 
+ 
+ 
+8.1.3.​Tokenization Responses 
+Successful Responses 
+The following responses can be returned upon successful token generation. 
+ 
+Response Code 
+Response Text 
+00 
+SUCCESS 
+01 
+TOKEN ALREADY EXISTS IN DATABASE - CARD EXPIRY UPDATED. 
+02 
+PREAUTH TRANSACTION FAILED, HOWEVER TOKEN WAS STILL GENERATED. 
+ 
+Unsuccessful Responses 
+The following responses indicate a non-successful result. 
+ 
+Response Code 
+Response Text 
+20 
+INSUFFICIENT PARAMETERS SUPPLIED TO PERFORM FORM SUBMISSION 
+21 
+INTERNAL ERROR; PLEASE CONTACT SUPPORT. 
+22 
+INVALID CLIENTID USED WITH PROVIDED SSL CLIENT CERTIFICATE. 
+23 
+UNABLE TO FIND AND DELETE STORED CARD WITH SUPPLIED TOKEN. 
+24 
+UNABLE TO UPDATE STORED CARD - INVALID EXPIRY OR FAILED PREAUTH. 
+25 
+UNABLE TO FIND AND UPDATE STORED CARD WITH SUPPLIED TOKEN 
+26 
+UNABLE TO FIND STORED CARD WITH SUPPLIED TOKEN 
+27 
+PREAUTH TRANSACTION FAILED, NO TOKEN GENERATED 
+28 
+ACTION NOT PERMITTED FOR SUPPLIED CLIENTID. 
+29 
+TOO MANY RETRIEVAL ATTEMPTS - PLEASE CONTACT SUPPORT 
+30 
+INVALID CARD DATA SUPPLIED. 
+ 
+      
+ 
+                                                                                                                                                                                                                           Page 20 
+
+=== PAGE 21 ===
+ 
+ 
+ Making Payments Using Tokens 
+In order to make payments using tokens you need to use the Real Time Payments option provided by 
+the same API. 
+Please note that you need to set up your credentials in the same manner as described before. 
+●​
+JAVA 
+ 
+ 
+●​
+NET 
+      
+ 
+                                                                                                                                                                                                                           Page 21 
+
+=== PAGE 22 ===
+ 
+ 
+ 
+●​
+PHP 
+ 
+ 
+ 
+ Support and Troubleshooting 
+If you need assistance or encounter any issues during integration, please contact our support team at 
+support@bancstac.com or call us on +94 115 143 143 
+      
+ 
+                                                                                                                                                                                                                           Page 22 

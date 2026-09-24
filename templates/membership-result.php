@@ -26,9 +26,15 @@ $form_url = remove_query_arg(
 	array(
 		LCCL_DE_Membership_Form::QA_RETURN,
 		LCCL_DE_Membership_Form::QA_ORDER_REF,
+		LCCL_DE_Membership_Form::QA_CANCEL,
+		'lccl_mpgs_return',
+		'lccl_mpgs_ref',
 		'reqid',
+		'ReqID',
+		'reqId',
+		'REQID',
 	),
-	get_permalink()
+	get_permalink() ?: home_url( '/' )
 );
 ?>
 <div class="lccl-bdf lccl-bdf--membership lccl-mf--result">

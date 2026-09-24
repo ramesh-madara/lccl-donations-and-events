@@ -632,12 +632,12 @@ class LCCL_DE_Admin_Programs {
 			}
 		}
 
-		$subtab = LCCL_DE_Settings::normalize_mpgs_profile( $subtab );
+		$subtab = LCCL_DE_Settings::normalize_paycenter_profile( $subtab );
 
 		return array(
 			'tab'      => self::TAB_GATEWAY,
 			'subtab'   => $subtab,
-			'profiles' => LCCL_DE_Settings::get_all_mpgs_profiles(),
+			'profiles' => LCCL_DE_Settings::get_all_paycenter_profiles(),
 			'message'  => $message,
 			'error'    => $error,
 		);
@@ -647,7 +647,7 @@ class LCCL_DE_Admin_Programs {
 	 * Handle POST from the Payment Gateway settings form.
 	 */
 	public static function handle_gateway_post() {
-		if ( ! is_admin() || ( ! current_user_can( 'manage_options' ) && ! current_user_can( 'edit_posts' ) ) ) {
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
@@ -655,12 +655,17 @@ class LCCL_DE_Admin_Programs {
 		if ( ! empty( $_POST['lccl_de_paycenter_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			check_admin_referer( 'lccl_de_paycenter_save', 'lccl_de_paycenter_nonce' );
 
-			LCCL_DE_Settings::save_paycenter( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$profile = isset( $_POST['gateway_profile'] )
+				? sanitize_key( wp_unslash( $_POST['gateway_profile'] ) )
+				: LCCL_DE_Settings::PROFILE_DONATIONS;
+			$profile = LCCL_DE_Settings::normalize_paycenter_profile( $profile );
+
+			LCCL_DE_Settings::save_paycenter( wp_unslash( $_POST ), $profile ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 			wp_safe_redirect(
 				self::gateway_url(
 					array(
-						'section' => 'paycenter',
+						'subtab'  => $profile,
 						'message' => 'saved',
 					)
 				)

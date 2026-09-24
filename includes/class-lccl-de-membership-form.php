@@ -73,12 +73,17 @@ class LCCL_DE_Membership_Form {
 	/**
 	 * Query arg that signals the gateway has returned the browser.
 	 */
-	const QA_RETURN = 'lccl_mpgs_return';
+	const QA_RETURN = 'lccl_payment_return';
 
 	/**
 	 * Query arg carrying the merchant order reference on the callback.
 	 */
-	const QA_ORDER_REF = 'lccl_mpgs_ref';
+	const QA_ORDER_REF = 'lccl_payment_ref';
+
+	/**
+	 * Query arg that signals the user cancelled payment on the gateway.
+	 */
+	const QA_CANCEL = 'lccl_payment_cancel';
 
 	/**
 	 * Hook the shortcode, WPBakery, and the early-init callback handler.
@@ -130,7 +135,11 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Gateway returned browser → run callback, show result
 		// ----------------------------------------------------------------
-		if ( ! empty( $_GET[ self::QA_RETURN ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$is_return = ! empty( $_GET[ self::QA_RETURN ] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			|| ! empty( $_GET['lccl_mpgs_return'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			|| ! empty( $_GET[ self::QA_CANCEL ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( $is_return ) {
 			$result = self::handle_callback();
 
 			ob_start();
@@ -300,17 +309,22 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Build return and cancel URLs
 		// ----------------------------------------------------------------
+		$base_url = get_permalink() ?: home_url( '/' );
+
 		$return_url = add_query_arg(
 			array(
 				self::QA_RETURN    => '1',
 				self::QA_ORDER_REF => $order_ref,
 			),
-			get_permalink()
+			$base_url
 		);
 
 		$cancel_url = add_query_arg(
-			array( 'lccl_mf_error' => rawurlencode( __( 'You cancelled the payment. No charge has been made.', 'lccl-de' ) ) ),
-			get_permalink()
+			array(
+				self::QA_CANCEL    => '1',
+				self::QA_ORDER_REF => $order_ref,
+			),
+			$base_url
 		);
 
 		$comment = sprintf(
@@ -405,14 +419,23 @@ class LCCL_DE_Membership_Form {
 	 * }
 	 */
 	public static function handle_callback() {
-		$order_ref = isset( $_GET[ self::QA_ORDER_REF ] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			? sanitize_text_field( wp_unslash( $_GET[ self::QA_ORDER_REF ] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			: '';
+		$order_ref = '';
+		if ( ! empty( $_GET[ self::QA_ORDER_REF ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_ref = sanitize_text_field( wp_unslash( $_GET[ self::QA_ORDER_REF ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		} elseif ( ! empty( $_GET['lccl_mpgs_ref'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_ref = sanitize_text_field( wp_unslash( $_GET['lccl_mpgs_ref'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
 
-		// reqid is passed by Bancstac to the returnUrl as ?reqid=…
-		$reqid = isset( $_GET['reqid'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			? sanitize_text_field( wp_unslash( $_GET['reqid'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			: '';
+		// reqid is passed by Bancstac to the returnUrl as ?reqid=… or ?ReqID=…
+		$reqid = '';
+		foreach ( array( 'reqid', 'ReqID', 'reqId', 'REQID' ) as $key ) {
+			if ( ! empty( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$reqid = sanitize_text_field( wp_unslash( $_GET[ $key ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				break;
+			}
+		}
+
+		$is_cancelled = ! empty( $_GET[ self::QA_CANCEL ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		$error_result = array(
 			'status'        => 'error',
@@ -458,10 +481,28 @@ class LCCL_DE_Membership_Form {
 			return $base_result;
 		}
 
+		// If already in a terminal failed or cancelled state, return that state immediately.
+		if ( 'failed' === $row['status'] || 'cancelled' === $row['status'] ) {
+			$base_result['status']        = $row['status'];
+			$base_result['error_message'] = ( 'cancelled' === $row['status'] )
+				? __( 'You cancelled the payment. No charge has been made.', 'lccl-de' )
+				: __( 'Your payment could not be completed. No charge has been made.', 'lccl-de' );
+			return $base_result;
+		}
+
 		// ----------------------------------------------------------------
-		// Handle cancellation (no reqid in URL means the user cancelled)
+		// Handle cancellation (cancelled flag in URL or no reqid provided)
 		// ----------------------------------------------------------------
-		if ( '' === $reqid ) {
+		if ( $is_cancelled || '' === $reqid ) {
+			if ( 'pending' === $row['status'] ) {
+				$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+					$table,
+					array( 'status' => 'cancelled', 'gateway_response' => 'User cancelled payment' ),
+					array( 'order_ref' => $order_ref ),
+					array( '%s', '%s' ),
+					array( '%s' )
+				);
+			}
 			$base_result['status'] = 'cancelled';
 			return $base_result;
 		}
@@ -469,16 +510,18 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Security: verify that the reqid matches the stored session_id
 		// The session_id column stores the reqid from PAYMENT_INIT.
+		// Must not be empty, and compared using hash_equals().
 		// ----------------------------------------------------------------
 		$stored_reqid = (string) $row['session_id'];
-		if ( '' !== $stored_reqid && ! hash_equals( $stored_reqid, $reqid ) ) {
-			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-				$table,
-				array( 'status' => 'failed', 'gateway_response' => 'reqid mismatch' ),
-				array( 'order_ref' => $order_ref ),
-				array( '%s', '%s' ),
-				array( '%s' )
+		if ( empty( $stored_reqid ) || ! hash_equals( $stored_reqid, $reqid ) ) {
+			error_log(
+				sprintf(
+					'[LCCL Paycenter Security Warning] Unauthorized callback attempt on order %s with invalid reqid %s',
+					$order_ref,
+					$reqid
+				)
 			);
+			// Do NOT mutate DB row to 'failed' from an unauthenticated request to prevent DoS.
 			$base_result['error_message'] = __( 'Payment verification failed. Please contact the club administrator.', 'lccl-de' );
 			return $base_result;
 		}
@@ -534,7 +577,7 @@ class LCCL_DE_Membership_Form {
 		// Verify: amount and currency returned by the gateway match billed amount
 		// ----------------------------------------------------------------
 		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'] ) ) {
-			$ta_returned = isset( $response_data['transactionAmount'] ) ? wp_json_encode( $response_data['transactionAmount'] ) : 'n/a';
+			$ta_returned  = isset( $response_data['transactionAmount'] ) ? wp_json_encode( $response_data['transactionAmount'] ) : 'n/a';
 			$mismatch_msg = sprintf(
 				'Amount/currency mismatch. Expected: %s LKR, Gateway returned: %s',
 				round( (float) $row['amount_lkr'] ),
@@ -589,7 +632,7 @@ class LCCL_DE_Membership_Form {
 		$receipt = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
 
 		// ----------------------------------------------------------------
-		// Atomic transition to 'paid' (prevents race conditions / duplicate emails)
+		// Atomic transition to 'paid' (strictly from 'pending' status)
 		// ----------------------------------------------------------------
 		$updated = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
@@ -599,7 +642,7 @@ class LCCL_DE_Membership_Form {
 				     gateway_receipt = %s,
 				     gateway_response = %s,
 				     paid_at = %s
-				 WHERE order_ref = %s AND status != 'paid'",
+				 WHERE order_ref = %s AND status = 'pending'",
 				$reqid,
 				$receipt,
 				wp_json_encode( $response_data ),
@@ -787,24 +830,31 @@ class LCCL_DE_Membership_Form {
 	 * @return string
 	 */
 	private static function client_ip() {
-		$ip = '';
+		$candidates = array();
 
+		// Cloudflare support.
+		if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
+			$candidates[] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_CF_CONNECTING_IP'] ) );
+		}
+
+		// Standard proxy header.
 		if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-			$parts     = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
-			$candidate = trim( $parts[0] );
+			$parts        = explode( ',', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) );
+			$candidates[] = trim( $parts[0] );
+		}
+
+		// Standard direct IP.
+		if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+			$candidates[] = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+		}
+
+		foreach ( $candidates as $candidate ) {
 			if ( filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
-				$ip = $candidate;
+				return $candidate;
 			}
 		}
 
-		if ( '' === $ip && ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
-			$candidate = sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
-			if ( filter_var( $candidate, FILTER_VALIDATE_IP ) ) {
-				$ip = $candidate;
-			}
-		}
-
-		return $ip;
+		return '0.0.0.0';
 	}
 
 	// ------------------------------------------------------------------
