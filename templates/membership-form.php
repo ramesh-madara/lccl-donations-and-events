@@ -20,7 +20,7 @@ $type  = $val( 'membership_type' );
 $count = $val( 'family_count' );
 $count = '' !== $count ? $count : '2';
 
-$gateway_configured = LCCL_DE_MPGS_Client::is_configured();
+$gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 ?>
 <div class="lccl-bdf lccl-bdf--membership">
 	<div class="lccl-membership-layout">

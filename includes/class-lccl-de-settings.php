@@ -813,7 +813,7 @@ class LCCL_DE_Settings {
 			'label'        => $label,
 			'enabled'      => 1,
 			'gateway_url'  => 'https://cbcmpgs.gateway.mastercard.com/',
-			'api_version'  => LCCL_DE_MPGS_Client::DEFAULT_API_VERSION,
+			'api_version'  => 66,
 			'merchant_id'  => '',
 			'api_password' => '',
 		);

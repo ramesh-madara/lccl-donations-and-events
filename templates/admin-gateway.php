@@ -28,6 +28,13 @@ $message = isset( $message ) ? $message : '';
 $error   = isset( $error ) ? $error : '';
 ?>
 
+<?php /* -----------------------------------------------------------------------
+ * MPGS (Mastercard Payment Gateway Services) legacy admin UI — commented out.
+ * The membership fee form now uses CBC Paycenter Web 4.0.
+ * To restore: remove the surrounding PHP comment block.
+ * ----------------------------------------------------------------------- */ ?>
+<?php if ( false ) : // MPGS legacy settings UI — kept for reference, not active ?>
+
 <div class="lccl-prog__gateway" data-lccl-gateway-root>
 
 	<?php if ( 'saved' === $message ) : ?>
@@ -317,7 +324,9 @@ $error   = isset( $error ) ? $error : '';
 		</li>
 	</ul>
 
-</div>
+</div>
+
+<?php endif; // end MPGS legacy settings UI ?>
 
 <?php
 // -----------------------------------------------------------------------
