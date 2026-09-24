@@ -375,10 +375,19 @@ class LCCL_DE_Membership_Form {
 				array( '%s' )
 			);
 
-			// Provide user-friendly masked error on frontend.
-			$user_msg = ( 'lccl_pc_disabled' === $init_result->get_error_code() )
-				? __( 'Online payment is currently unavailable. Please contact the club administrator.', 'lccl-de' )
-				: __( 'Unable to connect to the payment gateway. Please try again or contact the club administrator.', 'lccl-de' );
+			// Provide user-friendly masked error on frontend for regular users,
+			// but show the exact error to logged-in administrators for instant troubleshooting.
+			if ( current_user_can( 'manage_options' ) ) {
+				$user_msg = sprintf(
+					/* translators: %s: error details */
+					__( 'Gateway Error: %s', 'lccl-de' ),
+					$init_result->get_error_message()
+				);
+			} elseif ( 'lccl_pc_disabled' === $init_result->get_error_code() ) {
+				$user_msg = __( 'Online payment is currently unavailable. Please contact the club administrator.', 'lccl-de' );
+			} else {
+				$user_msg = __( 'Unable to connect to the payment gateway. Please try again or contact the club administrator.', 'lccl-de' );
+			}
 
 			wp_safe_redirect(
 				add_query_arg(

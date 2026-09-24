@@ -66,6 +66,7 @@ class LCCL_DE_Admin_Programs {
 		add_action( 'admin_init', array( __CLASS__, 'handle_gateway_post' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_action( 'wp_ajax_lccl_de_program_tab', array( __CLASS__, 'ajax_tab' ) );
+		add_action( 'wp_ajax_lccl_de_test_gateway', array( __CLASS__, 'ajax_test_gateway' ) );
 	}
 
 	/**
@@ -693,6 +694,28 @@ class LCCL_DE_Admin_Programs {
 			)
 		);
 		exit;
+	}
+
+	/**
+	 * AJAX test connection to Bancstac / Paycenter.
+	 */
+	public static function ajax_test_gateway() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'lccl-de' ) ), 403 );
+		}
+
+		check_ajax_referer( 'lccl_de_test_gateway', 'nonce' );
+
+		$profile = isset( $_POST['profile'] ) ? sanitize_key( wp_unslash( $_POST['profile'] ) ) : LCCL_DE_Settings::PROFILE_MEMBERSHIP;
+		$profile = LCCL_DE_Settings::normalize_paycenter_profile( $profile );
+
+		$result = LCCL_DE_Paycenter_Client::test_connection( $profile );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( array( 'message' => $result->get_error_message() ) );
+		}
+
+		wp_send_json_success( array( 'message' => __( 'Connection successful! Bancstac gateway accepted credentials.', 'lccl-de' ) ) );
 	}
 }
 

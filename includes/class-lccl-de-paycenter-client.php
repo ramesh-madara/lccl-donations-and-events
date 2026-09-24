@@ -104,40 +104,45 @@ class LCCL_DE_Paycenter_Client {
 		// clientRef must be ≤ 50 characters.
 		$client_ref = substr( $order_ref, 0, 50 );
 
+		$request_data = array(
+			'clientId'          => is_numeric( $cfg['client_id'] ) ? (int) $cfg['client_id'] : trim( (string) $cfg['client_id'] ),
+			'clientIdHash'      => '',
+			'transactionType'   => 'PURCHASE',
+			'transactionAmount' => array(
+				'totalAmount'      => $amount_cents,
+				'paymentAmount'    => $amount_cents,
+				'serviceFeeAmount' => 0,
+				'currency'         => 'LKR',
+			),
+			'redirect'          => array(
+				'returnUrl'    => $return_url,
+				'cancelUrl'    => $cancel_url ?: $return_url,
+				'returnMethod' => 'GET',
+			),
+			'clientRef'        => $client_ref,
+			'comment'          => $comment,
+			'tokenize'         => false,
+			'cssLocation1'     => '',
+			'cssLocation2'     => '',
+			'useReliability'   => true,
+		);
+
 		$body = array(
 			'version'      => self::API_VERSION,
 			'msgId'        => self::generate_msg_id(),
 			'operation'    => self::OP_INIT,
 			'requestDate'  => self::iso_date(),
-			'validateOnly' => false,
-			'requestData'  => array(
-				'clientId'          => (int) $cfg['client_id'],
-				'clientIdHash'      => '',
-				'transactionType'   => 'PURCHASE',
-				'transactionAmount' => array(
-					'totalAmount'     => $amount_cents,
-					'paymentAmount'   => $amount_cents,
-					'serviceFeeAmount' => 0,
-					'currency'        => 'LKR',
-				),
-				'redirect'          => array(
-					'returnUrl'    => $return_url,
-					'cancelUrl'    => $cancel_url,
-					'returnMethod' => 'GET',
-				),
-				'clientRef'        => $client_ref,
-				'comment'          => $comment,
-				'tokenize'         => false,
-				'cssLocation1'     => '',
-				'cssLocation2'     => '',
-				'useReliability'   => true,
-				'extraData'        => '',
-			),
+			'validateOnly' => ! empty( $args['validate_only'] ),
+			'requestData'  => $request_data,
 		);
 
 		$response = self::post( $cfg, $body );
 		if ( is_wp_error( $response ) ) {
 			return $response;
+		}
+
+		if ( ! empty( $args['validate_only'] ) ) {
+			return true;
 		}
 
 		// Validate that the response contains the expected fields.
@@ -200,7 +205,7 @@ class LCCL_DE_Paycenter_Client {
 			'requestDate'  => self::iso_date(),
 			'validateOnly' => false,
 			'requestData'  => array(
-				'clientId' => (int) $cfg['client_id'],
+				'clientId' => is_numeric( $cfg['client_id'] ) ? (int) $cfg['client_id'] : trim( (string) $cfg['client_id'] ),
 				'reqid'    => $reqid,
 			),
 		);
@@ -357,15 +362,40 @@ class LCCL_DE_Paycenter_Client {
 		return ! is_wp_error( self::get_config( $profile ) );
 	}
 
+	/**
+	 * Send a validateOnly PAYMENT_INIT to test connectivity and credentials.
+	 *
+	 * @param string $profile Profile key.
+	 * @return true|WP_Error True if gateway accepts credentials, or WP_Error on failure.
+	 */
+	public static function test_connection( $profile = LCCL_DE_Settings::PROFILE_MEMBERSHIP ) {
+		$cfg = self::get_config( $profile );
+		if ( is_wp_error( $cfg ) ) {
+			return $cfg;
+		}
+
+		return self::payment_init(
+			array(
+				'profile'       => $profile,
+				'order_ref'     => 'TEST-CONN-' . wp_rand( 1000, 9999 ),
+				'amount'        => 2.00,
+				'return_url'    => home_url( '/' ),
+				'cancel_url'    => home_url( '/' ),
+				'comment'       => 'Connection Test',
+				'validate_only' => true,
+			)
+		);
+	}
+
 	// ------------------------------------------------------------------
 	// Private helpers
 	// ------------------------------------------------------------------
 
 	/**
-	 * POST a JSON body to the Paycenter InterfaceServlet endpoint.
+	 * POST a JSON body to the Paycenter proxy endpoint.
 	 *
-	 * Sends both AUTHTOKEN and HTTP Basic Auth for maximum gateway compatibility.
-	 * If hmac_secret is configured, signs the request using SHA-256 HMAC.
+	 * Sends AUTHTOKEN and application/json headers (the headers accepted by Bancstac).
+	 * If hmac_secret is configured, signs the request using SHA-256 HMAC in the HMAC header.
 	 *
 	 * @param array $cfg  Config from get_config().
 	 * @param array $body PHP array to be JSON-encoded.
@@ -373,9 +403,14 @@ class LCCL_DE_Paycenter_Client {
 	 */
 	private static function post( array $cfg, array $body ) {
 		$endpoint = rtrim( trim( (string) $cfg['endpoint'] ), '/' );
-		// Ensure InterfaceServlet is appended once.
-		if ( false === stripos( $endpoint, 'InterfaceServlet' ) ) {
-			$url = $endpoint . '/paycorp-webservice/InterfaceServlet';
+
+		// Standard Bancstac Paycenter endpoint is /rest/service/proxy.
+		// If base domain only was supplied, append /rest/service/proxy.
+		if (
+			false === stripos( $endpoint, '/rest/service/proxy' ) &&
+			false === stripos( $endpoint, 'InterfaceServlet' )
+		) {
+			$url = $endpoint . '/rest/service/proxy';
 		} else {
 			$url = $endpoint;
 		}
@@ -384,19 +419,20 @@ class LCCL_DE_Paycenter_Client {
 
 		$headers = array(
 			'Content-Type'  => 'application/json',
+			'Accept'        => 'application/json',
 			'Cache-Control' => 'no-cache',
-			'AUTHTOKEN'     => $cfg['auth_token'],
-			'Authorization' => 'Basic ' . base64_encode( $cfg['client_id'] . ':' . $cfg['auth_token'] ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
+			'AUTHTOKEN'     => trim( (string) $cfg['auth_token'] ),
 		);
 
 		// If HMAC secret is configured, generate HMAC-SHA256 signature header.
 		if ( ! empty( $cfg['hmac_secret'] ) ) {
-			$body_for_hmac   = function_exists( 'mb_convert_encoding' )
+			$hmac_secret_clean = trim( (string) $cfg['hmac_secret'] );
+			$body_for_hmac     = function_exists( 'mb_convert_encoding' )
 				? mb_convert_encoding( $json_body, 'ISO-8859-1', 'UTF-8' )
 				: $json_body;
-			$secret_for_hmac = function_exists( 'mb_convert_encoding' )
-				? mb_convert_encoding( $cfg['hmac_secret'], 'ISO-8859-1', 'UTF-8' )
-				: $cfg['hmac_secret'];
+			$secret_for_hmac   = function_exists( 'mb_convert_encoding' )
+				? mb_convert_encoding( $hmac_secret_clean, 'ISO-8859-1', 'UTF-8' )
+				: $hmac_secret_clean;
 
 			$headers['HMAC'] = hash_hmac( 'sha256', $body_for_hmac, $secret_for_hmac );
 		}
@@ -429,10 +465,39 @@ class LCCL_DE_Paycenter_Client {
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
+		// Check for Paycenter explicit error object.
+		if ( is_array( $data ) && ! empty( $data['error'] ) ) {
+			$err_msg  = is_array( $data['error'] ) && isset( $data['error']['text'] )
+				? $data['error']['text']
+				: ( is_string( $data['error'] ) ? $data['error'] : 'Unknown gateway error' );
+			$err_code = is_array( $data['error'] ) && isset( $data['error']['code'] )
+				? 'lccl_pc_' . sanitize_key( (string) $data['error']['code'] )
+				: 'lccl_pc_error';
+
+			error_log( sprintf( '[LCCL Paycenter Gateway Error] %s: %s', $err_code, $err_msg ) );
+
+			return new WP_Error(
+				$err_code,
+				sprintf( __( 'Paycenter error: %s', 'lccl-de' ), esc_html( $err_msg ) )
+			);
+		}
+
 		if ( $code < 200 || $code >= 300 ) {
-			$err_msg = is_array( $data ) && ! empty( $data['responseData']['responseText'] )
-				? $data['responseData']['responseText']
-				: ( is_array( $data ) && ! empty( $data['message'] ) ? $data['message'] : 'HTTP ' . $code );
+			$err_msg = 'HTTP ' . $code;
+			if ( is_array( $data ) ) {
+				if ( ! empty( $data['error']['text'] ) ) {
+					$err_msg = $data['error']['text'];
+				} elseif ( ! empty( $data['responseData']['responseText'] ) ) {
+					$err_msg = $data['responseData']['responseText'];
+				} elseif ( ! empty( $data['message'] ) ) {
+					$err_msg = $data['message'];
+				}
+			} elseif ( is_string( $body ) && '' !== trim( $body ) ) {
+				$clean = wp_strip_all_tags( $body );
+				if ( '' !== trim( $clean ) ) {
+					$err_msg = substr( trim( $clean ), 0, 200 );
+				}
+			}
 
 			error_log( sprintf( '[LCCL Paycenter HTTP %d] Response: %s', $code, substr( (string) $body, 0, 500 ) ) );
 

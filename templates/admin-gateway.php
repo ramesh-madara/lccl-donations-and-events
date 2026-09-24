@@ -290,7 +290,7 @@ $error   = isset( $error ) ? $error : '';
 						</tbody>
 					</table>
 
-					<p class="submit">
+					<p class="submit" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
 						<button type="submit" class="button button-primary">
 							<?php
 							printf(
@@ -300,6 +300,12 @@ $error   = isset( $error ) ? $error : '';
 							);
 							?>
 						</button>
+						<?php if ( ! empty( $cfg['enabled'] ) && ! empty( $cfg['client_id'] ) && '' !== $cfg['auth_token'] ) : ?>
+							<button type="button" class="button button-secondary lccl-test-conn-btn" data-profile="<?php echo esc_attr( $p_key ); ?>">
+								<?php esc_html_e( 'Test Gateway Connection', 'lccl-de' ); ?>
+							</button>
+							<span class="lccl-test-status" id="lccl-test-status-<?php echo esc_attr( $p_key ); ?>" style="font-weight: 500;"></span>
+						<?php endif; ?>
 					</p>
 				</form>
 			</div>
@@ -400,6 +406,51 @@ $error   = isset( $error ) ? $error : '';
 				? '<?php echo esc_js( __( 'Enabled (accepting payments)', 'lccl-de' ) ); ?>'
 				: '<?php echo esc_js( __( 'Turned off (payments paused)', 'lccl-de' ) ); ?>';
 		}
+	} );
+
+	// Test Connection button handler
+	document.addEventListener( 'click', function( event ) {
+		var btn = event.target.closest ? event.target.closest( '.lccl-test-conn-btn' ) : null;
+		if ( ! btn ) {
+			return;
+		}
+		event.preventDefault();
+		var profile = btn.getAttribute( 'data-profile' );
+		var statusEl = document.getElementById( 'lccl-test-status-' + profile );
+		if ( ! statusEl ) {
+			return;
+		}
+
+		btn.disabled = true;
+		statusEl.textContent = '<?php echo esc_js( __( 'Connecting to gateway...', 'lccl-de' ) ); ?>';
+		statusEl.style.color = '#646970';
+
+		var formData = new FormData();
+		formData.append( 'action', 'lccl_de_test_gateway' );
+		formData.append( 'profile', profile );
+		formData.append( 'nonce', '<?php echo esc_js( wp_create_nonce( 'lccl_de_test_gateway' ) ); ?>' );
+
+		fetch( '<?php echo esc_url_raw( admin_url( 'admin-ajax.php' ) ); ?>', {
+			method: 'POST',
+			body: formData
+		} )
+		.then( function( res ) { return res.json(); } )
+		.then( function( json ) {
+			btn.disabled = false;
+			if ( json && json.success ) {
+				statusEl.textContent = '✓ ' + ( json.data && json.data.message ? json.data.message : '<?php echo esc_js( __( 'Connection successful!', 'lccl-de' ) ); ?>' );
+				statusEl.style.color = '#00a32a';
+			} else {
+				var msg = json && json.data && json.data.message ? json.data.message : '<?php echo esc_js( __( 'Connection failed.', 'lccl-de' ) ); ?>';
+				statusEl.textContent = '✗ ' + msg;
+				statusEl.style.color = '#d63638';
+			}
+		} )
+		.catch( function( err ) {
+			btn.disabled = false;
+			statusEl.textContent = '✗ <?php echo esc_js( __( 'Request error. Check network connection.', 'lccl-de' ) ); ?>';
+			statusEl.style.color = '#d63638';
+		} );
 	} );
 } )();
 </script>
