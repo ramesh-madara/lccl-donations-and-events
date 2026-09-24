@@ -1456,24 +1456,35 @@
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
 	display: none;
+	margin: 0 !important;
+	margin-top: 0 !important;
+	padding: 0 !important;
 	border-radius: 8px;
 	overflow: hidden;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
 	background: #ffffff;
+	align-self: start !important;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image {
-	display: block;
-	width: 100%;
-	height: auto;
+	display: block !important;
+	width: 100% !important;
+	height: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: none !important;
 	object-fit: cover;
+	vertical-align: top;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form {
+	margin: 0 !important;
+	margin-top: 0 !important;
 	overflow: hidden;
 	border: 3px solid #f7f7f7;
 	scroll-margin-top: 96px;
+	align-self: start !important;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__header {
@@ -1858,6 +1869,8 @@
 		grid-column: 1 !important;
 		width: 100% !important;
 		order: 1 !important;
+		margin-top: 0 !important;
+		align-self: start !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
@@ -1865,8 +1878,10 @@
 		grid-column: 2 !important;
 		width: 100% !important;
 		order: 2 !important;
-		position: sticky;
-		top: 32px;
+		margin-top: 0 !important;
+		align-self: start !important;
+		position: static !important;
+		top: auto !important;
 	}
 }
 
