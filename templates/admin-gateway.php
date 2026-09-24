@@ -200,7 +200,25 @@ $error   = isset( $error ) ? $error : '';
 
 							<tr>
 								<th scope="row">
-									<label for="lccl-pc-client-id-<?php echo esc_attr( $p_key ); ?>"><?php esc_html_e( 'Client ID', 'lccl-de' ); ?> <span class="lccl-prog__req">*</span></label>
+									<label for="lccl-pc-merchant-id-<?php echo esc_attr( $p_key ); ?>"><?php esc_html_e( 'Bank Merchant ID (MID)', 'lccl-de' ); ?></label>
+								</th>
+								<td>
+									<input
+										id="lccl-pc-merchant-id-<?php echo esc_attr( $p_key ); ?>"
+										name="paycenter_merchant_id"
+										type="text"
+										class="regular-text"
+										value="<?php echo esc_attr( isset( $cfg['merchant_id'] ) ? $cfg['merchant_id'] : '' ); ?>"
+										placeholder="<?php esc_attr_e( 'e.g. Commercial Bank MID', 'lccl-de' ); ?>"
+										autocomplete="off"
+									>
+									<p class="description"><?php esc_html_e( 'Your Commercial Bank merchant account number (MID) for this route. Stored for reference and bank reconciliation.', 'lccl-de' ); ?></p>
+								</td>
+							</tr>
+
+							<tr>
+								<th scope="row">
+									<label for="lccl-pc-client-id-<?php echo esc_attr( $p_key ); ?>"><?php esc_html_e( 'Bancstac Client ID', 'lccl-de' ); ?> <span class="lccl-prog__req">*</span></label>
 								</th>
 								<td>
 									<input
@@ -213,7 +231,7 @@ $error   = isset( $error ) ? $error : '';
 										autocomplete="off"
 										required
 									>
-									<p class="description"><?php esc_html_e( 'The numeric Client ID provided by Bancstac for this account.', 'lccl-de' ); ?></p>
+									<p class="description"><?php esc_html_e( 'The numeric Client ID provided by Bancstac for this account (sent in API requests).', 'lccl-de' ); ?></p>
 								</td>
 							</tr>
 

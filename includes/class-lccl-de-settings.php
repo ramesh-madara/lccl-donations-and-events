@@ -1076,6 +1076,7 @@ class LCCL_DE_Settings {
 			'label'       => $label,
 			'enabled'     => ( self::PROFILE_MEMBERSHIP === $profile ) ? 1 : 0,
 			'endpoint'    => 'https://paycorp-cbc.prod.aws.paycorp.lk/rest/service/proxy/',
+			'merchant_id' => '',
 			'client_id'   => '',
 			'auth_token'  => '',
 			'hmac_secret' => '',
@@ -1086,7 +1087,7 @@ class LCCL_DE_Settings {
 	 * Retrieve CBC Paycenter credentials from wp_options (auth_token & hmac_secret decrypted).
 	 *
 	 * @param string $profile Target profile key (donations, membership, project_1, project_2).
-	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string,hmac_secret:string}
+	 * @return array{label:string,enabled:int,endpoint:string,merchant_id:string,client_id:string,auth_token:string,hmac_secret:string}
 	 */
 	public static function get_paycenter( $profile = self::PROFILE_MEMBERSHIP ) {
 		$profile = self::normalize_paycenter_profile( $profile );
@@ -1113,6 +1114,7 @@ class LCCL_DE_Settings {
 		$cfg['label']       = sanitize_text_field( (string) $cfg['label'] );
 		$cfg['enabled']     = array_key_exists( 'enabled', $stored_item ) ? (int) ! empty( $stored_item['enabled'] ) : ( ( self::PROFILE_MEMBERSHIP === $profile ) ? 1 : 0 );
 		$cfg['endpoint']    = esc_url_raw( (string) $cfg['endpoint'] );
+		$cfg['merchant_id'] = sanitize_text_field( (string) $cfg['merchant_id'] );
 		$cfg['client_id']   = sanitize_text_field( (string) $cfg['client_id'] );
 		$cfg['auth_token']  = self::decrypt_secret( isset( $stored_item['auth_token'] ) ? (string) $stored_item['auth_token'] : '' );
 		$cfg['hmac_secret'] = self::decrypt_secret( isset( $stored_item['hmac_secret'] ) ? (string) $stored_item['hmac_secret'] : '' );
@@ -1153,6 +1155,10 @@ class LCCL_DE_Settings {
 			}
 		}
 
+		$merchant_id = array_key_exists( 'paycenter_merchant_id', $input )
+			? sanitize_text_field( trim( (string) $input['paycenter_merchant_id'] ) )
+			: ( array_key_exists( 'merchant_id', $input ) ? sanitize_text_field( trim( (string) $input['merchant_id'] ) ) : $before['merchant_id'] );
+
 		$client_id = array_key_exists( 'paycenter_client_id', $input )
 			? sanitize_text_field( trim( (string) $input['paycenter_client_id'] ) )
 			: ( array_key_exists( 'client_id', $input ) ? sanitize_text_field( trim( (string) $input['client_id'] ) ) : $before['client_id'] );
@@ -1180,6 +1186,7 @@ class LCCL_DE_Settings {
 			'label'       => $label,
 			'enabled'     => $enabled,
 			'endpoint'    => $endpoint,
+			'merchant_id' => $merchant_id,
 			'client_id'   => $client_id,
 			'auth_token'  => self::encrypt_secret( $auth_token ),
 			'hmac_secret' => self::encrypt_secret( $hmac_secret ),
@@ -1195,6 +1202,7 @@ class LCCL_DE_Settings {
 					'label'       => $label,
 					'enabled'     => $enabled,
 					'endpoint'    => $endpoint,
+					'merchant_id' => $merchant_id,
 					'client_id'   => $client_id,
 					'auth_token'  => self::encrypt_secret( $auth_token ),
 					'hmac_secret' => self::encrypt_secret( $hmac_secret ),
@@ -1206,6 +1214,7 @@ class LCCL_DE_Settings {
 			'label'       => $label,
 			'enabled'     => $enabled,
 			'endpoint'    => $endpoint,
+			'merchant_id' => $merchant_id,
 			'client_id'   => $client_id,
 			'auth_token'  => $auth_token,
 			'hmac_secret' => $hmac_secret,
