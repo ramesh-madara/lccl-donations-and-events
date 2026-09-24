@@ -305,11 +305,62 @@ class LCCL_DE_Notify {
 	}
 
 	/**
+	 * Send an arbitrary SMS through Dialog e-SMS.
+	 *
+	 * @param string $phone          Mobile number.
+	 * @param string $message        SMS text content.
+	 * @param int    $transaction_id Transaction ID.
+	 * @param string $program        Programme name.
+	 * @return bool
+	 */
+	public static function send_custom_sms( $phone, $message, $transaction_id = 0, $program = 'donations' ) {
+		self::set_program( $program );
+
+		$msisdn = LCCL_DE_Blood_Donor_Submissions::phone_to_msisdn( $phone );
+		if ( '' === $msisdn ) {
+			self::record(
+				array(
+					'kind'   => 'sms',
+					'ok'     => 0,
+					'detail' => 'Skipped: no valid mobile number on the request.',
+				)
+			);
+			return false;
+		}
+
+		if ( '' === LCCL_DE_Settings::sms_api_key() || '' === LCCL_DE_Settings::sms_password() ) {
+			self::record(
+				array(
+					'kind'   => 'sms',
+					'ok'     => 0,
+					'to'     => $msisdn,
+					'detail' => 'SMS username or password is not saved on the SMS tab.',
+				)
+			);
+			return false;
+		}
+
+		$payload = array(
+			'message'        => $message,
+			'transaction_id' => self::dialog_transaction_id( (int) $transaction_id ),
+			'msisdn'         => array(
+				array(
+					'mobile' => $msisdn,
+				),
+			),
+			'payment_method' => 0,
+		);
+
+		return (bool) self::dialog_send( $payload, $msisdn, false );
+	}
+
+	/**
 	 * POST the SMS, refreshing the bearer token once if Dialog says it expired.
 	 *
 	 * @param array  $payload JSON body.
 	 * @param string $phone   Log target.
 	 * @param bool   $retried Whether this is the token-refresh retry.
+	 * @return bool
 	 */
 	private static function dialog_send( array $payload, $phone, $retried ) {
 		$session = self::dialog_session( $retried );
@@ -322,7 +373,7 @@ class LCCL_DE_Notify {
 					'detail' => 'Dialog login failed. Check the SMS username and password.',
 				)
 			);
-			return;
+			return false;
 		}
 
 		$response = wp_remote_post(
@@ -346,7 +397,7 @@ class LCCL_DE_Notify {
 					'detail' => $response->get_error_message(),
 				)
 			);
-			return;
+			return false;
 		}
 
 		$code = (int) wp_remote_retrieve_response_code( $response );
@@ -356,8 +407,7 @@ class LCCL_DE_Notify {
 
 		if ( ! $retried && in_array( $err, array( 100, 105, 106 ), true ) ) {
 			delete_transient( self::TOKEN_TRANSIENT );
-			self::dialog_send( $payload, $phone, true );
-			return;
+			return (bool) self::dialog_send( $payload, $phone, true );
 		}
 
 		$ok = is_array( $body ) && isset( $body['status'] ) && 'success' === $body['status'];
@@ -370,6 +420,8 @@ class LCCL_DE_Notify {
 				'detail' => $ok ? 'Dialog accepted the SMS.' : self::dialog_error_detail( $body, $code, $raw ),
 			)
 		);
+
+		return $ok;
 	}
 
 	/**
