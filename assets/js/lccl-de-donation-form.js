@@ -1,5 +1,5 @@
 /**
- * Sample donation form: presets, total, required fields. Never submits payment.
+ * Donation form: presets, total, client validation, and CBC Paycenter submit handling.
  */
 ( function () {
 	'use strict';
@@ -281,8 +281,6 @@
 		syncTotal();
 
 		form.addEventListener( 'submit', function ( event ) {
-			event.preventDefault();
-
 			var required = form.querySelectorAll( '[required]' );
 			var firstInvalid = null;
 			var missingRequired = false;
@@ -325,6 +323,7 @@
 			}
 
 			if ( firstInvalid ) {
+				event.preventDefault();
 				if ( banner ) {
 					banner.hidden = ! missingRequired;
 				}
@@ -340,11 +339,25 @@
 			if ( banner ) {
 				banner.hidden = true;
 			}
-			if ( success ) {
-				success.hidden = false;
-				if ( success.scrollIntoView ) {
-					success.scrollIntoView( { behavior: 'smooth', block: 'nearest' } );
+
+			// Show loading spinner on submit, prevent double-submission.
+			var submitBtn = form.querySelector( '#lccl-df-submit-btn' ) || form.querySelector( '.lccl-df__submit' );
+			var payLabel  = submitBtn ? submitBtn.querySelector( '.lccl-df__pay-label' ) : null;
+			var paySpin   = submitBtn ? submitBtn.querySelector( '.lccl-df__pay-spinner' ) : null;
+
+			if ( submitBtn && ! submitBtn.disabled ) {
+				submitBtn.classList.add( 'is-loading' );
+				if ( payLabel ) {
+					payLabel.textContent = payLabel.getAttribute( 'data-loading-text' ) || 'Redirecting to payment...';
 				}
+				if ( paySpin ) {
+					paySpin.hidden = false;
+					paySpin.removeAttribute( 'hidden' );
+				}
+				setTimeout( function () {
+					submitBtn.disabled = true;
+					submitBtn.setAttribute( 'aria-disabled', 'true' );
+				}, 20 );
 			}
 		} );
 

@@ -2065,13 +2065,15 @@
 	cursor: not-allowed;
 }
 
-.lccl-bdf--membership .lccl-mf__pay-btn.is-loading {
+.lccl-bdf--membership .lccl-mf__pay-btn.is-loading,
+.lccl-bdf--donation .lccl-df__submit.is-loading {
 	opacity: 0.85;
 	cursor: wait;
 	pointer-events: none;
 }
 
-.lccl-bdf--membership .lccl-mf__pay-spinner {
+.lccl-bdf--membership .lccl-mf__pay-spinner,
+.lccl-bdf--donation .lccl-df__pay-spinner {
 	display: none;
 	width: 18px;
 	height: 18px;
@@ -2082,12 +2084,15 @@
 	flex-shrink: 0;
 }
 
-.lccl-bdf--membership .lccl-mf__pay-spinner[hidden] {
+.lccl-bdf--membership .lccl-mf__pay-spinner[hidden],
+.lccl-bdf--donation .lccl-df__pay-spinner[hidden] {
 	display: none !important;
 }
 
 .lccl-bdf--membership .lccl-mf__pay-btn.is-loading .lccl-mf__pay-spinner,
-.lccl-bdf--membership .lccl-mf__pay-spinner:not([hidden]) {
+.lccl-bdf--membership .lccl-mf__pay-spinner:not([hidden]),
+.lccl-bdf--donation .lccl-df__submit.is-loading .lccl-df__pay-spinner,
+.lccl-bdf--donation .lccl-df__pay-spinner:not([hidden]) {
 	display: inline-block !important;
 }
 
@@ -2096,7 +2101,8 @@
 }
 
 /* Secure payment note below the button */
-.lccl-bdf--membership .lccl-mf__secure-note {
+.lccl-bdf--membership .lccl-mf__secure-note,
+.lccl-bdf--donation .lccl-mf__secure-note {
 	display: flex;
 	align-items: center;
 	gap: 6px;

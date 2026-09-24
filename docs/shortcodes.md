@@ -82,7 +82,7 @@ Renders the community partnership and volunteer signup form. Submissions are sto
 ## 2. Public Contribution & Payment Forms
 
 ### `[lccl_donation_form]`
-Renders the public general donation form. Donors can select causes and contribution amounts.
+Renders the public general donation form with online card payment processed securely via Commercial Bank of Ceylon (CBC) Paycenter Web 4.0 (Bancstac).
 
 ```text
 [lccl_donation_form]
@@ -96,6 +96,8 @@ Renders the public general donation form. Donors can select causes and contribut
   - Quick-preset amount buttons: **1,000**, **5,000**, **10,000**, **25,000**, **50,000 LKR**, and **CUSTOM VALUE**.
   - Cause checkboxes: Diabetes Awareness, Vision & Eye Care, Hunger Relief, Environment, Childhood Cancer, Youth, Disaster Relief, Humanitarian.
   - Real-time client-side calculation and summary display.
+  - **Payment Gateway Integration**: Routes payments directly through the **Donations** credentials configured under **WP Admin → LCCL Programs → Payment Gateway → Donations**.
+  - **Return & Confirmation**: On successful payment, redirects back to the donation page with a top confirmation banner (showing donor name, formatted amount, and transaction receipt), updates the payment record in the database, and sends an automated donor email receipt.
 
 ---
 
