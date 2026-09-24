@@ -23,27 +23,27 @@ $count = '' !== $count ? $count : '2';
 $gateway_configured = LCCL_DE_MPGS_Client::is_configured();
 ?>
 <div class="lccl-bdf lccl-bdf--membership">
+	<div class="lccl-membership-layout">
+		<form
+			class="lccl-bdf__form lccl-membership__form"
+			method="post"
+			action="<?php echo esc_url( get_permalink() ); ?>"
+			data-rate="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::RATE ); ?>"
+			data-principal-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::PRINCIPAL_USD ); ?>"
+			data-family-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::FAMILY_USD ); ?>"
+			data-district="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::DISTRICT_LKR ); ?>"
+			data-club="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::CLUB_LKR ); ?>"
+			novalidate
+		>
+			<?php wp_nonce_field( LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD ); ?>
 
-	<?php if ( ! empty( $errors ) ) : ?>
-		<div class="lccl-mf__notice lccl-mf__notice--error" role="alert">
-			<?php foreach ( $errors as $err ) : ?>
-				<p><?php echo esc_html( $err ); ?></p>
-			<?php endforeach; ?>
-		</div>
-	<?php endif; ?>
-
-	<form
-		class="lccl-bdf__form"
-		method="post"
-		action="<?php echo esc_url( get_permalink() ); ?>"
-		data-rate="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::RATE ); ?>"
-		data-principal-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::PRINCIPAL_USD ); ?>"
-		data-family-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::FAMILY_USD ); ?>"
-		data-district="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::DISTRICT_LKR ); ?>"
-		data-club="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::CLUB_LKR ); ?>"
-		novalidate
-	>
-		<?php wp_nonce_field( LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD ); ?>
+			<?php if ( ! empty( $errors ) ) : ?>
+				<div class="lccl-mf__notice lccl-mf__notice--error" role="alert">
+					<?php foreach ( $errors as $err ) : ?>
+						<p><?php echo esc_html( $err ); ?></p>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
 
 		<?php if ( '' !== $atts['title'] || '' !== $atts['intro'] ) : ?>
 			<header class="lccl-bdf__header">
@@ -241,5 +241,15 @@ $gateway_configured = LCCL_DE_MPGS_Client::is_configured();
 			<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 			<?php esc_html_e( 'Payments are processed securely by Mastercard Payment Gateway Services.', 'lccl-de' ); ?>
 		</p>
-	</form>
+		</form>
+
+		<div class="lccl-membership__image-panel">
+			<img
+				class="lccl-membership__image"
+				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/membership-1.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/membership-1.jpg' ); ?>"
+				alt="<?php esc_attr_e( 'Annual Membership Fee - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
+				loading="lazy"
+			>
+		</div>
+	</div>
 </div>

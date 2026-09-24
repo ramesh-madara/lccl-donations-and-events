@@ -1158,11 +1158,43 @@
 
 .lccl-bdf.lccl-bdf--membership {
 	width: 100%;
-	max-width: 580px;
+	max-width: 1120px;
 	margin-left: auto;
 	margin-right: auto;
+	margin-bottom: 48px;
 	padding-bottom: 0;
+	border: none;
+}
+
+.lccl-bdf.lccl-bdf--membership .lccl-membership-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 24px;
+	align-items: start;
+}
+
+.lccl-bdf.lccl-bdf--membership .lccl-membership__image-panel {
+	display: none;
+	margin: 0 !important;
+	margin-top: 0 !important;
+	padding: 0 !important;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
+	background: #ffffff;
+	align-self: start !important;
+}
+
+.lccl-bdf.lccl-bdf--membership .lccl-membership__image {
+	display: block !important;
+	width: 100% !important;
+	height: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: none !important;
+	object-fit: cover;
+	vertical-align: top;
 }
 
 .lccl-bdf.lccl-bdf--membership .lccl-bdf__header {
@@ -1179,7 +1211,12 @@
 }
 
 .lccl-bdf.lccl-bdf--membership .lccl-bdf__form {
+	margin: 0 !important;
+	margin-top: 0 !important;
 	overflow: hidden;
+	border: 3px solid #f7f7f7;
+	scroll-margin-top: 96px;
+	align-self: start !important;
 }
 
 .lccl-bdf.lccl-bdf--membership .lccl-mf {
@@ -1896,7 +1933,8 @@
 
 @media (min-width: 901px) {
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps,
-	.lccl-bdf.lccl-bdf--donation .lccl-donation-layout {
+	.lccl-bdf.lccl-bdf--donation .lccl-donation-layout,
+	.lccl-bdf.lccl-bdf--membership .lccl-membership-layout {
 		display: grid !important;
 		grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
 		gap: 28px !important;
@@ -1904,7 +1942,8 @@
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form,
-	.lccl-bdf.lccl-bdf--donation .lccl-bdf__form {
+	.lccl-bdf.lccl-bdf--donation .lccl-bdf__form,
+	.lccl-bdf.lccl-bdf--membership .lccl-bdf__form {
 		grid-column: 1 !important;
 		width: 100% !important;
 		order: 1 !important;
@@ -1913,7 +1952,8 @@
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel,
-	.lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel {
+	.lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel,
+	.lccl-bdf.lccl-bdf--membership .lccl-membership__image-panel {
 		display: block !important;
 		grid-column: 2 !important;
 		width: 100% !important;
@@ -1927,18 +1967,21 @@
 
 @media (max-width: 900px) {
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps,
-	.lccl-bdf.lccl-bdf--donation .lccl-donation-layout {
+	.lccl-bdf.lccl-bdf--donation .lccl-donation-layout,
+	.lccl-bdf.lccl-bdf--membership .lccl-membership-layout {
 		display: block !important;
 		grid-template-columns: 1fr !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel,
-	.lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel {
+	.lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel,
+	.lccl-bdf.lccl-bdf--membership .lccl-membership__image-panel {
 		display: none !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form,
-	.lccl-bdf.lccl-bdf--donation .lccl-bdf__form {
+	.lccl-bdf.lccl-bdf--donation .lccl-bdf__form,
+	.lccl-bdf.lccl-bdf--membership .lccl-bdf__form {
 		display: block !important;
 		width: 100% !important;
 		order: 1 !important;
