@@ -317,7 +317,126 @@ $error   = isset( $error ) ? $error : '';
 		</li>
 	</ul>
 
+</div>
+
+<?php
+// -----------------------------------------------------------------------
+// CBC Paycenter Web 4.0 section
+// -----------------------------------------------------------------------
+$pc_cfg             = LCCL_DE_Settings::get_paycenter();
+$pc_has_credentials = LCCL_DE_Settings::paycenter_has_credentials();
+$pc_is_configured   = LCCL_DE_Settings::paycenter_is_configured();
+$pc_section         = isset( $_GET['section'] ) ? sanitize_key( wp_unslash( $_GET['section'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+$pc_message         = ( 'paycenter' === $pc_section ) ? $message : '';
+$pc_error           = ( 'paycenter' === $pc_section ) ? $error : '';
+?>
+
+<div class="lccl-prog__gateway lccl-prog__gateway--paycenter" style="margin-top:2.5rem;">
+
+	<?php if ( 'saved' === $pc_message ) : ?>
+		<div class="notice notice-success is-dismissible lccl-prog__flash">
+			<p><?php esc_html_e( 'CBC Paycenter settings saved successfully.', 'lccl-de' ); ?></p>
+		</div>
+	<?php elseif ( $pc_error ) : ?>
+		<div class="notice notice-error is-dismissible lccl-prog__flash">
+			<p><?php echo esc_html( $pc_error ); ?></p>
+		</div>
+	<?php endif; ?>
+
+	<div class="lccl-prog__section-header">
+		<h2 class="lccl-prog__section-title">
+			<?php esc_html_e( 'CBC Paycenter Web 4.0 (Active Gateway)', 'lccl-de' ); ?>
+		</h2>
+		<p class="lccl-prog__section-desc">
+			<?php esc_html_e( 'Configure the Commercial Bank of Ceylon Paycenter (Bancstac) credentials for the Membership Fee payment form. This is the active payment gateway.', 'lccl-de' ); ?>
+		</p>
+	</div>
+
+	<div class="lccl-gw-panel is-active" style="border:1px solid #dcdcde;border-radius:4px;padding:1.5rem;">
+
+		<div class="lccl-gw-panel__header">
+			<div class="lccl-gw-panel__title-wrap">
+				<h3 class="lccl-gw-panel__title"><?php echo esc_html( $pc_cfg['label'] ); ?></h3>
+				<p class="lccl-gw-panel__desc"><?php esc_html_e( 'Membership fee payments via CBC Paycenter Hosted Payment Page redirect.', 'lccl-de' ); ?></p>
+			</div>
+			<?php if ( $pc_is_configured ) : ?>
+				<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--ok">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+					<?php esc_html_e( 'Active &amp; accepting payments', 'lccl-de' ); ?>
+				</div>
+			<?php elseif ( $pc_has_credentials && ! $pc_cfg['enabled'] ) : ?>
+				<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--warn">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/></svg>
+					<?php esc_html_e( 'Payment route temporarily turned off', 'lccl-de' ); ?>
+				</div>
+			<?php else : ?>
+				<div class="lccl-prog__gateway-badge lccl-prog__gateway-badge--muted">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+					<?php esc_html_e( 'Not yet configured', 'lccl-de' ); ?>
+				</div>
+			<?php endif; ?>
+		</div>
+
+		<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::gateway_url( array( 'section' => 'paycenter' ) ) ); ?>" class="lccl-prog__gateway-form">
+			<?php wp_nonce_field( 'lccl_de_paycenter_save', 'lccl_de_paycenter_nonce' ); ?>
+			<input type="hidden" name="lccl_de_paycenter_save" value="1">
+			<table class="form-table lccl-prog__form-table" role="presentation">
+				<tbody>
+					<tr>
+						<th scope="row"><label for="lccl-pc-enabled"><?php esc_html_e( 'Payment Route Status', 'lccl-de' ); ?></label></th>
+						<td>
+							<label class="lccl-gw-switch">
+								<input id="lccl-pc-enabled" name="paycenter_enabled" type="checkbox" value="1" <?php checked( ! empty( $pc_cfg['enabled'] ) ); ?>>
+								<span class="lccl-gw-switch__slider" aria-hidden="true"></span>
+								<span class="lccl-gw-switch__text"><?php echo ! empty( $pc_cfg['enabled'] ) ? esc_html__( 'Enabled (accepting payments)', 'lccl-de' ) : esc_html__( 'Turned off (payments paused)', 'lccl-de' ); ?></span>
+							</label>
+							<p class="description"><?php esc_html_e( 'When turned off, the membership fee form will display a configuration notice and disable the payment button.', 'lccl-de' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="lccl-pc-label"><?php esc_html_e( 'Display Label', 'lccl-de' ); ?></label></th>
+						<td>
+							<input id="lccl-pc-label" name="paycenter_label" type="text" class="regular-text" value="<?php echo esc_attr( $pc_cfg['label'] ); ?>" placeholder="CBC Paycenter">
+							<p class="description"><?php esc_html_e( 'Custom name shown in admin screens only.', 'lccl-de' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="lccl-pc-endpoint"><?php esc_html_e( 'API Endpoint', 'lccl-de' ); ?> <span class="lccl-prog__req">*</span></label></th>
+						<td>
+							<input id="lccl-pc-endpoint" name="paycenter_endpoint" type="url" class="large-text" value="<?php echo esc_attr( $pc_cfg['endpoint'] ); ?>" placeholder="https://paycorp-cbc.prod.aws.paycorp.lk/rest/service/proxy/" required>
+							<p class="description"><?php esc_html_e( 'Base endpoint URL from Bancstac / CBC. Must be HTTPS.', 'lccl-de' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="lccl-pc-client-id"><?php esc_html_e( 'Client ID', 'lccl-de' ); ?> <span class="lccl-prog__req">*</span></label></th>
+						<td>
+							<input id="lccl-pc-client-id" name="paycenter_client_id" type="text" class="regular-text" value="<?php echo esc_attr( $pc_cfg['client_id'] ); ?>" placeholder="<?php esc_attr_e( 'Enter Client ID (e.g. 14000190)', 'lccl-de' ); ?>" autocomplete="off" required>
+							<p class="description"><?php esc_html_e( 'The numeric Client ID provided by Bancstac.', 'lccl-de' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="lccl-pc-auth-token"><?php esc_html_e( 'Auth Token', 'lccl-de' ); ?></label></th>
+						<td>
+							<input id="lccl-pc-auth-token" name="paycenter_auth_token" type="password" class="regular-text" value="" placeholder="<?php echo '' !== $pc_cfg['auth_token'] ? esc_attr__( '(saved - leave blank to keep)', 'lccl-de' ) : esc_attr__( 'Enter Auth Token provided by Bancstac', 'lccl-de' ); ?>" autocomplete="new-password">
+							<p class="description"><?php echo '' !== $pc_cfg['auth_token'] ? esc_html__( 'Auth Token saved. Leave blank to keep. Stored encrypted with AES-256-GCM.', 'lccl-de' ) : esc_html__( 'The Authtoken provided by Bancstac / CBC. Stored encrypted with AES-256-GCM.', 'lccl-de' ); ?></p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p class="submit"><button type="submit" class="button button-primary"><?php esc_html_e( 'Save CBC Paycenter Settings', 'lccl-de' ); ?></button></p>
+		</form>
+
+		<hr style="margin:1.5rem 0;">
+		<h3 style="margin:0 0 .5rem;"><?php esc_html_e( 'Integration Notes', 'lccl-de' ); ?></h3>
+		<ul class="lccl-prog__gateway-notes">
+			<li><?php printf( wp_kses( __( 'Whitelist the <strong>Return URL</strong> with Bancstac / CBC: <code>%s</code>', 'lccl-de' ), array( 'strong' => array(), 'code' => array() ) ), esc_html( add_query_arg( array( LCCL_DE_Membership_Form::QA_RETURN => '1', LCCL_DE_Membership_Form::QA_ORDER_REF => 'ORDER_REF' ), home_url( '/' ) ) ) ); ?></li>
+			<li><?php esc_html_e( 'Amount and currency are verified server-side in PAYMENT_COMPLETE against the stored DB record before marking any payment as paid.', 'lccl-de' ); ?></li>
+			<li><?php esc_html_e( 'The clientRef (order reference) is cross-checked in the PAYMENT_COMPLETE response as an additional anti-tampering measure.', 'lccl-de' ); ?></li>
+		</ul>
+	</div>
+
 </div>
+
 
 <script>
 ( function() {

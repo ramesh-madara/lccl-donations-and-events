@@ -2,7 +2,7 @@
 /**
  * Membership fee payment result page.
  *
- * Rendered after CBC Paycenter redirects the browser back with ?lccl_mpgs_return=1&reqid=….
+ * Rendered after MPGS redirects the browser back with ?lccl_mpgs_return=1.
  * Shows a success, failure, cancelled, or error state based on $result['status'].
  *
  * @package LCCL_Donations_And_Events
@@ -26,7 +26,7 @@ $form_url = remove_query_arg(
 	array(
 		LCCL_DE_Membership_Form::QA_RETURN,
 		LCCL_DE_Membership_Form::QA_ORDER_REF,
-		'reqid',
+		'resultIndicator',
 	),
 	get_permalink()
 );

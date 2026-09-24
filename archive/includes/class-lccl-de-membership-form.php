@@ -1,23 +1,16 @@
 <?php
 /**
- * Annual membership fee payment form with CBC Paycenter Web 4.0 integration.
+ * Annual membership fee payment form with MPGS Hosted Checkout integration.
  *
  * Flow:
  *  1. Member fills form and submits via POST → handle_submit()
- *  2. handle_submit() validates, inserts pending row, calls PAYMENT_INIT
- *  3. Browser is redirected to the Bancstac-hosted payment page URL
- *  4. Bancstac redirects browser back to returnUrl with ?reqid=…
- *  5. render() detects QA_RETURN → handle_callback() calls PAYMENT_COMPLETE,
- *     verifies responseCode / amount / currency / clientRef, updates the DB row,
- *     and shows templates/membership-result.php
- *
- * Security practices:
- *  – Amount, currency, and clientRef are all verified server-side in step 5.
- *  – Atomic SQL transition to 'paid' prevents race conditions.
- *  – IP-based rate limiting: max 10 initiations per IP per 10 minutes.
- *  – Timing-attack-safe comparison via hash_equals() in verify_client_ref().
- *  – All raw gateway error detail goes to error_log only; sanitised messages shown to user.
- *  – Nonce protection on form submission.
+ *  2. handle_submit() validates, inserts pending row, calls MPGS INITIATE_CHECKOUT
+ *  3. Browser is redirected to the same page URL with ?lccl_mpgs_session=… query args
+ *  4. render() detects query args → loads templates/membership-receipt.php which fires
+ *     Checkout.configure() + Checkout.showPaymentPage()
+ *  5. MPGS redirects browser back with ?lccl_mpgs_return=1&resultIndicator=…
+ *  6. render() calls handle_callback() which verifies the indicator, retrieves the
+ *     order server-side, updates the DB row, and shows templates/membership-result.php
  *
  * @package LCCL_Donations_And_Events
  */
@@ -71,6 +64,11 @@ class LCCL_DE_Membership_Form {
 	const NONCE_FIELD = 'lccl_mf_nonce';
 
 	/**
+	 * Query arg that signals we are on the receipt intermediate page.
+	 */
+	const QA_SESSION = 'lccl_mpgs_session';
+
+	/**
 	 * Query arg that signals the gateway has returned the browser.
 	 */
 	const QA_RETURN = 'lccl_mpgs_return';
@@ -98,13 +96,10 @@ class LCCL_DE_Membership_Form {
 	/**
 	 * Render the membership fee shortcode output.
 	 *
-	 * Depending on URL query args this renders one of two templates:
-	 *   1. templates/membership-result.php  – success / failure / cancelled result page
-	 *   2. templates/membership-form.php    – the default entry form
-	 *
-	 * NOTE: There is no intermediate receipt page in the CBC Paycenter flow.
-	 * After PAYMENT_INIT the user is redirected directly to the Bancstac-hosted
-	 * payment URL. On return Bancstac passes ?reqid=… via GET to the returnUrl.
+	 * Depending on URL query args this renders one of three templates:
+	 *   1. templates/membership-receipt.php  – intermediate Hosted Checkout page
+	 *   2. templates/membership-result.php   – success / failure result page
+	 *   3. templates/membership-form.php     – the default entry form
 	 *
 	 * @param array|string $atts Shortcode attributes.
 	 * @return string
@@ -128,7 +123,7 @@ class LCCL_DE_Membership_Form {
 		);
 
 		// ----------------------------------------------------------------
-		// Gateway returned browser → run callback, show result
+		// Step 3–4: Gateway returned browser → run callback, show result
 		// ----------------------------------------------------------------
 		if ( ! empty( $_GET[ self::QA_RETURN ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$result = self::handle_callback();
@@ -139,7 +134,31 @@ class LCCL_DE_Membership_Form {
 		}
 
 		// ----------------------------------------------------------------
-		// Default – show the entry form
+		// Step 2: Show MPGS Hosted Checkout receipt / loading page
+		// ----------------------------------------------------------------
+		if ( ! empty( $_GET[ self::QA_SESSION ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$session_id = sanitize_text_field( wp_unslash( $_GET[ self::QA_SESSION ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$order_ref  = isset( $_GET[ self::QA_ORDER_REF ] ) ? sanitize_text_field( wp_unslash( $_GET[ self::QA_ORDER_REF ] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+			// Enqueue the MPGS checkout.min.js dynamically in the footer.
+			$js_url = LCCL_DE_MPGS_Client::checkout_js_url();
+			if ( $js_url ) {
+				wp_enqueue_script(
+					'lccl-mpgs-checkout',
+					$js_url,
+					array(),
+					null, // No version – the URL itself is versioned by MPGS.
+					true  // footer
+				);
+			}
+
+			ob_start();
+			include LCCL_DE_PATH . 'templates/membership-receipt.php';
+			return ob_get_clean();
+		}
+
+		// ----------------------------------------------------------------
+		// Step 1: Default – show the entry form
 		// ----------------------------------------------------------------
 		wp_enqueue_script(
 			'lccl-de-membership-form',
@@ -153,7 +172,7 @@ class LCCL_DE_Membership_Form {
 		$errors = array();
 		$fees   = self::breakdown();
 
-		// Re-populate errors after a failed submit that didn't redirect away.
+		// Re-populate fields and errors after a failed submit that didn't redirect away.
 		if ( ! empty( $_GET['lccl_mf_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$errors[] = sanitize_text_field( wp_unslash( $_GET['lccl_mf_error'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
@@ -168,8 +187,8 @@ class LCCL_DE_Membership_Form {
 	// ------------------------------------------------------------------
 
 	/**
-	 * Fired on template_redirect. Intercepts form POST, initiates the payment,
-	 * and redirects the browser to the Bancstac-hosted payment page URL.
+	 * Fired on template_redirect. Intercepts form POST and starts the
+	 * MPGS session, then redirects to the receipt intermediate page.
 	 */
 	public static function maybe_handle_submit() {
 		if ( 'POST' !== strtoupper( sanitize_text_field( isset( $_SERVER['REQUEST_METHOD'] ) ? $_SERVER['REQUEST_METHOD'] : 'GET' ) ) ) {
@@ -203,8 +222,8 @@ class LCCL_DE_Membership_Form {
 	}
 
 	/**
-	 * Validate posted fields, insert a pending payment row, call PAYMENT_INIT,
-	 * and redirect to the Bancstac-hosted payment page or back to form with an error.
+	 * Validate posted fields, insert a pending payment row, call INITIATE_CHECKOUT,
+	 * and redirect to the receipt page or back to the form with an error.
 	 */
 	private static function handle_submit() {
 		// ----------------------------------------------------------------
@@ -238,7 +257,7 @@ class LCCL_DE_Membership_Form {
 			$errors[] = __( 'Please select a membership type.', 'lccl-de' );
 		}
 
-		if ( ! LCCL_DE_Paycenter_Client::is_configured() ) {
+		if ( ! LCCL_DE_MPGS_Client::is_configured() ) {
 			$errors[] = __( 'Online payment is not available yet. Please contact the club administrator.', 'lccl-de' );
 		}
 
@@ -253,7 +272,7 @@ class LCCL_DE_Membership_Form {
 		}
 
 		// ----------------------------------------------------------------
-		// Calculate fee (server-side only – never accepted from POST)
+		// Calculate fee
 		// ----------------------------------------------------------------
 		$breakdown = self::breakdown( $membership_type, $family_count );
 		$amount    = $breakdown['total'];
@@ -298,7 +317,7 @@ class LCCL_DE_Membership_Form {
 		}
 
 		// ----------------------------------------------------------------
-		// Build return and cancel URLs
+		// Call MPGS INITIATE_CHECKOUT
 		// ----------------------------------------------------------------
 		$return_url = add_query_arg(
 			array(
@@ -308,52 +327,44 @@ class LCCL_DE_Membership_Form {
 			get_permalink()
 		);
 
-		$cancel_url = add_query_arg(
-			array( 'lccl_mf_error' => rawurlencode( __( 'You cancelled the payment. No charge has been made.', 'lccl-de' ) ) ),
-			get_permalink()
-		);
-
-		$comment = sprintf(
+		$description = sprintf(
 			/* translators: 1: first name, 2: last name */
-			__( 'LCCL Annual Membership Fee - %1$s %2$s', 'lccl-de' ),
+			__( 'LCCL Annual Membership Fee – %1$s %2$s', 'lccl-de' ),
 			$first_name,
 			$last_name
 		);
 
-		// ----------------------------------------------------------------
-		// Call PAYMENT_INIT (CBC Paycenter)
-		// ----------------------------------------------------------------
-		$init_result = LCCL_DE_Paycenter_Client::payment_init(
+		$session = LCCL_DE_MPGS_Client::initiate_checkout(
 			array(
-				'order_ref'  => $order_ref,
-				'amount'     => $amount,
-				'return_url' => $return_url,
-				'cancel_url' => $cancel_url,
-				'comment'    => $comment,
+				'order_ref'   => $order_ref,
+				'amount'      => $amount,
+				'currency'    => 'LKR',
+				'return_url'  => $return_url,
+				'description' => $description,
 			)
 		);
 
-		if ( is_wp_error( $init_result ) ) {
+		if ( is_wp_error( $session ) ) {
 			// Log technical details securely to server logs for diagnostics.
 			error_log(
 				sprintf(
-					'[LCCL Paycenter Error] Order %s failed PAYMENT_INIT: %s',
+					'[LCCL MPGS Error] Order %s failed to initiate session: %s',
 					$order_ref,
-					$init_result->get_error_message()
+					$session->get_error_message()
 				)
 			);
 
 			// Mark row as failed so it can be audited.
 			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
-				array( 'status' => 'failed', 'gateway_response' => $init_result->get_error_message() ),
+				array( 'status' => 'failed', 'gateway_response' => $session->get_error_message() ),
 				array( 'order_ref' => $order_ref ),
 				array( '%s', '%s' ),
 				array( '%s' )
 			);
 
 			// Provide user-friendly masked error on frontend.
-			$user_msg = ( 'lccl_pc_disabled' === $init_result->get_error_code() )
+			$user_msg = ( 'lccl_mpgs_disabled' === $session->get_error_code() )
 				? __( 'Online payment is currently unavailable. Please contact the club administrator.', 'lccl-de' )
 				: __( 'Unable to connect to the payment gateway. Please try again or contact the club administrator.', 'lccl-de' );
 
@@ -367,36 +378,45 @@ class LCCL_DE_Membership_Form {
 		}
 
 		// ----------------------------------------------------------------
-		// Store reqid for callback verification (in the session_id column)
+		// Store session metadata for callback verification
 		// ----------------------------------------------------------------
 		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$table,
 			array(
-				'session_id' => $init_result['reqid'],
+				'session_id'        => $session['session_id'],
+				'success_indicator' => $session['success_indicator'],
 			),
 			array( 'order_ref' => $order_ref ),
-			array( '%s' ),
+			array( '%s', '%s' ),
 			array( '%s' )
 		);
 
 		// ----------------------------------------------------------------
-		// Redirect directly to Bancstac-hosted payment page
+		// Redirect to intermediate receipt page
 		// ----------------------------------------------------------------
-		wp_redirect( esc_url_raw( $init_result['payment_page_url'] ) ); // phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					self::QA_SESSION   => rawurlencode( $session['session_id'] ),
+					self::QA_ORDER_REF => rawurlencode( $order_ref ),
+				),
+				get_permalink()
+			)
+		);
 		exit;
 	}
 
 	// ------------------------------------------------------------------
-	// Callback handler (step 4-5 of CBC Paycenter flow)
+	// Callback handler (step 3-5 of MPGS flow)
 	// ------------------------------------------------------------------
 
 	/**
-	 * Verify the reqid, call PAYMENT_COMPLETE, and update the DB row.
+	 * Verify the resultIndicator, retrieve the order from MPGS, and update the DB row.
 	 *
 	 * Called from render() when ?lccl_mpgs_return=1 is in the URL.
 	 *
 	 * @return array{
-	 *     status: string,        'paid'|'failed'|'cancelled'|'error'
+	 *     status: string,        'paid'|'failed'|'error'
 	 *     order_ref: string,
 	 *     receipt: string,
 	 *     amount: float,
@@ -409,17 +429,16 @@ class LCCL_DE_Membership_Form {
 			? sanitize_text_field( wp_unslash( $_GET[ self::QA_ORDER_REF ] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			: '';
 
-		// reqid is passed by Bancstac to the returnUrl as ?reqid=…
-		$reqid = isset( $_GET['reqid'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			? sanitize_text_field( wp_unslash( $_GET['reqid'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$result_indicator = isset( $_GET['resultIndicator'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			? sanitize_text_field( wp_unslash( $_GET['resultIndicator'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			: '';
 
 		$error_result = array(
-			'status'        => 'error',
-			'order_ref'     => $order_ref,
-			'receipt'       => '',
-			'amount'        => 0,
-			'member_name'   => '',
+			'status'       => 'error',
+			'order_ref'    => $order_ref,
+			'receipt'      => '',
+			'amount'       => 0,
+			'member_name'  => '',
 			'error_message' => '',
 		);
 
@@ -459,89 +478,59 @@ class LCCL_DE_Membership_Form {
 		}
 
 		// ----------------------------------------------------------------
-		// Handle cancellation (no reqid in URL means the user cancelled)
+		// Verify resultIndicator against stored successIndicator
 		// ----------------------------------------------------------------
-		if ( '' === $reqid ) {
+		if ( '' === $result_indicator ) {
+			// No indicator in URL: display cancellation message to the visitor without
+			// permanently corrupting the DB record, in case legitimate confirmation arrives.
 			$base_result['status'] = 'cancelled';
 			return $base_result;
 		}
 
-		// ----------------------------------------------------------------
-		// Security: verify that the reqid matches the stored session_id
-		// The session_id column stores the reqid from PAYMENT_INIT.
-		// ----------------------------------------------------------------
-		$stored_reqid = (string) $row['session_id'];
-		if ( '' !== $stored_reqid && ! hash_equals( $stored_reqid, $reqid ) ) {
+		if ( ! LCCL_DE_MPGS_Client::verify_result_indicator( $result_indicator, (string) $row['success_indicator'] ) ) {
 			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
-				array( 'status' => 'failed', 'gateway_response' => 'reqid mismatch' ),
+				array( 'status' => 'failed', 'gateway_response' => 'resultIndicator mismatch' ),
 				array( 'order_ref' => $order_ref ),
 				array( '%s', '%s' ),
 				array( '%s' )
 			);
-			$base_result['error_message'] = __( 'Payment verification failed. Please contact the club administrator.', 'lccl-de' );
+			$base_result['error_message'] = __( 'Payment could not be verified. Please contact the club administrator.', 'lccl-de' );
 			return $base_result;
 		}
 
 		// ----------------------------------------------------------------
-		// Server-to-server confirmation: PAYMENT_COMPLETE
+		// Server-to-server confirmation: RETRIEVE_ORDER
 		// ----------------------------------------------------------------
-		$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid );
+		$order_data = LCCL_DE_MPGS_Client::retrieve_order( $order_ref );
 
-		if ( is_wp_error( $response_data ) ) {
+		if ( is_wp_error( $order_data ) ) {
 			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
-				array( 'status' => 'failed', 'gateway_response' => $response_data->get_error_message() ),
+				array( 'status' => 'failed', 'gateway_response' => $order_data->get_error_message() ),
 				array( 'order_ref' => $order_ref ),
 				array( '%s', '%s' ),
 				array( '%s' )
 			);
-			$base_result['error_message'] = __( 'Unable to confirm payment with the gateway. Please contact the club administrator.', 'lccl-de' );
+			$base_result['error_message'] = $order_data->get_error_message();
 			return $base_result;
 		}
 
 		// ----------------------------------------------------------------
-		// Verify: responseCode must be '00' (TRANSACTION APPROVED)
+		// Verify amount and currency returned by the gateway match billed amount
 		// ----------------------------------------------------------------
-		if ( ! LCCL_DE_Paycenter_Client::is_approved( $response_data ) ) {
-			$resp_text = isset( $response_data['responseText'] ) ? (string) $response_data['responseText'] : 'Declined';
-			$resp_code = isset( $response_data['responseCode'] ) ? (string) $response_data['responseCode'] : '';
+		$gateway_amount   = isset( $order_data['amount'] ) ? round( (float) $order_data['amount'], 2 ) : 0.0;
+		$gateway_currency = isset( $order_data['currency'] ) ? strtoupper( trim( (string) $order_data['currency'] ) ) : '';
+		$expected_amount  = round( (float) $row['amount_lkr'], 2 );
 
-			error_log(
-				sprintf(
-					'[LCCL Paycenter] Order %s declined. Code: %s, Text: %s',
-					$order_ref,
-					$resp_code,
-					$resp_text
-				)
-			);
-
-			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-				$table,
-				array(
-					'status'           => 'failed',
-					'gateway_response' => wp_json_encode( $response_data ),
-				),
-				array( 'order_ref' => $order_ref ),
-				array( '%s', '%s' ),
-				array( '%s' )
-			);
-			$base_result['error_message'] = __( 'Your payment was declined. No charge has been made. Please try again or use a different card.', 'lccl-de' );
-			return $base_result;
-		}
-
-		// ----------------------------------------------------------------
-		// Verify: amount and currency returned by the gateway match billed amount
-		// ----------------------------------------------------------------
-		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'] ) ) {
-			$ta_returned = isset( $response_data['transactionAmount'] ) ? wp_json_encode( $response_data['transactionAmount'] ) : 'n/a';
+		if ( abs( $gateway_amount - $expected_amount ) > 0.01 || 'LKR' !== $gateway_currency ) {
 			$mismatch_msg = sprintf(
-				'Amount/currency mismatch. Expected: %s LKR, Gateway returned: %s',
-				round( (float) $row['amount_lkr'] ),
-				$ta_returned
+				'Amount/currency mismatch. Expected: %s %s, Gateway returned: %s %s',
+				$expected_amount,
+				'LKR',
+				$gateway_amount,
+				$gateway_currency
 			);
-			error_log( '[LCCL Paycenter] ' . $mismatch_msg . ' (Order: ' . $order_ref . ')' );
-
 			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
 				array(
@@ -556,37 +545,23 @@ class LCCL_DE_Membership_Form {
 			return $base_result;
 		}
 
-		// ----------------------------------------------------------------
-		// Verify: clientRef echoed back matches our order reference
-		// ----------------------------------------------------------------
-		if ( ! LCCL_DE_Paycenter_Client::verify_client_ref( $response_data, $order_ref ) ) {
-			$returned_ref = isset( $response_data['clientRef'] ) ? (string) $response_data['clientRef'] : '';
-			error_log(
-				sprintf(
-					'[LCCL Paycenter] clientRef mismatch for order %s. Got: %s',
-					$order_ref,
-					$returned_ref
-				)
-			);
+		$receipt = LCCL_DE_MPGS_Client::extract_receipt( $order_data );
 
+		if ( '' === $receipt ) {
+			// RETRIEVE_ORDER returned but no successful transaction found.
 			$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 				$table,
 				array(
 					'status'           => 'failed',
-					'gateway_response' => 'clientRef mismatch: ' . $returned_ref,
+					'gateway_response' => wp_json_encode( $order_data ),
 				),
 				array( 'order_ref' => $order_ref ),
 				array( '%s', '%s' ),
 				array( '%s' )
 			);
-			$base_result['error_message'] = __( 'Payment reference mismatch. Please contact the club administrator.', 'lccl-de' );
+			$base_result['error_message'] = __( 'Payment was not completed. Please try again or contact the club administrator.', 'lccl-de' );
 			return $base_result;
 		}
-
-		// ----------------------------------------------------------------
-		// Extract the bank transaction reference (our "receipt")
-		// ----------------------------------------------------------------
-		$receipt = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
 
 		// ----------------------------------------------------------------
 		// Atomic transition to 'paid' (prevents race conditions / duplicate emails)
@@ -595,14 +570,12 @@ class LCCL_DE_Membership_Form {
 			$wpdb->prepare(
 				"UPDATE `{$table}`
 				 SET status = 'paid',
-				     session_id = %s,
 				     gateway_receipt = %s,
 				     gateway_response = %s,
 				     paid_at = %s
 				 WHERE order_ref = %s AND status != 'paid'",
-				$reqid,
 				$receipt,
-				wp_json_encode( $response_data ),
+				wp_json_encode( $order_data ),
 				current_time( 'mysql' ),
 				$order_ref
 			)
@@ -631,12 +604,12 @@ class LCCL_DE_Membership_Form {
 	 * Send a payment confirmation email to the member.
 	 *
 	 * @param array  $row     DB row from lccl_de_payments.
-	 * @param string $receipt CBC Paycenter txnReference.
+	 * @param string $receipt MPGS gateway receipt ID.
 	 */
 	private static function send_payment_confirmation( array $row, $receipt ) {
-		$to     = sanitize_email( (string) $row['member_email'] );
-		$name   = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
-		$amount = number_format( (float) $row['amount_lkr'], 2 );
+		$to      = sanitize_email( (string) $row['member_email'] );
+		$name    = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
+		$amount  = number_format( (float) $row['amount_lkr'], 2 );
 
 		if ( ! is_email( $to ) ) {
 			return;
@@ -653,8 +626,8 @@ class LCCL_DE_Membership_Form {
 			__(
 				"Dear %1\$s,\n\n" .
 				"Thank you! Your annual membership fee payment of LKR %2\$s has been received successfully.\n\n" .
-				"Payment Reference  : %4\$s\n" .
-				"Bank Transaction # : %3\$s\n\n" .
+				"Payment Reference : %4\$s\n" .
+				"Gateway Receipt   : %3\$s\n\n" .
 				"If you have any questions, please reply to this email.\n\n" .
 				"Lions Club of Colombo LEADS",
 				'lccl-de'
@@ -669,7 +642,7 @@ class LCCL_DE_Membership_Form {
 	}
 
 	// ------------------------------------------------------------------
-	// Fee calculation helpers (unchanged)
+	// Fee calculation helpers (unchanged from original)
 	// ------------------------------------------------------------------
 
 	/**
@@ -808,7 +781,7 @@ class LCCL_DE_Membership_Form {
 	}
 
 	// ------------------------------------------------------------------
-	// WPBakery mapping
+	// WPBakery mapping (unchanged)
 	// ------------------------------------------------------------------
 
 	/**
@@ -824,7 +797,7 @@ class LCCL_DE_Membership_Form {
 				'name'        => __( 'LCCL Membership Fee', 'lccl-de' ),
 				'base'        => self::SHORTCODE,
 				'category'    => __( 'LCCL', 'lccl-de' ),
-				'description' => __( 'Annual membership fee payment form (CBC Paycenter Web 4.0).', 'lccl-de' ),
+				'description' => __( 'Annual membership fee payment form (MPGS Hosted Checkout).', 'lccl-de' ),
 				'icon'        => 'icon-wpb-ui-separator',
 				'params'      => array(
 					array(

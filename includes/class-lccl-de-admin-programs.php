@@ -651,6 +651,23 @@ class LCCL_DE_Admin_Programs {
 			return;
 		}
 
+		// Handle CBC Paycenter save.
+		if ( ! empty( $_POST['lccl_de_paycenter_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			check_admin_referer( 'lccl_de_paycenter_save', 'lccl_de_paycenter_nonce' );
+
+			LCCL_DE_Settings::save_paycenter( wp_unslash( $_POST ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+			wp_safe_redirect(
+				self::gateway_url(
+					array(
+						'section' => 'paycenter',
+						'message' => 'saved',
+					)
+				)
+			);
+			exit;
+		}
+
 		if ( empty( $_POST['lccl_de_mpgs_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return;
 		}
