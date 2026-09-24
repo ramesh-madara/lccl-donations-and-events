@@ -34,6 +34,16 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 	<?php endif; ?>
 
 	<div class="lccl-ps">
+		<div class="lccl-ps__image-panel">
+			<img
+				class="lccl-ps__image"
+				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/donation_project.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/donation_project.jpg' ); ?>"
+				alt="<?php esc_attr_e( 'Project Sponsorship - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
+				loading="lazy"
+			>
+		</div>
+
+		<?php /* Hidden for now: Projects You Can Support section (kept for future use)
 		<div class="lccl-ps__projects">
 			<h3 class="lccl-ps__projects-title"><?php esc_html_e( 'Projects You Can Support', 'lccl-de' ); ?></h3>
 			<p class="lccl-ps__projects-lede">
@@ -74,6 +84,7 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 				</article>
 			<?php endforeach; ?>
 		</div>
+		*/ ?>
 
 		<form
 			class="lccl-bdf__form lccl-ps__form"

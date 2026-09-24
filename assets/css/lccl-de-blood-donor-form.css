@@ -1454,6 +1454,22 @@
 	order: 1;
 }
 
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
+	display: none;
+	border-radius: 8px;
+	overflow: hidden;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+	border: 3px solid #f7f7f7;
+	background: #ffffff;
+}
+
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image {
+	display: block;
+	width: 100%;
+	height: auto;
+	object-fit: cover;
+}
+
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form {
 	order: 2;
 	overflow: hidden;
@@ -1843,9 +1859,29 @@
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__projects {
 		order: 2;
 	}
+
+	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
+		display: block;
+		order: 2;
+		position: sticky;
+		top: 32px;
+	}
 }
 
 @media (max-width: 900px) {
+	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps {
+		grid-template-columns: 1fr;
+	}
+
+	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
+		display: none !important;
+	}
+
+	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form {
+		order: 1;
+		width: 100%;
+	}
+
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__banner-title {
 		font-size: 25px;
 	}
