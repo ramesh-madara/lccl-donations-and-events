@@ -1451,7 +1451,7 @@
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__projects {
-	order: 1;
+	display: none;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
@@ -1471,7 +1471,6 @@
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form {
-	order: 2;
 	overflow: hidden;
 	border: 3px solid #f7f7f7;
 	scroll-margin-top: 96px;
@@ -1849,20 +1848,23 @@
 
 @media (min-width: 901px) {
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps {
-		grid-template-columns: minmax(0, 55%) minmax(0, 45%);
+		display: grid !important;
+		grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
+		gap: 28px !important;
+		align-items: start !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form {
-		order: 1;
-	}
-
-	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__projects {
-		order: 2;
+		grid-column: 1 !important;
+		width: 100% !important;
+		order: 1 !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
-		display: block;
-		order: 2;
+		display: block !important;
+		grid-column: 2 !important;
+		width: 100% !important;
+		order: 2 !important;
 		position: sticky;
 		top: 32px;
 	}
@@ -1870,7 +1872,8 @@
 
 @media (max-width: 900px) {
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps {
-		grid-template-columns: 1fr;
+		display: block !important;
+		grid-template-columns: 1fr !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel {
@@ -1878,8 +1881,9 @@
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form {
-		order: 1;
-		width: 100%;
+		display: block !important;
+		width: 100% !important;
+		order: 1 !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__banner-title {

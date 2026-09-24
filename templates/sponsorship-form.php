@@ -34,58 +34,6 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 	<?php endif; ?>
 
 	<div class="lccl-ps">
-		<div class="lccl-ps__image-panel">
-			<img
-				class="lccl-ps__image"
-				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/donation_project.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/donation_project.jpg' ); ?>"
-				alt="<?php esc_attr_e( 'Project Sponsorship - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
-				loading="lazy"
-			>
-		</div>
-
-		<?php /* Hidden for now: Projects You Can Support section (kept for future use)
-		<div class="lccl-ps__projects">
-			<h3 class="lccl-ps__projects-title"><?php esc_html_e( 'Projects You Can Support', 'lccl-de' ); ?></h3>
-			<p class="lccl-ps__projects-lede">
-				<?php esc_html_e( 'Select a project below to support it. The selected project will automatically be shown in the payment form.', 'lccl-de' ); ?>
-			</p>
-
-			<?php foreach ( $projects as $key => $item ) : ?>
-				<?php
-				$value     = (float) $item['value'];
-				$raised    = (float) $item['raised'];
-				$remaining = max( 0, $value - $raised );
-				$percent   = LCCL_DE_Sponsorship_Form::progress_percent( $value, $raised );
-				?>
-				<article class="lccl-ps__card<?php echo $key === $project ? ' is-selected' : ''; ?>" data-lccl-project-card="<?php echo esc_attr( $key ); ?>">
-					<span class="lccl-ps__status"><?php echo esc_html( $item['label'] ); ?></span>
-					<h4 class="lccl-ps__card-title"><?php echo esc_html( $item['title'] ); ?></h4>
-					<p class="lccl-ps__card-summary"><?php echo esc_html( $item['summary'] ); ?></p>
-					<div class="lccl-ps__details">
-						<p>
-							<strong><?php esc_html_e( 'Project Value:', 'lccl-de' ); ?></strong>
-							<?php echo esc_html( LCCL_DE_Sponsorship_Form::format_rs( $value ) ); ?>
-						</p>
-						<p>
-							<strong><?php esc_html_e( 'Raised:', 'lccl-de' ); ?></strong>
-							<?php echo esc_html( LCCL_DE_Sponsorship_Form::format_rs( $raised ) ); ?>
-						</p>
-						<p>
-							<strong><?php esc_html_e( 'Remaining:', 'lccl-de' ); ?></strong>
-							<?php echo esc_html( LCCL_DE_Sponsorship_Form::format_rs( $remaining ) ); ?>
-						</p>
-					</div>
-					<div class="lccl-ps__progress" aria-hidden="true">
-						<span style="width: <?php echo esc_attr( (string) $percent ); ?>%;"></span>
-					</div>
-					<button class="lccl-ps__pick" type="button" data-lccl-select-project="<?php echo esc_attr( $key ); ?>">
-						<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
-					</button>
-				</article>
-			<?php endforeach; ?>
-		</div>
-		*/ ?>
-
 		<form
 			class="lccl-bdf__form lccl-ps__form"
 			id="lccl-ps-form"
@@ -266,5 +214,57 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 				<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
 			</button>
 		</form>
+
+		<div class="lccl-ps__image-panel">
+			<img
+				class="lccl-ps__image"
+				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/donation_project.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/donation_project.jpg' ); ?>"
+				alt="<?php esc_attr_e( 'Project Sponsorship - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
+				loading="lazy"
+			>
+		</div>
+
+		<?php /* Hidden for now: Projects You Can Support section (kept for future use)
+		<div class="lccl-ps__projects">
+			<h3 class="lccl-ps__projects-title"><?php esc_html_e( 'Projects You Can Support', 'lccl-de' ); ?></h3>
+			<p class="lccl-ps__projects-lede">
+				<?php esc_html_e( 'Select a project below to support it. The selected project will automatically be shown in the payment form.', 'lccl-de' ); ?>
+			</p>
+
+			<?php foreach ( $projects as $key => $item ) : ?>
+				<?php
+				$value     = (float) $item['value'];
+				$raised    = (float) $item['raised'];
+				$remaining = max( 0, $value - $raised );
+				$percent   = LCCL_DE_Sponsorship_Form::progress_percent( $value, $raised );
+				?>
+				<article class="lccl-ps__card<?php echo $key === $project ? ' is-selected' : ''; ?>" data-lccl-project-card="<?php echo esc_attr( $key ); ?>">
+					<span class="lccl-ps__status"><?php echo esc_html( $item['label'] ); ?></span>
+					<h4 class="lccl-ps__card-title"><?php echo esc_html( $item['title'] ); ?></h4>
+					<p class="lccl-ps__card-summary"><?php echo esc_html( $item['summary'] ); ?></p>
+					<div class="lccl-ps__details">
+						<p>
+							<strong><?php esc_html_e( 'Project Value:', 'lccl-de' ); ?></strong>
+							<?php echo esc_html( LCCL_DE_Sponsorship_Form::format_rs( $value ) ); ?>
+						</p>
+						<p>
+							<strong><?php esc_html_e( 'Raised:', 'lccl-de' ); ?></strong>
+							<?php echo esc_html( LCCL_DE_Sponsorship_Form::format_rs( $raised ) ); ?>
+						</p>
+						<p>
+							<strong><?php esc_html_e( 'Remaining:', 'lccl-de' ); ?></strong>
+							<?php echo esc_html( LCCL_DE_Sponsorship_Form::format_rs( $remaining ) ); ?>
+						</p>
+					</div>
+					<div class="lccl-ps__progress" aria-hidden="true">
+						<span style="width: <?php echo esc_attr( (string) $percent ); ?>%;"></span>
+					</div>
+					<button class="lccl-ps__pick" type="button" data-lccl-select-project="<?php echo esc_attr( $key ); ?>">
+						<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
+					</button>
+				</article>
+			<?php endforeach; ?>
+		</div>
+		*/ ?>
 	</div>
 </div>
