@@ -4,10 +4,12 @@
  *
  * @package LCCL_Donations_And_Events
  *
- * @var array  $atts   Shortcode attributes (title, intro).
- * @var array  $values Previously entered values, keyed by field name.
- * @var array  $fees   Calculated fee breakdown.
- * @var array  $errors Validation error messages to display.
+ * @var array       $atts            Shortcode attributes (title, intro).
+ * @var array       $values          Previously entered values, keyed by field name.
+ * @var array       $fees            Calculated fee breakdown.
+ * @var array       $errors          Validation error messages to display.
+ * @var array|null  $payment_success Payment success payload from gateway return.
+ * @var string|null $payment_notice  Payment notice/error string.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -36,6 +38,32 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 			novalidate
 		>
 			<?php wp_nonce_field( LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD ); ?>
+
+			<?php if ( ! empty( $payment_success ) ) : ?>
+				<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status">
+					<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
+					<span class="lccl-bdf__banner-copy">
+						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Thank you for your payment.', 'lccl-de' ); ?></strong>
+						<span class="lccl-bdf__banner-text">
+							<?php
+							printf(
+								/* translators: 1: member name, 2: amount formatted, 3: receipt number */
+								esc_html__( 'Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Receipt: %3$s', 'lccl-de' ),
+								'<strong>' . esc_html( $payment_success['member_name'] ) . '</strong>',
+								'<strong>' . esc_html( 'LKR ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
+								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
+							);
+							?>
+						</span>
+					</span>
+				</p>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $payment_notice ) ) : ?>
+				<p class="lccl-bdf__banner lccl-bdf__banner--error" role="alert">
+					<?php echo esc_html( $payment_notice ); ?>
+				</p>
+			<?php endif; ?>
 
 			<?php if ( ! empty( $errors ) ) : ?>
 				<div class="lccl-mf__notice lccl-mf__notice--error" role="alert">

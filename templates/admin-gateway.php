@@ -300,12 +300,13 @@ $error   = isset( $error ) ? $error : '';
 		<li>
 			<?php
 			printf(
-				/* translators: URL */
+				/* translators: 1: domain pattern, 2: example membership fee return URL */
 				wp_kses(
-					__( 'Whitelist the <strong>Return URL</strong> with Bancstac / CBC: <code>%s</code>', 'lccl-de' ),
+					__( 'Whitelist your website domain or return URL pattern with Bancstac / CBC: <code>%1$s</code> (or page URL: <code>%2$s</code>)', 'lccl-de' ),
 					array( 'strong' => array(), 'code' => array() )
 				),
-				esc_html( add_query_arg( array( LCCL_DE_Membership_Form::QA_RETURN => '1', LCCL_DE_Membership_Form::QA_ORDER_REF => 'ORDER_REF' ), home_url( '/' ) ) )
+				esc_html( home_url( '/*' ) ),
+				esc_html( home_url( '/membership-fee/' ) )
 			);
 			?>
 		</li>

@@ -139,12 +139,21 @@ class LCCL_DE_Membership_Form {
 			|| ! empty( $_GET['lccl_mpgs_return'] ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			|| ! empty( $_GET[ self::QA_CANCEL ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
+		$payment_success = null;
+		$payment_notice  = '';
+
 		if ( $is_return ) {
 			$result = self::handle_callback();
 
-			ob_start();
-			include LCCL_DE_PATH . 'templates/membership-result.php';
-			return ob_get_clean();
+			if ( 'paid' === $result['status'] ) {
+				$payment_success = $result;
+			} elseif ( 'cancelled' === $result['status'] ) {
+				$payment_notice = __( 'Payment was cancelled. You may review the details and try again when you are ready.', 'lccl-de' );
+			} else {
+				$payment_notice = ! empty( $result['error_message'] )
+					? $result['error_message']
+					: __( 'Unable to confirm payment. Please contact the club administrator or try again.', 'lccl-de' );
+			}
 		}
 
 		// ----------------------------------------------------------------
