@@ -36,8 +36,9 @@ $required_msg  = LCCL_DE_Donation_Form::required_field_message();
 $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount ) : '';
 ?>
 <div class="lccl-bdf lccl-bdf--donation">
-	<form
-		class="lccl-bdf__form"
+	<div class="lccl-donation-layout">
+		<form
+			class="lccl-bdf__form lccl-donation__form"
 		method="post"
 		action="#"
 		data-required-message="<?php echo esc_attr( $required_msg ); ?>"
@@ -249,5 +250,15 @@ $total_display = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount 
 		<button class="lccl-bdf__submit lccl-df__submit" type="submit">
 			<?php esc_html_e( 'DONATE NOW', 'lccl-de' ); ?>
 		</button>
-	</form>
+		</form>
+
+		<div class="lccl-donation__image-panel">
+			<img
+				class="lccl-donation__image"
+				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/donation.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/donation.jpg' ); ?>"
+				alt="<?php esc_attr_e( 'Donations - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
+				loading="lazy"
+			>
+		</div>
+	</div>
 </div>
