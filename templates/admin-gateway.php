@@ -87,6 +87,19 @@ $error   = isset( $error ) ? $error : '';
 				<span class="lccl-gw-subnav__label"><?php echo esc_html( $p_data['label'] ); ?></span>
 			</a>
 		<?php endforeach; ?>
+
+		<a
+			href="<?php echo esc_url( LCCL_DE_Admin_Programs::gateway_url( array( 'subtab' => 'transactions' ) ) ); ?>"
+			class="lccl-gw-subnav__item<?php echo ( 'transactions' === $subtab ) ? ' is-active' : ''; ?>"
+			role="tab"
+			id="lccl-gw-tab-transactions"
+			aria-controls="lccl-gw-panel-transactions"
+			aria-selected="<?php echo ( 'transactions' === $subtab ) ? 'true' : 'false'; ?>"
+			data-gw-subtab-link="transactions"
+		>
+			<span class="dashicons dashicons-list-view" style="font-size: 16px; width: 16px; height: 16px; margin-right: 6px; vertical-align: text-bottom;" aria-hidden="true"></span>
+			<span class="lccl-gw-subnav__label"><?php esc_html_e( 'Payment Transactions', 'lccl-de' ); ?></span>
+		</a>
 	</div>
 
 	<!-- Subtab Panels -->
@@ -310,6 +323,18 @@ $error   = isset( $error ) ? $error : '';
 				</form>
 			</div>
 		<?php endforeach; ?>
+
+		<!-- Payment Transactions Panel -->
+		<div
+			class="lccl-gw-panel<?php echo ( 'transactions' === $subtab ) ? ' is-active' : ''; ?>"
+			id="lccl-gw-panel-transactions"
+			role="tabpanel"
+			aria-labelledby="lccl-gw-tab-transactions"
+			data-gw-panel="transactions"
+			<?php echo ( 'transactions' === $subtab ) ? '' : 'hidden'; ?>
+		>
+			<?php include LCCL_DE_PATH . 'templates/admin-gateway-transactions.php'; ?>
+		</div>
 	</div>
 
 	<hr class="lccl-prog__divider">

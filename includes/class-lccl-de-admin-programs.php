@@ -633,7 +633,9 @@ class LCCL_DE_Admin_Programs {
 			}
 		}
 
-		$subtab = LCCL_DE_Settings::normalize_paycenter_profile( $subtab );
+		if ( 'transactions' !== $subtab ) {
+			$subtab = LCCL_DE_Settings::normalize_paycenter_profile( $subtab );
+		}
 
 		return array(
 			'tab'      => self::TAB_GATEWAY,
