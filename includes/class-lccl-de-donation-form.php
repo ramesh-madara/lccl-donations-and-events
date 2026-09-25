@@ -574,7 +574,10 @@ class LCCL_DE_Donation_Form {
 			return $base_result;
 		}
 
-		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'] ) ) {
+		$profile_cfg       = LCCL_DE_Settings::get_paycenter( LCCL_DE_Settings::PROFILE_DONATIONS );
+		$expected_currency = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? $profile_cfg['currency'] : 'LKR';
+
+		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'], $expected_currency ) ) {
 			$mismatch_msg = 'Amount/currency mismatch in donation.';
 			error_log( '[LCCL Paycenter] ' . $mismatch_msg . ' (Order: ' . $order_ref . ')' );
 

@@ -594,11 +594,15 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Verify: amount and currency returned by the gateway match billed amount
 		// ----------------------------------------------------------------
-		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'] ) ) {
+		$profile_cfg       = LCCL_DE_Settings::get_paycenter( LCCL_DE_Settings::PROFILE_MEMBERSHIP );
+		$expected_currency = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? $profile_cfg['currency'] : 'LKR';
+
+		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'], $expected_currency ) ) {
 			$ta_returned  = isset( $response_data['transactionAmount'] ) ? wp_json_encode( $response_data['transactionAmount'] ) : 'n/a';
 			$mismatch_msg = sprintf(
-				'Amount/currency mismatch. Expected: %s LKR, Gateway returned: %s',
+				'Amount/currency mismatch. Expected: %s %s, Gateway returned: %s',
 				round( (float) $row['amount_lkr'] ),
+				$expected_currency,
 				$ta_returned
 			);
 			error_log( '[LCCL Paycenter] ' . $mismatch_msg . ' (Order: ' . $order_ref . ')' );
