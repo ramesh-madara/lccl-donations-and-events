@@ -17,6 +17,7 @@ Complete reference for all shortcodes provided by the **LCCL Donations and Event
 | `[lccl_blood_donation_admin]` | Dashboard | Blood donor reviewer login & data dashboard | *None* |
 | `[lccl_our_projects_admin]` | Dashboard | Join Our Projects reviewer login & dashboard | *None* |
 | `[lccl_spectacles_admin]` | Dashboard | Free Spectacles reviewer login & dashboard | *None* |
+| `[lccl_payment_dashboard]` | Dashboard | Unified payments monitor dashboard (wp-admin accounts only) | *None* |
 | `[lccl_hello]` | Utility | Scaffolding card to test plugin rendering | `title`, `message` |
 
 All shortcodes are also mapped as **WPBakery Page Builder** elements under the **LCCL** category.
@@ -166,6 +167,18 @@ Reviewer portal for reviewing child spectacles applications.
 - **Attributes**: None.
 - **Default Page**: `/spectacles-admin/`
 - **Features**: Application list, school and district filters, school recommendation letter preview and secure download directly in the modal.
+
+### `[lccl_payment_dashboard]`
+Frontend payment monitoring dashboard for reviewing all payment routes (Donations, Sponsorships, and Memberships).
+- **Attributes**: None.
+- **Default Page**: `/payment-dashboard/`
+- **Access Control**: Strictly restricted to users who can access `wp-admin` (Administrators, Editors, etc.). Reviewer-only accounts are blocked.
+- **Features**:
+  - Independent frontend login card matching the reviewer portal design.
+  - Tabbed interface separating payment routes: *All Payments*, *Online Donations*, *Project Sponsorships*, and *Membership Fees*.
+  - Live KPI metric cards: Total Transactions, Total Collected (LKR), Paid / Approved, Declined / Failed, and Pending Checkout.
+  - Universal search and status filters with debounced AJAX/REST querying.
+  - Expandable technical drawer per transaction showing full metadata, bank receipts, response codes, custom donor/sponsor messages, and color-coded gateway JSON response.
 
 ---
 

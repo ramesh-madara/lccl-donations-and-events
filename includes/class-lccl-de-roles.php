@@ -53,9 +53,14 @@ class LCCL_DE_Roles {
 	const SPECTACLES_PAGE_OPTION = 'lccl_de_spectacles_admin_page_id';
 
 	/**
+	 * Option that stores the Payment Dashboard page ID.
+	 */
+	const PAYMENT_DASHBOARD_PAGE_OPTION = 'lccl_de_payment_dashboard_page_id';
+
+	/**
 	 * Bump when a new plugin-owned dashboard page is added so it is created once.
 	 */
-	const PAGES_VERSION = 1;
+	const PAGES_VERSION = 2;
 
 	/**
 	 * Option that stores the dashboard-page bootstrap version.
@@ -250,6 +255,42 @@ class LCCL_DE_Roles {
 	}
 
 	/**
+	 * Payment dashboard URL.
+	 *
+	 * @return string
+	 */
+	public static function payment_dashboard_url() {
+		return self::page_url( self::stored_page_id( self::PAYMENT_DASHBOARD_PAGE_OPTION ) );
+	}
+
+	/**
+	 * Whether the user can access wp-admin.
+	 *
+	 * Only users with wp-admin access (administrators, editors, authors, etc.)
+	 * and who are not blocked by reviewer lockdown may access.
+	 *
+	 * @param WP_User|int|null $user User or ID.
+	 * @return bool
+	 */
+	public static function can_access_wp_admin( $user = null ) {
+		$user = self::resolve_user( $user );
+
+		if ( ! $user || ! $user->ID ) {
+			return false;
+		}
+
+		if ( user_can( $user, 'manage_options' ) ) {
+			return true;
+		}
+
+		if ( self::should_lock_admin( $user ) ) {
+			return false;
+		}
+
+		return user_can( $user, 'read' );
+	}
+
+	/**
 	 * Public form URL if a host page still exists. The form is a shortcode now.
 	 *
 	 * @return string
@@ -272,6 +313,7 @@ class LCCL_DE_Roles {
 		self::ensure_page();
 		self::ensure_projects_page();
 		self::ensure_spectacles_page();
+		self::ensure_payment_dashboard_page();
 		self::remove_join_page();
 		update_option( self::PAGES_OPTION, self::PAGES_VERSION, false );
 	}
@@ -315,6 +357,20 @@ class LCCL_DE_Roles {
 			'spectacles-registration-admin',
 			__( 'SPECTACLES REGISTRATION ADMIN', 'lccl-de' ),
 			'[lccl_spectacles_registration_admin]'
+		);
+	}
+
+	/**
+	 * Create or recover the page that hosts [lccl_payment_dashboard].
+	 *
+	 * @return int Page ID or 0.
+	 */
+	public static function ensure_payment_dashboard_page() {
+		return self::ensure_named_page(
+			self::PAYMENT_DASHBOARD_PAGE_OPTION,
+			'payment-dashboard',
+			__( 'PAYMENT DASHBOARD', 'lccl-de' ),
+			'[lccl_payment_dashboard]'
 		);
 	}
 
