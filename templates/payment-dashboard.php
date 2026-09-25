@@ -22,7 +22,7 @@ if ( $can_view && $user instanceof WP_User ) {
 	<!-- 1. Dedicated Login Section -->
 	<section class="lccl-paydash__login lccl-bda__login" data-panel="login" <?php echo $can_view ? 'hidden' : ''; ?>>
 		<div class="lccl-bda__login-card">
-			<div class="lccl-bda__modal" data-login-modal hidden>
+			<div class="lccl-bda__modal" data-login-modal hidden style="display:none;">
 				<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
 				<span class="lccl-bda__modal-label"><?php esc_html_e( 'Signing in…', 'lccl-de' ); ?></span>
 			</div>
@@ -65,7 +65,7 @@ if ( $can_view && $user instanceof WP_User ) {
 	<!-- 2. Forgot Password Section -->
 	<section class="lccl-paydash__login lccl-bda__login" data-panel="forgot" hidden>
 		<div class="lccl-bda__login-card">
-			<div class="lccl-bda__modal" data-forgot-modal hidden>
+			<div class="lccl-bda__modal" data-forgot-modal hidden style="display:none;">
 				<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
 				<span class="lccl-bda__modal-label"><?php esc_html_e( 'Sending reset link…', 'lccl-de' ); ?></span>
 			</div>
@@ -104,7 +104,7 @@ if ( $can_view && $user instanceof WP_User ) {
 			<div>
 				<h2 class="lccl-paydash__title lccl-bda__title lccl-bda__title--inline">
 					<?php esc_html_e( 'Payment Transactions Dashboard', 'lccl-de' ); ?>
-					<span class="lccl-bda__loader" data-dash-loader hidden aria-hidden="true"></span>
+					<span class="lccl-bda__loader" data-dash-loader hidden aria-hidden="true" style="display:none;"></span>
 				</h2>
 				<p class="lccl-paydash__subtitle">
 					<?php esc_html_e( 'Live unified record of all payments across configured routes (CBC Paycenter Web 4.0)', 'lccl-de' ); ?>
@@ -220,7 +220,7 @@ if ( $can_view && $user instanceof WP_User ) {
 
 		<!-- Data Table Container -->
 		<div class="lccl-paydash__table-card">
-			<div class="lccl-paydash__modal" data-table-modal hidden>
+			<div class="lccl-paydash__modal" data-table-modal hidden style="display:none;">
 				<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
 				<span class="lccl-bda__modal-label"><?php esc_html_e( 'Loading payments…', 'lccl-de' ); ?></span>
 			</div>

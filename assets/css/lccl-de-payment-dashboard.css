@@ -18,6 +18,12 @@
 	box-sizing: inherit;
 }
 
+/* Hidden state enforcement */
+.lccl-paydash [hidden],
+.lccl-paydash .is-hidden {
+	display: none !important;
+}
+
 /* Login section badge */
 .lccl-paydash__login-badge {
 	display: inline-flex;
@@ -461,6 +467,11 @@
 	justify-content: center;
 	gap: 12px;
 	z-index: 10;
+}
+
+.lccl-paydash__modal[hidden],
+.lccl-paydash__modal.is-hidden {
+	display: none !important;
 }
 
 /* Pagination Bar */

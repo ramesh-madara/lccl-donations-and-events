@@ -85,6 +85,20 @@
 		var pageStatus = root.querySelector( '[data-page-status]' );
 		var pager      = root.querySelector( '[data-pager]' );
 
+		function setBusy( node, busy ) {
+			if ( ! node ) {
+				return;
+			}
+			node.hidden = ! busy;
+			if ( busy ) {
+				node.classList.remove( 'is-hidden' );
+				node.style.display = '';
+			} else {
+				node.classList.add( 'is-hidden' );
+				node.style.display = 'none';
+			}
+		}
+
 		function showBanner( node, msg ) {
 			if ( ! node ) {
 				return;
@@ -121,7 +135,15 @@
 
 			return fetch( cfg.restUrl + endpoint, options )
 				.then( function ( response ) {
-					return response.json().then( function ( data ) {
+					return response.text().then( function ( text ) {
+						var data = null;
+						try {
+							data = JSON.parse( text );
+						} catch ( parseErr ) {
+							var err = new Error( 'Unexpected server response: ' + response.status );
+							err.status = response.status;
+							throw err;
+						}
 						if ( data && data.nonce ) {
 							state.nonce = data.nonce;
 						}
@@ -155,9 +177,7 @@
 					return;
 				}
 
-				if ( loginModal ) {
-					loginModal.hidden = false;
-				}
+				setBusy( loginModal, true );
 
 				api( 'session', {
 					method: 'POST',
@@ -168,9 +188,7 @@
 					} )
 				} )
 					.then( function ( data ) {
-						if ( loginModal ) {
-							loginModal.hidden = true;
-						}
+						setBusy( loginModal, false );
 						state.loggedIn = true;
 						if ( displayNameEl && data.display_name ) {
 							displayNameEl.textContent = data.display_name;
@@ -179,9 +197,7 @@
 						loadTransactions();
 					} )
 					.catch( function ( err ) {
-						if ( loginModal ) {
-							loginModal.hidden = true;
-						}
+						setBusy( loginModal, false );
 						showBanner( loginError, err.message || 'Login failed. Please verify your credentials.' );
 					} );
 			} );
@@ -200,24 +216,18 @@
 					return;
 				}
 
-				if ( forgotModal ) {
-					forgotModal.hidden = false;
-				}
+				setBusy( forgotModal, true );
 
 				api( 'session/forgot', {
 					method: 'POST',
 					body: JSON.stringify( { username: username } )
 				} )
 					.then( function ( data ) {
-						if ( forgotModal ) {
-							forgotModal.hidden = true;
-						}
+						setBusy( forgotModal, false );
 						showBanner( forgotNotice, data.message || 'Reset link sent if account exists.' );
 					} )
 					.catch( function ( err ) {
-						if ( forgotModal ) {
-							forgotModal.hidden = true;
-						}
+						setBusy( forgotModal, false );
 						showBanner( forgotError, err.message || 'Could not process password reset.' );
 					} );
 			} );
@@ -325,12 +335,8 @@
 				return;
 			}
 
-			if ( tableModal ) {
-				tableModal.hidden = false;
-			}
-			if ( dashLoader ) {
-				dashLoader.hidden = false;
-			}
+			setBusy( tableModal, true );
+			setBusy( dashLoader, true );
 			showBanner( dashError, '' );
 
 			var query = '?tab=' + encodeURIComponent( state.tab ) +
@@ -341,12 +347,8 @@
 
 			api( 'transactions' + query, { method: 'GET' } )
 				.then( function ( data ) {
-					if ( tableModal ) {
-						tableModal.hidden = true;
-					}
-					if ( dashLoader ) {
-						dashLoader.hidden = true;
-					}
+					setBusy( tableModal, false );
+					setBusy( dashLoader, false );
 
 					state.items      = data.items || [];
 					state.total      = data.total || 0;
@@ -358,12 +360,8 @@
 					renderPager();
 				} )
 				.catch( function ( err ) {
-					if ( tableModal ) {
-						tableModal.hidden = true;
-					}
-					if ( dashLoader ) {
-						dashLoader.hidden = true;
-					}
+					setBusy( tableModal, false );
+					setBusy( dashLoader, false );
 
 					if ( 401 === err.status || 403 === err.status ) {
 						state.loggedIn = false;

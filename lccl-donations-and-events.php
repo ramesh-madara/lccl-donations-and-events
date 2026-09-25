@@ -15,7 +15,7 @@
 // ramesh 4.4
 defined( 'ABSPATH' ) || exit;
 
-define( 'LCCL_DE_VERSION', '0.9.32' );
+define( 'LCCL_DE_VERSION', '0.9.33' );
 define( 'LCCL_DE_FILE', __FILE__ );
 define( 'LCCL_DE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LCCL_DE_URL', plugin_dir_url( __FILE__ ) );
