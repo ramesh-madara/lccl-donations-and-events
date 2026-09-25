@@ -1066,7 +1066,7 @@ class LCCL_DE_Settings {
 	 * Default / blank CBC Paycenter configuration for a profile.
 	 *
 	 * @param string $profile Profile key.
-	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string,hmac_secret:string}
+	 * @return array{label:string,enabled:int,endpoint:string,client_id:string,auth_token:string,hmac_secret:string,currency:string}
 	 */
 	private static function paycenter_defaults( $profile = self::PROFILE_MEMBERSHIP ) {
 		$known = self::known_paycenter_profiles();
@@ -1080,6 +1080,7 @@ class LCCL_DE_Settings {
 			'client_id'   => '',
 			'auth_token'  => '',
 			'hmac_secret' => '',
+			'currency'    => 'LKR',
 		);
 	}
 
@@ -1087,7 +1088,7 @@ class LCCL_DE_Settings {
 	 * Retrieve CBC Paycenter credentials from wp_options (auth_token & hmac_secret decrypted).
 	 *
 	 * @param string $profile Target profile key (donations, membership, project_1, project_2).
-	 * @return array{label:string,enabled:int,endpoint:string,merchant_id:string,client_id:string,auth_token:string,hmac_secret:string}
+	 * @return array{label:string,enabled:int,endpoint:string,merchant_id:string,client_id:string,auth_token:string,hmac_secret:string,currency:string}
 	 */
 	public static function get_paycenter( $profile = self::PROFILE_MEMBERSHIP ) {
 		$profile = self::normalize_paycenter_profile( $profile );
@@ -1118,6 +1119,11 @@ class LCCL_DE_Settings {
 		$cfg['client_id']   = sanitize_text_field( (string) $cfg['client_id'] );
 		$cfg['auth_token']  = self::decrypt_secret( isset( $stored_item['auth_token'] ) ? (string) $stored_item['auth_token'] : '' );
 		$cfg['hmac_secret'] = self::decrypt_secret( isset( $stored_item['hmac_secret'] ) ? (string) $stored_item['hmac_secret'] : '' );
+
+		// Validate stored currency; fall back to LKR if not a known value.
+		$allowed_currencies = array( 'LKR', 'USD' );
+		$raw_currency       = strtoupper( sanitize_text_field( (string) $cfg['currency'] ) );
+		$cfg['currency']    = in_array( $raw_currency, $allowed_currencies, true ) ? $raw_currency : 'LKR';
 
 		return $cfg;
 	}
@@ -1182,6 +1188,12 @@ class LCCL_DE_Settings {
 			$stored_profiles = array();
 		}
 
+		// Sanitize and validate currency selection.
+		$allowed_currencies = array( 'LKR', 'USD' );
+		$before_currency    = isset( $before['currency'] ) ? $before['currency'] : 'LKR';
+		$raw_currency       = isset( $input['paycenter_currency'] ) ? strtoupper( sanitize_text_field( trim( (string) $input['paycenter_currency'] ) ) ) : $before_currency;
+		$currency           = in_array( $raw_currency, $allowed_currencies, true ) ? $raw_currency : 'LKR';
+
 		$stored_profiles[ $profile ] = array(
 			'label'       => $label,
 			'enabled'     => $enabled,
@@ -1190,6 +1202,7 @@ class LCCL_DE_Settings {
 			'client_id'   => $client_id,
 			'auth_token'  => self::encrypt_secret( $auth_token ),
 			'hmac_secret' => self::encrypt_secret( $hmac_secret ),
+			'currency'    => $currency,
 		);
 
 		update_option( self::OPTION_PAYCENTER_PROFILES, $stored_profiles );
@@ -1206,6 +1219,7 @@ class LCCL_DE_Settings {
 					'client_id'   => $client_id,
 					'auth_token'  => self::encrypt_secret( $auth_token ),
 					'hmac_secret' => self::encrypt_secret( $hmac_secret ),
+					'currency'    => $currency,
 				)
 			);
 		}
@@ -1218,6 +1232,7 @@ class LCCL_DE_Settings {
 			'client_id'   => $client_id,
 			'auth_token'  => $auth_token,
 			'hmac_secret' => $hmac_secret,
+			'currency'    => $currency,
 		);
 	}
 

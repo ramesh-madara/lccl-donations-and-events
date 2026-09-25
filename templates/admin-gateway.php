@@ -300,6 +300,26 @@ $error   = isset( $error ) ? $error : '';
 								</td>
 							</tr>
 
+							<tr>
+								<th scope="row">
+									<label for="lccl-pc-currency-<?php echo esc_attr( $p_key ); ?>"><?php esc_html_e( 'Payment Currency', 'lccl-de' ); ?></label>
+								</th>
+								<td>
+									<select
+										id="lccl-pc-currency-<?php echo esc_attr( $p_key ); ?>"
+										name="paycenter_currency"
+									>
+										<option value="LKR" <?php selected( isset( $cfg['currency'] ) ? $cfg['currency'] : 'LKR', 'LKR' ); ?>>
+											<?php esc_html_e( 'LKR — Sri Lankan Rupee', 'lccl-de' ); ?>
+										</option>
+										<option value="USD" <?php selected( isset( $cfg['currency'] ) ? $cfg['currency'] : 'LKR', 'USD' ); ?>>
+											<?php esc_html_e( 'USD — US Dollar', 'lccl-de' ); ?>
+										</option>
+									</select>
+									<p class="description"><?php esc_html_e( 'Currency sent to the CBC Paycenter gateway for this payment route. Must match the currency configured in your Bancstac merchant account.', 'lccl-de' ); ?></p>
+								</td>
+							</tr>
+
 						</tbody>
 					</table>
 

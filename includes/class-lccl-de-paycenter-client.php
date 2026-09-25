@@ -112,7 +112,7 @@ class LCCL_DE_Paycenter_Client {
 				'totalAmount'      => $amount_cents,
 				'paymentAmount'    => $amount_cents,
 				'serviceFeeAmount' => 0,
-				'currency'         => 'LKR',
+				'currency'         => isset( $cfg['currency'] ) && '' !== $cfg['currency'] ? strtoupper( $cfg['currency'] ) : 'LKR',
 			),
 			'redirect'          => array(
 				'returnUrl'    => $return_url,
@@ -256,17 +256,18 @@ class LCCL_DE_Paycenter_Client {
 	 * The API returns amounts in minor units (cents).
 	 * We compare paymentAmount (in cents) against the stored amount_lkr * 100.
 	 *
-	 * @param array $response_data Decoded responseData from payment_complete().
-	 * @param float  $expected_amount  Amount stored in DB (amount_lkr).
+	 * @param array  $response_data    Decoded responseData from payment_complete().
+	 * @param float  $expected_amount  Amount stored in DB (amount_lkr / amount in major units).
+	 * @param string $expected_currency ISO 4217 code to verify against (defaults to 'LKR').
 	 * @return bool
 	 */
-	public static function verify_amount( array $response_data, $expected_amount ) {
+	public static function verify_amount( array $response_data, $expected_amount, $expected_currency = 'LKR' ) {
 		$ta = isset( $response_data['transactionAmount'] ) && is_array( $response_data['transactionAmount'] )
 			? $response_data['transactionAmount']
 			: array();
 
 		$gateway_currency = isset( $ta['currency'] ) ? strtoupper( trim( (string) $ta['currency'] ) ) : '';
-		if ( 'LKR' !== $gateway_currency ) {
+		if ( strtoupper( $expected_currency ) !== $gateway_currency ) {
 			return false;
 		}
 
