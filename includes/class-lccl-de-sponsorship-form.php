@@ -789,7 +789,7 @@ class LCCL_DE_Sponsorship_Form {
 			. '<p style="margin:0 0 24px;color:#444444;font-size:15px;line-height:1.6;">'
 			. esc_html__( 'Thank you for your generous sponsorship in support of the Lions Club of Colombo LEADS. Your sponsorship has been successfully received.', 'lccl-de' ) . '</p>'
 			. '<div style="background-color:#f9f9f9;border-left:4px solid #0073aa;border-radius:4px;padding:18px 20px;margin:0 0 24px;">'
-			. '<h2 style="margin:0 0 14px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">'
+			. '<h2 style="margin:0 0 14px;color:#333333;font-size:19px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">'
 			. esc_html__( 'SPONSORSHIP DETAILS', 'lccl-de' ) . '</h2>'
 			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Reference Number', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;font-weight:700;">' . esc_html( $ref ) . '</p>'

@@ -750,7 +750,7 @@ class LCCL_DE_Donation_Form {
 				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">DONATION RECEIVED</h1>
 				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Dear ' . esc_html( $who ) . ',</p>
 				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your generous donation to support the community service work of Lions Club of Colombo LEADS. Your donation has been successfully received.</p>
-				<h2 style="margin:0 0 10px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.08em;">DONATION DETAILS</h2>
+				<h2 style="margin:0 0 10px;color:#333333;font-size:19px;font-weight:700;letter-spacing:0.08em;">DONATION DETAILS</h2>
 				<p style="margin:0 0 4px;color:#555555;font-size:14px;line-height:1.5;">Reference Number:</p>
 				<p style="margin:0 0 16px;color:#333333;font-size:16px;font-weight:700;line-height:1.45;">' . esc_html( $ref ) . '</p>
 				<p style="margin:0 0 4px;color:#555555;font-size:14px;line-height:1.5;">Donation Amount:</p>
