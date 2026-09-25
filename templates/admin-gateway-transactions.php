@@ -3,6 +3,10 @@
  * Payment Transactions list table & detailed response viewer.
  *
  * Rendered inside the 'Payment Transactions' subtab of Payment Gateway.
+ * Displays all payments configured across the site:
+ *  - Online Donations
+ *  - Membership Fee Payments (Single & Family)
+ *  - Project Sponsorships
  *
  * @package LCCL_Donations_And_Events
  */
@@ -10,7 +14,69 @@
 defined( 'ABSPATH' ) || exit;
 
 global $wpdb;
-$table = LCCL_DE_Schema::payments_table();
+$payments_table     = LCCL_DE_Schema::payments_table();
+$sponsorships_table = LCCL_DE_Schema::sponsorships_table();
+$sponsorships_exist = LCCL_DE_Schema::sponsorships_exist();
+
+// ------------------------------------------------------------------
+// Build Unified SQL Query across all payments
+// ------------------------------------------------------------------
+$union_sql = "
+	(
+		SELECT
+			id,
+			order_ref,
+			member_first_name AS first_name,
+			member_last_name AS last_name,
+			member_email AS email,
+			member_phone AS phone,
+			membership_type AS tx_type,
+			family_count,
+			'' AS project,
+			'' AS project_label,
+			'' AS extra_message,
+			amount_lkr,
+			status,
+			session_id,
+			gateway_receipt,
+			gateway_response,
+			ip_address,
+			created_at,
+			paid_at,
+			'payments' AS source_table
+		FROM `{$payments_table}`
+	)
+";
+
+if ( $sponsorships_exist ) {
+	$union_sql .= "
+		UNION ALL
+		(
+			SELECT
+				id,
+				order_ref,
+				first_name,
+				last_name,
+				email,
+				phone,
+				'sponsorship' AS tx_type,
+				0 AS family_count,
+				project,
+				project_label,
+				message AS extra_message,
+				amount_lkr,
+				status,
+				session_id,
+				gateway_receipt,
+				gateway_response,
+				ip_address,
+				created_at,
+				paid_at,
+				'sponsorships' AS source_table
+			FROM `{$sponsorships_table}`
+		)
+	";
+}
 
 // Filter & search parameters from GET.
 $status_filter = isset( $_GET['tx_status'] ) ? sanitize_key( wp_unslash( $_GET['tx_status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -21,7 +87,7 @@ $per_page      = 20;
 $offset        = ( $paged - 1 ) * $per_page;
 
 // ------------------------------------------------------------------
-// KPI Summary Calculations
+// KPI Summary Calculations (All Payments Combined)
 // ------------------------------------------------------------------
 $stats = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	"SELECT
@@ -30,7 +96,7 @@ $stats = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Direct
 		COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_count,
 		COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
 		COUNT(CASE WHEN status IN ('pending', 'cancelled') THEN 1 END) as other_count
-	FROM `{$table}`", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	FROM ({$union_sql}) AS all_tx", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	ARRAY_A
 );
 
@@ -52,19 +118,20 @@ if ( '' !== $status_filter ) {
 }
 
 if ( '' !== $type_filter ) {
-	$where_clauses[] = 'membership_type = %s';
+	$where_clauses[] = 'tx_type = %s';
 	$params[]        = $type_filter;
 }
 
 if ( '' !== $search_query ) {
-	$like = '%' . $wpdb->esc_like( $search_query ) . '%';
-	$where_clauses[] = '(order_ref LIKE %s OR member_first_name LIKE %s OR member_last_name LIKE %s OR member_email LIKE %s OR member_phone LIKE %s OR gateway_receipt LIKE %s)';
-	$params[] = $like;
-	$params[] = $like;
-	$params[] = $like;
-	$params[] = $like;
-	$params[] = $like;
-	$params[] = $like;
+	$like            = '%' . $wpdb->esc_like( $search_query ) . '%';
+	$where_clauses[] = '(order_ref LIKE %s OR first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s OR gateway_receipt LIKE %s OR project_label LIKE %s)';
+	$params[]        = $like;
+	$params[]        = $like;
+	$params[]        = $like;
+	$params[]        = $like;
+	$params[]        = $like;
+	$params[]        = $like;
+	$params[]        = $like;
 }
 
 $where_sql = implode( ' AND ', $where_clauses );
@@ -72,22 +139,22 @@ $where_sql = implode( ' AND ', $where_clauses );
 // Count matching rows.
 if ( ! empty( $params ) ) {
 	$total_items = (int) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE {$where_sql}", $params ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->prepare( "SELECT COUNT(*) FROM ({$union_sql}) AS all_tx WHERE {$where_sql}", $params ) // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	);
 } else {
-	$total_items = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE 1=1" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$total_items = (int) $wpdb->get_var( "SELECT COUNT(*) FROM ({$union_sql}) AS all_tx WHERE 1=1" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 }
 
 $total_pages = max( 1, (int) ceil( $total_items / $per_page ) );
 
 // Fetch items for current page.
-$query_params = $params;
+$query_params   = $params;
 $query_params[] = $per_page;
 $query_params[] = $offset;
 
 $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		"SELECT * FROM `{$table}` WHERE {$where_sql} ORDER BY id DESC LIMIT %d OFFSET %d",
+		"SELECT * FROM ({$union_sql}) AS all_tx WHERE {$where_sql} ORDER BY created_at DESC, id DESC LIMIT %d OFFSET %d",
 		$query_params
 	),
 	ARRAY_A
@@ -100,7 +167,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 		<div class="lccl-gw-panel__title-wrap">
 			<h3 class="lccl-gw-panel__title"><?php esc_html_e( 'Payment Transactions', 'lccl-de' ); ?></h3>
 			<p class="lccl-gw-panel__desc">
-				<?php esc_html_e( 'Live record of online donations and membership payments processed via Commercial Bank of Ceylon (CBC) Paycenter Web 4.0.', 'lccl-de' ); ?>
+				<?php esc_html_e( 'Live unified record of all payments (Donations, Project Sponsorships, and Memberships) processed via Commercial Bank of Ceylon (CBC) Paycenter Web 4.0.', 'lccl-de' ); ?>
 			</p>
 		</div>
 	</div>
@@ -110,6 +177,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 		<div class="lccl-tx-card">
 			<span class="lccl-tx-card__label"><?php esc_html_e( 'Total Transactions', 'lccl-de' ); ?></span>
 			<span class="lccl-tx-card__value"><?php echo esc_html( number_format_i18n( $total_tx_all ) ); ?></span>
+			<span class="lccl-tx-card__sub"><?php esc_html_e( 'All configured payments', 'lccl-de' ); ?></span>
 		</div>
 		<div class="lccl-tx-card lccl-tx-card--success">
 			<span class="lccl-tx-card__label"><?php esc_html_e( 'Total Collected (LKR)', 'lccl-de' ); ?></span>
@@ -124,13 +192,14 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 		<div class="lccl-tx-card">
 			<span class="lccl-tx-card__label"><?php esc_html_e( 'Pending / Cancelled', 'lccl-de' ); ?></span>
 			<span class="lccl-tx-card__value"><?php echo esc_html( number_format_i18n( $other_count_all ) ); ?></span>
+			<span class="lccl-tx-card__sub"><?php esc_html_e( 'Initiated or abandoned checkout', 'lccl-de' ); ?></span>
 		</div>
 	</div>
 
 	<!-- Filter & Search Bar -->
 	<form method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>" class="lccl-tx-filter-bar">
-		<input type="hidden" name="page" value="lccl-programs">
-		<input type="hidden" name="tab" value="gateway">
+		<input type="hidden" name="page" value="<?php echo esc_attr( LCCL_DE_Admin_Programs::PAGE ); ?>">
+		<input type="hidden" name="tab" value="<?php echo esc_attr( LCCL_DE_Admin_Programs::TAB_GATEWAY ); ?>">
 		<input type="hidden" name="subtab" value="transactions">
 
 		<div class="lccl-tx-filter-group">
@@ -140,7 +209,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 				id="lccl-tx-search"
 				name="s"
 				value="<?php echo esc_attr( $search_query ); ?>"
-				placeholder="<?php esc_attr_e( 'Search by Ref, Name, Email, Phone...', 'lccl-de' ); ?>"
+				placeholder="<?php esc_attr_e( 'Search Ref, Name, Email, Project...', 'lccl-de' ); ?>"
 				class="regular-text"
 				style="width: 280px;"
 			>
@@ -153,9 +222,10 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 				<option value="cancelled" <?php selected( $status_filter, 'cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'lccl-de' ); ?></option>
 			</select>
 
-			<select name="tx_type" id="lccl-tx-type" aria-label="<?php esc_attr_e( 'Filter by type', 'lccl-de' ); ?>">
-				<option value=""><?php esc_html_e( 'All Types', 'lccl-de' ); ?></option>
+			<select name="tx_type" id="lccl-tx-type" aria-label="<?php esc_attr_e( 'Filter by payment type', 'lccl-de' ); ?>">
+				<option value=""><?php esc_html_e( 'All Payment Types', 'lccl-de' ); ?></option>
 				<option value="donation" <?php selected( $type_filter, 'donation' ); ?>><?php esc_html_e( 'Donations', 'lccl-de' ); ?></option>
+				<option value="sponsorship" <?php selected( $type_filter, 'sponsorship' ); ?>><?php esc_html_e( 'Project Sponsorships', 'lccl-de' ); ?></option>
 				<option value="member" <?php selected( $type_filter, 'member' ); ?>><?php esc_html_e( 'Annual Membership (Single)', 'lccl-de' ); ?></option>
 				<option value="family" <?php selected( $type_filter, 'family' ); ?>><?php esc_html_e( 'Annual Membership (Family)', 'lccl-de' ); ?></option>
 			</select>
@@ -181,8 +251,8 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 				<tr>
 					<th scope="col" style="width: 130px;"><?php esc_html_e( 'Date / Time', 'lccl-de' ); ?></th>
 					<th scope="col" style="width: 180px;"><?php esc_html_e( 'Order Reference', 'lccl-de' ); ?></th>
-					<th scope="col" style="width: 100px;"><?php esc_html_e( 'Type', 'lccl-de' ); ?></th>
-					<th scope="col"><?php esc_html_e( 'Payer / Donor', 'lccl-de' ); ?></th>
+					<th scope="col" style="width: 140px;"><?php esc_html_e( 'Payment Type', 'lccl-de' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'Payer / Donor / Sponsor', 'lccl-de' ); ?></th>
 					<th scope="col" style="width: 120px;"><?php esc_html_e( 'Amount', 'lccl-de' ); ?></th>
 					<th scope="col" style="width: 100px;"><?php esc_html_e( 'Status', 'lccl-de' ); ?></th>
 					<th scope="col"><?php esc_html_e( 'Bank Receipt / Gateway Response', 'lccl-de' ); ?></th>
@@ -199,18 +269,20 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 				<?php else : ?>
 					<?php foreach ( $items as $row ) : ?>
 						<?php
-						$row_id     = (int) $row['id'];
-						$status     = (string) $row['status'];
-						$type       = (string) $row['membership_type'];
-						$name       = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
-						$email      = (string) $row['member_email'];
-						$phone      = (string) $row['member_phone'];
-						$order_ref  = (string) $row['order_ref'];
-						$receipt    = (string) $row['gateway_receipt'];
-						$amount_fmt = number_format( (float) $row['amount_lkr'], 2 );
-						$date_str   = mysql2date( 'd M Y, H:i', $row['created_at'] );
-						$gw_raw     = (string) $row['gateway_response'];
-						$gw_json    = json_decode( $gw_raw, true );
+						$row_id       = (int) $row['id'];
+						$source_table = (string) $row['source_table'];
+						$row_key      = $source_table . '-' . $row_id;
+						$status       = (string) $row['status'];
+						$type         = (string) $row['tx_type'];
+						$name         = trim( $row['first_name'] . ' ' . $row['last_name'] );
+						$email        = (string) $row['email'];
+						$phone        = (string) $row['phone'];
+						$order_ref    = (string) $row['order_ref'];
+						$receipt      = (string) $row['gateway_receipt'];
+						$amount_fmt   = number_format( (float) $row['amount_lkr'], 2 );
+						$date_str     = mysql2date( 'd M Y, H:i', $row['created_at'] );
+						$gw_raw       = (string) $row['gateway_response'];
+						$gw_json      = json_decode( $gw_raw, true );
 
 						// Determine bank response code & text
 						$resp_code = '';
@@ -238,12 +310,15 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 							$status_label = __( 'Pending', 'lccl-de' );
 						}
 
-						// Badge styling for type
+						// Badge styling for payment type
 						$type_class = 'lccl-type--other';
 						$type_label = __( 'Payment', 'lccl-de' );
 						if ( 'donation' === $type ) {
 							$type_class = 'lccl-type--donation';
 							$type_label = __( 'Donation', 'lccl-de' );
+						} elseif ( 'sponsorship' === $type ) {
+							$type_class = 'lccl-type--sponsorship';
+							$type_label = __( 'Sponsorship', 'lccl-de' );
 						} elseif ( 'member' === $type ) {
 							$type_class = 'lccl-type--member';
 							$type_label = __( 'Member', 'lccl-de' );
@@ -252,7 +327,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 							$type_label = sprintf( __( 'Family (%d)', 'lccl-de' ), (int) $row['family_count'] );
 						}
 						?>
-						<tr id="tx-row-<?php echo esc_attr( $row_id ); ?>">
+						<tr id="tx-row-<?php echo esc_attr( $row_key ); ?>">
 							<td>
 								<span style="font-size: 13px; font-weight: 500; color: #2c3338;"><?php echo esc_html( $date_str ); ?></span>
 								<?php if ( ! empty( $row['paid_at'] ) && 'paid' === $status ) : ?>
@@ -266,6 +341,11 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 								<span class="lccl-type-badge <?php echo esc_attr( $type_class ); ?>">
 									<?php echo esc_html( $type_label ); ?>
 								</span>
+								<?php if ( 'sponsorship' === $type && ! empty( $row['project_label'] ) ) : ?>
+									<div style="font-size: 11px; color: #646970; margin-top: 3px; max-width: 140px; line-height: 1.25;">
+										<?php echo esc_html( $row['project_label'] ); ?>
+									</div>
+								<?php endif; ?>
 							</td>
 							<td>
 								<strong><?php echo esc_html( $name ?: '—' ); ?></strong>
@@ -309,7 +389,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 								<button
 									type="button"
 									class="button button-small lccl-tx-toggle-btn"
-									data-target="tx-detail-<?php echo esc_attr( $row_id ); ?>"
+									data-target="tx-detail-<?php echo esc_attr( $row_key ); ?>"
 									aria-expanded="false"
 									title="<?php esc_attr_e( 'View full technical details', 'lccl-de' ); ?>"
 								>
@@ -319,16 +399,16 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 						</tr>
 
 						<!-- Expandable Details Row -->
-						<tr id="tx-detail-<?php echo esc_attr( $row_id ); ?>" class="lccl-tx-detail-row" hidden>
+						<tr id="tx-detail-<?php echo esc_attr( $row_key ); ?>" class="lccl-tx-detail-row" hidden>
 							<td colspan="8">
 								<div class="lccl-tx-detail-box">
 									<div class="lccl-tx-detail-grid">
 										<div>
 											<h4><?php esc_html_e( 'Transaction Metadata', 'lccl-de' ); ?></h4>
 											<ul>
-												<li><strong><?php esc_html_e( 'Transaction ID:', 'lccl-de' ); ?></strong> #<?php echo esc_html( $row_id ); ?></li>
+												<li><strong><?php esc_html_e( 'Record Source:', 'lccl-de' ); ?></strong> <?php echo esc_html( 'sponsorships' === $source_table ? __( 'Project Sponsorship', 'lccl-de' ) : ( 'donation' === $type ? __( 'Online Donation', 'lccl-de' ) : __( 'Membership Registration', 'lccl-de' ) ) ); ?> (#<?php echo esc_html( $row_id ); ?>)</li>
 												<li><strong><?php esc_html_e( 'Order Reference:', 'lccl-de' ); ?></strong> <code><?php echo esc_html( $order_ref ); ?></code></li>
-												<li><strong><?php esc_html_e( 'Payer Name:', 'lccl-de' ); ?></strong> <?php echo esc_html( $name ); ?></li>
+												<li><strong><?php esc_html_e( 'Payer / Sponsor:', 'lccl-de' ); ?></strong> <?php echo esc_html( $name ); ?></li>
 												<li><strong><?php esc_html_e( 'Email:', 'lccl-de' ); ?></strong> <?php echo esc_html( $email ?: '—' ); ?></li>
 												<li><strong><?php esc_html_e( 'Phone:', 'lccl-de' ); ?></strong> <?php echo esc_html( $phone ?: '—' ); ?></li>
 												<li><strong><?php esc_html_e( 'Client IP:', 'lccl-de' ); ?></strong> <?php echo esc_html( $row['ip_address'] ?: '—' ); ?></li>
@@ -350,10 +430,15 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 										</div>
 									</div>
 
-									<?php
-									// Show donation causes / message if present
-									if ( is_array( $gw_json ) && ( ! empty( $gw_json['causes'] ) || ! empty( $gw_json['message'] ) ) ) :
-									?>
+									<?php if ( 'sponsorship' === $type ) : ?>
+										<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+											<h4><?php esc_html_e( 'Project Sponsorship Details', 'lccl-de' ); ?></h4>
+											<p><strong><?php esc_html_e( 'Project:', 'lccl-de' ); ?></strong> <?php echo esc_html( $row['project_label'] ?: $row['project'] ); ?></p>
+											<?php if ( ! empty( $row['extra_message'] ) ) : ?>
+												<p><strong><?php esc_html_e( 'Sponsor Message:', 'lccl-de' ); ?></strong> <em>"<?php echo esc_html( $row['extra_message'] ); ?>"</em></p>
+											<?php endif; ?>
+										</div>
+									<?php elseif ( is_array( $gw_json ) && ( ! empty( $gw_json['causes'] ) || ! empty( $gw_json['message'] ) ) ) : ?>
 										<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
 											<h4><?php esc_html_e( 'Donation Details', 'lccl-de' ); ?></h4>
 											<?php if ( ! empty( $gw_json['causes'] ) ) : ?>
@@ -562,6 +647,11 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 .lccl-type--donation {
 	background: #e8f4fc;
 	color: #135e96;
+}
+.lccl-type--sponsorship {
+	background: #fffbeb;
+	color: #92400e;
+	border: 1px solid #fde68a;
 }
 .lccl-type--member {
 	background: #f4e8fc;

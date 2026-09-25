@@ -17,6 +17,21 @@ defined( 'ABSPATH' ) || exit;
 $val = static function ( $key ) use ( $values ) {
 	return isset( $values[ $key ] ) ? $values[ $key ] : '';
 };
+$err = static function ( $key ) use ( $errors ) {
+	return isset( $errors[ $key ] ) ? $errors[ $key ] : '';
+};
+$invalid = static function ( $key ) use ( $errors ) {
+	return isset( $errors[ $key ] ) ? ' lccl-bdf__field--invalid' : '';
+};
+$notice = static function ( $key ) use ( $err ) {
+	$msg = $err( $key );
+	printf(
+		'<p class="lccl-bdf__notice" data-lccl-notice="%1$s" role="alert"%2$s>%3$s</p>',
+		esc_attr( $key ),
+		$msg ? '' : ' hidden',
+		$msg ? esc_html( $msg ) : ''
+	);
+};
 
 $payment_success    = isset( $payment_success ) ? $payment_success : null;
 $payment_notice     = isset( $payment_notice ) ? $payment_notice : '';
@@ -47,6 +62,10 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 			id="lccl-ps-form"
 			method="post"
 			action="<?php echo esc_url( remove_query_arg( array( LCCL_DE_Sponsorship_Form::QA_RETURN, LCCL_DE_Sponsorship_Form::QA_CANCEL, LCCL_DE_Sponsorship_Form::QA_ORDER_REF, 'reqid', 'ReqID', 'lccl_ps_error' ) ) ); ?>"
+			data-required-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::required_field_message() ); ?>"
+			data-amount-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::amount_error_message() ); ?>"
+			data-email-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::email_error_message() ); ?>"
+			data-phone-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::phone_error_message() ); ?>"
 			novalidate
 		>
 			<?php wp_nonce_field( LCCL_DE_Sponsorship_Form::NONCE_ACTION, LCCL_DE_Sponsorship_Form::NONCE_FIELD ); ?>
@@ -84,32 +103,44 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 				</p>
 			<?php endif; ?>
 
-			<?php if ( '' !== $atts['title'] || '' !== $atts['intro'] ) : ?>
-				<header class="lccl-bdf__header">
-					<?php if ( '' !== $atts['title'] ) : ?>
-						<h3 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h3>
-					<?php endif; ?>
-					<?php if ( '' !== $atts['intro'] ) : ?>
-						<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
-					<?php endif; ?>
-				</header>
-			<?php endif; ?>
+			<p class="lccl-bdf__banner lccl-bdf__banner--error" data-lccl-notice="required" role="alert" hidden>
+				<?php esc_html_e( 'Please complete all fields marked with an *.', 'lccl-de' ); ?>
+			</p>
+
+			<header class="lccl-bdf__header">
+				<?php if ( '' !== $atts['title'] ) : ?>
+					<h3 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h3>
+				<?php endif; ?>
+				<p class="lccl-bdf__required-note">
+					<?php
+					printf(
+						/* translators: %s: required field asterisk. */
+						esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
+						'<span class="lccl-bdf__req">*</span>'
+					);
+					?>
+				</p>
+				<?php if ( '' !== $atts['intro'] ) : ?>
+					<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
+				<?php endif; ?>
+			</header>
 
 			<div class="lccl-ps__fields">
-				<div class="lccl-bdf__field lccl-ps__field--first">
+				<div class="lccl-bdf__field lccl-ps__field--first<?php echo esc_attr( $invalid( 'project' ) ); ?>">
 					<label class="lccl-bdf__label" for="lccl-ps-project">
 						<?php esc_html_e( 'Project', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 					</label>
-					<select class="lccl-bdf__select" id="lccl-ps-project" name="project">
+					<select class="lccl-bdf__select" id="lccl-ps-project" name="project" required>
 						<?php foreach ( $projects as $key => $item ) : ?>
 							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $project, $key ); ?>>
 								<?php echo esc_html( $item['title'] ); ?>
 							</option>
 						<?php endforeach; ?>
 					</select>
+					<?php $notice( 'project' ); ?>
 				</div>
 
-				<div class="lccl-df__amount-row">
+				<div class="lccl-df__amount-row<?php echo esc_attr( $invalid( 'amount' ) ); ?>">
 					<input
 						class="lccl-df__amount-input"
 						type="text"
@@ -120,11 +151,15 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 						inputmode="numeric"
 						autocomplete="off"
 						maxlength="12"
+						data-lccl-validate="amount"
+						data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::amount_error_message() ); ?>"
+						required
 					>
 					<div class="lccl-df__currency" aria-hidden="true">
 						<span><?php esc_html_e( 'LKR', 'lccl-de' ); ?></span>
 					</div>
 				</div>
+				<?php $notice( 'amount' ); ?>
 
 				<div class="lccl-df__presets" role="group" aria-label="<?php esc_attr_e( 'Suggested amounts', 'lccl-de' ); ?>">
 					<div class="lccl-df__preset-row">
@@ -157,7 +192,7 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 				</div>
 
 				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field">
+					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-first-name">
 							<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 						</label>
@@ -170,9 +205,11 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 							placeholder="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
 							autocomplete="given-name"
 							maxlength="100"
+							required
 						>
+						<?php $notice( 'first_name' ); ?>
 					</div>
-					<div class="lccl-bdf__field">
+					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-last-name">
 							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 						</label>
@@ -185,12 +222,14 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 							placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
 							autocomplete="family-name"
 							maxlength="100"
+							required
 						>
+						<?php $notice( 'last_name' ); ?>
 					</div>
 				</div>
 
 				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field">
+					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-email">
 							<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 						</label>
@@ -203,9 +242,13 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 							placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
 							autocomplete="email"
 							maxlength="191"
+							data-lccl-validate="email"
+							data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::email_error_message() ); ?>"
+							required
 						>
+						<?php $notice( 'email' ); ?>
 					</div>
-					<div class="lccl-bdf__field">
+					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-phone">
 							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 						</label>
@@ -219,7 +262,11 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 							inputmode="tel"
 							autocomplete="tel"
 							maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
+							data-lccl-validate="phone"
+							data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::phone_error_message() ); ?>"
+							required
 						>
+						<?php $notice( 'phone' ); ?>
 					</div>
 				</div>
 
@@ -255,10 +302,14 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 
 			<button
 				class="lccl-bdf__submit lccl-df__submit"
+				id="lccl-ps-submit-btn"
 				type="submit"
 				<?php echo $gateway_configured ? '' : 'disabled'; ?>
 			>
-				<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
+				<span class="lccl-df__pay-label" data-default-text="<?php esc_attr_e( 'Support This Project', 'lccl-de' ); ?>" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>">
+					<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
+				</span>
+				<span class="lccl-df__pay-spinner" hidden aria-hidden="true"></span>
 			</button>
 
 			<?php if ( ! $gateway_configured ) : ?>

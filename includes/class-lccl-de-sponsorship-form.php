@@ -110,6 +110,42 @@ class LCCL_DE_Sponsorship_Form {
 	}
 
 	/**
+	 * Message shown under an empty required field.
+	 *
+	 * @return string
+	 */
+	public static function required_field_message() {
+		return LCCL_DE_Blood_Donor_Submissions::required_field_message();
+	}
+
+	/**
+	 * Message shown when the amount is missing or not a positive number.
+	 *
+	 * @return string
+	 */
+	public static function amount_error_message() {
+		return __( 'Please enter a valid sponsorship amount of at least 1 LKR.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when the email is missing or invalid.
+	 *
+	 * @return string
+	 */
+	public static function email_error_message() {
+		return __( 'Please enter a valid email address.', 'lccl-de' );
+	}
+
+	/**
+	 * Message shown when the phone number is missing or invalid.
+	 *
+	 * @return string
+	 */
+	public static function phone_error_message() {
+		return LCCL_DE_Blood_Donor_Submissions::phone_error_message();
+	}
+
+	/**
 	 * Sample projects shown in the right-hand panel.
 	 *
 	 * @return array<string,array<string,mixed>>

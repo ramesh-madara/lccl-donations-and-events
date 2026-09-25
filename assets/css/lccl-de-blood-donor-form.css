@@ -861,7 +861,8 @@
 	letter-spacing: 0.06em;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input {
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input {
 	border-color: var(--lccl-bdf-required);
 }
 
@@ -2073,7 +2074,8 @@
 }
 
 .lccl-bdf--membership .lccl-mf__pay-spinner,
-.lccl-bdf--donation .lccl-df__pay-spinner {
+.lccl-bdf--donation .lccl-df__pay-spinner,
+.lccl-bdf--sponsorship .lccl-df__pay-spinner {
 	display: none;
 	width: 18px;
 	height: 18px;
@@ -2085,14 +2087,17 @@
 }
 
 .lccl-bdf--membership .lccl-mf__pay-spinner[hidden],
-.lccl-bdf--donation .lccl-df__pay-spinner[hidden] {
+.lccl-bdf--donation .lccl-df__pay-spinner[hidden],
+.lccl-bdf--sponsorship .lccl-df__pay-spinner[hidden] {
 	display: none !important;
 }
 
 .lccl-bdf--membership .lccl-mf__pay-btn.is-loading .lccl-mf__pay-spinner,
 .lccl-bdf--membership .lccl-mf__pay-spinner:not([hidden]),
 .lccl-bdf--donation .lccl-df__submit.is-loading .lccl-df__pay-spinner,
-.lccl-bdf--donation .lccl-df__pay-spinner:not([hidden]) {
+.lccl-bdf--donation .lccl-df__pay-spinner:not([hidden]),
+.lccl-bdf--sponsorship .lccl-df__submit.is-loading .lccl-df__pay-spinner,
+.lccl-bdf--sponsorship .lccl-df__pay-spinner:not([hidden]) {
 	display: inline-block !important;
 }
 
