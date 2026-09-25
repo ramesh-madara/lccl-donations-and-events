@@ -873,7 +873,7 @@ class LCCL_DE_Admin_Programs {
 	 * Handle POST from the Projects settings form.
 	 */
 	public static function handle_projects_post() {
-		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+		if ( ! is_admin() || ! current_user_can( 'read' ) ) {
 			return;
 		}
 
