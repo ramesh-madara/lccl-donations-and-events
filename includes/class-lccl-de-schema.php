@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 9;
+	const VERSION = 10;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -121,6 +121,31 @@ class LCCL_DE_Schema {
 		global $wpdb;
 
 		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_spectacles' );
+	}
+
+	/**
+	 * Project sponsorship payments table, including the WP prefix.
+	 *
+	 * @return string
+	 */
+	public static function sponsorships_table() {
+		global $wpdb;
+
+		$wanted   = $wpdb->prefix . 'lccl_de_sponsorships';
+		$existing = self::existing_table_name( $wanted );
+
+		return $existing ? $existing : $wanted;
+	}
+
+	/**
+	 * Whether the sponsorships table is present, ignoring identifier case.
+	 *
+	 * @return bool
+	 */
+	public static function sponsorships_exist() {
+		global $wpdb;
+
+		return '' !== self::existing_table_name( $wpdb->prefix . 'lccl_de_sponsorships' );
 	}
 
 	/**
@@ -338,6 +363,35 @@ class LCCL_DE_Schema {
 		) {$charset};";
 
 		dbDelta( $payments_sql );
+
+		$sponsorships     = self::sponsorships_table();
+		$sponsorships_sql = "CREATE TABLE {$sponsorships} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			order_ref varchar(64) NOT NULL,
+			first_name varchar(100) NOT NULL DEFAULT '',
+			last_name varchar(100) NOT NULL DEFAULT '',
+			email varchar(191) NOT NULL DEFAULT '',
+			phone varchar(30) NOT NULL DEFAULT '',
+			project varchar(64) NOT NULL DEFAULT '',
+			project_label varchar(191) NOT NULL DEFAULT '',
+			amount_lkr decimal(12,2) NOT NULL DEFAULT 0.00,
+			message text,
+			status varchar(32) NOT NULL DEFAULT 'pending',
+			session_id varchar(128) DEFAULT NULL,
+			gateway_receipt varchar(128) DEFAULT NULL,
+			gateway_response longtext,
+			ip_address varchar(45) DEFAULT NULL,
+			created_at datetime NOT NULL,
+			paid_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY order_ref (order_ref),
+			KEY status (status),
+			KEY project (project),
+			KEY email (email),
+			KEY created_at (created_at)
+		) {$charset};";
+
+		dbDelta( $sponsorships_sql );
 		self::$table_names = array();
 		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();
 		update_option( self::OPTION, self::VERSION );

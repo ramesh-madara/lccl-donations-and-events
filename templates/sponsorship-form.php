@@ -1,11 +1,15 @@
 <?php
 /**
- * Sample project sponsorship markup. No payment or database write.
+ * Project sponsorship form markup with CBC Paycenter gateway integration.
  *
  * @package LCCL_Donations_And_Events
  *
- * @var array $atts    Shortcode attributes.
- * @var array $values  Previously entered values, keyed by field name.
+ * @var array       $atts              Shortcode attributes.
+ * @var array       $values            Previously entered values, keyed by field name.
+ * @var array       $errors            Validation errors array (flat, for global error display).
+ * @var array|null  $payment_success   Payment success array if returned from gateway.
+ * @var string      $payment_notice    Payment cancel or error notice message.
+ * @var bool        $gateway_configured Whether the Fundraisers payment gateway profile is active.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -13,6 +17,10 @@ defined( 'ABSPATH' ) || exit;
 $val = static function ( $key ) use ( $values ) {
 	return isset( $values[ $key ] ) ? $values[ $key ] : '';
 };
+
+$payment_success    = isset( $payment_success ) ? $payment_success : null;
+$payment_notice     = isset( $payment_notice ) ? $payment_notice : '';
+$gateway_configured = isset( $gateway_configured ) ? (bool) $gateway_configured : false;
 
 $projects = LCCL_DE_Sponsorship_Form::projects();
 $project  = $val( 'project' );
@@ -38,9 +46,44 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 			class="lccl-bdf__form lccl-ps__form"
 			id="lccl-ps-form"
 			method="post"
-			action="#"
+			action="<?php echo esc_url( remove_query_arg( array( LCCL_DE_Sponsorship_Form::QA_RETURN, LCCL_DE_Sponsorship_Form::QA_CANCEL, LCCL_DE_Sponsorship_Form::QA_ORDER_REF, 'reqid', 'ReqID', 'lccl_ps_error' ) ) ); ?>"
 			novalidate
 		>
+			<?php wp_nonce_field( LCCL_DE_Sponsorship_Form::NONCE_ACTION, LCCL_DE_Sponsorship_Form::NONCE_FIELD ); ?>
+
+			<?php if ( ! empty( $payment_success ) ) : ?>
+				<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status" style="margin-bottom: 24px;">
+					<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
+					<span class="lccl-bdf__banner-copy">
+						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Sponsorship Received with Thanks!', 'lccl-de' ); ?></strong>
+						<span class="lccl-bdf__banner-text">
+							<?php
+							printf(
+								/* translators: 1: sponsor name, 2: project title, 3: amount formatted, 4: receipt number */
+								esc_html__( 'Thank you, %1$s. Your sponsorship of %2$s for "%3$s" was received successfully. Receipt: %4$s', 'lccl-de' ),
+								'<strong>' . esc_html( $payment_success['sponsor_name'] ) . '</strong>',
+								'<strong>' . esc_html( 'LKR ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
+								esc_html( $payment_success['project_label'] ),
+								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
+							);
+							?>
+						</span>
+					</span>
+				</p>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $payment_notice ) ) : ?>
+				<p class="lccl-bdf__banner lccl-bdf__banner--error" role="alert" style="margin-bottom: 24px;">
+					<?php echo esc_html( $payment_notice ); ?>
+				</p>
+			<?php endif; ?>
+
+			<?php if ( ! empty( $errors ) ) : ?>
+				<p class="lccl-bdf__banner lccl-bdf__banner--error" role="alert" style="margin-bottom: 24px;">
+					<?php echo esc_html( implode( ' ', $errors ) ); ?>
+				</p>
+			<?php endif; ?>
+
 			<?php if ( '' !== $atts['title'] || '' !== $atts['intro'] ) : ?>
 				<header class="lccl-bdf__header">
 					<?php if ( '' !== $atts['title'] ) : ?>
@@ -210,9 +253,23 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 				</div>
 			</div>
 
-			<button class="lccl-bdf__submit lccl-df__submit" type="submit">
+			<button
+				class="lccl-bdf__submit lccl-df__submit"
+				type="submit"
+				<?php echo $gateway_configured ? '' : 'disabled'; ?>
+			>
 				<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
 			</button>
+
+			<?php if ( ! $gateway_configured ) : ?>
+				<p class="lccl-bdf__notice" role="alert" style="margin-top:12px;">
+					<?php esc_html_e( 'Online sponsorship payments are not currently available. Please contact the club administrator.', 'lccl-de' ); ?>
+				</p>
+			<?php else : ?>
+				<p class="lccl-bdf__secure" style="margin-top:12px;font-size:13px;color:#666;">
+					<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
+				</p>
+			<?php endif; ?>
 		</form>
 
 		<div class="lccl-ps__image-panel">

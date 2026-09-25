@@ -143,8 +143,8 @@
 			} );
 		} );
 
-		form.addEventListener( 'submit', function ( event ) {
-			event.preventDefault();
+		form.addEventListener( 'submit', function () {
+			// Allow normal form submission to the server for gateway processing.
 		} );
 
 		syncTotal();
