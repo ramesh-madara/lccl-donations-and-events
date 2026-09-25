@@ -61,6 +61,11 @@ class LCCL_DE_Membership_Form {
 	const CLUB_LKR = 6000;
 
 	/**
+	 * Profile key for Paycenter settings.
+	 */
+	const PROFILE = LCCL_DE_Settings::PROFILE_MEMBERSHIP;
+
+	/**
 	 * Nonce action for form submission.
 	 */
 	const NONCE_ACTION = 'lccl_mf_submit';
