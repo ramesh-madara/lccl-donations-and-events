@@ -151,32 +151,65 @@ class LCCL_DE_Sponsorship_Form {
 	 * @return array<string,array<string,mixed>>
 	 */
 	public static function projects() {
-		return array(
-			'spectacles' => array(
+		$configured = LCCL_DE_Settings::get_projects();
+		$projects   = array();
+
+		global $wpdb;
+		$table = LCCL_DE_Schema::sponsorships_table();
+
+		foreach ( $configured as $id => $p ) {
+			if ( empty( $p['enabled'] ) ) {
+				continue;
+			}
+
+			$raised = 0.0;
+			if ( $table ) {
+				$raised = (float) $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+					$wpdb->prepare(
+						"SELECT SUM(amount_lkr) FROM `{$table}` WHERE project = %s AND status = 'paid'",
+						$id
+					)
+				);
+			}
+
+			$value = isset( $p['financial_goal'] ) ? (float) $p['financial_goal'] : 0.0;
+
+			$status = 'ongoing';
+			$label  = __( 'Ongoing', 'lccl-de' );
+			$title  = sanitize_text_field( $p['title'] );
+
+			if ( $value > 0 && $raised >= $value ) {
+				$status = 'completed';
+				$label  = __( 'Completed', 'lccl-de' );
+				$title .= ' ' . __( '(Completed)', 'lccl-de' );
+			} elseif ( 0.0 === $raised ) {
+				$status = 'upcoming';
+				$label  = __( 'Upcoming', 'lccl-de' );
+			}
+
+			$projects[ $id ] = array(
+				'status'  => $status,
+				'label'   => $label,
+				'title'   => $title,
+				'summary' => '',
+				'value'   => $value,
+				'raised'  => $raised,
+			);
+		}
+
+		// Fallback if no projects are configured or enabled
+		if ( empty( $projects ) ) {
+			$projects['general'] = array(
 				'status'  => 'ongoing',
 				'label'   => __( 'Ongoing', 'lccl-de' ),
-				'title'   => __( '200 Spectacles for School Children', 'lccl-de' ),
-				'summary' => __( 'Help provide 200 pairs of spectacles to school children who require vision correction.', 'lccl-de' ),
-				'value'   => 1000000,
-				'raised'  => 425000,
-			),
-			'cataract'   => array(
-				'status'  => 'upcoming',
-				'label'   => __( 'Upcoming', 'lccl-de' ),
-				'title'   => __( 'Cataract Surgery Support', 'lccl-de' ),
-				'summary' => __( 'Support cataract surgery for patients identified through our community health initiatives.', 'lccl-de' ),
-				'value'   => 750000,
-				'raised'  => 180000,
-			),
-			'health'     => array(
-				'status'  => 'upcoming',
-				'label'   => __( 'Upcoming', 'lccl-de' ),
-				'title'   => __( 'Community Health Programme', 'lccl-de' ),
-				'summary' => __( 'Support medical screening, consultations and essential health services for communities in need.', 'lccl-de' ),
-				'value'   => 500000,
-				'raised'  => 95000,
-			),
-		);
+				'title'   => __( 'General Community Projects', 'lccl-de' ),
+				'summary' => '',
+				'value'   => 0,
+				'raised'  => 0,
+			);
+		}
+
+		return $projects;
 	}
 
 	/**
@@ -354,6 +387,11 @@ class LCCL_DE_Sponsorship_Form {
 		}
 		if ( $amount < 1.00 ) {
 			$errors[] = __( 'Please enter a valid sponsorship amount of at least 1 LKR.', 'lccl-de' );
+		}
+		if ( isset( $project_data['status'] ) && 'completed' === $project_data['status'] ) {
+			/* translators: %s: project title without the (Completed) suffix if possible */
+			$clean_title = str_replace( ' ' . __( '(Completed)', 'lccl-de' ), '', $project_data['title'] );
+			$errors[] = sprintf( __( 'The financial goal for "%s" has already been met. Thank you for your interest, but we are no longer accepting donations for this project. Please select another project to support.', 'lccl-de' ), $clean_title );
 		}
 		if ( ! LCCL_DE_Paycenter_Client::is_configured( self::PROFILE ) ) {
 			$errors[] = __( 'Online project sponsorship payments are currently not configured. Please contact the club administrator.', 'lccl-de' );

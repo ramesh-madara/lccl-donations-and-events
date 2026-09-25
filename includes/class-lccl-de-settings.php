@@ -63,6 +63,11 @@ class LCCL_DE_Settings {
 	const OPTION_MEMBERSHIP_FEES = 'lccl_de_membership_fees';
 
 	/**
+	 * Option that stores the list of projects for the sponsorship form.
+	 */
+	const OPTION_PROJECTS_LIST = 'lccl_de_projects_list';
+
+	/**
 	 * Option that stores revision history for membership fee changes.
 	 */
 	const OPTION_MEMBERSHIP_FEES_HISTORY = 'lccl_de_membership_fees_history';
@@ -1420,5 +1425,53 @@ class LCCL_DE_Settings {
 	public static function get_membership_fees_history() {
 		$history = get_option( self::OPTION_MEMBERSHIP_FEES_HISTORY, array() );
 		return is_array( $history ) ? $history : array();
+	}
+
+	// ------------------------------------------------------------------
+	// Projects List Management
+	// ------------------------------------------------------------------
+
+	/**
+	 * Get the list of projects for the sponsorship form.
+	 *
+	 * @return array<string, array{id:string,title:string,financial_goal:float,enabled:int}>
+	 */
+	public static function get_projects() {
+		$defaults = array(
+			'spectacles' => array(
+				'id'             => 'spectacles',
+				'title'          => __( '200 Spectacles for School Children', 'lccl-de' ),
+				'financial_goal' => 1000000,
+				'enabled'        => 1,
+			),
+			'cataract'   => array(
+				'id'             => 'cataract',
+				'title'          => __( 'Cataract Surgery Support', 'lccl-de' ),
+				'financial_goal' => 750000,
+				'enabled'        => 1,
+			),
+			'health'     => array(
+				'id'             => 'health',
+				'title'          => __( 'Community Health Programme', 'lccl-de' ),
+				'financial_goal' => 500000,
+				'enabled'        => 1,
+			),
+		);
+
+		$saved = get_option( self::OPTION_PROJECTS_LIST, null );
+		if ( ! is_array( $saved ) ) {
+			return $defaults;
+		}
+
+		return $saved;
+	}
+
+	/**
+	 * Save the list of projects.
+	 *
+	 * @param array $projects Array of projects.
+	 */
+	public static function save_projects( array $projects ) {
+		update_option( self::OPTION_PROJECTS_LIST, $projects );
 	}
 }

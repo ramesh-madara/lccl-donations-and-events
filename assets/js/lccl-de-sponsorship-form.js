@@ -209,6 +209,8 @@
 		var total = form.querySelector( '.lccl-df__total-input' );
 		var presets = form.querySelectorAll( '[data-lccl-preset]' );
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
+		var completedBanner = form.querySelector( '[data-lccl-notice="completed"]' );
+		var submitBtn = form.querySelector( '#lccl-ps-submit-btn' ) || form.querySelector( '.lccl-df__submit' );
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
 
 		function syncTotal() {
@@ -299,6 +301,32 @@
 			} );
 		} );
 
+		function handleProjectStatus() {
+			if ( ! project ) {
+				return;
+			}
+			var opt = project.options[project.selectedIndex];
+			if ( ! opt ) {
+				return;
+			}
+			var isCompleted = '1' === opt.getAttribute( 'data-completed' );
+
+			var fields = form.querySelectorAll( 'input, textarea, button.lccl-df__preset' );
+			Array.prototype.forEach.call( fields, function ( el ) {
+				if ( el !== project ) {
+					el.disabled = isCompleted;
+				}
+			} );
+
+			if ( submitBtn ) {
+				submitBtn.disabled = isCompleted;
+			}
+
+			if ( completedBanner ) {
+				completedBanner.hidden = ! isCompleted;
+			}
+		}
+
 		if ( project ) {
 			project.addEventListener( 'change', function () {
 				if ( isFilled( project ) ) {
@@ -306,8 +334,10 @@
 					setNotice( form, 'project', '' );
 				}
 				highlightProject( root, project.value );
+				handleProjectStatus();
 			} );
 			highlightProject( root, project.value );
+			handleProjectStatus();
 		}
 
 		Array.prototype.forEach.call( root.querySelectorAll( '[data-lccl-select-project]' ), function ( btn ) {
@@ -377,7 +407,6 @@
 			}
 
 			// Show loading spinner on submit, prevent double-submission.
-			var submitBtn = form.querySelector( '#lccl-ps-submit-btn' ) || form.querySelector( '.lccl-df__submit' );
 			var payLabel  = submitBtn ? submitBtn.querySelector( '.lccl-df__pay-label' ) : null;
 			var paySpin   = submitBtn ? submitBtn.querySelector( '.lccl-df__pay-spinner' ) : null;
 

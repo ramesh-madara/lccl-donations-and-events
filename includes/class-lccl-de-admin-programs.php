@@ -63,6 +63,11 @@ class LCCL_DE_Admin_Programs {
 	const TAB_MEMBERSHIP_FEES = 'membership-fees';
 
 	/**
+	 * Hub Projects tab.
+	 */
+	const TAB_PROJECTS = 'projects';
+
+	/**
 	 * Hook menu and assets.
 	 */
 	public static function init() {
@@ -70,6 +75,7 @@ class LCCL_DE_Admin_Programs {
 		add_action( 'admin_init', array( __CLASS__, 'redirect_legacy' ) );
 		add_action( 'admin_init', array( __CLASS__, 'handle_gateway_post' ) );
 		add_action( 'admin_init', array( __CLASS__, 'handle_membership_fees_post' ) );
+		add_action( 'admin_init', array( __CLASS__, 'handle_projects_post' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
 		add_action( 'wp_ajax_lccl_de_program_tab', array( __CLASS__, 'ajax_tab' ) );
 		add_action( 'wp_ajax_lccl_de_test_gateway', array( __CLASS__, 'ajax_test_gateway' ) );
@@ -214,7 +220,7 @@ class LCCL_DE_Admin_Programs {
 		$tab     = self::normalize_tab( ( self::SCREEN_USERS === $screen ) ? self::TAB_USERS : $tab );
 		$program = self::normalize_program_key( $program );
 
-		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab || self::TAB_GATEWAY === $tab || self::TAB_MEMBERSHIP_FEES === $tab ) {
+		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab || self::TAB_GATEWAY === $tab || self::TAB_MEMBERSHIP_FEES === $tab || self::TAB_PROJECTS === $tab ) {
 			$program = '';
 		}
 
@@ -235,6 +241,8 @@ class LCCL_DE_Admin_Programs {
 			extract( self::gateway_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_MEMBERSHIP_FEES === $tab ) {
 			extract( self::membership_fees_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		} elseif ( self::TAB_PROJECTS === $tab ) {
+			extract( self::projects_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', true, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			$tab = self::TAB_PROGRAMS;
@@ -254,7 +262,7 @@ class LCCL_DE_Admin_Programs {
 		$tab     = self::normalize_tab( $tab );
 		$program = self::normalize_program_key( $program );
 
-		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab || self::TAB_GATEWAY === $tab || self::TAB_MEMBERSHIP_FEES === $tab ) {
+		if ( self::TAB_USERS === $tab || self::TAB_SMS === $tab || self::TAB_GATEWAY === $tab || self::TAB_MEMBERSHIP_FEES === $tab || self::TAB_PROJECTS === $tab ) {
 			$program = '';
 		}
 
@@ -271,6 +279,9 @@ class LCCL_DE_Admin_Programs {
 		} elseif ( self::TAB_MEMBERSHIP_FEES === $tab ) {
 			extract( self::membership_fees_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-membership-fees.php';
+		} elseif ( self::TAB_PROJECTS === $tab ) {
+			extract( self::projects_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			include LCCL_DE_PATH . 'templates/admin-projects.php';
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', false, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-program-workspace.php';
@@ -324,6 +335,9 @@ class LCCL_DE_Admin_Programs {
 		}
 		if ( self::TAB_MEMBERSHIP_FEES === $tab ) {
 			return self::TAB_MEMBERSHIP_FEES;
+		}
+		if ( self::TAB_PROJECTS === $tab ) {
+			return self::TAB_PROJECTS;
 		}
 
 		return self::TAB_PROGRAMS;
@@ -806,6 +820,89 @@ class LCCL_DE_Admin_Programs {
 
 		wp_safe_redirect(
 			self::membership_fees_url(
+				array(
+					'message' => 'saved',
+				)
+			)
+		);
+		exit;
+	}
+
+	// ------------------------------------------------------------------
+	// Projects tab helpers
+	// ------------------------------------------------------------------
+
+	/**
+	 * URL for the Projects tab.
+	 *
+	 * @param array $extra Extra query args.
+	 * @return string
+	 */
+	public static function projects_tab_url( $extra = array() ) {
+		return add_query_arg(
+			array_merge( array( 'page' => self::PAGE, 'tab' => self::TAB_PROJECTS ), $extra ),
+			admin_url( 'admin.php' )
+		);
+	}
+
+	/**
+	 * Variables the projects template expects.
+	 *
+	 * @param bool $from_get Read message/error from $_GET.
+	 * @return array
+	 */
+	private static function projects_vars( $from_get ) {
+		$message = '';
+		$error   = '';
+
+		if ( $from_get ) {
+			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error   = isset( $_GET['error'] ) ? sanitize_text_field( rawurldecode( wp_unslash( $_GET['error'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+
+		return array(
+			'tab'      => self::TAB_PROJECTS,
+			'program'  => '',
+			'message'  => $message,
+			'error'    => $error,
+			'projects' => LCCL_DE_Settings::get_projects(),
+		);
+	}
+
+	/**
+	 * Handle POST from the Projects settings form.
+	 */
+	public static function handle_projects_post() {
+		if ( ! is_admin() || ! current_user_can( 'manage_options' ) ) {
+			return;
+		}
+
+		if ( empty( $_POST['lccl_de_projects_save'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			return;
+		}
+
+		check_admin_referer( 'lccl_de_projects_save', 'lccl_de_projects_nonce' );
+
+		$raw_projects = isset( $_POST['projects'] ) ? (array) wp_unslash( $_POST['projects'] ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+
+		$projects = array();
+		foreach ( $raw_projects as $key => $p ) {
+			$id = sanitize_key( $key );
+			if ( empty( $id ) || empty( $p['title'] ) ) {
+				continue;
+			}
+			$projects[ $id ] = array(
+				'id'             => $id,
+				'title'          => sanitize_text_field( $p['title'] ),
+				'financial_goal' => isset( $p['financial_goal'] ) ? max( 0.00, (float) $p['financial_goal'] ) : 0.00,
+				'enabled'        => isset( $p['enabled'] ) ? 1 : 0,
+			);
+		}
+
+		LCCL_DE_Settings::save_projects( $projects );
+
+		wp_safe_redirect(
+			self::projects_tab_url(
 				array(
 					'message' => 'saved',
 				)

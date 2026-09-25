@@ -110,6 +110,11 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 				<?php esc_html_e( 'Please complete all fields marked with an *.', 'lccl-de' ); ?>
 			</p>
 
+			<p class="lccl-bdf__banner lccl-bdf__banner--success" data-lccl-notice="completed" role="alert" hidden style="background-color: #ecfdf5; border-color: #10b981; color: #065f46; margin-bottom: 24px;">
+				<span style="font-weight: 600; display: block; margin-bottom: 4px; font-size: 15px;"><?php esc_html_e( 'Financial Goal Met!', 'lccl-de' ); ?></span>
+				<?php esc_html_e( 'Thank you for your interest! This project has already reached its financial goal and we are no longer accepting donations for it. Please select another project to support.', 'lccl-de' ); ?>
+			</p>
+
 			<header class="lccl-bdf__header">
 				<?php if ( '' !== $atts['title'] ) : ?>
 					<h3 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h3>
@@ -135,7 +140,7 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 					</label>
 					<select class="lccl-bdf__select" id="lccl-ps-project" name="project" required>
 						<?php foreach ( $projects as $key => $item ) : ?>
-							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $project, $key ); ?>>
+							<option value="<?php echo esc_attr( $key ); ?>" data-completed="<?php echo 'completed' === $item['status'] ? '1' : '0'; ?>" <?php selected( $project, $key ); ?>>
 								<?php echo esc_html( $item['title'] ); ?>
 							</option>
 						<?php endforeach; ?>
