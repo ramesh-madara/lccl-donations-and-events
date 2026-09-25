@@ -249,12 +249,16 @@
 
 .lccl-paydash__search {
 	width: 100%;
-	padding: 7px 12px;
+	padding: 8px 12px;
 	border: 1px solid var(--lccl-pd-border-field);
 	border-radius: 6px;
 	font-size: 13px;
 	color: var(--lccl-pd-text);
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	height: auto;
+	min-height: 36px;
+	line-height: normal;
+	box-sizing: border-box;
 }
 
 .lccl-paydash__search:focus {
@@ -264,13 +268,17 @@
 }
 
 .lccl-paydash__filter-item select {
-	padding: 7px 12px;
+	padding: 8px 12px;
 	border: 1px solid var(--lccl-pd-border-field);
 	border-radius: 6px;
 	font-size: 13px;
 	color: var(--lccl-pd-text);
 	background-color: var(--lccl-pd-card-bg);
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	height: auto;
+	min-height: 36px;
+	line-height: normal;
+	box-sizing: border-box;
 }
 
 .lccl-paydash__filter-item select:focus {

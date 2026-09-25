@@ -217,7 +217,7 @@ if ( $can_view && $user instanceof WP_User ) {
 				<label class="screen-reader-text" for="lccl-paydash-status"><?php esc_html_e( 'Filter by status', 'lccl-de' ); ?></label>
 				<select class="lccl-bda__select" id="lccl-paydash-status" name="status">
 					<option value=""><?php esc_html_e( 'All Statuses', 'lccl-de' ); ?></option>
-					<option value="paid"><?php esc_html_e( 'Paid (Approved)', 'lccl-de' ); ?></option>
+					<option value="paid" selected><?php esc_html_e( 'Paid (Approved)', 'lccl-de' ); ?></option>
 					<option value="failed"><?php esc_html_e( 'Declined / Failed', 'lccl-de' ); ?></option>
 					<option value="pending"><?php esc_html_e( 'Pending Checkout', 'lccl-de' ); ?></option>
 					<option value="cancelled"><?php esc_html_e( 'Cancelled', 'lccl-de' ); ?></option>

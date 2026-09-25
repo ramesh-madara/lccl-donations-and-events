@@ -30,7 +30,7 @@
 			nonce: cfg.nonce || '',
 			loggedIn: !! parseInt( cfg.loggedIn, 10 ),
 			tab: 'all',
-			status: '',
+			status: 'paid',
 			search: '',
 			page: 1,
 			perPage: parseInt( cfg.perPage, 10 ) || 20,
@@ -488,6 +488,10 @@
 				html += '<td><span class="lccl-paydash__badge ' + badgeClass + '">' + badgeText + '</span>';
 				if ( subText ) {
 					html += '<div style="font-size:11px; color:#64748b; margin-top:3px; max-width:150px; line-height:1.25;">' + escapeHtml( subText ) + '</div>';
+				}
+				if ( item.message ) {
+					var shortMsg = item.message.length > 60 ? item.message.substring(0, 60) + '…' : item.message;
+					html += '<div style="font-size:11px; color:#475569; margin-top:4px; max-width:180px; line-height:1.25; font-style:italic;" title="' + escapeHtml( item.message ) + '">"' + escapeHtml( shortMsg ) + '"</div>';
 				}
 				html += '</td>';
 
