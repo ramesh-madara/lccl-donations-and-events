@@ -574,6 +574,8 @@
 						html += '<p style="margin:4px 0;"><strong>Donor Message:</strong> <em>"' + escapeHtml( item.message ) + '"</em></p>';
 					}
 					html += '</div>';
+				}
+
 				var breakdown = item.breakdown || ( item.gateway_json && item.gateway_json.breakdown );
 				if ( ! breakdown && item.gateway_raw ) {
 					try {
