@@ -53,7 +53,7 @@ class LCCL_DE_Membership_Form {
 	/**
 	 * District payment in LKR, charged once per member.
 	 */
-	const DISTRICT_LKR = 3500;
+	const DISTRICT_LKR = 4561;
 
 	/**
 	 * Club payment in LKR, charged once for the membership.
@@ -287,6 +287,9 @@ class LCCL_DE_Membership_Form {
 		global $wpdb;
 		$table = LCCL_DE_Schema::payments_table();
 
+		$profile_cfg = LCCL_DE_Settings::get_paycenter( self::PROFILE );
+		$currency    = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( (string) $profile_cfg['currency'] ) : 'LKR';
+
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$table,
 			array(
@@ -298,11 +301,13 @@ class LCCL_DE_Membership_Form {
 				'membership_type'   => $membership_type,
 				'family_count'      => ( 'family' === $membership_type ) ? $family_count : 1,
 				'amount_lkr'        => $amount,
+				'currency'          => $currency,
 				'status'            => 'pending',
+				'gateway_response'  => wp_json_encode( array( 'type' => $membership_type, 'breakdown' => $breakdown ) ),
 				'ip_address'        => self::client_ip(),
 				'created_at'        => current_time( 'mysql' ),
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%f', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%f', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( ! $inserted ) {
@@ -651,7 +656,16 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Extract the bank transaction reference (our "receipt")
 		// ----------------------------------------------------------------
-		$receipt = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
+		$receipt          = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
+		$gateway_currency = isset( $response_data['transactionAmount']['currency'] ) ? strtoupper( (string) $response_data['transactionAmount']['currency'] ) : $expected_currency;
+
+		// Preserve price breakdown from submission in response_data so it can be viewed later.
+		if ( ! empty( $row['gateway_response'] ) ) {
+			$prev_meta = json_decode( (string) $row['gateway_response'], true );
+			if ( is_array( $prev_meta ) && ! empty( $prev_meta['breakdown'] ) ) {
+				$response_data['breakdown'] = $prev_meta['breakdown'];
+			}
+		}
 
 		// ----------------------------------------------------------------
 		// Atomic transition to 'paid' (strictly from 'pending' status)
@@ -660,11 +674,13 @@ class LCCL_DE_Membership_Form {
 			$wpdb->prepare(
 				"UPDATE `{$table}`
 				 SET status = 'paid',
+				     currency = %s,
 				     session_id = %s,
 				     gateway_receipt = %s,
 				     gateway_response = %s,
 				     paid_at = %s
 				 WHERE order_ref = %s AND status = 'pending'",
+				$gateway_currency,
 				$reqid,
 				$receipt,
 				wp_json_encode( $response_data ),
@@ -675,6 +691,7 @@ class LCCL_DE_Membership_Form {
 
 		// Send confirmation email only if this request performed the transition.
 		if ( $updated > 0 ) {
+			$row['currency'] = $gateway_currency;
 			self::send_payment_confirmation( $row, $receipt );
 		}
 
@@ -683,6 +700,7 @@ class LCCL_DE_Membership_Form {
 			'order_ref'     => $order_ref,
 			'receipt'       => $receipt,
 			'amount'        => (float) $row['amount_lkr'],
+			'currency'      => $gateway_currency,
 			'member_name'   => trim( $row['member_first_name'] . ' ' . $row['member_last_name'] ),
 			'error_message' => '',
 		);
@@ -699,9 +717,10 @@ class LCCL_DE_Membership_Form {
 	 * @param string $receipt CBC Paycenter txnReference.
 	 */
 	private static function send_payment_confirmation( array $row, $receipt ) {
-		$to     = sanitize_email( (string) $row['member_email'] );
-		$name   = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
-		$amount = number_format( (float) $row['amount_lkr'], 2 );
+		$to       = sanitize_email( (string) $row['member_email'] );
+		$name     = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
+		$amount   = number_format( (float) $row['amount_lkr'], 2 );
+		$currency = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
 
 		if ( ! is_email( $to ) ) {
 			return;
@@ -714,17 +733,18 @@ class LCCL_DE_Membership_Form {
 		);
 
 		$body = sprintf(
-			/* translators: 1: name, 2: amount, 3: receipt, 4: order ref */
+			/* translators: 1: name, 2: currency, 3: amount, 4: receipt, 5: order ref */
 			__(
 				"Dear %1\$s,\n\n" .
-				"Thank you! Your annual membership fee payment of LKR %2\$s has been received successfully.\n\n" .
-				"Payment Reference  : %4\$s\n" .
-				"Bank Transaction # : %3\$s\n\n" .
+				"Thank you! Your annual membership fee payment of %2\$s %3\$s has been received successfully.\n\n" .
+				"Payment Reference  : %5\$s\n" .
+				"Bank Transaction # : %4\$s\n\n" .
 				"If you have any questions, please reply to this email.\n\n" .
 				"Lions Club of Colombo LEADS",
 				'lccl-de'
 			),
 			$name,
+			$currency,
 			$amount,
 			$receipt,
 			$row['order_ref']
@@ -802,6 +822,24 @@ class LCCL_DE_Membership_Form {
 	}
 
 	/**
+	 * Get current membership fee configuration from settings with fallbacks.
+	 *
+	 * @return array{exchange_rate:float,principal_usd:float,family_usd:float,district_lkr:float,club_lkr:float}
+	 */
+	public static function get_fees_config() {
+		if ( class_exists( 'LCCL_DE_Settings' ) && method_exists( 'LCCL_DE_Settings', 'get_membership_fees' ) ) {
+			return LCCL_DE_Settings::get_membership_fees();
+		}
+		return array(
+			'exchange_rate' => self::RATE,
+			'principal_usd' => (float) self::PRINCIPAL_USD,
+			'family_usd'    => (float) self::FAMILY_USD,
+			'district_lkr'  => (float) self::DISTRICT_LKR,
+			'club_lkr'      => (float) self::CLUB_LKR,
+		);
+	}
+
+	/**
 	 * Fee breakdown for the current membership type.
 	 *
 	 * @param string $type  member|family or empty.
@@ -809,25 +847,38 @@ class LCCL_DE_Membership_Form {
 	 * @return array<string,mixed>
 	 */
 	public static function breakdown( $type = '', $count = 2 ) {
+		$cfg = self::get_fees_config();
+
+		$rate          = (float) $cfg['exchange_rate'];
+		$principal_usd = (float) $cfg['principal_usd'];
+		$family_usd    = (float) $cfg['family_usd'];
+		$district_unit = (float) $cfg['district_lkr'];
+		$club_unit     = (float) $cfg['club_lkr'];
+
 		$is_family          = 'family' === $type;
 		$members            = $is_family ? max( 2, (int) $count ) : 1;
 		$additional         = $is_family ? max( 0, $members - 1 ) : 0;
-		$international_main = self::PRINCIPAL_USD * self::RATE;
-		$family_fee         = $additional * self::FAMILY_USD * self::RATE;
-		$district           = $members * self::DISTRICT_LKR;
-		$club               = self::CLUB_LKR;
+		$international_main = $principal_usd * $rate;
+		$family_fee         = $additional * $family_usd * $rate;
+		$district           = $members * $district_unit;
+		$club               = $club_unit;
 		$total              = $international_main + $family_fee + $district + $club;
 
 		return array(
 			'is_family'          => $is_family,
+			'membership_type'    => $type,
 			'members'            => $members,
 			'additional'         => $additional,
-			'rate'               => self::RATE,
+			'rate'               => $rate,
+			'principal_usd'      => $principal_usd,
+			'family_usd'         => $family_usd,
+			'district_unit_lkr'  => $district_unit,
+			'club_lkr'           => $club,
 			'international_main' => $international_main,
 			'family_fee'         => $family_fee,
 			'district'           => $district,
-			'club'               => $club,
 			'total'              => $total,
+			'calculated_at'      => current_time( 'mysql' ),
 		);
 	}
 

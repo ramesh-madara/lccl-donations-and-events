@@ -146,8 +146,8 @@ if ( $can_view && $user instanceof WP_User ) {
 				<span class="lccl-paydash__kpi-sub"><?php esc_html_e( 'Across all routes', 'lccl-de' ); ?></span>
 			</div>
 			<div class="lccl-paydash__kpi-card lccl-paydash__kpi-card--success">
-				<span class="lccl-paydash__kpi-label"><?php esc_html_e( 'Total Collected (LKR)', 'lccl-de' ); ?></span>
-				<span class="lccl-paydash__kpi-value" data-kpi="total_paid_lkr">0.00</span>
+				<span class="lccl-paydash__kpi-label"><?php esc_html_e( 'Total Collected', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__kpi-value" data-kpi="total_paid_lkr">LKR 0.00</span>
 				<span class="lccl-paydash__kpi-sub" data-kpi="paid_count_sub"><?php esc_html_e( '0 completed payments', 'lccl-de' ); ?></span>
 			</div>
 			<div class="lccl-paydash__kpi-card lccl-paydash__kpi-card--danger">
@@ -165,19 +165,43 @@ if ( $can_view && $user instanceof WP_User ) {
 		<!-- Payment Routes Navigation Tabs -->
 		<nav class="lccl-paydash__nav-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Payment Routes', 'lccl-de' ); ?>">
 			<button class="lccl-paydash__tab is-active" type="button" role="tab" data-tab="all" aria-selected="true">
-				<span class="lccl-paydash__tab-icon">🌐</span>
+				<span class="lccl-paydash__tab-icon" aria-hidden="true">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<rect x="3" y="3" width="7" height="7"></rect>
+						<rect x="14" y="3" width="7" height="7"></rect>
+						<rect x="14" y="14" width="7" height="7"></rect>
+						<rect x="3" y="14" width="7" height="7"></rect>
+					</svg>
+				</span>
 				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'All Payments', 'lccl-de' ); ?></span>
 			</button>
 			<button class="lccl-paydash__tab" type="button" role="tab" data-tab="donation" aria-selected="false">
-				<span class="lccl-paydash__tab-icon">💖</span>
+				<span class="lccl-paydash__tab-icon" aria-hidden="true">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+					</svg>
+				</span>
 				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Online Donations', 'lccl-de' ); ?></span>
 			</button>
 			<button class="lccl-paydash__tab" type="button" role="tab" data-tab="sponsorship" aria-selected="false">
-				<span class="lccl-paydash__tab-icon">🤝</span>
+				<span class="lccl-paydash__tab-icon" aria-hidden="true">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+						<path d="M2 17l10 5 10-5"></path>
+						<path d="M2 12l10 5 10-5"></path>
+					</svg>
+				</span>
 				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Project Sponsorships', 'lccl-de' ); ?></span>
 			</button>
 			<button class="lccl-paydash__tab" type="button" role="tab" data-tab="membership" aria-selected="false">
-				<span class="lccl-paydash__tab-icon">👥</span>
+				<span class="lccl-paydash__tab-icon" aria-hidden="true">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+						<circle cx="9" cy="7" r="4"></circle>
+						<path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+						<path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+					</svg>
+				</span>
 				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Membership Fees', 'lccl-de' ); ?></span>
 			</button>
 		</nav>
@@ -193,9 +217,9 @@ if ( $can_view && $user instanceof WP_User ) {
 				<label class="screen-reader-text" for="lccl-paydash-status"><?php esc_html_e( 'Filter by status', 'lccl-de' ); ?></label>
 				<select class="lccl-bda__select" id="lccl-paydash-status" name="status">
 					<option value=""><?php esc_html_e( 'All Statuses', 'lccl-de' ); ?></option>
-					<option value="paid"><?php esc_html_e( '✔ Paid (Approved)', 'lccl-de' ); ?></option>
-					<option value="failed"><?php esc_html_e( '✖ Declined / Failed', 'lccl-de' ); ?></option>
-					<option value="pending"><?php esc_html_e( '⏳ Pending Checkout', 'lccl-de' ); ?></option>
+					<option value="paid"><?php esc_html_e( 'Paid (Approved)', 'lccl-de' ); ?></option>
+					<option value="failed"><?php esc_html_e( 'Declined / Failed', 'lccl-de' ); ?></option>
+					<option value="pending"><?php esc_html_e( 'Pending Checkout', 'lccl-de' ); ?></option>
 					<option value="cancelled"><?php esc_html_e( 'Cancelled', 'lccl-de' ); ?></option>
 				</select>
 			</div>

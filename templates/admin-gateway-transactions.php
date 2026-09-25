@@ -36,6 +36,7 @@ $union_sql = "
 			'' AS project_label,
 			'' AS extra_message,
 			amount_lkr,
+			currency,
 			status,
 			session_id,
 			gateway_receipt,
@@ -65,6 +66,7 @@ if ( $sponsorships_exist ) {
 				project_label,
 				message AS extra_message,
 				amount_lkr,
+				currency,
 				status,
 				session_id,
 				gateway_receipt,
@@ -92,7 +94,8 @@ $offset        = ( $paged - 1 ) * $per_page;
 $stats = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	"SELECT
 		COUNT(*) as total_count,
-		COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_lkr ELSE 0 END), 0) as total_paid_lkr,
+		COALESCE(SUM(CASE WHEN status = 'paid' AND (currency = 'LKR' OR currency IS NULL OR currency = '') THEN amount_lkr ELSE 0 END), 0) as total_paid_lkr,
+		COALESCE(SUM(CASE WHEN status = 'paid' AND currency = 'USD' THEN amount_lkr ELSE 0 END), 0) as total_paid_usd,
 		COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_count,
 		COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
 		COUNT(CASE WHEN status IN ('pending', 'cancelled') THEN 1 END) as other_count
@@ -102,6 +105,7 @@ $stats = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Direct
 
 $total_tx_all     = isset( $stats['total_count'] ) ? (int) $stats['total_count'] : 0;
 $total_paid_lkr   = isset( $stats['total_paid_lkr'] ) ? (float) $stats['total_paid_lkr'] : 0.00;
+$total_paid_usd   = isset( $stats['total_paid_usd'] ) ? (float) $stats['total_paid_usd'] : 0.00;
 $paid_count_all   = isset( $stats['paid_count'] ) ? (int) $stats['paid_count'] : 0;
 $failed_count_all = isset( $stats['failed_count'] ) ? (int) $stats['failed_count'] : 0;
 $other_count_all  = isset( $stats['other_count'] ) ? (int) $stats['other_count'] : 0;
@@ -180,8 +184,19 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 			<span class="lccl-tx-card__sub"><?php esc_html_e( 'All configured payments', 'lccl-de' ); ?></span>
 		</div>
 		<div class="lccl-tx-card lccl-tx-card--success">
-			<span class="lccl-tx-card__label"><?php esc_html_e( 'Total Collected (LKR)', 'lccl-de' ); ?></span>
-			<span class="lccl-tx-card__value"><?php echo esc_html( number_format( $total_paid_lkr, 2 ) ); ?></span>
+			<span class="lccl-tx-card__label"><?php esc_html_e( 'Total Collected', 'lccl-de' ); ?></span>
+			<span class="lccl-tx-card__value">
+				<?php
+				$collected_parts = array();
+				if ( $total_paid_lkr > 0 || 0.0 === (float) $total_paid_usd ) {
+					$collected_parts[] = 'LKR ' . number_format( $total_paid_lkr, 2 );
+				}
+				if ( $total_paid_usd > 0 ) {
+					$collected_parts[] = 'USD ' . number_format( $total_paid_usd, 2 );
+				}
+				echo esc_html( implode( ' + ', $collected_parts ) );
+				?>
+			</span>
 			<span class="lccl-tx-card__sub"><?php printf( esc_html__( '%s completed payments', 'lccl-de' ), number_format_i18n( $paid_count_all ) ); ?></span>
 		</div>
 		<div class="lccl-tx-card lccl-tx-card--danger">
@@ -216,9 +231,9 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 
 			<select name="tx_status" id="lccl-tx-status" aria-label="<?php esc_attr_e( 'Filter by status', 'lccl-de' ); ?>">
 				<option value=""><?php esc_html_e( 'All Statuses', 'lccl-de' ); ?></option>
-				<option value="paid" <?php selected( $status_filter, 'paid' ); ?>><?php esc_html_e( '✔ Paid (Approved)', 'lccl-de' ); ?></option>
-				<option value="failed" <?php selected( $status_filter, 'failed' ); ?>><?php esc_html_e( '✖ Declined / Failed', 'lccl-de' ); ?></option>
-				<option value="pending" <?php selected( $status_filter, 'pending' ); ?>><?php esc_html_e( '⏳ Pending Checkout', 'lccl-de' ); ?></option>
+				<option value="paid" <?php selected( $status_filter, 'paid' ); ?>><?php esc_html_e( 'Paid (Approved)', 'lccl-de' ); ?></option>
+				<option value="failed" <?php selected( $status_filter, 'failed' ); ?>><?php esc_html_e( 'Declined / Failed', 'lccl-de' ); ?></option>
+				<option value="pending" <?php selected( $status_filter, 'pending' ); ?>><?php esc_html_e( 'Pending Checkout', 'lccl-de' ); ?></option>
 				<option value="cancelled" <?php selected( $status_filter, 'cancelled' ); ?>><?php esc_html_e( 'Cancelled', 'lccl-de' ); ?></option>
 			</select>
 
@@ -279,6 +294,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 						$phone        = (string) $row['phone'];
 						$order_ref    = (string) $row['order_ref'];
 						$receipt      = (string) $row['gateway_receipt'];
+						$currency     = ! empty( $row['currency'] ) ? strtoupper( $row['currency'] ) : 'LKR';
 						$amount_fmt   = number_format( (float) $row['amount_lkr'], 2 );
 						$date_str     = mysql2date( 'd M Y, H:i', $row['created_at'] );
 						$gw_raw       = (string) $row['gateway_response'];
@@ -357,7 +373,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 								<?php endif; ?>
 							</td>
 							<td>
-								<strong style="font-size: 13px; color: #1d2327;">LKR <?php echo esc_html( $amount_fmt ); ?></strong>
+								<strong style="font-size: 13px; color: #1d2327;"><?php echo esc_html( $currency . ' ' . $amount_fmt ); ?></strong>
 							</td>
 							<td>
 								<span class="lccl-badge <?php echo esc_attr( $status_class ); ?>">
@@ -419,7 +435,7 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 										<div>
 											<h4><?php esc_html_e( 'Payment & Bank Details', 'lccl-de' ); ?></h4>
 											<ul>
-												<li><strong><?php esc_html_e( 'Amount:', 'lccl-de' ); ?></strong> LKR <?php echo esc_html( $amount_fmt ); ?></li>
+												<li><strong><?php esc_html_e( 'Amount:', 'lccl-de' ); ?></strong> <?php echo esc_html( $currency . ' ' . $amount_fmt ); ?></li>
 												<li><strong><?php esc_html_e( 'Status:', 'lccl-de' ); ?></strong> <?php echo esc_html( strtoupper( $status ) ); ?></li>
 												<li><strong><?php esc_html_e( 'Receipt:', 'lccl-de' ); ?></strong> <?php echo esc_html( $receipt ?: 'None' ); ?></li>
 												<li><strong><?php esc_html_e( 'Bank Code:', 'lccl-de' ); ?></strong> <code><?php echo esc_html( $resp_code ?: '—' ); ?></code></li>
@@ -447,6 +463,43 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 											<?php if ( ! empty( $gw_json['message'] ) ) : ?>
 												<p><strong><?php esc_html_e( 'Donor Message:', 'lccl-de' ); ?></strong> <em>"<?php echo esc_html( $gw_json['message'] ); ?>"</em></p>
 											<?php endif; ?>
+										</div>
+									<?php elseif ( is_array( $gw_json ) && ! empty( $gw_json['breakdown'] ) ) : ?>
+										<?php $bk = $gw_json['breakdown']; ?>
+										<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+											<h4><?php esc_html_e( 'Membership Fee Breakdown (Saved at Checkout)', 'lccl-de' ); ?></h4>
+											<div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px 14px; margin-top: 6px; font-size: 12px; max-width: 580px;">
+												<div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+													<span><strong><?php esc_html_e( 'Membership Type:', 'lccl-de' ); ?></strong> <?php echo esc_html( ucfirst( ! empty( $bk['membership_type'] ) ? $bk['membership_type'] : $type ) ); ?> (<?php echo (int) ( ! empty( $bk['members_count'] ) ? $bk['members_count'] : 1 ); ?> <?php esc_html_e( 'member(s)', 'lccl-de' ); ?>)</span>
+													<?php if ( ! empty( $bk['rates']['exchange_rate'] ) ) : ?>
+														<span style="color: #64748b;"><?php printf( esc_html__( 'Rate: 1 USD = LKR %s', 'lccl-de' ), esc_html( number_format( (float) $bk['rates']['exchange_rate'], 2 ) ) ); ?></span>
+													<?php endif; ?>
+												</div>
+												<ul style="margin: 0; padding: 0; list-style: none; line-height: 1.7; color: #475569;">
+													<li style="display: flex; justify-content: space-between;">
+														<span><?php esc_html_e( 'International Household Fee (USD):', 'lccl-de' ); ?></span>
+														<strong style="color: #0f172a; font-family: monospace;">LKR <?php echo esc_html( number_format( (float) ( isset( $bk['international_main_lkr'] ) ? $bk['international_main_lkr'] : 0 ), 2 ) ); ?></strong>
+													</li>
+													<?php if ( ! empty( $bk['additional_members'] ) && (int) $bk['additional_members'] > 0 ) : ?>
+														<li style="display: flex; justify-content: space-between;">
+															<span><?php printf( esc_html__( 'Family Members (%d × USD fee):', 'lccl-de' ), (int) $bk['additional_members'] ); ?></span>
+															<strong style="color: #0f172a; font-family: monospace;">LKR <?php echo esc_html( number_format( (float) ( isset( $bk['family_fee_lkr'] ) ? $bk['family_fee_lkr'] : 0 ), 2 ) ); ?></strong>
+														</li>
+													<?php endif; ?>
+													<li style="display: flex; justify-content: space-between;">
+														<span><?php printf( esc_html__( 'District 306 D6 Dues (%d × member):', 'lccl-de' ), (int) ( ! empty( $bk['members_count'] ) ? $bk['members_count'] : 1 ) ); ?></span>
+														<strong style="color: #0f172a; font-family: monospace;">LKR <?php echo esc_html( number_format( (float) ( isset( $bk['district_total_lkr'] ) ? $bk['district_total_lkr'] : 0 ), 2 ) ); ?></strong>
+													</li>
+													<li style="display: flex; justify-content: space-between;">
+														<span><?php esc_html_e( 'Club Administration Payment:', 'lccl-de' ); ?></span>
+														<strong style="color: #0f172a; font-family: monospace;">LKR <?php echo esc_html( number_format( (float) ( isset( $bk['club_fee_lkr'] ) ? $bk['club_fee_lkr'] : 0 ), 2 ) ); ?></strong>
+													</li>
+													<li style="display: flex; justify-content: space-between; margin-top: 6px; padding-top: 6px; border-top: 1px dashed #cbd5e1; font-size: 13px;">
+														<span style="font-weight: 700; color: #002b49;"><?php esc_html_e( 'Calculated Total:', 'lccl-de' ); ?></span>
+														<strong style="color: #002b49; font-size: 13px; font-family: monospace;">LKR <?php echo esc_html( number_format( (float) ( isset( $bk['total_lkr'] ) ? $bk['total_lkr'] : 0 ), 2 ) ); ?></strong>
+													</li>
+												</ul>
+											</div>
 										</div>
 									<?php endif; ?>
 

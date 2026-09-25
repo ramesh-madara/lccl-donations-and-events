@@ -30,11 +30,11 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 			class="lccl-bdf__form lccl-membership__form"
 			method="post"
 			action="<?php echo esc_url( get_permalink() ); ?>"
-			data-rate="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::RATE ); ?>"
-			data-principal-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::PRINCIPAL_USD ); ?>"
-			data-family-usd="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::FAMILY_USD ); ?>"
-			data-district="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::DISTRICT_LKR ); ?>"
-			data-club="<?php echo esc_attr( (string) LCCL_DE_Membership_Form::CLUB_LKR ); ?>"
+			data-rate="<?php echo esc_attr( (string) $fees['rate'] ); ?>"
+			data-principal-usd="<?php echo esc_attr( (string) $fees['principal_usd'] ); ?>"
+			data-family-usd="<?php echo esc_attr( (string) $fees['family_usd'] ); ?>"
+			data-district="<?php echo esc_attr( (string) $fees['district_unit_lkr'] ); ?>"
+			data-club="<?php echo esc_attr( (string) $fees['club_lkr'] ); ?>"
 			novalidate
 		>
 			<?php wp_nonce_field( LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD ); ?>
@@ -50,7 +50,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 								/* translators: 1: member name, 2: amount formatted, 3: receipt number */
 								esc_html__( 'Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Receipt: %3$s', 'lccl-de' ),
 								'<strong>' . esc_html( $payment_success['member_name'] ) . '</strong>',
-								'<strong>' . esc_html( 'LKR ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
+								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
 								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
 							);
 							?>
@@ -207,12 +207,12 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 						?>
 					</p>
 					<p>
-						<strong><?php esc_html_e( 'Main Member Fee:', 'lccl-de' ); ?></strong>
-						<?php esc_html_e( 'USD 50.00', 'lccl-de' ); ?>
+						<strong><?php esc_html_e( 'Household Membership Fee:', 'lccl-de' ); ?></strong>
+						<?php echo esc_html( 'USD ' . number_format( (float) $fees['principal_usd'], 2 ) ); ?>
 					</p>
 					<p>
-						<strong><?php esc_html_e( 'Additional Family Member Fee:', 'lccl-de' ); ?></strong>
-						<?php esc_html_e( 'USD 25.00 per additional family member', 'lccl-de' ); ?>
+						<strong><?php esc_html_e( 'Family Membership Fee:', 'lccl-de' ); ?></strong>
+						<?php printf( esc_html__( 'USD %s per additional family member', 'lccl-de' ), esc_html( number_format( (float) $fees['family_usd'], 2 ) ) ); ?>
 					</p>
 				</div>
 

@@ -1,14 +1,31 @@
 /**
  * Payment Dashboard styles.
- * Complements and extends lccl-de-blood-donation-admin.css.
+ * Tailored to Lions Club of Colombo LEADS branding:
+ * Deep Navy (#002b49), Gold (#f7c016), Crisp Whites, and Subdued Slate Neutrals.
+ * Simple, professional elegance with zero emojis.
  */
+
+:root {
+	--lccl-pd-navy: #002b49;
+	--lccl-pd-navy-dark: #001c30;
+	--lccl-pd-navy-soft: #f0f4f8;
+	--lccl-pd-gold: #f7c016;
+	--lccl-pd-gold-soft: #fffbeb;
+	--lccl-pd-text: #1e293b;
+	--lccl-pd-heading: #0f172a;
+	--lccl-pd-muted: #64748b;
+	--lccl-pd-border: #e2e8f0;
+	--lccl-pd-border-field: #cbd5e1;
+	--lccl-pd-bg-subtle: #f8fafc;
+	--lccl-pd-card-bg: #ffffff;
+}
 
 .lccl-paydash {
 	max-width: 1320px;
 	margin: 0 auto;
-	padding: 24px 20px;
+	padding: 24px 20px 48px;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-	color: #1e293b;
+	color: var(--lccl-pd-text);
 	box-sizing: border-box;
 }
 
@@ -29,14 +46,15 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	background: #f1f5f9;
-	color: #475569;
-	padding: 4px 10px;
+	background: var(--lccl-pd-navy-soft);
+	color: var(--lccl-pd-navy);
+	padding: 4px 12px;
 	border-radius: 20px;
 	font-size: 12px;
 	font-weight: 600;
-	margin-bottom: 12px;
-	border: 1px solid #e2e8f0;
+	margin-bottom: 14px;
+	border: 1px solid #d0dce5;
+	letter-spacing: 0.02em;
 }
 
 /* Dashboard Header */
@@ -48,96 +66,110 @@
 	gap: 16px;
 	margin-bottom: 24px;
 	padding-bottom: 18px;
-	border-bottom: 1px solid #e2e8f0;
+	border-bottom: 1px solid var(--lccl-pd-border);
 }
 
 .lccl-paydash__title {
-	font-size: 24px;
+	font-size: 22px;
 	font-weight: 700;
-	color: #0f172a;
+	color: var(--lccl-pd-navy);
 	margin: 0 0 4px;
 	display: flex;
 	align-items: center;
 	gap: 10px;
+	letter-spacing: -0.01em;
 }
 
 .lccl-paydash__subtitle {
 	font-size: 13px;
-	color: #64748b;
+	color: var(--lccl-pd-muted);
 	margin: 0;
+	line-height: 1.5;
 }
 
 .lccl-paydash__admin-link {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
+	gap: 6px;
 	font-size: 12px;
 	font-weight: 600;
-	color: #0369a1;
-	background: #f0f9ff;
-	border: 1px solid #bae6fd;
-	padding: 5px 10px;
+	color: var(--lccl-pd-navy);
+	background: var(--lccl-pd-card-bg);
+	border: 1px solid var(--lccl-pd-border-field);
+	padding: 6px 12px;
 	border-radius: 6px;
 	text-decoration: none;
 	transition: all 0.15s ease;
 }
 
 .lccl-paydash__admin-link:hover {
-	background: #e0f2fe;
-	color: #0284c7;
+	background: var(--lccl-pd-navy);
+	color: #ffffff;
+	border-color: var(--lccl-pd-navy);
 }
 
 .lccl-paydash__logout-btn {
 	color: #dc2626 !important;
 	font-weight: 600;
+	font-size: 13px;
+	transition: opacity 0.15s ease;
+}
+
+.lccl-paydash__logout-btn:hover {
+	opacity: 0.8;
 }
 
 /* KPI Summary Cards */
 .lccl-paydash__kpis {
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	gap: 16px;
 	margin-bottom: 24px;
 }
 
 .lccl-paydash__kpi-card {
-	background: #ffffff;
-	border: 1px solid #e2e8f0;
+	background: var(--lccl-pd-card-bg);
+	border: 1px solid var(--lccl-pd-border);
+	border-top: 3px solid var(--lccl-pd-navy);
 	border-radius: 8px;
 	padding: 16px 20px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 	display: flex;
 	flex-direction: column;
 	transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .lccl-paydash__kpi-card:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+	transform: translateY(-1px);
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06);
 }
 
 .lccl-paydash__kpi-card--success {
-	border-left: 4px solid #10b981;
+	border-top-color: #059669;
 }
 
 .lccl-paydash__kpi-card--danger {
-	border-left: 4px solid #ef4444;
+	border-top-color: #dc2626;
+}
+
+.lccl-paydash__kpi-card--warning {
+	border-top-color: #d97706;
 }
 
 .lccl-paydash__kpi-label {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 600;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: #64748b;
+	letter-spacing: 0.06em;
+	color: var(--lccl-pd-muted);
 	margin-bottom: 6px;
 }
 
 .lccl-paydash__kpi-value {
-	font-size: 24px;
-	font-weight: 800;
-	color: #0f172a;
-	line-height: 1.2;
+	font-size: 22px;
+	font-weight: 700;
+	color: var(--lccl-pd-heading);
+	line-height: 1.25;
 }
 
 .lccl-paydash__kpi-sub {
@@ -149,11 +181,11 @@
 /* Navigation Tabs */
 .lccl-paydash__nav-tabs {
 	display: flex;
-	gap: 6px;
-	border-bottom: 2px solid #e2e8f0;
+	gap: 4px;
+	border-bottom: 1px solid var(--lccl-pd-border);
 	margin-bottom: 20px;
 	overflow-x: auto;
-	padding-bottom: 1px;
+	padding-bottom: 0;
 }
 
 .lccl-paydash__tab {
@@ -163,30 +195,37 @@
 	padding: 10px 18px;
 	background: transparent;
 	border: none;
-	border-bottom: 3px solid transparent;
-	font-size: 14px;
+	border-bottom: 2px solid transparent;
+	font-size: 13px;
 	font-weight: 600;
-	color: #64748b;
+	color: var(--lccl-pd-muted);
 	cursor: pointer;
 	white-space: nowrap;
-	transition: all 0.2s ease;
-	margin-bottom: -2px;
+	transition: all 0.15s ease;
+	margin-bottom: -1px;
 	border-radius: 6px 6px 0 0;
 }
 
 .lccl-paydash__tab:hover {
-	color: #0f172a;
-	background: #f8fafc;
+	color: var(--lccl-pd-navy);
+	background: var(--lccl-pd-bg-subtle);
 }
 
 .lccl-paydash__tab.is-active {
-	color: #0284c7;
-	border-bottom-color: #0284c7;
-	background: #f0f9ff;
+	color: var(--lccl-pd-navy);
+	border-bottom-color: var(--lccl-pd-navy);
+	background: transparent;
 }
 
 .lccl-paydash__tab-icon {
-	font-size: 15px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: currentColor;
+}
+
+.lccl-paydash__tab-icon svg {
+	display: block;
 }
 
 /* Filter Bar */
@@ -195,12 +234,12 @@
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 12px;
-	background: #ffffff;
-	border: 1px solid #e2e8f0;
+	background: var(--lccl-pd-card-bg);
+	border: 1px solid var(--lccl-pd-border);
 	border-radius: 8px;
-	padding: 14px 18px;
+	padding: 12px 16px;
 	margin-bottom: 20px;
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .lccl-paydash__search-wrap {
@@ -210,39 +249,56 @@
 
 .lccl-paydash__search {
 	width: 100%;
-	padding: 8px 12px;
-	border: 1px solid #cbd5e1;
+	padding: 7px 12px;
+	border: 1px solid var(--lccl-pd-border-field);
 	border-radius: 6px;
 	font-size: 13px;
+	color: var(--lccl-pd-text);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lccl-paydash__search:focus {
+	border-color: var(--lccl-pd-navy);
+	box-shadow: 0 0 0 2px rgba(0, 43, 73, 0.12);
+	outline: none;
 }
 
 .lccl-paydash__filter-item select {
-	padding: 8px 12px;
-	border: 1px solid #cbd5e1;
+	padding: 7px 12px;
+	border: 1px solid var(--lccl-pd-border-field);
 	border-radius: 6px;
 	font-size: 13px;
-	background-color: #ffffff;
+	color: var(--lccl-pd-text);
+	background-color: var(--lccl-pd-card-bg);
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.lccl-paydash__filter-item select:focus {
+	border-color: var(--lccl-pd-navy);
+	box-shadow: 0 0 0 2px rgba(0, 43, 73, 0.12);
+	outline: none;
 }
 
 .lccl-paydash__clear-btn {
-	padding: 7px 14px;
-	font-size: 13px;
+	padding: 6px 14px;
+	font-size: 12px;
 	font-weight: 600;
-	background: #f1f5f9;
+	background: var(--lccl-pd-bg-subtle);
 	color: #475569;
-	border: 1px solid #cbd5e1;
+	border: 1px solid var(--lccl-pd-border-field);
 	border-radius: 6px;
 	cursor: pointer;
-	transition: background 0.15s ease;
+	transition: all 0.15s ease;
 }
 
 .lccl-paydash__clear-btn:hover {
 	background: #e2e8f0;
+	color: var(--lccl-pd-heading);
 }
 
 .lccl-paydash__count-indicator {
-	font-size: 13px;
-	color: #64748b;
+	font-size: 12px;
+	color: var(--lccl-pd-muted);
 	margin-left: auto;
 	font-weight: 500;
 }
@@ -250,10 +306,10 @@
 /* Data Table Card */
 .lccl-paydash__table-card {
 	position: relative;
-	background: #ffffff;
-	border: 1px solid #e2e8f0;
+	background: var(--lccl-pd-card-bg);
+	border: 1px solid var(--lccl-pd-border);
 	border-radius: 8px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 	overflow: hidden;
 }
 
@@ -270,11 +326,14 @@
 }
 
 .lccl-paydash__table th {
-	background: #f8fafc;
+	background: var(--lccl-pd-bg-subtle);
 	padding: 12px 14px;
+	font-size: 11px;
 	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 	color: #475569;
-	border-bottom: 1px solid #e2e8f0;
+	border-bottom: 1px solid var(--lccl-pd-border);
 	white-space: nowrap;
 }
 
@@ -289,10 +348,10 @@
 }
 
 .lccl-paydash__table tr:hover td {
-	background: #fbfcfe;
+	background: #fafbfc;
 }
 
-/* Route Badges */
+/* Route Badges (Understated, clean elegance) */
 .lccl-paydash__badge {
 	display: inline-block;
 	padding: 3px 8px;
@@ -303,27 +362,27 @@
 }
 
 .lccl-paydash__badge--donation {
-	background: #e0f2fe;
-	color: #0369a1;
-	border: 1px solid #bae6fd;
+	background: #f1f5f9;
+	color: var(--lccl-pd-navy);
+	border: 1px solid #e2e8f0;
 }
 
 .lccl-paydash__badge--sponsorship {
-	background: #fef3c7;
+	background: #fffbeb;
 	color: #92400e;
 	border: 1px solid #fde68a;
 }
 
 .lccl-paydash__badge--member {
-	background: #f3e8ff;
-	color: #7e22ce;
-	border: 1px solid #e9d5ff;
+	background: var(--lccl-pd-navy-soft);
+	color: var(--lccl-pd-navy);
+	border: 1px solid #d0dce5;
 }
 
 .lccl-paydash__badge--family {
-	background: #ccfbf1;
-	color: #0f766e;
-	border: 1px solid #99f6e4;
+	background: #f8fafc;
+	color: #1e293b;
+	border: 1px solid var(--lccl-pd-border-field);
 }
 
 /* Status Badges */
@@ -331,34 +390,34 @@
 	display: inline-block;
 	padding: 3px 8px;
 	border-radius: 4px;
-	font-size: 11px;
+	font-size: 10.5px;
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.04em;
 }
 
 .lccl-paydash__status--paid {
-	background: #dcfce7;
-	color: #15803d;
-	border: 1px solid #bbf7d0;
+	background: #ecfdf5;
+	color: #065f46;
+	border: 1px solid #a7f3d0;
 }
 
 .lccl-paydash__status--failed {
-	background: #fee2e2;
-	color: #b91c1c;
+	background: #fef2f2;
+	color: #991b1b;
 	border: 1px solid #fecaca;
 }
 
 .lccl-paydash__status--pending {
-	background: #fef9c3;
-	color: #854d0e;
-	border: 1px solid #fef08a;
+	background: #fffbeb;
+	color: #92400e;
+	border: 1px solid #fde68a;
 }
 
 .lccl-paydash__status--cancelled {
-	background: #f1f5f9;
+	background: #f8fafc;
 	color: #64748b;
-	border: 1px solid #e2e8f0;
+	border: 1px solid var(--lccl-pd-border);
 }
 
 /* Response Code Tag */
@@ -386,14 +445,14 @@
 /* Expand Details Drawer */
 .lccl-paydash__detail-row td {
 	padding: 0;
-	background: #f8fafc;
+	background: #fafbfc;
 }
 
 .lccl-paydash__detail-box {
-	padding: 18px 24px;
-	border-top: 1px solid #e2e8f0;
-	border-bottom: 2px solid #cbd5e1;
-	background: #f8fafc;
+	padding: 20px 24px;
+	border-top: 1px solid var(--lccl-pd-border);
+	border-bottom: 2px solid var(--lccl-pd-border);
+	background: #fafbfc;
 }
 
 .lccl-paydash__detail-grid {
@@ -404,11 +463,11 @@
 }
 
 .lccl-paydash__detail-box h4 {
-	font-size: 12px;
+	font-size: 11px;
 	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	color: #334155;
+	letter-spacing: 0.06em;
+	color: var(--lccl-pd-navy);
 	margin: 0 0 10px;
 }
 
@@ -425,7 +484,7 @@
 }
 
 .lccl-paydash__raw-json {
-	background: #0f172a;
+	background: #091322;
 	color: #38bdf8;
 	padding: 12px 16px;
 	border-radius: 6px;
@@ -439,20 +498,21 @@
 
 /* Action button */
 .lccl-paydash__btn-view {
-	padding: 4px 10px;
+	padding: 4px 12px;
 	font-size: 12px;
 	font-weight: 600;
-	color: #0284c7;
-	background: #f0f9ff;
-	border: 1px solid #bae6fd;
-	border-radius: 5px;
+	color: var(--lccl-pd-navy);
+	background: var(--lccl-pd-card-bg);
+	border: 1px solid var(--lccl-pd-border-field);
+	border-radius: 4px;
 	cursor: pointer;
 	transition: all 0.15s ease;
 }
 
 .lccl-paydash__btn-view:hover {
-	background: #0284c7;
+	background: var(--lccl-pd-navy);
 	color: #ffffff;
+	border-color: var(--lccl-pd-navy);
 }
 
 /* Modal Loader */
@@ -480,10 +540,10 @@
 	justify-content: space-between;
 	align-items: center;
 	padding: 14px 18px;
-	border-top: 1px solid #e2e8f0;
-	background: #f8fafc;
+	border-top: 1px solid var(--lccl-pd-border);
+	background: var(--lccl-pd-bg-subtle);
 	font-size: 13px;
-	color: #64748b;
+	color: var(--lccl-pd-muted);
 }
 
 .lccl-paydash__pager {
@@ -493,8 +553,8 @@
 
 .lccl-paydash__page-btn {
 	padding: 5px 11px;
-	border: 1px solid #cbd5e1;
-	background: #ffffff;
+	border: 1px solid var(--lccl-pd-border-field);
+	background: var(--lccl-pd-card-bg);
 	border-radius: 5px;
 	font-size: 12px;
 	font-weight: 600;
@@ -509,8 +569,8 @@
 }
 
 .lccl-paydash__page-btn.is-active {
-	background: #0284c7;
-	border-color: #0284c7;
+	background: var(--lccl-pd-navy);
+	border-color: var(--lccl-pd-navy);
 	color: #ffffff;
 }
 

@@ -36,13 +36,16 @@ $notice = static function ( $key ) use ( $err ) {
 $payment_success    = isset( $payment_success ) ? $payment_success : null;
 $payment_notice     = isset( $payment_notice ) ? $payment_notice : '';
 $gateway_configured = isset( $gateway_configured ) ? (bool) $gateway_configured : false;
+$currency           = isset( $currency ) && '' !== $currency ? strtoupper( $currency ) : 'LKR';
 
-$projects = LCCL_DE_Sponsorship_Form::projects();
-$project  = $val( 'project' );
-$project  = isset( $projects[ $project ] ) ? $project : 'spectacles';
-$amount   = $val( 'amount' );
-$amount   = '' !== $amount ? $amount : LCCL_DE_Sponsorship_Form::DEFAULT_AMOUNT;
-$total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
+$projects     = LCCL_DE_Sponsorship_Form::projects();
+$project      = $val( 'project' );
+$project      = isset( $projects[ $project ] ) ? $project : 'spectacles';
+$amount       = $val( 'amount' );
+$amount       = '' !== $amount ? $amount : ( 'USD' === $currency ? '25' : LCCL_DE_Sponsorship_Form::DEFAULT_AMOUNT );
+$total        = LCCL_DE_Sponsorship_Form::format_amount( $amount, $currency );
+$presets_row1 = ( 'USD' === $currency ) ? array( 10, 25, 50 ) : array( 1000, 5000, 10000 );
+$presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 50000 );
 ?>
 <div class="lccl-bdf lccl-bdf--sponsorship">
 	<?php if ( '' !== $atts['banner_title'] || '' !== $atts['banner_intro'] ) : ?>
@@ -81,7 +84,7 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 								/* translators: 1: sponsor name, 2: project title, 3: amount formatted, 4: receipt number */
 								esc_html__( 'Thank you, %1$s. Your sponsorship of %2$s for "%3$s" was received successfully. Receipt: %4$s', 'lccl-de' ),
 								'<strong>' . esc_html( $payment_success['sponsor_name'] ) . '</strong>',
-								'<strong>' . esc_html( 'LKR ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
+								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
 								esc_html( $payment_success['project_label'] ),
 								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
 							);
@@ -156,31 +159,31 @@ $total    = LCCL_DE_Sponsorship_Form::format_amount( $amount );
 						required
 					>
 					<div class="lccl-df__currency" aria-hidden="true">
-						<span><?php esc_html_e( 'LKR', 'lccl-de' ); ?></span>
+						<span><?php echo esc_html( $currency ); ?></span>
 					</div>
 				</div>
 				<?php $notice( 'amount' ); ?>
 
 				<div class="lccl-df__presets" role="group" aria-label="<?php esc_attr_e( 'Suggested amounts', 'lccl-de' ); ?>">
 					<div class="lccl-df__preset-row">
-						<?php foreach ( array( 1000, 5000, 10000 ) as $preset ) : ?>
+						<?php foreach ( $presets_row1 as $preset ) : ?>
 							<button
 								class="lccl-df__preset<?php echo ( (string) $preset === (string) $amount ) ? ' is-active' : ''; ?>"
 								type="button"
 								data-lccl-preset="<?php echo esc_attr( (string) $preset ); ?>"
 							>
-								<?php echo esc_html( number_format( $preset ) . ' LKR' ); ?>
+								<?php echo esc_html( number_format( $preset ) . ' ' . $currency ); ?>
 							</button>
 						<?php endforeach; ?>
 					</div>
 					<div class="lccl-df__preset-row">
-						<?php foreach ( array( 25000, 50000 ) as $preset ) : ?>
+						<?php foreach ( $presets_row2 as $preset ) : ?>
 							<button
 								class="lccl-df__preset<?php echo ( (string) $preset === (string) $amount ) ? ' is-active' : ''; ?>"
 								type="button"
 								data-lccl-preset="<?php echo esc_attr( (string) $preset ); ?>"
 							>
-								<?php echo esc_html( number_format( $preset ) . ' LKR' ); ?>
+								<?php echo esc_html( number_format( $preset ) . ' ' . $currency ); ?>
 							</button>
 						<?php endforeach; ?>
 					</div>

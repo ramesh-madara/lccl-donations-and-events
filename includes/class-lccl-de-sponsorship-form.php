@@ -210,12 +210,12 @@ class LCCL_DE_Sponsorship_Form {
 	 * @param string|float $amount Raw amount.
 	 * @return string
 	 */
-	public static function format_amount( $amount ) {
+	public static function format_amount( $amount, $currency = 'LKR' ) {
 		$raw = preg_replace( '/[^\d.]/', '', (string) $amount );
 		if ( '' === $raw || ! is_numeric( $raw ) ) {
 			return '';
 		}
-		return number_format( (float) $raw, 2 ) . ' LKR';
+		return number_format( (float) $raw, 2 ) . ' ' . strtoupper( $currency );
 	}
 
 	/**
@@ -272,6 +272,8 @@ class LCCL_DE_Sponsorship_Form {
 			true
 		);
 
+		$profile_cfg        = LCCL_DE_Settings::get_paycenter( self::PROFILE );
+		$currency           = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( (string) $profile_cfg['currency'] ) : 'LKR';
 		$values             = array();
 		$errors             = array();
 		$gateway_configured = LCCL_DE_Paycenter_Client::is_configured( self::PROFILE );
@@ -372,6 +374,9 @@ class LCCL_DE_Sponsorship_Form {
 		global $wpdb;
 		$table = LCCL_DE_Schema::sponsorships_table();
 
+		$profile_cfg = LCCL_DE_Settings::get_paycenter( self::PROFILE );
+		$currency    = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( (string) $profile_cfg['currency'] ) : 'LKR';
+
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$table,
 			array(
@@ -383,12 +388,13 @@ class LCCL_DE_Sponsorship_Form {
 				'project'       => $project,
 				'project_label' => (string) $project_data['title'],
 				'amount_lkr'    => $amount,
+				'currency'      => $currency,
 				'message'       => $message,
 				'status'        => 'pending',
 				'ip_address'    => self::client_ip(),
 				'created_at'    => current_time( 'mysql' ),
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( ! $inserted ) {
@@ -619,17 +625,20 @@ class LCCL_DE_Sponsorship_Form {
 			return $base_result;
 		}
 
-		$receipt = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
+		$receipt          = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
+		$gateway_currency = isset( $response_data['transactionAmount']['currency'] ) ? strtoupper( (string) $response_data['transactionAmount']['currency'] ) : $expected_currency;
 
 		$updated = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE `{$table}`
 				 SET status = 'paid',
+				     currency = %s,
 				     session_id = %s,
 				     gateway_receipt = %s,
 				     gateway_response = %s,
 				     paid_at = %s
 				 WHERE order_ref = %s AND status = 'pending'",
+				$gateway_currency,
 				$reqid,
 				$receipt,
 				wp_json_encode( $response_data ),
@@ -639,6 +648,7 @@ class LCCL_DE_Sponsorship_Form {
 		);
 
 		if ( $updated > 0 ) {
+			$row['currency'] = $gateway_currency;
 			self::send_sponsorship_confirmation( $row, $receipt );
 		}
 
@@ -647,6 +657,7 @@ class LCCL_DE_Sponsorship_Form {
 			'order_ref'     => $order_ref,
 			'receipt'       => $receipt,
 			'amount'        => (float) $row['amount_lkr'],
+			'currency'      => $gateway_currency,
 			'sponsor_name'  => $sponsor_name,
 			'project_label' => $project_label,
 			'error_message' => '',
@@ -683,14 +694,16 @@ class LCCL_DE_Sponsorship_Form {
 
 		$first_name    = trim( (string) $row['first_name'] );
 		$amount        = number_format( (float) $row['amount_lkr'], 2 );
+		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
 		$project_label = ! empty( $row['project_label'] ) ? $row['project_label'] : 'our project';
 		$ref           = $receipt ?: (string) $row['order_ref'];
 
 		$message = sprintf(
-			/* translators: 1: sponsor name, 2: project title, 3: amount formatted, 4: receipt */
-			__( 'Dear %1$s, thank you for sponsoring "%2$s" with LKR %3$s. Lions Club of Colombo LEADS - your generosity transforms lives! Ref: %4$s', 'lccl-de' ),
+			/* translators: 1: sponsor name, 2: project title, 3: currency, 4: amount formatted, 5: receipt */
+			__( 'Dear %1$s, thank you for sponsoring "%2$s" with %3$s %4$s. Lions Club of Colombo LEADS - your generosity transforms lives! Ref: %5$s', 'lccl-de' ),
 			$first_name ?: __( 'Sponsor', 'lccl-de' ),
 			$project_label,
+			$currency,
 			$amount,
 			$ref
 		);
@@ -721,6 +734,7 @@ class LCCL_DE_Sponsorship_Form {
 
 		$amount_raw    = (float) $row['amount_lkr'];
 		$amount        = number_format( $amount_raw, 2 );
+		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
 		$ref           = $receipt ?: (string) $row['order_ref'];
 		$order_ref     = (string) $row['order_ref'];
 		$project_label = ! empty( $row['project_label'] ) ? $row['project_label'] : $row['project'];
@@ -737,10 +751,11 @@ class LCCL_DE_Sponsorship_Form {
 		}
 
 		$subject = sprintf(
-			/* translators: 1: site name, 2: project title, 3: amount formatted */
-			__( '[%1$s] Thank You for Sponsoring "%2$s" - LKR %3$s!', 'lccl-de' ),
+			/* translators: 1: site name, 2: project title, 3: currency, 4: amount formatted */
+			__( '[%1$s] Thank You for Sponsoring "%2$s" - %3$s %4$s!', 'lccl-de' ),
 			get_bloginfo( 'name' ),
 			$project_label,
+			$currency,
 			$amount
 		);
 
@@ -754,10 +769,12 @@ class LCCL_DE_Sponsorship_Form {
 			. sprintf( esc_html__( 'Dear %s,', 'lccl-de' ), '<strong>' . esc_html( $name ) . '</strong>' ) . '</p>'
 			. '<p style="margin:0 0 18px;color:#444444;font-size:15px;line-height:1.6;">'
 			. sprintf(
-				esc_html__( 'On behalf of the %1$s, we extend our heartfelt gratitude for your generous sponsorship of the "%2$s" project with %3$s.', 'lccl-de' ),
+				/* translators: 1: club name, 2: project label, 3: currency, 4: amount formatted */
+				esc_html__( 'On behalf of the %1$s, we extend our heartfelt gratitude for your generous sponsorship of the "%2$s" project with %3$s %4$s.', 'lccl-de' ),
 				'<strong>' . esc_html__( 'Lions Club of Colombo LEADS', 'lccl-de' ) . '</strong>',
 				esc_html( $project_label ),
-				'<strong style="color:#0073aa;font-size:16px;">LKR ' . esc_html( $amount ) . '</strong>'
+				esc_html( $currency ),
+				'<strong style="color:#0073aa;font-size:16px;">' . esc_html( $amount ) . '</strong>'
 			) . '</p>'
 			. '<p style="margin:0 0 24px;color:#555555;font-size:14px;line-height:1.6;">'
 			. esc_html__( 'Your generous support directly funds our community service projects and creates a real, lasting difference in the lives of those in need. Thank you for standing with us!', 'lccl-de' ) . '</p>'
@@ -769,7 +786,7 @@ class LCCL_DE_Sponsorship_Form {
 			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Project Sponsored', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0 0 12px;color:#222222;font-size:15px;font-weight:700;">' . esc_html( $project_label ) . '</p>'
 			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Amount Sponsored', 'lccl-de' ) . '</p>'
-			. '<p style="margin:0 0 12px;color:#0073aa;font-size:18px;font-weight:800;">LKR ' . esc_html( $amount ) . '</p>'
+			. '<p style="margin:0 0 12px;color:#0073aa;font-size:18px;font-weight:800;">' . esc_html( $currency . ' ' . $amount ) . '</p>'
 			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Receipt / Bank Reference', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;font-weight:700;">' . esc_html( $ref ) . '</p>'
 			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Order Reference', 'lccl-de' ) . '</p>'
@@ -810,6 +827,7 @@ class LCCL_DE_Sponsorship_Form {
 
 		$name          = trim( $row['first_name'] . ' ' . $row['last_name'] );
 		$amount        = number_format( (float) $row['amount_lkr'], 2 );
+		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
 		$email         = (string) $row['email'];
 		$phone         = (string) $row['phone'];
 		$order_ref     = (string) $row['order_ref'];
@@ -817,21 +835,23 @@ class LCCL_DE_Sponsorship_Form {
 		$ref           = $receipt ?: $order_ref;
 
 		$subject = sprintf(
-			/* translators: 1: amount formatted, 2: sponsor name, 3: project title */
-			__( '[Sponsorship Alert] Received LKR %1$s from %2$s for "%3$s"', 'lccl-de' ),
+			/* translators: 1: currency, 2: amount formatted, 3: sponsor name, 4: project title */
+			__( '[Sponsorship Alert] Received %1$s %2$s from %3$s for "%4$s"', 'lccl-de' ),
+			$currency,
 			$amount,
 			$name,
 			$project_label
 		);
 
 		$body = sprintf(
-			/* translators: 1: name, 2: project, 3: amount, 4: email, 5: phone, 6: receipt, 7: order_ref, 8: date */
+			/* translators: 1: name, 2: project, 3: currency, 4: amount, 5: email, 6: phone, 7: receipt, 8: order_ref, 9: date */
 			__(
-				"A new project sponsorship payment has been received!\n\nSponsor Details:\n----------------------------------------\nName:      %1\$s\nProject:   %2\$s\nAmount:    LKR %3\$s\nEmail:     %4\$s\nPhone:     %5\$s\nReceipt:   %6\$s\nOrder Ref: %7\$s\nDate/Time: %8\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
+				"A new project sponsorship payment has been received!\n\nSponsor Details:\n----------------------------------------\nName:      %1\$s\nProject:   %2\$s\nAmount:    %3\$s %4\$s\nEmail:     %5\$s\nPhone:     %6\$s\nReceipt:   %7\$s\nOrder Ref: %8\$s\nDate/Time: %9\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
 				'lccl-de'
 			),
 			$name,
 			$project_label,
+			$currency,
 			$amount,
 			$email,
 			$phone,

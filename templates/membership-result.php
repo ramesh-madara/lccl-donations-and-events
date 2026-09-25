@@ -74,7 +74,7 @@ $form_url = remove_query_arg(
 				</div>
 				<div class="lccl-mf__result-row">
 					<dt><?php esc_html_e( 'Amount Paid', 'lccl-de' ); ?></dt>
-					<dd><strong><?php echo esc_html( 'LKR ' . number_format( (float) $result['amount'], 2 ) ); ?></strong></dd>
+					<dd><strong><?php echo esc_html( ( ! empty( $result['currency'] ) ? $result['currency'] : 'LKR' ) . ' ' . number_format( (float) $result['amount'], 2 ) ); ?></strong></dd>
 				</div>
 			</dl>
 

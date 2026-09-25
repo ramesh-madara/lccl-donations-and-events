@@ -138,12 +138,12 @@ class LCCL_DE_Donation_Form {
 	 * @param string|float $amount Raw amount.
 	 * @return string
 	 */
-	public static function format_amount( $amount ) {
+	public static function format_amount( $amount, $currency = 'LKR' ) {
 		$raw = preg_replace( '/[^\d.]/', '', (string) $amount );
 		if ( '' === $raw || ! is_numeric( $raw ) ) {
 			return '';
 		}
-		return number_format( (float) $raw, 2 ) . ' LKR';
+		return number_format( (float) $raw, 2 ) . ' ' . strtoupper( $currency );
 	}
 
 	/**
@@ -199,6 +199,8 @@ class LCCL_DE_Donation_Form {
 			true
 		);
 
+		$profile_cfg        = LCCL_DE_Settings::get_paycenter( self::PROFILE );
+		$currency           = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( $profile_cfg['currency'] ) : 'LKR';
 		$values             = array();
 		$errors             = array();
 		$gateway_configured = LCCL_DE_Paycenter_Client::is_configured( self::PROFILE );
@@ -312,6 +314,9 @@ class LCCL_DE_Donation_Form {
 			'message'  => $message,
 		);
 
+		$profile_cfg = LCCL_DE_Settings::get_paycenter( self::PROFILE );
+		$currency    = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( $profile_cfg['currency'] ) : 'LKR';
+
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$table,
 			array(
@@ -323,12 +328,13 @@ class LCCL_DE_Donation_Form {
 				'membership_type'   => 'donation',
 				'family_count'      => 1,
 				'amount_lkr'        => $amount,
+				'currency'          => $currency,
 				'status'            => 'pending',
 				'gateway_response'  => wp_json_encode( $payload_meta ),
 				'ip_address'        => self::client_ip(),
 				'created_at'        => current_time( 'mysql' ),
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%f', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%f', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( ! $inserted ) {
@@ -612,17 +618,33 @@ class LCCL_DE_Donation_Form {
 			return $base_result;
 		}
 
-		$receipt = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
+		$receipt          = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
+		$gateway_currency = isset( $response_data['transactionAmount']['currency'] ) ? strtoupper( (string) $response_data['transactionAmount']['currency'] ) : $expected_currency;
+
+		// Preserve selected causes and donor message from initial submission.
+		if ( ! empty( $row['gateway_response'] ) ) {
+			$prev_meta = json_decode( (string) $row['gateway_response'], true );
+			if ( is_array( $prev_meta ) ) {
+				if ( ! empty( $prev_meta['causes'] ) && is_array( $prev_meta['causes'] ) ) {
+					$response_data['causes'] = $prev_meta['causes'];
+				}
+				if ( ! empty( $prev_meta['message'] ) ) {
+					$response_data['message'] = $prev_meta['message'];
+				}
+			}
+		}
 
 		$updated = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
 				"UPDATE `{$table}`
 				 SET status = 'paid',
+				     currency = %s,
 				     session_id = %s,
 				     gateway_receipt = %s,
 				     gateway_response = %s,
 				     paid_at = %s
 				 WHERE order_ref = %s AND status = 'pending'",
+				$gateway_currency,
 				$reqid,
 				$receipt,
 				wp_json_encode( $response_data ),
@@ -632,6 +654,8 @@ class LCCL_DE_Donation_Form {
 		);
 
 		if ( $updated > 0 ) {
+			$row['currency']         = $gateway_currency;
+			$row['gateway_response'] = wp_json_encode( $response_data );
 			self::send_donation_confirmation( $row, $receipt );
 		}
 
@@ -640,6 +664,7 @@ class LCCL_DE_Donation_Form {
 			'order_ref'     => $order_ref,
 			'receipt'       => $receipt,
 			'amount'        => (float) $row['amount_lkr'],
+			'currency'      => $gateway_currency,
 			'donor_name'    => $donor_name,
 			'error_message' => '',
 		);
@@ -655,10 +680,8 @@ class LCCL_DE_Donation_Form {
 		self::send_donation_email( $row, $receipt );
 		self::send_donation_sms( $row, $receipt );
 		self::send_admin_donation_alert( $row, $receipt );
-	}
-
-	/**
-	 * Send a thank-you SMS with the donated amount to the donor.
+	}	/**
+	 * Send a thank-you SMS after a successful donation.
 	 *
 	 * @param array  $row     Payment record.
 	 * @param string $receipt Bank receipt reference.
@@ -669,15 +692,10 @@ class LCCL_DE_Donation_Form {
 			return;
 		}
 
-		$first_name = trim( (string) $row['member_first_name'] );
-		$amount     = number_format( (float) $row['amount_lkr'], 2 );
-		$ref        = $receipt ?: (string) $row['order_ref'];
+		$ref = ! empty( $row['order_ref'] ) ? (string) $row['order_ref'] : (string) $receipt;
 
 		$message = sprintf(
-			/* translators: 1: donor name, 2: amount formatted, 3: transaction receipt */
-			__( 'Dear %1$s, thank you for your generous donation of LKR %2$s to Lions Club of Colombo LEADS. Your support transforms lives! Ref: %3$s', 'lccl-de' ),
-			$first_name ?: __( 'Donor', 'lccl-de' ),
-			$amount,
+			'Thank you for your generous donation to support the community service work of Lions Club of Colombo LEADS. Your donation has been successfully received. Reference Number: %s',
 			$ref
 		);
 
@@ -688,6 +706,8 @@ class LCCL_DE_Donation_Form {
 
 	/**
 	 * Send a rich HTML thank-you confirmation email to the donor.
+	 * Formatted using the exact template, layout, logo placement, typography, spacing,
+	 * and overall styling as the Blood Donor Registration Confirmation email.
 	 *
 	 * @param array  $row     Payment record.
 	 * @param string $receipt Bank receipt reference.
@@ -699,116 +719,50 @@ class LCCL_DE_Donation_Form {
 		}
 
 		$first_name = trim( (string) $row['member_first_name'] );
-		$last_name  = trim( (string) $row['member_last_name'] );
-		$name       = trim( $first_name . ' ' . $last_name );
-		if ( '' === $name ) {
-			$name = __( 'Generous Donor', 'lccl-de' );
-		}
+		$who        = '' !== $first_name ? $first_name : __( 'Donor', 'lccl-de' );
 
 		$amount_raw = (float) $row['amount_lkr'];
 		$amount     = number_format( $amount_raw, 2 );
-		$ref        = $receipt ?: (string) $row['order_ref'];
-		$order_ref  = (string) $row['order_ref'];
+		$currency   = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
+		$ref        = ! empty( $row['order_ref'] ) ? (string) $row['order_ref'] : (string) $receipt;
 
-		$date_raw   = ! empty( $row['paid_at'] ) ? $row['paid_at'] : current_time( 'mysql' );
-		$date_fmt   = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
-		$date_str   = mysql2date( $date_fmt, $date_raw );
-
-		// Decode causes and message if present.
+		// Decode causes if present.
 		$meta          = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
 		$causes_labels = array();
-		$donor_message = '';
 
-		if ( is_array( $meta ) ) {
-			if ( ! empty( $meta['causes'] ) && is_array( $meta['causes'] ) ) {
-				$all_causes = self::causes();
-				foreach ( $meta['causes'] as $ckey ) {
-					if ( isset( $all_causes[ $ckey ] ) ) {
-						$causes_labels[] = $all_causes[ $ckey ];
-					}
+		if ( is_array( $meta ) && ! empty( $meta['causes'] ) && is_array( $meta['causes'] ) ) {
+			$all_causes = self::causes();
+			foreach ( $meta['causes'] as $ckey ) {
+				if ( isset( $all_causes[ $ckey ] ) ) {
+					$causes_labels[] = $all_causes[ $ckey ];
 				}
 			}
-			if ( ! empty( $meta['message'] ) ) {
-				$donor_message = trim( (string) $meta['message'] );
-			}
 		}
 
-		$causes_str = $causes_labels ? implode( ', ', $causes_labels ) : __( 'General Community Service', 'lccl-de' );
+		$areas_supported = ! empty( $causes_labels ) ? implode( ', ', $causes_labels ) : __( 'General Community Service', 'lccl-de' );
 
-		$subject = sprintf(
-			/* translators: 1: site name, 2: amount formatted */
-			__( '[%1$s] Thank You for Your Donation of LKR %2$s!', 'lccl-de' ),
-			get_bloginfo( 'name' ),
-			$amount
-		);
+		$logo    = 'https://registration.colomboleads.org/lccclLOGO.png';
+		$subject = 'DONATION RECEIVED – LIONS CLUB OF COLOMBO LEADS';
 
-		$message_row = '';
-		if ( '' !== $donor_message ) {
-			$message_row = '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Your Note / Message', 'lccl-de' ) . '</p>' .
-				'<p style="margin:0 0 14px;color:#222222;font-size:14px;font-style:italic;background-color:#ffffff;padding:8px 12px;border-radius:4px;border:1px solid #e0e0e0;">' . esc_html( $donor_message ) . '</p>';
-		}
-
-		$html = '<html>
-<body style="margin:0;padding:0;background-color:#F3F3F3;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;">
-	<div style="max-width:600px;margin:0 auto;background-color:#F3F3F3;padding:28px 20px;">
-		<img src="https://registration.colomboleads.org/lccclLOGO.png" alt="Lions Club of Colombo LEADS" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
-		<div style="background-color:#FFFFFF;border-radius:8px;padding:32px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-			<h1 style="margin:0 0 18px;padding:0 0 12px;border-bottom:2px solid #f8e4a0;color:#222222;font-size:20px;font-weight:700;letter-spacing:0.03em;line-height:1.35;">
-				' . esc_html__( 'DONATION RECEIVED WITH THANKS', 'lccl-de' ) . '
-			</h1>
-			<p style="margin:0 0 16px;color:#444444;font-size:15px;line-height:1.6;">
-				' . sprintf( esc_html__( 'Dear %s,', 'lccl-de' ), '<strong>' . esc_html( $name ) . '</strong>' ) . '
-			</p>
-			<p style="margin:0 0 18px;color:#444444;font-size:15px;line-height:1.6;">
-				' . sprintf(
-					/* translators: 1: club name, 2: amount formatted */
-					esc_html__( 'On behalf of the %1$s, we extend our deepest gratitude for your generous contribution of %2$s.', 'lccl-de' ),
-					'<strong>' . esc_html__( 'Lions Club of Colombo LEADS', 'lccl-de' ) . '</strong>',
-					'<strong style="color:#0073aa;font-size:16px;">LKR ' . esc_html( $amount ) . '</strong>'
-				) . '
-			</p>
-			<p style="margin:0 0 24px;color:#555555;font-size:14px;line-height:1.6;">
-				' . esc_html__( 'Your generous support directly empowers our vital community service projects—including eye care & spectacles, diabetes screening, hunger relief, and educational assistance. Every contribution makes a real, lasting difference in the lives of those in need.', 'lccl-de' ) . '
-			</p>
-			<div style="background-color:#f9f9f9;border-left:4px solid #0073aa;border-radius:4px;padding:18px 20px;margin:0 0 24px;">
-				<h2 style="margin:0 0 14px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
-					' . esc_html__( 'DONATION RECEIPT DETAILS', 'lccl-de' ) . '
-				</h2>
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Donor Name', 'lccl-de' ) . '</p>
-				<p style="margin:0 0 12px;color:#222222;font-size:15px;font-weight:700;">' . esc_html( $name ) . '</p>
-
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Amount Donated', 'lccl-de' ) . '</p>
-				<p style="margin:0 0 12px;color:#0073aa;font-size:18px;font-weight:800;">LKR ' . esc_html( $amount ) . '</p>
-
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Receipt / Bank Reference', 'lccl-de' ) . '</p>
-				<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;font-weight:700;">' . esc_html( $ref ) . '</p>
-
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Order Reference', 'lccl-de' ) . '</p>
-				<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;">' . esc_html( $order_ref ) . '</p>
-
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Date & Time', 'lccl-de' ) . '</p>
-				<p style="margin:0 0 12px;color:#222222;font-size:14px;">' . esc_html( $date_str ) . '</p>
-
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Supported Cause(s)', 'lccl-de' ) . '</p>
-				<p style="margin:0 0 12px;color:#222222;font-size:14px;">' . esc_html( $causes_str ) . '</p>
-
-				' . $message_row . '
-
-				<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Payment Gateway', 'lccl-de' ) . '</p>
-				<p style="margin:0;color:#222222;font-size:14px;">' . esc_html__( 'Commercial Bank of Ceylon (CBC) Paycenter', 'lccl-de' ) . '</p>
+		$html = '<html><body style="margin:0;padding:0;background-color:#F3F3F3;">
+			<div style="background-color:#F3F3F3;padding:28px 20px;font-family:Arial,Helvetica,sans-serif;">
+				<img src="' . esc_url( $logo ) . '" alt="LCCL Logo" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">
+				<h1 style="margin:0 0 22px;padding:0 0 10px;border-bottom:1px solid #f8e4a0;color:#333333;font-size:20px;font-weight:700;letter-spacing:0.04em;line-height:1.35;">DONATION RECEIVED</h1>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">Dear ' . esc_html( $who ) . ',</p>
+				<p style="margin:0 0 22px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your generous donation to support the community service work of Lions Club of Colombo LEADS. Your donation has been successfully received.</p>
+				<h2 style="margin:0 0 10px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.08em;">DONATION DETAILS</h2>
+				<p style="margin:0 0 4px;color:#555555;font-size:14px;line-height:1.5;">Reference Number:</p>
+				<p style="margin:0 0 16px;color:#333333;font-size:16px;font-weight:700;line-height:1.45;">' . esc_html( $ref ) . '</p>
+				<p style="margin:0 0 4px;color:#555555;font-size:14px;line-height:1.5;">Donation Amount:</p>
+				<p style="margin:0 0 16px;color:#333333;font-size:16px;font-weight:700;line-height:1.45;">' . esc_html( $currency . ' ' . $amount ) . '</p>
+				<p style="margin:0 0 4px;color:#555555;font-size:14px;line-height:1.5;">Areas Supported:</p>
+				<p style="margin:0 0 22px;color:#333333;font-size:16px;font-weight:700;line-height:1.45;">' . esc_html( $areas_supported ) . '</p>
+				<p style="margin:0 0 16px;color:#555555;font-size:15px;line-height:1.6;">We will use your generous contribution to support the selected area(s) and continue our community service initiatives.</p>
+				<p style="margin:0 0 28px;color:#555555;font-size:15px;line-height:1.6;">Thank you for your generosity and support.</p>
+				<p style="margin:0 0 6px;color:#333333;font-size:14px;font-weight:700;letter-spacing:0.04em;line-height:1.45;">LIONS CLUB OF COLOMBO LEADS</p>
+				<p style="margin:0;color:#555555;font-size:13px;line-height:1.55;">Lions International District 306 D6<br>Sri Lanka</p>
 			</div>
-			<p style="margin:0 0 24px;color:#666666;font-size:13px;line-height:1.6;">
-				' . esc_html__( 'Please keep this email as your official confirmation receipt. If you have any inquiries regarding your donation, please reply directly to this email.', 'lccl-de' ) . '
-			</p>
-			<p style="margin:0 0 4px;color:#222222;font-size:14px;font-weight:700;letter-spacing:0.04em;">' . esc_html__( 'LIONS CLUB OF COLOMBO LEADS', 'lccl-de' ) . '</p>
-			<p style="margin:0;color:#666666;font-size:13px;line-height:1.5;">
-				' . esc_html__( 'Lions International District 306 D6 | Sri Lanka', 'lccl-de' ) . '<br>
-				<a href="https://www.colomboleads.org" style="color:#0073aa;text-decoration:none;">www.colomboleads.org</a>
-			</p>
-		</div>
-	</div>
-</body>
-</html>';
+		</body></html>';
 
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
@@ -832,25 +786,28 @@ class LCCL_DE_Donation_Form {
 
 		$name       = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
 		$amount     = number_format( (float) $row['amount_lkr'], 2 );
+		$currency   = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
 		$email      = (string) $row['member_email'];
 		$phone      = (string) $row['member_phone'];
 		$order_ref  = (string) $row['order_ref'];
 		$ref        = $receipt ?: $order_ref;
 
 		$subject = sprintf(
-			/* translators: 1: amount formatted, 2: donor name */
-			__( '[Donation Alert] Received LKR %1$s from %2$s', 'lccl-de' ),
+			/* translators: 1: currency, 2: amount formatted, 3: donor name */
+			__( '[Donation Alert] Received %1$s %2$s from %3$s', 'lccl-de' ),
+			$currency,
 			$amount,
 			$name
 		);
 
 		$body = sprintf(
-			/* translators: 1: name, 2: amount, 3: email, 4: phone, 5: receipt, 6: order_ref, 7: date */
+			/* translators: 1: name, 2: currency, 3: amount, 4: email, 5: phone, 6: receipt, 7: order_ref, 8: date */
 			__(
-				"A new online donation has been received!\n\nDonor Details:\n----------------------------------------\nName:      %1\$s\nAmount:    LKR %2\$s\nEmail:     %3\$s\nPhone:     %4\$s\nReceipt:   %5\$s\nOrder Ref: %6\$s\nDate/Time: %7\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
+				"A new online donation has been received!\n\nDonor Details:\n----------------------------------------\nName:      %1\$s\nAmount:    %2\$s %3\$s\nEmail:     %4\$s\nPhone:     %5\$s\nReceipt:   %6\$s\nOrder Ref: %7\$s\nDate/Time: %8\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
 				'lccl-de'
 			),
 			$name,
+			$currency,
 			$amount,
 			$email,
 			$phone,

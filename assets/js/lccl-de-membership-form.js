@@ -41,7 +41,7 @@
 		var rate           = num( form.getAttribute( 'data-rate' ), 330.8 );
 		var principalUsd   = num( form.getAttribute( 'data-principal-usd' ), 50 );
 		var familyUsd      = num( form.getAttribute( 'data-family-usd' ), 25 );
-		var district       = num( form.getAttribute( 'data-district' ), 3500 );
+		var district       = num( form.getAttribute( 'data-district' ), 4561 );
 		var club           = num( form.getAttribute( 'data-club' ), 6000 );
 		var internationalMain = principalUsd * rate;
 		var familyFee         = additional * familyUsd * rate;

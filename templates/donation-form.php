@@ -36,10 +36,13 @@ $notice = static function ( $key ) use ( $err ) {
 $payment_success    = isset( $payment_success ) ? $payment_success : null;
 $payment_notice     = isset( $payment_notice ) ? $payment_notice : '';
 $gateway_configured = isset( $gateway_configured ) ? (bool) $gateway_configured : false;
+$currency           = isset( $currency ) && '' !== $currency ? strtoupper( $currency ) : 'LKR';
 $causes             = isset( $values['causes'] ) && is_array( $values['causes'] ) ? $values['causes'] : array();
 $amount             = $val( 'amount' );
 $required_msg       = LCCL_DE_Donation_Form::required_field_message();
-$total_display      = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount ) : '';
+$total_display      = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $amount, $currency ) : '';
+$presets_row1       = ( 'USD' === $currency ) ? array( 10, 25, 50 ) : array( 1000, 5000, 10000 );
+$presets_row2       = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 50000 );
 ?>
 <div class="lccl-bdf lccl-bdf--donation">
 	<div class="lccl-donation-layout">
@@ -66,7 +69,7 @@ $total_display      = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $am
 								/* translators: 1: donor name, 2: amount formatted, 3: receipt number */
 								esc_html__( 'Thank you, %1$s. Your donation of %2$s has been received successfully. Receipt: %3$s', 'lccl-de' ),
 								'<strong>' . esc_html( $payment_success['donor_name'] ) . '</strong>',
-								'<strong>' . esc_html( 'LKR ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
+								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
 								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
 							);
 							?>
@@ -121,31 +124,31 @@ $total_display      = '' !== $amount ? LCCL_DE_Donation_Form::format_amount( $am
 						required
 					>
 					<div class="lccl-df__currency" aria-hidden="true">
-						<span><?php esc_html_e( 'LKR', 'lccl-de' ); ?></span>
+						<span><?php echo esc_html( $currency ); ?></span>
 					</div>
 				</div>
 				<?php $notice( 'amount' ); ?>
 
 				<div class="lccl-df__presets" role="group" aria-label="<?php esc_attr_e( 'Suggested amounts', 'lccl-de' ); ?>">
 					<div class="lccl-df__preset-row">
-						<?php foreach ( array( 1000, 5000, 10000 ) as $preset ) : ?>
+						<?php foreach ( $presets_row1 as $preset ) : ?>
 							<button
 								class="lccl-df__preset<?php echo ( (string) $preset === (string) $amount ) ? ' is-active' : ''; ?>"
 								type="button"
 								data-lccl-preset="<?php echo esc_attr( (string) $preset ); ?>"
 							>
-								<?php echo esc_html( number_format( $preset ) . ' LKR' ); ?>
+								<?php echo esc_html( number_format( $preset ) . ' ' . $currency ); ?>
 							</button>
 						<?php endforeach; ?>
 					</div>
 					<div class="lccl-df__preset-row">
-						<?php foreach ( array( 25000, 50000 ) as $preset ) : ?>
+						<?php foreach ( $presets_row2 as $preset ) : ?>
 							<button
 								class="lccl-df__preset<?php echo ( (string) $preset === (string) $amount ) ? ' is-active' : ''; ?>"
 								type="button"
 								data-lccl-preset="<?php echo esc_attr( (string) $preset ); ?>"
 							>
-								<?php echo esc_html( number_format( $preset ) . ' LKR' ); ?>
+								<?php echo esc_html( number_format( $preset ) . ' ' . $currency ); ?>
 							</button>
 						<?php endforeach; ?>
 					</div>

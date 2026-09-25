@@ -436,6 +436,7 @@ class LCCL_DE_Payment_Dashboard {
 					'' AS project_label,
 					'' AS extra_message,
 					amount_lkr,
+					currency,
 					status,
 					session_id,
 					gateway_receipt,
@@ -465,6 +466,7 @@ class LCCL_DE_Payment_Dashboard {
 						project_label,
 						message AS extra_message,
 						amount_lkr,
+						currency,
 						status,
 						session_id,
 						gateway_receipt,
@@ -498,7 +500,8 @@ class LCCL_DE_Payment_Dashboard {
 		$stats_row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			"SELECT
 				COUNT(*) as total_count,
-				COALESCE(SUM(CASE WHEN status = 'paid' THEN amount_lkr ELSE 0 END), 0) as total_paid_lkr,
+				COALESCE(SUM(CASE WHEN status = 'paid' AND (currency = 'LKR' OR currency IS NULL OR currency = '') THEN amount_lkr ELSE 0 END), 0) as total_paid_lkr,
+				COALESCE(SUM(CASE WHEN status = 'paid' AND currency = 'USD' THEN amount_lkr ELSE 0 END), 0) as total_paid_usd,
 				COUNT(CASE WHEN status = 'paid' THEN 1 END) as paid_count,
 				COUNT(CASE WHEN status = 'failed' THEN 1 END) as failed_count,
 				COUNT(CASE WHEN status IN ('pending', 'cancelled') THEN 1 END) as other_count
@@ -606,6 +609,7 @@ class LCCL_DE_Payment_Dashboard {
 				'project'          => (string) $row['project'],
 				'project_label'    => (string) $row['project_label'],
 				'amount_lkr'       => (float) $row['amount_lkr'],
+				'currency'         => ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR',
 				'amount_formatted' => number_format( (float) $row['amount_lkr'], 2 ),
 				'status'           => (string) $row['status'],
 				'session_id'       => (string) $row['session_id'],
@@ -619,6 +623,7 @@ class LCCL_DE_Payment_Dashboard {
 				'paid_fmt'         => ! empty( $row['paid_at'] ) ? mysql2date( 'd M Y, H:i', $row['paid_at'] ) : '',
 				'causes'           => $causes,
 				'message'          => $message,
+				'breakdown'        => isset( $gw_json['breakdown'] ) ? $gw_json['breakdown'] : null,
 				'gateway_json'     => $gw_json,
 				'gateway_raw'      => $gw_raw,
 			);
@@ -634,6 +639,7 @@ class LCCL_DE_Payment_Dashboard {
 				'stats'       => array(
 					'total_count'    => isset( $stats_row['total_count'] ) ? (int) $stats_row['total_count'] : 0,
 					'total_paid_lkr' => isset( $stats_row['total_paid_lkr'] ) ? (float) $stats_row['total_paid_lkr'] : 0.00,
+					'total_paid_usd' => isset( $stats_row['total_paid_usd'] ) ? (float) $stats_row['total_paid_usd'] : 0.00,
 					'paid_count'     => isset( $stats_row['paid_count'] ) ? (int) $stats_row['paid_count'] : 0,
 					'failed_count'   => isset( $stats_row['failed_count'] ) ? (int) $stats_row['failed_count'] : 0,
 					'other_count'    => isset( $stats_row['other_count'] ) ? (int) $stats_row['other_count'] : 0,

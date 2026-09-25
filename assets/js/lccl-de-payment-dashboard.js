@@ -381,7 +381,18 @@
 				kpiTotal.textContent = ( stats.total_count || 0 ).toLocaleString();
 			}
 			if ( kpiPaidLkr ) {
-				kpiPaidLkr.textContent = ( Number( stats.total_paid_lkr ) || 0 ).toLocaleString( 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 } );
+				var lkrVal = Number( stats.total_paid_lkr ) || 0;
+				var usdVal = Number( stats.total_paid_usd ) || 0;
+				var lkrFormatted = 'LKR ' + lkrVal.toLocaleString( 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 } );
+				var usdFormatted = 'USD ' + usdVal.toLocaleString( 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 } );
+
+				if ( lkrVal > 0 && usdVal > 0 ) {
+					kpiPaidLkr.innerHTML = escapeHtml( lkrFormatted ) + '<span style="display:block; font-size:15px; font-weight:600; color:#059669; margin-top:2px;">+ ' + escapeHtml( usdFormatted ) + '</span>';
+				} else if ( usdVal > 0 ) {
+					kpiPaidLkr.textContent = usdFormatted;
+				} else {
+					kpiPaidLkr.textContent = lkrFormatted;
+				}
 			}
 			if ( kpiPaidSub ) {
 				kpiPaidSub.textContent = ( stats.paid_count || 0 ) + ' completed payments';
@@ -432,20 +443,20 @@
 
 				if ( 'donation' === item.tx_type ) {
 					badgeClass = 'lccl-paydash__badge--donation';
-					badgeText  = '💖 Donation';
+					badgeText  = 'Donation';
 					if ( item.causes && item.causes.length ) {
 						subText = item.causes.slice( 0, 2 ).join( ', ' ) + ( item.causes.length > 2 ? '…' : '' );
 					}
 				} else if ( 'sponsorship' === item.tx_type ) {
 					badgeClass = 'lccl-paydash__badge--sponsorship';
-					badgeText  = '🤝 Sponsorship';
+					badgeText  = 'Sponsorship';
 					subText    = item.project_label || item.project;
 				} else if ( 'member' === item.tx_type ) {
 					badgeClass = 'lccl-paydash__badge--member';
-					badgeText  = '👤 Member (Single)';
+					badgeText  = 'Member (Single)';
 				} else if ( 'family' === item.tx_type ) {
 					badgeClass = 'lccl-paydash__badge--family';
-					badgeText  = '👥 Family (' + ( item.family_count || 1 ) + ')';
+					badgeText  = 'Family (' + ( item.family_count || 1 ) + ')';
 				}
 
 				// Bank response code & text
@@ -491,7 +502,8 @@
 				html += '</td>';
 
 				// Col 5: Amount
-				html += '<td><strong style="color:#0f172a; font-size:13px;">LKR ' + escapeHtml( item.amount_formatted ) + '</strong></td>';
+				var currencyLabel = escapeHtml( item.currency || 'LKR' );
+				html += '<td><strong style="color:#0f172a; font-size:13px;">' + currencyLabel + ' ' + escapeHtml( item.amount_formatted ) + '</strong></td>';
 
 				// Col 6: Status
 				html += '<td><span class="lccl-paydash__status ' + statusClass + '">' + statusLabel + '</span></td>';
@@ -531,7 +543,7 @@
 				html += '<div>';
 				html += '<h4>Payment & Bank Details</h4>';
 				html += '<ul>';
-				html += '<li><strong>Amount:</strong> LKR ' + escapeHtml( item.amount_formatted ) + '</li>';
+				html += '<li><strong>Amount:</strong> ' + currencyLabel + ' ' + escapeHtml( item.amount_formatted ) + '</li>';
 				html += '<li><strong>Status:</strong> ' + escapeHtml( ( item.status || '' ).toUpperCase() ) + '</li>';
 				html += '<li><strong>Receipt Number:</strong> ' + escapeHtml( item.gateway_receipt || 'None' ) + '</li>';
 				html += '<li><strong>Bank Code:</strong> <code>' + escapeHtml( item.resp_code || '—' ) + '</code></li>';
@@ -561,6 +573,37 @@
 					if ( item.message ) {
 						html += '<p style="margin:4px 0;"><strong>Donor Message:</strong> <em>"' + escapeHtml( item.message ) + '"</em></p>';
 					}
+					html += '</div>';
+				var breakdown = item.breakdown || ( item.gateway_json && item.gateway_json.breakdown );
+				if ( ! breakdown && item.gateway_raw ) {
+					try {
+						var parsedRaw = JSON.parse( item.gateway_raw );
+						if ( parsedRaw && parsedRaw.breakdown ) {
+							breakdown = parsedRaw.breakdown;
+						}
+					} catch ( e ) {}
+				}
+
+				if ( breakdown ) {
+					html += '<div style="margin-top:14px; padding-top:14px; border-top:1px solid #e2e8f0;">';
+					html += '<h4>Membership Fee Breakdown</h4>';
+					html += '<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px 14px; margin-top:6px; font-size:12px; max-width:540px;">';
+					html += '<div style="display:flex; justify-content:space-between; margin-bottom:6px;">';
+					html += '<span><strong>Type:</strong> ' + escapeHtml( ( breakdown.membership_type || item.tx_type || '' ).toUpperCase() ) + ' (' + escapeHtml( breakdown.members_count || 1 ) + ' member(s))</span>';
+					if ( breakdown.rates && breakdown.rates.exchange_rate ) {
+						html += '<span style="color:#64748b;">Rate: 1 USD = LKR ' + Number( breakdown.rates.exchange_rate ).toFixed( 2 ) + '</span>';
+					}
+					html += '</div>';
+					html += '<ul style="margin:0; padding:0; list-style:none; line-height:1.7; color:#475569;">';
+					html += '<li style="display:flex; justify-content:space-between;"><span>International Principal Fee:</span><strong style="color:#0f172a; font-family:monospace;">LKR ' + Number( breakdown.international_main_lkr || 0 ).toLocaleString( 'en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 } ) + '</strong></li>';
+					if ( breakdown.additional_members && Number( breakdown.additional_members ) > 0 ) {
+						html += '<li style="display:flex; justify-content:space-between;"><span>Family Members (' + escapeHtml( breakdown.additional_members ) + ' × USD fee):</span><strong style="color:#0f172a; font-family:monospace;">LKR ' + Number( breakdown.family_fee_lkr || 0 ).toLocaleString( 'en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 } ) + '</strong></li>';
+					}
+					html += '<li style="display:flex; justify-content:space-between;"><span>District Dues (' + escapeHtml( breakdown.members_count || 1 ) + ' × member):</span><strong style="color:#0f172a; font-family:monospace;">LKR ' + Number( breakdown.district_total_lkr || 0 ).toLocaleString( 'en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 } ) + '</strong></li>';
+					html += '<li style="display:flex; justify-content:space-between;"><span>Club Administration Payment:</span><strong style="color:#0f172a; font-family:monospace;">LKR ' + Number( breakdown.club_fee_lkr || 0 ).toLocaleString( 'en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 } ) + '</strong></li>';
+					html += '<li style="display:flex; justify-content:space-between; margin-top:6px; padding-top:6px; border-top:1px dashed #cbd5e1; font-size:13px;"><span style="font-weight:700; color:#002b49;">Calculated Total:</span><strong style="color:#002b49; font-size:13px; font-family:monospace;">LKR ' + Number( breakdown.total_lkr || 0 ).toLocaleString( 'en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 } ) + '</strong></li>';
+					html += '</ul>';
+					html += '</div>';
 					html += '</div>';
 				} else if ( 'family' === item.tx_type ) {
 					html += '<div style="margin-top:14px; padding-top:14px; border-top:1px solid #e2e8f0;">';

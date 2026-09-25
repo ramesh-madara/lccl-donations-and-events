@@ -58,6 +58,16 @@ class LCCL_DE_Settings {
 	const PROFILE_PROJECT_2  = 'project_2';
 
 	/**
+	 * Option that stores Annual Membership fee schedule settings.
+	 */
+	const OPTION_MEMBERSHIP_FEES = 'lccl_de_membership_fees';
+
+	/**
+	 * Option that stores revision history for membership fee changes.
+	 */
+	const OPTION_MEMBERSHIP_FEES_HISTORY = 'lccl_de_membership_fees_history';
+
+	/**
 	 * Nonce for saving.
 	 */
 	const NONCE = 'lccl_de_save_notify';
@@ -1289,5 +1299,126 @@ class LCCL_DE_Settings {
 		}
 
 		return $profiles;
+	}
+
+	// ------------------------------------------------------------------
+	// Membership Fee Schedule & Revision History
+	// ------------------------------------------------------------------
+
+	/**
+	 * Get current membership fee schedule settings.
+	 *
+	 * Defaults:
+	 *  - Exchange rate: 1 USD = LKR 330.80
+	 *  - Household / Main Member fee: USD 50.00
+	 *  - Family Member fee: USD 25.00 per additional family member
+	 *  - District payment: LKR 4,561.00 per member
+	 *  - Club payment: LKR 6,000.00 per membership
+	 *
+	 * @return array{exchange_rate:float,principal_usd:float,family_usd:float,district_lkr:float,club_lkr:float}
+	 */
+	public static function get_membership_fees() {
+		$defaults = array(
+			'exchange_rate' => 330.80,
+			'principal_usd' => 50.00,
+			'family_usd'    => 25.00,
+			'district_lkr'  => 4561.00,
+			'club_lkr'      => 6000.00,
+		);
+
+		$saved = get_option( self::OPTION_MEMBERSHIP_FEES, array() );
+		if ( ! is_array( $saved ) ) {
+			$saved = array();
+		}
+
+		return array(
+			'exchange_rate' => isset( $saved['exchange_rate'] ) ? max( 0.01, (float) $saved['exchange_rate'] ) : $defaults['exchange_rate'],
+			'principal_usd' => isset( $saved['principal_usd'] ) ? max( 0.00, (float) $saved['principal_usd'] ) : $defaults['principal_usd'],
+			'family_usd'    => isset( $saved['family_usd'] ) ? max( 0.00, (float) $saved['family_usd'] ) : $defaults['family_usd'],
+			'district_lkr'  => isset( $saved['district_lkr'] ) ? max( 0.00, (float) $saved['district_lkr'] ) : $defaults['district_lkr'],
+			'club_lkr'      => isset( $saved['club_lkr'] ) ? max( 0.00, (float) $saved['club_lkr'] ) : $defaults['club_lkr'],
+		);
+	}
+
+	/**
+	 * Save membership fee schedule settings and log to revision history.
+	 *
+	 * @param array $input Raw POST or input array.
+	 * @return array Saved values.
+	 */
+	public static function save_membership_fees( array $input ) {
+		$current = self::get_membership_fees();
+
+		$rate      = isset( $input['exchange_rate'] ) ? max( 0.01, (float) $input['exchange_rate'] ) : 330.80;
+		$principal = isset( $input['household_fee_usd'] )
+			? max( 0.00, (float) $input['household_fee_usd'] )
+			: ( isset( $input['principal_usd'] ) ? max( 0.00, (float) $input['principal_usd'] ) : 50.00 );
+		$family    = isset( $input['family_fee_usd'] )
+			? max( 0.00, (float) $input['family_fee_usd'] )
+			: ( isset( $input['family_usd'] ) ? max( 0.00, (float) $input['family_usd'] ) : 25.00 );
+		$district  = isset( $input['district_fee_lkr'] )
+			? max( 0.00, (float) $input['district_fee_lkr'] )
+			: ( isset( $input['district_lkr'] ) ? max( 0.00, (float) $input['district_lkr'] ) : 4561.00 );
+		$club      = isset( $input['club_fee_lkr'] )
+			? max( 0.00, (float) $input['club_fee_lkr'] )
+			: ( isset( $input['club_lkr'] ) ? max( 0.00, (float) $input['club_lkr'] ) : 6000.00 );
+		$note      = isset( $input['change_note'] ) ? sanitize_text_field( wp_unslash( $input['change_note'] ) ) : '';
+
+		$new_fees = array(
+			'exchange_rate' => $rate,
+			'principal_usd' => $principal,
+			'family_usd'    => $family,
+			'district_lkr'  => $district,
+			'club_lkr'      => $club,
+		);
+
+		update_option( self::OPTION_MEMBERSHIP_FEES, $new_fees );
+
+		// Check if any numbers actually changed or history is empty.
+		$changed = false;
+		foreach ( $new_fees as $k => $v ) {
+			if ( abs( (float) $current[ $k ] - (float) $v ) > 0.0001 ) {
+				$changed = true;
+				break;
+			}
+		}
+
+		$history = get_option( self::OPTION_MEMBERSHIP_FEES_HISTORY, array() );
+		if ( ! is_array( $history ) ) {
+			$history = array();
+		}
+
+		if ( $changed || empty( $history ) || '' !== $note ) {
+			$user  = wp_get_current_user();
+			$entry = array(
+				'timestamp'     => current_time( 'mysql' ),
+				'user_id'       => get_current_user_id(),
+				'user_name'     => ( $user && $user->exists() ) ? $user->display_name : 'Admin',
+				'exchange_rate' => $rate,
+				'principal_usd' => $principal,
+				'family_usd'    => $family,
+				'district_lkr'  => $district,
+				'club_lkr'      => $club,
+				'note'          => $note,
+			);
+
+			array_unshift( $history, $entry );
+			if ( count( $history ) > 50 ) {
+				$history = array_slice( $history, 0, 50 );
+			}
+			update_option( self::OPTION_MEMBERSHIP_FEES_HISTORY, $history );
+		}
+
+		return $new_fees;
+	}
+
+	/**
+	 * Get membership fee revision history.
+	 *
+	 * @return array
+	 */
+	public static function get_membership_fees_history() {
+		$history = get_option( self::OPTION_MEMBERSHIP_FEES_HISTORY, array() );
+		return is_array( $history ) ? $history : array();
 	}
 }

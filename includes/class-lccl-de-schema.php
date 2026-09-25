@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 10;
+	const VERSION = 11;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -347,6 +347,7 @@ class LCCL_DE_Schema {
 			membership_type varchar(32) NOT NULL DEFAULT 'member',
 			family_count tinyint(3) unsigned NOT NULL DEFAULT 1,
 			amount_lkr decimal(12,2) NOT NULL DEFAULT 0.00,
+			currency varchar(3) NOT NULL DEFAULT 'LKR',
 			status varchar(32) NOT NULL DEFAULT 'pending',
 			session_id varchar(128) DEFAULT NULL,
 			success_indicator varchar(64) DEFAULT NULL,
@@ -375,6 +376,7 @@ class LCCL_DE_Schema {
 			project varchar(64) NOT NULL DEFAULT '',
 			project_label varchar(191) NOT NULL DEFAULT '',
 			amount_lkr decimal(12,2) NOT NULL DEFAULT 0.00,
+			currency varchar(3) NOT NULL DEFAULT 'LKR',
 			message text,
 			status varchar(32) NOT NULL DEFAULT 'pending',
 			session_id varchar(128) DEFAULT NULL,
@@ -392,8 +394,27 @@ class LCCL_DE_Schema {
 		) {$charset};";
 
 		dbDelta( $sponsorships_sql );
+		self::ensure_currency_columns();
 		self::$table_names = array();
 		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();
 		update_option( self::OPTION, self::VERSION );
+	}
+
+	/**
+	 * Explicitly verify and add currency column to existing tables if missing.
+	 */
+	public static function ensure_currency_columns() {
+		global $wpdb;
+
+		$tables = array( self::payments_table(), self::sponsorships_table() );
+		foreach ( $tables as $table ) {
+			if ( empty( $table ) ) {
+				continue;
+			}
+			$cols = (array) $wpdb->get_col( "DESCRIBE `{$table}`" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			if ( ! in_array( 'currency', $cols, true ) ) {
+				$wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `currency` varchar(3) NOT NULL DEFAULT 'LKR' AFTER `amount_lkr`" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			}
+		}
 	}
 }
