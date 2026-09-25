@@ -323,6 +323,13 @@
 			}
 
 			if ( completedBanner ) {
+				if ( isCompleted ) {
+					var title = opt.textContent.replace( '(Completed)', '' ).trim();
+					var span = completedBanner.querySelector('.lccl-completed-msg');
+					if ( span ) {
+						span.textContent = 'The financial goal for "' + title + '" has already been met. Thank you for your interest, but we are no longer accepting donations for this project. Please select another project to support.';
+					}
+				}
 				completedBanner.hidden = ! isCompleted;
 			}
 		}

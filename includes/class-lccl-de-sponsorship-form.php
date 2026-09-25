@@ -389,9 +389,13 @@ class LCCL_DE_Sponsorship_Form {
 			$errors[] = __( 'Please enter a valid sponsorship amount of at least 1 LKR.', 'lccl-de' );
 		}
 		if ( isset( $project_data['status'] ) && 'completed' === $project_data['status'] ) {
-			/* translators: %s: project title without the (Completed) suffix if possible */
-			$clean_title = str_replace( ' ' . __( '(Completed)', 'lccl-de' ), '', $project_data['title'] );
-			$errors[] = sprintf( __( 'The financial goal for "%s" has already been met. Thank you for your interest, but we are no longer accepting donations for this project. Please select another project to support.', 'lccl-de' ), $clean_title );
+			wp_safe_redirect(
+				add_query_arg(
+					array( 'lccl_ps_completed' => rawurlencode( $project ) ),
+					wp_get_referer() ?: get_permalink()
+				)
+			);
+			exit;
 		}
 		if ( ! LCCL_DE_Paycenter_Client::is_configured( self::PROFILE ) ) {
 			$errors[] = __( 'Online project sponsorship payments are currently not configured. Please contact the club administrator.', 'lccl-de' );

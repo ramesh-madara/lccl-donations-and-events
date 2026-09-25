@@ -39,8 +39,28 @@ $gateway_configured = isset( $gateway_configured ) ? (bool) $gateway_configured 
 $currency           = isset( $currency ) && '' !== $currency ? strtoupper( $currency ) : 'LKR';
 
 $projects     = LCCL_DE_Sponsorship_Form::projects();
-$project      = $val( 'project' );
-$project      = isset( $projects[ $project ] ) ? $project : 'spectacles';
+
+// If redirected back with lccl_ps_completed, force select that project so the green message shows.
+$project = '';
+if ( ! empty( $_GET['lccl_ps_completed'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	$project = sanitize_key( wp_unslash( $_GET['lccl_ps_completed'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+}
+if ( ! isset( $projects[ $project ] ) ) {
+	$project = $val( 'project' );
+}
+
+if ( ! isset( $projects[ $project ] ) ) {
+	$project = '';
+	foreach ( $projects as $k => $v ) {
+		if ( 'completed' !== $v['status'] ) {
+			$project = $k;
+			break;
+		}
+	}
+	if ( '' === $project && ! empty( $projects ) ) {
+		$project = array_key_first( $projects );
+	}
+}
 $amount       = $val( 'amount' );
 $amount       = '' !== $amount ? $amount : ( 'USD' === $currency ? '25' : LCCL_DE_Sponsorship_Form::DEFAULT_AMOUNT );
 $total        = LCCL_DE_Sponsorship_Form::format_amount( $amount, $currency );
@@ -110,9 +130,19 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 				<?php esc_html_e( 'Please complete all fields marked with an *.', 'lccl-de' ); ?>
 			</p>
 
-			<p class="lccl-bdf__banner lccl-bdf__banner--success" data-lccl-notice="completed" role="alert" hidden style="background-color: #ecfdf5; border-color: #10b981; color: #065f46; margin-bottom: 24px;">
+			<?php
+			$is_completed = isset( $projects[ $project ] ) && 'completed' === $projects[ $project ]['status'];
+			$completed_msg = '';
+			if ( $is_completed ) {
+				$clean_title = str_replace( ' ' . __( '(Completed)', 'lccl-de' ), '', $projects[ $project ]['title'] );
+				$completed_msg = sprintf( __( 'The financial goal for "%s" has already been met. Thank you for your interest, but we are no longer accepting donations for this project. Please select another project to support.', 'lccl-de' ), $clean_title );
+			}
+			?>
+			<p class="lccl-bdf__banner lccl-bdf__banner--success" data-lccl-notice="completed" role="alert" <?php echo $is_completed ? '' : 'hidden'; ?> style="background-color: #ecfdf5; border-color: #10b981; color: #065f46; margin-bottom: 24px;">
 				<span style="font-weight: 600; display: block; margin-bottom: 4px; font-size: 15px;"><?php esc_html_e( 'Financial Goal Met!', 'lccl-de' ); ?></span>
-				<?php esc_html_e( 'Thank you for your interest! This project has already reached its financial goal and we are no longer accepting donations for it. Please select another project to support.', 'lccl-de' ); ?>
+				<span class="lccl-completed-msg">
+					<?php echo $is_completed ? esc_html( $completed_msg ) : esc_html__( 'Thank you for your interest! This project has already reached its financial goal and we are no longer accepting donations for it. Please select another project to support.', 'lccl-de' ); ?>
+				</span>
 			</p>
 
 			<header class="lccl-bdf__header">
