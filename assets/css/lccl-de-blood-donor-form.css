@@ -2281,3 +2281,13 @@
 	margin-top: 20px;
 	text-decoration: none;
 }
+
+/* Disabled form elements */
+.lccl-bdf input:disabled,
+.lccl-bdf select:disabled,
+.lccl-bdf textarea:disabled,
+.lccl-bdf button:disabled,
+.lccl-bdf .lccl-bdf__submit:disabled {
+	cursor: not-allowed !important;
+	opacity: 0.7;
+}
