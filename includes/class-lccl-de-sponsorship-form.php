@@ -97,7 +97,7 @@ class LCCL_DE_Sponsorship_Form {
 	 * @return string
 	 */
 	public static function default_title() {
-		return __( 'Support a Project', 'lccl-de' );
+		return __( 'Support a Project or Event', 'lccl-de' );
 	}
 
 	/**
@@ -106,7 +106,7 @@ class LCCL_DE_Sponsorship_Form {
 	 * @return string
 	 */
 	public static function default_intro() {
-		return __( 'Please provide the information below to support your selected project.', 'lccl-de' );
+		return __( 'Please provide the information below to support your selected project or event.', 'lccl-de' );
 	}
 
 	/**
@@ -734,19 +734,11 @@ class LCCL_DE_Sponsorship_Form {
 			return;
 		}
 
-		$first_name    = trim( (string) $row['first_name'] );
-		$amount        = number_format( (float) $row['amount_lkr'], 2 );
-		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
-		$project_label = ! empty( $row['project_label'] ) ? $row['project_label'] : 'our project';
-		$ref           = $receipt ?: (string) $row['order_ref'];
+		$ref = $receipt ?: (string) $row['order_ref'];
 
 		$message = sprintf(
-			/* translators: 1: sponsor name, 2: project title, 3: currency, 4: amount formatted, 5: receipt */
-			__( 'Dear %1$s, thank you for sponsoring "%2$s" with %3$s %4$s. Lions Club of Colombo LEADS - your generosity transforms lives! Ref: %5$s', 'lccl-de' ),
-			$first_name ?: __( 'Sponsor', 'lccl-de' ),
-			$project_label,
-			$currency,
-			$amount,
+			/* translators: 1: receipt */
+			__( 'Thank you for your generous sponsorship in support of Lions Club of Colombo LEADS. Your sponsorship has been successfully received. Reference Number: %1$s', 'lccl-de' ),
 			$ref
 		);
 
@@ -778,69 +770,38 @@ class LCCL_DE_Sponsorship_Form {
 		$amount        = number_format( $amount_raw, 2 );
 		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
 		$ref           = $receipt ?: (string) $row['order_ref'];
-		$order_ref     = (string) $row['order_ref'];
 		$project_label = ! empty( $row['project_label'] ) ? $row['project_label'] : $row['project'];
 
 		$date_raw = ! empty( $row['paid_at'] ) ? $row['paid_at'] : current_time( 'mysql' );
 		$date_fmt = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
 		$date_str = mysql2date( $date_fmt, $date_raw );
 
-		$message_row = '';
-		if ( ! empty( $row['message'] ) ) {
-			$message_row = '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Your Note / Message', 'lccl-de' ) . '</p>'
-				. '<p style="margin:0 0 14px;color:#222222;font-size:14px;font-style:italic;background-color:#ffffff;padding:8px 12px;border-radius:4px;border:1px solid #e0e0e0;">'
-				. esc_html( $row['message'] ) . '</p>';
-		}
-
-		$subject = sprintf(
-			/* translators: 1: site name, 2: project title, 3: currency, 4: amount formatted */
-			__( '[%1$s] Thank You for Sponsoring "%2$s" - %3$s %4$s!', 'lccl-de' ),
-			get_bloginfo( 'name' ),
-			$project_label,
-			$currency,
-			$amount
-		);
+		$subject = __( 'SPONSORSHIP RECEIVED – LIONS CLUB OF COLOMBO LEADS', 'lccl-de' );
 
 		$html = '<!DOCTYPE html><html><body style="margin:0;padding:0;background-color:#F3F3F3;font-family:Arial,Helvetica,sans-serif;">'
 			. '<div style="max-width:600px;margin:0 auto;background-color:#F3F3F3;padding:28px 20px;">'
 			. '<img src="https://registration.colomboleads.org/lccclLOGO.png" alt="Lions Club of Colombo LEADS" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">'
 			. '<div style="background-color:#FFFFFF;border-radius:8px;padding:32px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
 			. '<h1 style="margin:0 0 18px;padding:0 0 12px;border-bottom:2px solid #f8e4a0;color:#222222;font-size:20px;font-weight:700;">'
-			. esc_html__( 'PROJECT SPONSORSHIP RECEIVED WITH THANKS', 'lccl-de' ) . '</h1>'
+			. esc_html__( 'SPONSORSHIP RECEIVED', 'lccl-de' ) . '</h1>'
 			. '<p style="margin:0 0 16px;color:#444444;font-size:15px;line-height:1.6;">'
 			. sprintf( esc_html__( 'Dear %s,', 'lccl-de' ), '<strong>' . esc_html( $name ) . '</strong>' ) . '</p>'
-			. '<p style="margin:0 0 18px;color:#444444;font-size:15px;line-height:1.6;">'
-			. sprintf(
-				/* translators: 1: club name, 2: project label, 3: currency, 4: amount formatted */
-				esc_html__( 'On behalf of the %1$s, we extend our heartfelt gratitude for your generous sponsorship of the "%2$s" project with %3$s %4$s.', 'lccl-de' ),
-				'<strong>' . esc_html__( 'Lions Club of Colombo LEADS', 'lccl-de' ) . '</strong>',
-				esc_html( $project_label ),
-				esc_html( $currency ),
-				'<strong style="color:#0073aa;font-size:16px;">' . esc_html( $amount ) . '</strong>'
-			) . '</p>'
-			. '<p style="margin:0 0 24px;color:#555555;font-size:14px;line-height:1.6;">'
-			. esc_html__( 'Your generous support directly funds our community service projects and creates a real, lasting difference in the lives of those in need. Thank you for standing with us!', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 24px;color:#444444;font-size:15px;line-height:1.6;">'
+			. esc_html__( 'Thank you for your generous sponsorship in support of the Lions Club of Colombo LEADS. Your sponsorship has been successfully received.', 'lccl-de' ) . '</p>'
 			. '<div style="background-color:#f9f9f9;border-left:4px solid #0073aa;border-radius:4px;padding:18px 20px;margin:0 0 24px;">'
 			. '<h2 style="margin:0 0 14px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">'
-			. esc_html__( 'SPONSORSHIP RECEIPT DETAILS', 'lccl-de' ) . '</h2>'
-			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Sponsor Name', 'lccl-de' ) . '</p>'
-			. '<p style="margin:0 0 12px;color:#222222;font-size:15px;font-weight:700;">' . esc_html( $name ) . '</p>'
-			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Project Sponsored', 'lccl-de' ) . '</p>'
-			. '<p style="margin:0 0 12px;color:#222222;font-size:15px;font-weight:700;">' . esc_html( $project_label ) . '</p>'
-			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Amount Sponsored', 'lccl-de' ) . '</p>'
-			. '<p style="margin:0 0 12px;color:#0073aa;font-size:18px;font-weight:800;">' . esc_html( $currency . ' ' . $amount ) . '</p>'
-			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Receipt / Bank Reference', 'lccl-de' ) . '</p>'
+			. esc_html__( 'SPONSORSHIP DETAILS', 'lccl-de' ) . '</h2>'
+			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Reference Number', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;font-weight:700;">' . esc_html( $ref ) . '</p>'
-			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Order Reference', 'lccl-de' ) . '</p>'
-			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;">' . esc_html( $order_ref ) . '</p>'
+			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Project / Event', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;font-weight:700;">' . esc_html( $project_label ) . '</p>'
+			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Sponsorship Amount', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 12px;color:#0073aa;font-size:18px;font-weight:800;">' . esc_html( $currency . ' ' . $amount ) . '</p>'
 			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Date & Time', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;">' . esc_html( $date_str ) . '</p>'
-			. $message_row
-			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Payment Gateway', 'lccl-de' ) . '</p>'
-			. '<p style="margin:0;color:#222222;font-size:14px;">' . esc_html__( 'Commercial Bank of Ceylon (CBC) Paycenter', 'lccl-de' ) . '</p>'
 			. '</div>'
 			. '<p style="margin:0 0 24px;color:#666666;font-size:13px;line-height:1.6;">'
-			. esc_html__( 'Please keep this email as your official confirmation receipt. If you have any inquiries regarding your sponsorship, please reply directly to this email.', 'lccl-de' ) . '</p>'
+			. esc_html__( 'Your generous contribution will support the selected project or event and help us continue our community service initiatives. Thank you for your generosity and support.', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0 0 4px;color:#222222;font-size:14px;font-weight:700;letter-spacing:0.04em;">' . esc_html__( 'LIONS CLUB OF COLOMBO LEADS', 'lccl-de' ) . '</p>'
 			. '<p style="margin:0;color:#666666;font-size:13px;line-height:1.5;">'
 			. esc_html__( 'Lions International District 306 D6 | Sri Lanka', 'lccl-de' ) . '<br>'

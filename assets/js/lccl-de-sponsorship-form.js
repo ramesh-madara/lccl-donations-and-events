@@ -327,7 +327,7 @@
 					var title = opt.textContent.replace( '(Completed)', '' ).trim();
 					var span = completedBanner.querySelector('.lccl-completed-msg');
 					if ( span ) {
-						span.textContent = 'The financial goal for "' + title + '" has already been met. Thank you for your interest, but we are no longer accepting donations for this project. Please select another project to support.';
+						span.textContent = 'The funding goal for "' + title + '" has been reached. Thank you for your interest and support. This project is no longer accepting contributions. Please select another project or event to support.';
 					}
 				}
 				completedBanner.hidden = ! isCompleted;

@@ -693,6 +693,7 @@ class LCCL_DE_Membership_Form {
 		if ( $updated > 0 ) {
 			$row['currency'] = $gateway_currency;
 			self::send_payment_confirmation( $row, $receipt );
+			self::send_payment_sms( $row, $receipt );
 		}
 
 		return array(
@@ -726,31 +727,74 @@ class LCCL_DE_Membership_Form {
 			return;
 		}
 
-		$subject = sprintf(
-			/* translators: site name */
-			__( '[%s] Membership Fee Payment Confirmation', 'lccl-de' ),
-			get_bloginfo( 'name' )
+		if ( '' === $name ) {
+			$name = __( 'Member', 'lccl-de' );
+		}
+
+		$subject = __( 'MEMBERSHIP PAYMENT RECEIVED – LIONS CLUB OF COLOMBO LEADS', 'lccl-de' );
+		$ref     = $receipt ?: (string) $row['order_ref'];
+		$date_fmt = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
+		$date_str = mysql2date( $date_fmt, current_time( 'mysql' ) );
+
+		$html = '<!DOCTYPE html><html><body style="margin:0;padding:0;background-color:#F3F3F3;font-family:Arial,Helvetica,sans-serif;">'
+			. '<div style="max-width:600px;margin:0 auto;background-color:#F3F3F3;padding:28px 20px;">'
+			. '<img src="https://registration.colomboleads.org/lccclLOGO.png" alt="Lions Club of Colombo LEADS" width="156" style="display:block;width:156px;max-width:156px;height:auto;margin:0 0 22px;border:0;">'
+			. '<div style="background-color:#FFFFFF;border-radius:8px;padding:32px 28px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">'
+			. '<h1 style="margin:0 0 18px;padding:0 0 12px;border-bottom:2px solid #f8e4a0;color:#222222;font-size:20px;font-weight:700;">'
+			. esc_html__( 'MEMBERSHIP PAYMENT RECEIVED', 'lccl-de' ) . '</h1>'
+			. '<p style="margin:0 0 16px;color:#444444;font-size:15px;line-height:1.6;">'
+			. sprintf( esc_html__( 'Dear %s,', 'lccl-de' ), '<strong>' . esc_html( $name ) . '</strong>' ) . '</p>'
+			. '<p style="margin:0 0 24px;color:#444444;font-size:15px;line-height:1.6;">'
+			. esc_html__( 'Thank you for making your annual membership payment to the Lions Club of Colombo LEADS. Your payment has been successfully received.', 'lccl-de' ) . '</p>'
+			. '<div style="background-color:#f9f9f9;border-left:4px solid #0073aa;border-radius:4px;padding:18px 20px;margin:0 0 24px;">'
+			. '<h2 style="margin:0 0 14px;color:#333333;font-size:13px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">'
+			. esc_html__( 'PAYMENT DETAILS', 'lccl-de' ) . '</h2>'
+			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Reference Number', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;font-family:monospace;font-weight:700;">' . esc_html( $ref ) . '</p>'
+			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Total Amount', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 12px;color:#0073aa;font-size:18px;font-weight:800;">' . esc_html( $currency . ' ' . $amount ) . '</p>'
+			. '<p style="margin:0 0 4px;color:#666666;font-size:13px;">' . esc_html__( 'Date & Time', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 12px;color:#222222;font-size:14px;">' . esc_html( $date_str ) . '</p>'
+			. '</div>'
+			. '<p style="margin:0 0 24px;color:#666666;font-size:13px;line-height:1.6;">'
+			. esc_html__( 'Thank you for your continued membership and support of the community service work of Lions Club of Colombo LEADS.', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0 0 4px;color:#222222;font-size:14px;font-weight:700;letter-spacing:0.04em;">' . esc_html__( 'LIONS CLUB OF COLOMBO LEADS', 'lccl-de' ) . '</p>'
+			. '<p style="margin:0;color:#666666;font-size:13px;line-height:1.5;">'
+			. esc_html__( 'Lions International District 306 D6 | Sri Lanka', 'lccl-de' ) . '<br>'
+			. '<a href="https://www.colomboleads.org" style="color:#0073aa;text-decoration:none;">www.colomboleads.org</a>'
+			. '</p></div></div></body></html>';
+
+		$headers = array(
+			'Content-Type: text/html; charset=UTF-8',
+			'From: ' . get_bloginfo( 'name' ) . ' <' . get_option( 'admin_email' ) . '>',
 		);
 
-		$body = sprintf(
-			/* translators: 1: name, 2: currency, 3: amount, 4: receipt, 5: order ref */
-			__(
-				"Dear %1\$s,\n\n" .
-				"Thank you! Your annual membership fee payment of %2\$s %3\$s has been received successfully.\n\n" .
-				"Payment Reference  : %5\$s\n" .
-				"Bank Transaction # : %4\$s\n\n" .
-				"If you have any questions, please reply to this email.\n\n" .
-				"Lions Club of Colombo LEADS",
-				'lccl-de'
-			),
-			$name,
-			$currency,
-			$amount,
-			$receipt,
-			$row['order_ref']
+		wp_mail( $to, $subject, $html, $headers );
+	}
+
+	/**
+	 * Send a confirmation SMS to the member.
+	 *
+	 * @param array  $row     DB row from lccl_de_payments.
+	 * @param string $receipt CBC Paycenter txnReference.
+	 */
+	private static function send_payment_sms( array $row, $receipt ) {
+		$phone = ! empty( $row['member_phone'] ) ? (string) $row['member_phone'] : '';
+		if ( '' === trim( $phone ) ) {
+			return;
+		}
+
+		$ref = $receipt ?: (string) $row['order_ref'];
+
+		$message = sprintf(
+			/* translators: 1: receipt */
+			__( 'Thank you for making your annual membership payment to Lions Club of Colombo LEADS. Your payment has been successfully received. Reference Number: %1$s', 'lccl-de' ),
+			$ref
 		);
 
-		wp_mail( $to, $subject, $body );
+		if ( class_exists( 'LCCL_DE_Notify' ) && method_exists( 'LCCL_DE_Notify', 'send_custom_sms' ) ) {
+			LCCL_DE_Notify::send_custom_sms( $phone, $message, isset( $row['id'] ) ? (int) $row['id'] : 0, 'membership' );
+		}
 	}
 
 	// ------------------------------------------------------------------

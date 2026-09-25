@@ -116,6 +116,17 @@ if ( empty( $projects ) || ! is_array( $projects ) ) {
 	</div>
 </div>
 
+<div id="lccl-remove-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99999; align-items:center; justify-content:center;">
+	<div style="background:#fff; padding:24px; border-radius:8px; width:100%; max-width:320px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
+		<h3 style="margin-top:0; color:#1e293b;"><?php esc_html_e( 'Remove Project', 'lccl-de' ); ?></h3>
+		<p style="color:#475569; font-size:14px; margin-bottom:24px;"><?php esc_html_e( 'Are you sure you want to remove this project? This cannot be undone.', 'lccl-de' ); ?></p>
+		<div style="display:flex; justify-content:flex-end; gap:12px;">
+			<button type="button" class="button" id="lccl-remove-no"><?php esc_html_e( 'No', 'lccl-de' ); ?></button>
+			<button type="button" class="button button-primary" style="background:#dc2626; border-color:#dc2626;" id="lccl-remove-yes"><?php esc_html_e( 'Yes', 'lccl-de' ); ?></button>
+		</div>
+	</div>
+</div>
+
 <script>
 (function() {
 	var list = document.getElementById('lccl-projects-list');
@@ -149,14 +160,32 @@ if ( empty( $projects ) || ! is_array( $projects ) ) {
 		list.appendChild(tr);
 	});
 
+	var removeModal = document.getElementById('lccl-remove-modal');
+	var btnYes = document.getElementById('lccl-remove-yes');
+	var btnNo = document.getElementById('lccl-remove-no');
+	var currentTrToRemove = null;
+
 	list.addEventListener('click', function(e) {
 		if (e.target.classList.contains('lccl-remove-project')) {
 			e.preventDefault();
-			if (confirm('<?php echo esc_js( __( 'Are you sure you want to remove this project?', 'lccl-de' ) ); ?>')) {
-				var tr = e.target.closest('tr');
-				if (tr) tr.remove();
+			currentTrToRemove = e.target.closest('tr');
+			if (currentTrToRemove) {
+				removeModal.style.display = 'flex';
 			}
 		}
+	});
+
+	btnNo.addEventListener('click', function() {
+		removeModal.style.display = 'none';
+		currentTrToRemove = null;
+	});
+
+	btnYes.addEventListener('click', function() {
+		if (currentTrToRemove) {
+			currentTrToRemove.remove();
+		}
+		removeModal.style.display = 'none';
+		currentTrToRemove = null;
 	});
 })();
 </script>

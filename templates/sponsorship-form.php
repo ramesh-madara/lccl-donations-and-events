@@ -135,7 +135,7 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 			$completed_msg = '';
 			if ( $is_completed ) {
 				$clean_title = str_replace( ' ' . __( '(Completed)', 'lccl-de' ), '', $projects[ $project ]['title'] );
-				$completed_msg = sprintf( __( 'The financial goal for "%s" has already been met. Thank you for your interest, but we are no longer accepting donations for this project. Please select another project to support.', 'lccl-de' ), $clean_title );
+				$completed_msg = sprintf( __( 'The funding goal for "%s" has been reached. Thank you for your interest and support. This project is no longer accepting contributions. Please select another project or event to support.', 'lccl-de' ), $clean_title );
 			}
 			?>
 			<p class="lccl-bdf__banner lccl-bdf__banner--success" data-lccl-notice="completed" role="alert" <?php echo $is_completed ? '' : 'hidden'; ?> style="background-color: #ecfdf5; border-color: #10b981; color: #065f46; margin-bottom: 24px;">
@@ -344,8 +344,8 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 				type="submit"
 				<?php echo $gateway_configured ? '' : 'disabled'; ?>
 			>
-				<span class="lccl-df__pay-label" data-default-text="<?php esc_attr_e( 'Support This Project', 'lccl-de' ); ?>" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>">
-					<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
+				<span class="lccl-df__pay-label" data-default-text="<?php esc_attr_e( 'Support Now', 'lccl-de' ); ?>" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>">
+					<?php esc_html_e( 'Support Now', 'lccl-de' ); ?>
 				</span>
 				<span class="lccl-df__pay-spinner" hidden aria-hidden="true"></span>
 			</button>
@@ -406,7 +406,7 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 						<span style="width: <?php echo esc_attr( (string) $percent ); ?>%;"></span>
 					</div>
 					<button class="lccl-ps__pick" type="button" data-lccl-select-project="<?php echo esc_attr( $key ); ?>">
-						<?php esc_html_e( 'Support This Project', 'lccl-de' ); ?>
+						<?php esc_html_e( 'Support Now', 'lccl-de' ); ?>
 					</button>
 				</article>
 			<?php endforeach; ?>
