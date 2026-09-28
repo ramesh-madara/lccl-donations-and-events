@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 11;
+	const VERSION = 12;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -397,6 +397,7 @@ class LCCL_DE_Schema {
 		self::ensure_currency_columns();
 		self::$table_names = array();
 		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();
+		self::create_default_pages();
 		update_option( self::OPTION, self::VERSION );
 	}
 
@@ -415,6 +416,25 @@ class LCCL_DE_Schema {
 			if ( ! in_array( 'currency', $cols, true ) ) {
 				$wpdb->query( "ALTER TABLE `{$table}` ADD COLUMN `currency` varchar(3) NOT NULL DEFAULT 'LKR' AFTER `amount_lkr`" ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			}
+		}
+	}
+
+	/**
+	 * Creates default pages for the plugin if they do not exist.
+	 */
+	private static function create_default_pages() {
+		$page_slug = 'fundraiser-seat-booking';
+		$page_exists = get_page_by_path( $page_slug );
+		
+		if ( ! $page_exists ) {
+			wp_insert_post( array(
+				'post_type'    => 'page',
+				'post_name'    => $page_slug,
+				'post_title'   => 'Fundraiser Seat Booking',
+				'post_content' => '[lccl_fundraiser_form]',
+				'post_status'  => 'publish',
+				'post_author'  => 1
+			) );
 		}
 	}
 }
