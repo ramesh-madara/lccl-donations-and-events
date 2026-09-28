@@ -817,8 +817,7 @@
 	padding: 8px 28px 8px;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__amount-row,
-.lccl-bdf.lccl-bdf--membership .lccl-df__amount-row {
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-row {
 	display: flex;
 	align-items: stretch;
 	max-width: 240px;
@@ -826,9 +825,7 @@
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__amount-input,
-.lccl-bdf.lccl-bdf--donation input.lccl-df__amount-input,
-.lccl-bdf.lccl-bdf--membership .lccl-df__amount-input,
-.lccl-bdf.lccl-bdf--membership input.lccl-df__amount-input {
+.lccl-bdf.lccl-bdf--donation input.lccl-df__amount-input {
 	width: 150px;
 	min-width: 150px;
 	max-width: 150px;
@@ -848,15 +845,12 @@
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__amount-input:focus,
-.lccl-bdf.lccl-bdf--donation .lccl-df__amount-input:focus-visible,
-.lccl-bdf.lccl-bdf--membership .lccl-df__amount-input:focus,
-.lccl-bdf.lccl-bdf--membership .lccl-df__amount-input:focus-visible {
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-input:focus-visible {
 	border-color: var(--lccl-bdf-border-focus);
 	outline: none;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency,
-.lccl-bdf.lccl-bdf--membership .lccl-df__currency {
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency {
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -872,7 +866,6 @@
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input,
-.lccl-bdf.lccl-bdf--membership .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__amount-row.lccl-bdf__field--invalid .lccl-df__amount-input {
 	border-color: var(--lccl-bdf-required);
 }

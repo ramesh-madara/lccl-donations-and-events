@@ -107,31 +107,6 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 						<?php endforeach; ?>
 					</select>
 				</div>
-				<div class="lccl-mf__outstanding" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
-					<div class="lccl-bdf__field lccl-mf__field--first<?php echo esc_attr( $invalid( 'outstanding_amount' ) ); ?>">
-						<label class="lccl-bdf__label" for="lccl-mf-outstanding">
-							<?php esc_html_e( 'Outstanding Payment Amount', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-						</label>
-						<div class="lccl-df__amount-row">
-							<input
-								class="lccl-df__amount-input"
-								type="number"
-								id="lccl-mf-outstanding"
-								name="outstanding_amount"
-								value="<?php echo esc_attr( $val( 'outstanding_amount' ) ); ?>"
-								placeholder="<?php esc_attr_e( '0', 'lccl-de' ); ?>"
-								min="1"
-								step="0.01"
-							>
-							<div class="lccl-df__currency" aria-hidden="true">
-								<span><?php echo esc_html( 'LKR' ); ?></span>
-							</div>
-						</div>
-					</div>
-					<p class="lccl-mf__note">
-						<?php esc_html_e( 'Please enter the outstanding amount you wish to pay.', 'lccl-de' ); ?>
-					</p>
-				</div>
 
 				<div class="lccl-mf__family" data-lccl-family<?php echo 'family' === $type ? '' : ' hidden'; ?>>
 					<div class="lccl-bdf__field lccl-mf__field--first">
