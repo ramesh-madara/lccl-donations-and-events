@@ -281,27 +281,26 @@ $presets_row2       = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000
 						aria-label="<?php esc_attr_e( 'Donation total', 'lccl-de' ); ?>"
 					>
 				</div>
-			</div>
+				<?php if ( ! $gateway_configured ) : ?>
+					<div class="lccl-mf__notice lccl-mf__notice--warning" style="margin-top: 24px;">
+						<p><?php esc_html_e( 'Online donations are currently being configured. Please check back shortly or contact the club administrator.', 'lccl-de' ); ?></p>
+					</div>
+				<?php endif; ?>
 
-			<?php if ( ! $gateway_configured ) : ?>
-				<div class="lccl-mf__notice lccl-mf__notice--warning" style="margin-bottom: 20px;">
-					<p><?php esc_html_e( 'Online donations are currently being configured. Please check back shortly or contact the club administrator.', 'lccl-de' ); ?></p>
+				<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 24px;">
+					<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
+						<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
+						<span style="font-size: 14px; color: #475569;">
+							<?php
+							printf(
+								/* translators: %s is the link to terms */
+								__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
+								'https://www.colomboleads.org/online-payment-terms-conditions/'
+							);
+							?>
+						</span>
+					</label>
 				</div>
-			<?php endif; ?>
-
-			<div class="lccl-bdf__field" style="margin-bottom: 24px;">
-				<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
-					<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
-					<span style="font-size: 14px; color: #475569;">
-						<?php
-						printf(
-							/* translators: %s is the link to terms */
-							__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
-							'https://www.colomboleads.org/online-payment-terms-conditions/'
-						);
-						?>
-					</span>
-				</label>
 			</div>
 
 			<button

@@ -336,21 +336,20 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 						aria-label="<?php esc_attr_e( 'Support total', 'lccl-de' ); ?>"
 					>
 				</div>
-			</div>
-
-			<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 16px; margin-bottom: 24px;">
-				<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
-					<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
-					<span style="font-size: 14px; color: #475569;">
-						<?php
-						printf(
-							/* translators: %s is the link to terms */
-							__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
-							'https://www.colomboleads.org/online-payment-terms-conditions/'
-						);
-						?>
-					</span>
-				</label>
+				<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 24px;">
+					<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
+						<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
+						<span style="font-size: 14px; color: #475569;">
+							<?php
+							printf(
+								/* translators: %s is the link to terms */
+								__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
+								'https://www.colomboleads.org/online-payment-terms-conditions/'
+							);
+							?>
+						</span>
+					</label>
+				</div>
 			</div>
 
 			<button
