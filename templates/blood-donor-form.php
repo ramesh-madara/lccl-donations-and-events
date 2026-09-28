@@ -63,6 +63,9 @@ $notice = static function ( $key ) use ( $err ) {
 
 		<header class="lccl-bdf__header">
 			<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+			<?php if ( '' !== $atts['intro'] ) : ?>
+				<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
+			<?php endif; ?>
 			<p class="lccl-bdf__required-note">
 				<?php
 				printf(
@@ -72,9 +75,6 @@ $notice = static function ( $key ) use ( $err ) {
 				);
 				?>
 			</p>
-			<?php if ( '' !== $atts['intro'] ) : ?>
-				<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
-			<?php endif; ?>
 		</header>
 
 		<div class="lccl-bdf__grid">

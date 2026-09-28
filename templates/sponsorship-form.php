@@ -149,6 +149,9 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 				<?php if ( '' !== $atts['title'] ) : ?>
 					<h3 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h3>
 				<?php endif; ?>
+				<?php if ( '' !== $atts['intro'] ) : ?>
+					<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
+				<?php endif; ?>
 				<p class="lccl-bdf__required-note">
 					<?php
 					printf(
@@ -158,9 +161,6 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 					);
 					?>
 				</p>
-				<?php if ( '' !== $atts['intro'] ) : ?>
-					<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
-				<?php endif; ?>
 			</header>
 
 			<div class="lccl-ps__fields">

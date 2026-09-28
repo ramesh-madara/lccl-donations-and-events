@@ -73,7 +73,6 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 				</div>
 			<?php endif; ?>
 
-		<?php if ( '' !== $atts['title'] || '' !== $atts['intro'] ) : ?>
 			<header class="lccl-bdf__header">
 				<?php if ( '' !== $atts['title'] ) : ?>
 					<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
@@ -81,8 +80,16 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 				<?php if ( '' !== $atts['intro'] ) : ?>
 					<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
 				<?php endif; ?>
+				<p class="lccl-bdf__required-note">
+					<?php
+					printf(
+						/* translators: %s: required field asterisk. */
+						esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
+						'<span class="lccl-bdf__req">*</span>'
+					);
+					?>
+				</p>
 			</header>
-		<?php endif; ?>
 
 		<div class="lccl-mf">
 			<div class="lccl-mf__section">

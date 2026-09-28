@@ -96,16 +96,23 @@ $presets_row2       = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000
 				<?php esc_html_e( 'Please complete all fields marked with an *.', 'lccl-de' ); ?>
 			</p>
 
-			<?php if ( '' !== $atts['title'] || '' !== $atts['intro'] ) : ?>
-				<header class="lccl-bdf__header">
-					<?php if ( '' !== $atts['title'] ) : ?>
-						<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
-					<?php endif; ?>
-					<?php if ( '' !== $atts['intro'] ) : ?>
-						<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
-					<?php endif; ?>
-				</header>
-			<?php endif; ?>
+			<header class="lccl-bdf__header">
+				<?php if ( '' !== $atts['title'] ) : ?>
+					<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+				<?php endif; ?>
+				<?php if ( '' !== $atts['intro'] ) : ?>
+					<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
+				<?php endif; ?>
+				<p class="lccl-bdf__required-note">
+					<?php
+					printf(
+						/* translators: %s: required field asterisk. */
+						esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
+						'<span class="lccl-bdf__req">*</span>'
+					);
+					?>
+				</p>
+			</header>
 
 			<div class="lccl-df">
 				<div class="lccl-df__amount-row<?php echo esc_attr( $invalid( 'amount' ) ); ?>">
