@@ -260,7 +260,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 							<?php
 							printf(
 								/* translators: %s is the link to terms */
-								__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
+								__( 'I have read and agree to the <a href="%s" target="_blank" class="lccl-terms-link">Terms & Conditions</a>.', 'lccl-de' ),
 								'https://www.colomboleads.org/online-payment-terms-conditions/'
 							);
 							?>
