@@ -97,12 +97,12 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 				<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status" style="margin-bottom: 24px;">
 					<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
 					<span class="lccl-bdf__banner-copy">
-						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Sponsorship Received with Thanks!', 'lccl-de' ); ?></strong>
+						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Sponsorship Received Successfully', 'lccl-de' ); ?></strong>
 						<span class="lccl-bdf__banner-text">
 							<?php
 							printf(
-								/* translators: 1: sponsor name, 2: project title, 3: amount formatted, 4: receipt number */
-								esc_html__( 'Thank you, %1$s. Your sponsorship of %2$s for "%3$s" was received successfully. Receipt: %4$s', 'lccl-de' ),
+								/* translators: 1: sponsor name, 2: amount formatted, 3: project title, 4: reference number */
+								esc_html__( 'Thank you, %1$s. Your sponsorship of %2$s for "%3$s" has been received successfully. Reference Number: %4$s', 'lccl-de' ),
 								'<strong>' . esc_html( $payment_success['sponsor_name'] ) . '</strong>',
 								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
 								esc_html( $payment_success['project_label'] ),
@@ -338,11 +338,27 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 				</div>
 			</div>
 
+			<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 16px; margin-bottom: 24px;">
+				<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
+					<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
+					<span style="font-size: 14px; color: #475569;">
+						<?php
+						printf(
+							/* translators: %s is the link to terms */
+							__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
+							'https://www.colomboleads.org/online-payment-terms-conditions/'
+						);
+						?>
+					</span>
+				</label>
+			</div>
+
 			<button
 				class="lccl-bdf__submit lccl-df__submit"
 				id="lccl-ps-submit-btn"
 				type="submit"
-				<?php echo $gateway_configured ? '' : 'disabled'; ?>
+				disabled aria-disabled="true"
+				data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
 			>
 				<span class="lccl-df__pay-label" data-default-text="<?php esc_attr_e( 'Support Now', 'lccl-de' ); ?>" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>">
 					<?php esc_html_e( 'Support Now', 'lccl-de' ); ?>

@@ -190,6 +190,34 @@
 		var success = form.querySelector( '[data-lccl-notice="sample-success"]' );
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
 
+		var btn = form.querySelector( '#lccl-df-submit-btn' );
+		var terms = form.querySelector( '.lccl-accept-terms' );
+		var isGatewayConfigured = btn && btn.getAttribute( 'data-gateway-configured' ) === '1';
+
+		if ( terms && btn ) {
+			terms.addEventListener( 'change', function () {
+				if ( isGatewayConfigured ) {
+					btn.disabled = !this.checked;
+					if ( btn.disabled ) {
+						btn.setAttribute( 'aria-disabled', 'true' );
+					} else {
+						btn.removeAttribute( 'aria-disabled' );
+					}
+				}
+			});
+			if ( isGatewayConfigured ) {
+				btn.disabled = !terms.checked;
+				if ( btn.disabled ) {
+					btn.setAttribute( 'aria-disabled', 'true' );
+				} else {
+					btn.removeAttribute( 'aria-disabled' );
+				}
+			} else {
+				btn.disabled = true;
+				btn.setAttribute( 'aria-disabled', 'true' );
+			}
+		}
+
 		function syncTotal() {
 			if ( total ) {
 				total.value = formatTotal( amount ? amount.value : '' );

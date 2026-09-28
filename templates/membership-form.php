@@ -43,12 +43,12 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 				<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status">
 					<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
 					<span class="lccl-bdf__banner-copy">
-						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Thank you for your payment.', 'lccl-de' ); ?></strong>
+						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Membership Payment Received Successfully', 'lccl-de' ); ?></strong>
 						<span class="lccl-bdf__banner-text">
 							<?php
 							printf(
-								/* translators: 1: member name, 2: amount formatted, 3: receipt number */
-								esc_html__( 'Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Receipt: %3$s', 'lccl-de' ),
+								/* translators: 1: member name, 2: amount formatted, 3: reference number */
+								esc_html__( 'Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Reference Number: %3$s', 'lccl-de' ),
 								'<strong>' . esc_html( $payment_success['member_name'] ) . '</strong>',
 								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
 								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
@@ -250,16 +250,32 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 		</div>
 
 		<?php if ( ! $gateway_configured ) : ?>
-			<div class="lccl-mf__notice lccl-mf__notice--warning">
+			<div class="lccl-mf__notice lccl-mf__notice--warning" style="margin-bottom: 20px;">
 				<p><?php esc_html_e( 'Online payment is currently being configured. Please check back shortly or contact the club administrator.', 'lccl-de' ); ?></p>
 			</div>
 		<?php endif; ?>
+
+		<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 16px; margin-bottom: 24px;">
+			<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
+				<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
+				<span style="font-size: 14px; color: #475569;">
+					<?php
+					printf(
+						/* translators: %s is the link to terms */
+						__( 'I have read and agree to the <a href="%s" target="_blank" style="color: #0073aa; text-decoration: underline;">Terms & Conditions</a>.', 'lccl-de' ),
+						'https://www.colomboleads.org/online-payment-terms-conditions/'
+					);
+					?>
+				</span>
+			</label>
+		</div>
 
 		<button
 			class="lccl-bdf__submit lccl-df__submit lccl-mf__pay-btn"
 			type="submit"
 			id="lccl-mf-submit-btn"
-			<?php echo $gateway_configured ? '' : 'disabled aria-disabled="true"'; ?>
+			disabled aria-disabled="true"
+			data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
 		>
 			<span class="lccl-mf__pay-label" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>"><?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?></span>
 			<span class="lccl-mf__pay-spinner" aria-hidden="true" hidden></span>

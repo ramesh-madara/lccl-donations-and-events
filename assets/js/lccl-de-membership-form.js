@@ -69,6 +69,32 @@
 		var btn   = form.querySelector( '#lccl-mf-submit-btn' );
 		var label = btn ? btn.querySelector( '.lccl-mf__pay-label' )  : null;
 		var spin  = btn ? btn.querySelector( '.lccl-mf__pay-spinner' ) : null;
+		var terms = form.querySelector( '.lccl-accept-terms' );
+		var isGatewayConfigured = btn && btn.getAttribute( 'data-gateway-configured' ) === '1';
+
+		if ( terms && btn ) {
+			terms.addEventListener( 'change', function () {
+				if ( isGatewayConfigured ) {
+					btn.disabled = !this.checked;
+					if ( btn.disabled ) {
+						btn.setAttribute( 'aria-disabled', 'true' );
+					} else {
+						btn.removeAttribute( 'aria-disabled' );
+					}
+				}
+			});
+			if ( isGatewayConfigured ) {
+				btn.disabled = !terms.checked;
+				if ( btn.disabled ) {
+					btn.setAttribute( 'aria-disabled', 'true' );
+				} else {
+					btn.removeAttribute( 'aria-disabled' );
+				}
+			} else {
+				btn.disabled = true;
+				btn.setAttribute( 'aria-disabled', 'true' );
+			}
+		}
 
 		if ( type ) {
 			type.addEventListener( 'change', function () {
@@ -82,8 +108,12 @@
 		}
 
 		// Show loading spinner on submit, prevent double-submission.
-		form.addEventListener( 'submit', function () {
+		form.addEventListener( 'submit', function ( e ) {
 			if ( form.checkValidity && ! form.checkValidity() ) {
+				e.preventDefault();
+				if ( typeof form.reportValidity === 'function' ) {
+					form.reportValidity();
+				}
 				return;
 			}
 			if ( btn && ! btn.disabled ) {

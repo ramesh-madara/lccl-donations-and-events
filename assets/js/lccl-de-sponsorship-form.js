@@ -211,7 +211,13 @@
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
 		var completedBanner = form.querySelector( '[data-lccl-notice="completed"]' );
 		var submitBtn = form.querySelector( '#lccl-ps-submit-btn' ) || form.querySelector( '.lccl-df__submit' );
+		var terms = form.querySelector( '.lccl-accept-terms' );
+		var isGatewayConfigured = submitBtn && submitBtn.getAttribute( 'data-gateway-configured' ) === '1';
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
+
+		if ( terms ) {
+			terms.addEventListener( 'change', handleProjectStatus );
+		}
 
 		function syncTotal() {
 			if ( total ) {
@@ -319,7 +325,13 @@
 			} );
 
 			if ( submitBtn ) {
-				submitBtn.disabled = isCompleted;
+				var isTermsChecked = terms ? terms.checked : true;
+				submitBtn.disabled = isCompleted || !isTermsChecked || !isGatewayConfigured;
+				if ( submitBtn.disabled ) {
+					submitBtn.setAttribute( 'aria-disabled', 'true' );
+				} else {
+					submitBtn.removeAttribute( 'aria-disabled' );
+				}
 			}
 
 			if ( completedBanner ) {
