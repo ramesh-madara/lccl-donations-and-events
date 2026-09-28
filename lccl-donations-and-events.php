@@ -36,6 +36,7 @@ require_once LCCL_DE_PATH . 'includes/class-lccl-de-join-projects-submissions.ph
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-join-projects-dashboard.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-donation-form.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-membership-form.php';
+require_once LCCL_DE_PATH . 'includes/class-lccl-de-fundraiser-form.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-sponsorship-form.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-spectacles-form.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-spectacles-submissions.php';
@@ -62,6 +63,7 @@ add_action( 'init', array( 'LCCL_DE_Join_Projects_Submissions', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Join_Projects_Dashboard', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Donation_Form', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Membership_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Fundraiser_Form', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Sponsorship_Form', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Spectacles_Form', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Spectacles_Submissions', 'init' ) );

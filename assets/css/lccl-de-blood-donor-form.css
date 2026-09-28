@@ -2310,3 +2310,10 @@ a.lccl-terms-link:focus {
 	box-shadow: none !important;
 	font-weight: 500;
 }
+
+/* Fundraiser specific */
+.lccl-bdf--fundraiser {
+    padding: 60px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}

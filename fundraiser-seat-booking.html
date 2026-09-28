@@ -1,0 +1,1303 @@
+
+
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LCCL FUNDRAISER</title>
+  <style>
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@100&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+html,
+body {
+  overflow-x: hidden !important;
+  background-color:#f4cb58;
+}
+body {
+  /* font-family: "Anton", sans-serif; */
+  font-family: "Roboto", sans-serif;
+  
+  
+}
+
+:root {
+  --main-color: #ffe4b5;
+  --secondary-color: #e3a857;
+  --secondary-color-hover: #ffbb05;
+}
+.navHeader{
+     /*font-family: "Anton", sans-serif; */
+}
+
+.xMark {
+  padding-left: 10px;
+  min-width: 40%;
+  max-width: 40%;
+  /*margin-top: -10px;*/
+  height: 35px;
+  display: flex;
+  justify-content: flex-end;
+}
+.outerMost{
+    background-color:#f4cb58;
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    
+}
+.formOuter{
+    width:40%;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    /*background-color:red;*/
+}
+.container{
+    display:flex;
+    flex-direction:column;
+    /*justify-content:center;*/
+    align-items:center;
+    /*background-color:red;*/
+    /*width:40%px;*/
+    height:100%;
+    padding: 50px 2vw 50px 5vw;
+    
+}
+#setPrices{
+   display:flex;
+    gap:4%;
+    justify-content:space-between;
+    /*background-color:#555555 !important;*/
+    width:103%;
+    margin-bottom:7px;
+}
+.setPricesItem{
+    /*background-color:blue;*/
+    width:50%;
+    flex-grow:1;
+}
+.amnt{
+    margin-bottom:10px;
+}
+.viewAmount {
+  margin-top: -17px !important;
+  display: flex;
+  align-items: center;
+  max-height: 30px;
+  min-height: 30px;
+   /*background-color: aqua; */
+  justify-content: flex-start;
+  margin-bottom: 5px;
+  
+}
+.viewAmount1 {
+  margin-top: -17px !important;
+  display: flex;
+  align-items: center;
+  max-height: 30px;
+  min-height: 30px;
+   /*background-color: aqua; */
+  justify-content: flex-start;
+  margin-bottom: 5px;
+  
+}
+.moneySign {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 48px;
+  background-color: #ffbb05;
+  color: white;
+  height: 40px;
+  border: solid 1px #FFFFFF60;
+  font-weight: bolder;
+    margin-top: 5px !important;
+    font-family: 'Poppins', sans-serif;
+}
+.donationAmount1 {
+    /*opacity:0.5;*/
+  width: 76% !important;
+  font-size: larger;
+  /* max-height: 30px; */
+  /* min-height: 30px; */
+  /*border: solid 1px rgb(162, 162, 162);*/
+  height: 39px;
+  /* width: 100%; */
+  padding-left: 13px !important;
+  margin-top: 5px !important;
+}
+.moneySign1 {
+    font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24%;
+  background-color: #ffbb05;
+  color: white;
+  height: 40px;
+  border: solid 1px #FFFFFF60;
+  font-weight: bold;
+    margin-top: 5px !important;
+}
+.donationAmount {
+  width: 180px !important;
+  font-size: larger;
+  /* max-height: 30px; */
+  /* min-height: 30px; */
+  /*border: solid 1px rgb(162, 162, 162);*/
+  height: 39px;
+  /* width: 100%; */
+  padding-left: 13px !important;
+  margin-top: 5px !important;
+}
+form{
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    border:solid 3px white;
+}
+input{
+    border:none;
+    padding-left:10px;
+    margin-top:10px !important;
+}
+input:focus{
+    outline: none;
+    background-color:#ffffff99;
+}
+.formContent{
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    /*background-color:red;*/
+    height:100%;
+      overflow: hidden !important;
+      padding:30px;
+      
+      
+    
+}
+form label{
+    display:block;
+    margin-top:10px;
+}
+.memberSubmit{
+    height:60px;
+    border:none;
+    background-color: #f7983c;
+    color:white;
+    font-size:1.4rem;
+    font-family:Anton;
+    letter-spacing: 3px;
+    font-weight:00;
+}
+.memberSubmit:hover{
+    height:60px;
+    border:none;
+    background-color: #fa6b00;
+    color:white;
+    font-size:1rem;
+    transition:0.2s;
+    cursor: pointer;
+}
+.content{
+    width:100%;
+    height:50px;
+    border:none;
+    font-size:large;
+}
+.map{
+      width:43%;
+       padding: 0px 5vw 0px 2vw;
+}
+.map img{
+    width:100%;
+    margin-top:50px;
+}
+.nooftckts{
+    display:flex;
+    gap:6.6%;
+    justify-content:space-between;
+}
+.tckouter{
+    width:50%;
+}
+.side{
+    /*background-color:red;*/
+    height:20px;
+    padding:0px;
+}
+.sidelbl{
+        opacity:0;
+        display:none;
+    }
+.numtckts{
+    /*width: 186px !important;*/
+    
+}
+.numtckts{
+    margin-top: 15px;
+}
+    .sideInput{
+        margin-top:5px !important;
+        font-size:1rem;
+        height:30px;
+        
+        background-color:#00000000;
+           /*background-color:blue;*/
+        /*width:160px !important;*/
+        padding-left:6px;
+    }
+    .sideInput:focus{
+        background-color:#00000000 !important;
+    }
+    
+
+    
+@media (max-width: 1669px) {
+    .amnt{
+        margin-bottom:10px;
+    }
+    .numtickt{
+        margin-top:15px;
+    }
+    
+}
+    
+    
+@media (max-width: 1344px) {
+    .outerMost{
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+    }
+    .formOuter{
+        width:600px;
+        margin-left:-26px;
+        
+    }
+    .map{
+        width:100vw;
+        margin-top:5px;
+        padding:0px;
+    }
+    .map img{
+        
+        margin-top:0px;
+    }
+    .container{
+        padding:10px;
+    }
+    
+    
+}
+@media (max-width: 707px) {
+    .nooftckts{
+        gap:6.6%;
+    }
+}
+@media (max-width: 600px) {
+    .donationAmount1 {
+        width:75%;
+}
+.moneySign1 {
+      width:25%;
+}
+    .nooftckts{
+        gap:6%;
+    }
+    .tckouter{
+        width:46%;
+    }
+    .outerMost{
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+    }
+    .formOuter{
+        width:100vw;
+        margin-left:0px;
+        padding:0px;
+    }
+    .map{
+        /*background-color:red;*/
+        width:100vw;
+        margin-top:100px;
+    }
+    .map img{
+        width:100%;
+        margin-top:-100px;
+    }
+    .container{
+        width:100vw;
+        padding:0px;
+        margin-top:120px !important;
+        /*background-color:red;*/
+    }
+    .content{
+        max-width:100vw;
+    }
+    form{
+        /*background-color:red;*/
+        border:none;
+        padding-right:25px;
+        width:100vw;
+        margin-top:-80px;
+        
+    }
+    .memberSubmit{
+        margin-right:-10px;
+    }
+    .sideInput{
+        font-size:12px;
+    }
+    
+}
+
+@media (max-width: 600px) {
+#setPrices{
+   display:flex;
+    gap:4%;
+    justify-content:space-between;
+    /*background-color:#555555 !important;*/
+    width:104%;
+    margin-bottom:7px;
+}
+}
+
+</style>
+  <style>
+  
+  @import url('https://fonts.googleapis.com/css2?family=Radio+Canada:wght@300;400&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:wght@400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@200&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+   
+  
+
+    .formContent {
+      margin-top: 20px !important;
+    }
+    form{
+        font-weight:bold;
+    }
+    label{
+        /*color:grey;*/
+    }
+
+    .tables {
+      display: flex;
+      gap: 5px;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    .tables div {
+      width: 17%;
+    }
+    
+    /*.outerMost{*/
+    /*    dispaly:flex;*/
+    /*}*/
+    /*.formOuter{*/
+    /*    width:50vw;*/
+    /*}*/
+    .instructions{
+        font-family: 'Roboto', sans-serif;
+        font-size:12px;
+        border-top:1px solid #787777;
+        border-bottom:1px solid #787777;
+        padding-top:15px;
+        padding-bottom:15px;
+        color:black;
+        margin:20px 0px 20px 0px;
+    }
+    .seatData{
+        /*background-color:blue;*/
+        display:flex;
+        justify-content:center;
+        flex-direction:column;
+        align-items:center;
+        margin-bottom:-36px;
+        margin-top:-20px;
+        
+    }
+    .seatData h3{
+        font-family: 'Montserrat', sans-serif;
+        font-weight:bold;
+        color:green;
+        font-size:1.4vw  !important;
+        margin-bottom:22px;
+    }
+    .seatData h4{
+        font-family: 'Montserrat', sans-serif;
+        color:green;
+        font-size:1.4vw !important;
+        text-align:center;
+        margin-top:-20px;
+        margin-bottom:60px;
+        }
+    .mobilebr{
+        display:none;
+    }
+   
+    .nosee{
+        opacity:0;
+    }
+    .desktopSeats{
+            display:block;
+            /*font-size:3rem !important;*/
+            font-size: 0.7rem; color:green;
+            font-weight:bold !important;
+        }
+        .mobileSeats{
+            display:none;
+        }
+    .nav{
+        background-color:black;
+        height:50px;
+        /*margin-left:-10px ;*/
+        padding:0px 10vw 0px 10vw;
+        color:#f4cb58;
+        margin-top:0px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+      
+        
+    }
+    .nav * {
+        color:#f4cb58;
+        text-decoration:none;
+        font-family: 'Montserrat', sans-serif;
+        font-weight:bold !important
+    }
+     .nav2{
+          
+        color:#f4cb58;
+        background-color:white;
+        height:80px;
+        /*margin-left:-10px ;*/
+        padding:0px 10vw 0px 10vw;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+         
+      
+        
+    }
+    .nav2 .navImgOuter{
+        height:50%;
+    }
+     .nav2 .navImgOuter img{
+         height:100%;
+         
+     }
+    .nav2 * {
+        color:#f4cb58;
+        text-decoration:none;
+    }
+    .navHeader{
+        color:black;
+  font-family: "Anton", sans-serif; 
+  
+ letter-spacing:1.9px;
+        font-weight:100 !important;
+        font-size:2.2rem;
+        /*margin-right:50px !important;*/
+    }
+    body{
+        width:100vw;
+          margin-top:0px;
+          margin-left:0px;
+    }
+    .totalLable{
+        margin-top:-6px;
+        margin-bottom:28px;
+    }
+     /*@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');*/
+        /* Style for the "Show More" button */
+        #show-more-btn {
+            background-color: #155598;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius:20px;
+            font-weight:500;
+             box-shadow: px 0px 5px #00010080;
+             transition:0.2s;
+        }
+         #show-more-btn:hover {
+            background-color: #007BFF;
+            box-shadow: 0px 5px 5px #00010050;
+            transition:0.2s;
+
+         }
+        #ticket-guidelines{
+            /*background-color: aqua;*/
+            padding:20px 5vw 20px 10vw;
+            font-family: 'Lato', sans-serif;
+        }
+        #ticket-guidelines h3{
+            font-weight:800 !Important;
+            /*text-decoration:underline;*/
+            display:list-item;
+        }
+        @media (max-width: 1568px) {
+           .seatData{
+                font-size:1.2vw !important; 
+           } 
+        }
+        
+        
+        @media (max-width: 1120px) {
+            
+            .navHeader{
+                font-size:1.2rem;
+            }
+            .seatData h3{
+            color:green;
+            font-size:2.3rem !important;
+            text-align:center;
+        
+        }  
+         .seatData h4{
+        color:green;
+        font-size:2.3rem !important;
+        text-align:center;
+        
+        }
+        }
+      @media (max-width: 1448px) {
+          .seatData h3{
+             font-size:1.4vw !important; 
+          }
+          .seatData h4{
+             font-size:1.4vw !important; 
+          }
+          
+          
+      }
+    @media (max-width: 600px) {
+        #ticket-guidelines{
+            /*background-color: aqua;*/
+            padding:20px 20px 20px 20px;
+        }
+        .formOuter{
+            margin-bottom:15px;
+        }
+        form{
+            margin-top:-100px;
+        }
+        .numtckts{
+            /*background-color:black;*/
+            /*max-height:50px !important;*/
+            /*display:none;*/
+        }
+        .desktopSeats{
+            display:none;
+        }
+        .mobileSeats{
+            display:block;
+            margin-left:-20px;
+            text-align:center;
+        }
+        .seatData{
+            margin-top:-50px;
+        }
+         .seatData h3{
+        color:green;
+        font-size:1.1rem !important;
+        text-align:center;
+        
+        }  
+         .seatData h4{
+        color:green;
+        font-size:1.1rem !important;
+        text-align:center;
+        
+        }
+        .nosee{
+            width:5px;
+        }
+        .seatData{
+          margin-left:16px;  
+          justify-content:center;
+          width:100%;
+          /*background-color:aqua;*/
+        }
+        
+        .nav{
+        background-color:black;
+        height:50px;
+        /*margin-left:-10px ;*/
+        padding:0px 20px 0px 20px;
+        color:#f4cb58;
+        margin-top:0px;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+      
+        
+    }
+    .nav * {
+        color:#f4cb58;
+        text-decoration:none;
+        font-family: 'Radio Canada', sans-serif;
+        font-size:11.2px;
+        font-weight:bold;
+        text-align:center;
+    }
+     .nav2{
+          
+        color:#f4cb58;
+        background-color:white;
+        height:60px;
+        /*margin-left:-10px ;*/
+        padding:0px 20px 0px 20px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+         
+      
+        
+    }
+    .nav2 .navImgOuter{
+        height:50%;
+    }
+     .nav2 .navImgOuter img{
+         height:27px;
+         
+     }
+    .nav2 * {
+        color:#f4cb58;
+        text-decoration:none;
+    }
+    .navHeader{
+        color:black;
+        /*background-color:aqua;*/
+        font-family: "Anton", sans-serif; 
+        font-size:3.2vw;
+        font-weight:100 !important;
+        width: 100%;
+        text-align:right;
+    }
+    #tablesAndSeats{
+        font-size:1.1rem;
+    }
+    }
+    #made{
+        color:black;
+    }
+    
+  </style>
+  
+</head>
+
+<body>
+    <div class="nav">
+        
+        <h4><a href = "mailto: info@colomboleads.org">Email : info@colomboleads.org</a> <a href="tel:+94 11 218 6005"> Telephone : +94-11-218-6005</a></h4>
+        <div>
+            
+        </div>
+       
+    </div>
+    <div class="nav2">
+        
+        <div class="navImgOuter">
+            <a href="https://www.colomboleads.org/"><img src="https://i.imgur.com/glcCXVM.png"></a>
+        </div>
+        <h2 class="navHeader"><span id="made">L</span>CCL PAYMENT GATEWAY</h2>
+
+       
+    </div>
+      <div  class="outerMost">
+    <div class="formOuter">
+        <!--<div class="seatData">-->
+        <!--    <h3 class="desktopSeats" style=""></h3>-->
+        <!--    <h3 class="mobileSeats" style="font-size: 0.87rem; color:green"></h3>-->
+        <!--</div>-->
+  <!--<div class="xMark">-->
+  <!--  <a href="#" onclick="history.back(); return false;">-->
+  <!--    <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+  <!--      <path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z" />-->
+  <!--    </svg>-->
+  <!--  </a>-->
+  <!--</div>-->
+  <div class="container">
+    <!--<img src="img/logo.png" alt="Logo" class="header-image">-->
+    <!-- <h1>Member Payment</h1> -->
+    <form id="ticketForm" action="clubFundraiserStratford_payment_processing.php" method="POST" onsubmit="return validateForm()">
+      <div class="formContent">
+        <!--<h3 style="font-size: 0.87rem; color:green">Important : This payment is specifically for the Colombo Leads Fundraiser.</h3>-->
+        <div class="seatData">
+            <h3 style="font-size: 0.87rem; color:green"></h3>
+        <h4></h3>
+         <!--<h4></h3>-->
+        </div>
+        <div id='setPrices'>
+            <div class='setPricesItem'>
+                <label class="label amnt" for="ticketPrice">Ticket Price:</label><br>
+                <div class="viewAmount1">
+                    <input class="donationAmount1" value="6500" readonly type="number" id="ticketPrice" name="ticket_price" min="1" required>
+                    <div class="moneySign1"><span>LKR</span></div>
+                </div>
+            </div>  
+        
+            <div class='setPricesItem'>
+                <label class="label amnt" for="ticketPrice">Table Price:</label><br>
+                <div class="viewAmount1">
+                    <input class="donationAmount1" value="78000" readonly type="number" id="ticketPrice" name="" min="1" required>
+                    <div class="moneySign1"><span>LKR</span></div>
+                </div>
+            </div>
+        </div>
+
+        
+
+        <div class="nooftckts">
+        <div class="tckouter">
+        <label class="label numtickt" for="numTickets">Number of Tickets:</label>
+    <input value='' class="content numtckts" type="number" id="numTickets" name="" min="1" max="" >
+        </div>
+        
+        <div class="tckouter">
+        <label class="label numtickt" for="numTables">Number of Tables:</label>
+    <input value='' class="content" type="number" id="numTables" name="" min="1" max="" >
+        </div>
+        <input type ="number" name="ticketCount" id="hiddenTickets" readonly hidden>
+
+<script>
+    // Get references to the input fields
+const numTicketsInput = document.getElementById('numTickets');
+const numTablesInput = document.getElementById('numTables');
+const hiddenTicketsInput = document.getElementById('hiddenTickets');
+
+// Add event listeners to numTickets and numTables inputs
+numTicketsInput.addEventListener('input', updateHiddenTickets);
+numTablesInput.addEventListener('input', updateHiddenTickets);
+
+// Function to update hiddenTickets based on numTickets and numTables values
+function updateHiddenTickets() {
+  const numTicketsValue = parseInt(numTicketsInput.value, 10) || 0; // Parse as integer, default to 0 if not a valid number
+  const numTablesValue = parseInt(numTablesInput.value, 10) || 0;   // Parse as integer, default to 0 if not a valid number
+  
+  // Calculate the new value for hiddenTickets
+  const newHiddenTicketsValue = (numTablesValue * 12) || numTicketsValue;
+  
+  // Update the hiddenTickets input value
+  hiddenTicketsInput.value = newHiddenTicketsValue;
+}
+
+// Optionally, you can also reset hiddenTickets to an empty string when focused on numTickets or numTables
+numTicketsInput.addEventListener('focus', () => {
+  hiddenTicketsInput.value = "";
+});
+
+numTablesInput.addEventListener('focus', () => {
+  hiddenTicketsInput.value = "";
+});
+</script>
+
+
+            
+            
+                    
+        </div>
+        <div class="side">
+    <label class="label sidelbl" for="numTickets">Tables and Extra Seats:</label>
+    <input value="" readonly class="content sideInput" type="text" id="tablesAndSeats" name="tablesAndSeats">
+</div>
+        
+        <div>
+            <p class="instructions">
+                When making table reservations, please refer to the floor plan below and reserve your table as you wish. Also, note that each table will accommodate 12 seats.
+            </p>
+            
+        </div>
+        <label class="label totalLable" for="amount">Total Amount:</label>
+        <div class="viewAmount">
+        
+        <input readonly class="donationAmount" type="number" id="totalAmount" name="amount" min="2" required>
+        
+        <div class="moneySign"><span>LKR</span></div>
+        </div>
+        <!-- Original fields -->
+        <!--<label class="label" for="name">Membership ID:</label>-->
+        <input hidden value="000000" class="content" value="" type="text" id="name" name="membership_id" required>
+
+        
+
+        <!--<label class="label" for="name">Club ID:</label>-->
+        <input hidden value="000000" class="content" value="" type="text" id="name" name="clubid" required>
+
+        <!--<label class="label" for="name">Club Name:</label>-->
+        <input hidden value="000000" class="content" value="" type="text" id="name" name="clubname" required>
+
+        <label style="margin-top:15px;" class="tableLabel label " for="name">Select Tables:</label>
+
+        <div style="margin-bottom:45px;"  class="tables">
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T1" id="T1">T1</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T2" id="T2">T2</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T3" id="T3">T3</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T4" id="T4">T4</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T5" id="T5">T5</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T6" id="T6">T6</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T7" id="T7">T7</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T8" id="T8">T8</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T9" id="T9">T9</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T10" id="T10">T10</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T11" id="T11">T11</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T12" id="T12">T12</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T13" id="T13">T13</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T14" id="T14">T14</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T15" id="T15">T15</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T16" id="T16">T16</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T17" id="T17">T17</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T18" id="T18">T18</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T19" id="T19">T19</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T20" id="T20">T20</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T21" id="T21">T21</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T22" id="T22">T22</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T23" id="T23">T23</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T24" id="T24">T24</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T25" id="T25">T25</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T26" id="T26">T26</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T27" id="T27">T27</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T28" id="T28">T28</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T29" id="T29">T29</div>
+          <div class="selectable"><input type="checkbox" name="selectedTables[]" value="T30" id="T30">T30</div>
+        </div>
+        <style>
+            .nestedName{
+                display: flex;
+                flex-direction:column;
+                gap:25px;
+                justify-content:space-between;
+                
+                
+                flex-wrap:wrap;
+            }
+            .nestedName div{
+                flex-grow:1;
+            }
+            
+            .contentname{
+                width:100%;
+                height:50px;
+                font-size:1.2rem;
+            }
+            .gap{
+                max-width:1%;
+                min-width:1%;
+            }
+            .paymentImgs{
+              /*background-color:aqua;*/
+              width:100%;
+          }
+          .paymentImgs img{
+              max-width:100%;
+          }
+            @media (max-width: 600px) {
+                .paymentImgs{
+                    margin-left:2px !important;
+                }
+               .gap{
+                   display:none;
+               } 
+               .nestedName{
+                display: flex;
+                gap:50px;
+                flex-direction:column;
+                justify-content:space-between;
+                
+                
+                flex-wrap:wrap;
+            }
+            }
+        </style>
+    <div class="nestedName">
+        <div>
+        <label style="margin-top:-35px;" class="label" for="name">First Name:</label>
+        <input class="contentname" value="" type="text" id="name" name="firstname" required>
+        </div>
+        <div class="gap"></div>
+        <div>
+        <label style="margin-top:-35px;" class="label" for="name">Last Name:</label>
+        <input class="contentname" value="" type="text" id="name" name="lastname" required>
+        </div>
+    </div>
+
+        <label style="margin-top:15px;" class="label" for="phone">Phone:</label>
+        <input minlength="10" class="content" type="tel" placeholder="071#######" id="phone" name="phone" pattern="[0-9]{10}">
+        <script>
+        function validatePhoneNumber() {
+            var phoneNumber = document.getElementById('phone').value;
+            
+            // Remove any non-numeric characters (e.g., spaces, dashes, parentheses)
+            phoneNumber = phoneNumber.replace(/\D/g, '');
+
+            if (phoneNumber.length !== 10) {
+                alert('Phone number must have exactly 10 digits.');
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+        <label style="margin-top:15px;" class="label" for="email">Email:</label>
+        <input class="content" type="email" id="email" name="email">
+
+
+        <label hidden class="label" for="message">&nbsp</label>
+        <textarea hidden class="content message" id="message" name="message"> </textarea>
+      </div>
+      
+      <div class="paymentImgs">
+          <img src='https://i.imgur.com/I3md8GQ.png'>
+      </div>
+      
+      <input class="memberSubmit" type="submit" value="PAY">
+    </form>
+
+
+
+
+   
+  </div>
+
+</div>
+<div class="map">
+    <img src="https://i.imgur.com/gFRICVl.jpeg">
+</div>
+  </div>
+      <div id="ticket-guidelines">
+        <h2>TICKET PURCHASE AND COLLECTION INSTRUCTIONS</h2>
+        <div id="instructions" style="display: none;">
+            <h3>Complete Payment Details:</h3>
+            <p>Please fill out all the required fields in the payment form accurately.</p>
+            <p>Make sure to enter your correct First Name, Last Name, Mobile Number, and Email Address.</p>
+
+            <h3>Transaction Confirmation:</h3>
+            <p>After successful payment, you will receive a transaction confirmation email and SMS.</p>
+
+            <h3>Keep Your Transaction ID Handy:</h3>
+            <p>Please make a note of the unique Transaction ID provided in your confirmation email and SMS. This ID is essential for ticket collection.</p>
+
+            <h3>Ticket Collection on Event Day:</h3>
+            <p>Tickets can be collected at the designated ticket counter on the day of the charity fundraising event. Please note that ticket collection is available only one hour before the event starts.</p>
+
+            <h3>Verification Process:</h3>
+            <p>To collect your tickets, you will be required to verify your transaction.</p>
+            <p>Email Verification: Show a printed or digital copy of the transaction confirmation email at the ticket counter.</p>
+            <p>SMS Verification: You can also show the SMS confirmation message on your mobile device.</p>
+
+            <h3>Collecting Tickets for Multiple Seats:</h3>
+            <p>If you have purchased tickets for more than one person, please ensure that you collect all the tickets at the designated ticket counter.</p>
+            <p>It is your responsibility to share the tickets with everyone in your group. Each individual will need their ticket for entry to the event.</p>
+
+            <h3>Lost Confirmation Email or SMS:</h3>
+            <p>In case you lose the email or SMS, you may be asked to provide the Mobile Number used for the transaction at the ticket counter for verification.</p>
+
+            <h3>Contact Information:</h3>
+            <p>If you encounter any issues or have questions regarding ticket collection, please contact our customer support team at +94 71 482 2283.</p>
+
+            <h3>Important Reminder:</h3>
+            <p>Please keep your confirmation email and SMS in a safe and easily accessible place until the event day. They are your proof of purchase and will be required for ticket collection.</p>
+        </div>
+        <button id="show-more-btn" onclick="toggleInstructions()">SHOW MORE...</button>
+    </div>
+        <script>
+        function toggleInstructions() {
+            var instructions = document.getElementById("instructions");
+            var btn = document.getElementById("show-more-btn");
+
+            if (instructions.style.display === "none") {
+                instructions.style.display = "block";
+                btn.textContent = "SHOW LESS";
+            } else {
+                instructions.style.display = "none";
+                btn.textContent = "SHOW MORE...";
+            }
+        }
+    </script>
+</body>
+<script>
+    document.getElementById("ticketForm").addEventListener("submit", function (event) {
+        const numTickets = document.getElementById("numTickets").value;
+        const numTables = document.getElementById("numTables").value;
+
+        if (numTickets === "" && numTables === "") {
+            event.preventDefault(); // Prevent form submission
+            alert("Please fill in either Number of Tickets or Number of Tables.");
+        }
+    });
+</script>
+ <script>
+
+ 
+ 
+document.addEventListener('DOMContentLoaded', function() {
+    const numTicketsInput = document.getElementById('numTickets');
+    const numTablesInput = document.getElementById('numTables');
+    var inputElement = document.getElementById("totalAmount");
+    const tablesDiv = document.querySelector(".tables");
+    const tablesLabel = document.querySelector(".tableLabel");
+    var checkboxes = document.querySelectorAll('.selectable input[type="checkbox"]');
+    
+  numTicketsInput.addEventListener('focus', function() {
+      numTablesInput.value = '';
+if(numTicketsInput.value == ""){
+    
+    tables = 0;
+    inputElement.value = '';
+    document.getElementById("tablesAndSeats").value = '';
+    tablesDiv.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesLabel.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesDiv.style.height = "0px";
+                
+            checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+            
+            // Trigger a change event on each checkbox
+            var event = new Event('change', { bubbles: true });
+            checkbox.dispatchEvent(event);
+        });
+        
+}
+    
+  });
+
+  numTablesInput.addEventListener('focus', function() {
+      numTicketsInput.value = '';
+    if(numTablesInput.value == ""){
+    
+    tables = 0;
+    inputElement.value = '';
+    document.getElementById("tablesAndSeats").value = '';
+    tablesDiv.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesLabel.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesDiv.style.height = "0px";
+                
+            checkboxes.forEach(function (checkbox) {
+            checkbox.checked = false;
+            
+            // Trigger a change event on each checkbox
+            var event = new Event('change', { bubbles: true });
+            checkbox.dispatchEvent(event);
+        });
+  }
+  });
+});
+</script>
+        <script>
+          const tablesLabel = document.querySelector(".tableLabel");
+          tablesLabel.style.visibility = "hidden";
+          // Add an event listener to the "Number of Tickets" input to update the total amount
+          var tables = 0
+          
+//Fot Tickets input
+          document.getElementById("numTickets").addEventListener("input", function() {
+            const ticketPrice = 6500;
+            const numTickets = parseInt(this.value);
+            tables = Math.floor(numTickets / 12);
+            const totalAmount = ticketPrice * numTickets;
+            document.getElementById("totalAmount").value = totalAmount;
+            // Get a reference to the input element
+
+            // Get a reference to all the checkboxes with the name "selectedTables[]"
+            const checkboxes = document.querySelectorAll('input[name="selectedTables[]"]');
+
+            // Uncheck all checkboxes
+            checkboxes.forEach(function(checkbox) {
+              checkbox.checked = false;
+              // Trigger a change event on each checkbox
+            var event = new Event('change', { bubbles: true });
+            checkbox.dispatchEvent(event);
+            });
+
+            var inputElement = document.getElementById("totalAmount");
+
+            // Focus on the input element
+            // inputElement.focus();
+            console.log(tables)
+
+
+          });
+//For Tables input
+          document.getElementById("numTables").addEventListener("input", function() {
+            const ticketPrice = 6500;
+            const numTables = parseInt(this.value);
+            seatsPerTables = 12;
+            const totalAmount = ticketPrice * numTables *12;
+            document.getElementById("totalAmount").value = totalAmount;
+            // Get a reference to the input element
+
+            // Get a reference to all the checkboxes with the name "selectedTables[]"
+            const checkboxes = document.querySelectorAll('input[name="selectedTables[]"]');
+
+            // Uncheck all checkboxes
+            checkboxes.forEach(function(checkbox) {
+              checkbox.checked = false;
+              // Trigger a change event on each checkbox
+            var event = new Event('change', { bubbles: true });
+            checkbox.dispatchEvent(event);
+            });
+
+            var inputElement = document.getElementById("totalAmount");
+
+            // Focus on the input element
+            // inputElement.focus();
+            console.log(tables)
+
+
+          });
+
+//Show table Checkboxes
+          document.addEventListener("DOMContentLoaded", function() {
+            const numTicketsInput = document.getElementById("numTickets");
+            const numTablesInput = document.getElementById("numTables");
+            const tablesDiv = document.querySelector(".tables");
+            const tablesLabel = document.querySelector(".tableLabel");
+//Tickets input
+            numTicketsInput.addEventListener("input", function() {
+              const numTickets = parseInt(numTicketsInput.value, 10);
+              if (numTickets >= 12) {
+                tablesDiv.style.visibility = "visible";
+                tablesLabel.style.visibility = "visible";
+                tablesDiv.style.height = "auto";style="margin-top:15px;"
+              } else {
+                tablesDiv.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesLabel.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesDiv.style.height = "0px";
+              }
+
+            });
+//Tables input
+            numTablesInput.addEventListener("input", function() {
+              const numTables = parseInt(numTablesInput.value, 10);
+              if (numTables >= 1) {
+                tablesDiv.style.visibility = "visible";
+                tablesLabel.style.visibility = "visible";
+                tablesDiv.style.height = "auto";style="margin-top:15px;"
+              } else {
+                tablesDiv.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesLabel.style.visibility = "hidden"; // Change to "hidden" to hide the div
+                tablesDiv.style.height = "0px";
+              }
+
+            });
+//-------------------------------------------------------
+
+          });
+        </script>
+ <script>
+      function updateTextarea(radioBtn) {
+        var selectedValue = radioBtn.value;
+        var textarea = document.getElementById("message");
+        textarea.value = "T-Shirt Size: " + selectedValue;
+      }
+    </script>
+<script>
+// num of Tickets
+    document.getElementById("numTickets").addEventListener("input", function() {
+        // Get the entered number of tickets
+        var numTickets = 0;
+        numTickets = parseInt(this.value);
+        if(numTickets>0){
+            // Calculate tables and extra seats
+        var tables = Math.floor(numTickets / 12);
+        var extraSeats = numTickets % 12;
+
+        // Update the "sideInput" field with the result
+        document.getElementById("tablesAndSeats").value = 'Tables: '+tables +" "+ " Seats: " +extraSeats  ;
+        }else{
+            document.getElementById("tablesAndSeats").value = " ";
+        }
+        
+    });
+// num of Tables
+    document.getElementById("numTables").addEventListener("input", function() {
+        // Get the entered number of tickets
+        var numTables = 0;
+        numTables = parseInt(this.value);
+        if(numTables>0){
+        
+        tables = numTables;
+        // Update the "sideInput" field with the result
+        document.getElementById("tablesAndSeats").value = 'Tables: '+numTables +" "+ " Seats: " +0  ;
+        }else{
+            document.getElementById("tablesAndSeats").value = " ";
+        }
+        
+    });
+</script>
+  <script>
+    function validateForm() {
+      // Get form input values
+      var name = document.getElementById('membership_id').value;
+      var amount = document.getElementById('amount').value;
+
+      // Validate name field
+      if (name === "") {
+        alert("Please enter your name.");
+        return false;
+      }
+
+      // Validate amount field
+      if (amount === "" || amount <= 0) {
+        alert("Please enter a valid donation amount.");
+        return false;
+      }
+
+      return true;
+    }
+
+    // Email validation function using regular expression
+    function validateEmail(email) {
+      var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+    
+  </script>
+    <script>
+    // Get a reference to the button element by its ID
+    var madeButton = document.getElementById("made");
+    
+    // Add a double-click event listener to the button
+    madeButton.addEventListener("dblclick", function() {
+      console.log('@ramesh_madara')
+    });
+  </script>
+          <script>
+          document.addEventListener("DOMContentLoaded", function() {
+            var checkboxes = document.querySelectorAll('.selectable input[type="checkbox"]');
+            var selectedCheckboxes = [];
+
+            checkboxes.forEach(function(checkbox) {
+              checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                  selectedCheckboxes.push(this.value);
+                  if (selectedCheckboxes.length > tables) {
+                    alert(`You can only select ${tables} tables.`);
+                    this.checked = false;
+                    selectedCheckboxes.pop();
+                  }
+                } else {
+                  var index = selectedCheckboxes.indexOf(this.value);
+                  if (index !== -1) {
+                    selectedCheckboxes.splice(index, 1);
+                  }
+                }
+              });
+            });
+          });
+        </script>
+</html>
