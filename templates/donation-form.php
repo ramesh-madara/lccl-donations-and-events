@@ -288,8 +288,9 @@ $presets_row2       = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000
 				<?php endif; ?>
 
 				<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 24px;">
-					<label style="display: flex; align-items: flex-start; cursor: pointer; gap: 8px;">
-						<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required style="margin-top: 4px;">
+					<label class="lccl-bdf__checkbox" style="align-items: flex-start;">
+						<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required>
+						<span class="lccl-bdf__check" aria-hidden="true"></span>
 						<span style="font-size: 14px; color: #475569;">
 							<?php
 							printf(
