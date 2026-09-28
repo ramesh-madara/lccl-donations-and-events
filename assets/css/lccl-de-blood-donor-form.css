@@ -814,7 +814,7 @@
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df {
-	padding: 24px 28px 8px;
+	padding: 8px 28px 8px;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__amount-row {
@@ -1580,7 +1580,7 @@
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__fields {
-	padding: 24px 28px 8px;
+	padding: 8px 28px 8px;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__field--first {
