@@ -257,8 +257,16 @@ class LCCL_DE_Membership_Form {
 			$errors[] = __( 'A valid email address is required.', 'lccl-de' );
 		}
 
-		if ( ! in_array( $membership_type, array( 'member', 'family' ), true ) ) {
+		if ( ! in_array( $membership_type, array( 'member', 'family', 'outstanding' ), true ) ) {
 			$errors[] = __( 'Please select a membership type.', 'lccl-de' );
+		}
+
+		$outstanding_amount = 0;
+		if ( 'outstanding' === $membership_type ) {
+			$outstanding_amount = isset( $raw['outstanding_amount'] ) ? (float) $raw['outstanding_amount'] : 0;
+			if ( $outstanding_amount <= 0 ) {
+				$errors[] = __( 'Please enter a valid outstanding amount.', 'lccl-de' );
+			}
 		}
 
 		if ( ! LCCL_DE_Paycenter_Client::is_configured() ) {
@@ -278,7 +286,7 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Calculate fee (server-side only – never accepted from POST)
 		// ----------------------------------------------------------------
-		$breakdown = self::breakdown( $membership_type, $family_count );
+		$breakdown = self::breakdown( $membership_type, $family_count, $outstanding_amount );
 		$amount    = $breakdown['total'];
 
 		// ----------------------------------------------------------------
@@ -831,8 +839,9 @@ class LCCL_DE_Membership_Form {
 	 */
 	public static function types() {
 		return array(
-			'member' => __( 'Member', 'lccl-de' ),
-			'family' => __( 'Family Membership', 'lccl-de' ),
+			'member'      => __( 'Individual Membership', 'lccl-de' ),
+			'family'      => __( 'Family Membership', 'lccl-de' ),
+			'outstanding' => __( 'Outstanding Payment', 'lccl-de' ),
 		);
 	}
 
@@ -895,7 +904,7 @@ class LCCL_DE_Membership_Form {
 	 * @param int    $count Family members including the main member.
 	 * @return array<string,mixed>
 	 */
-	public static function breakdown( $type = '', $count = 2 ) {
+	public static function breakdown( $type = '', $count = 2, $outstanding = 0 ) {
 		$cfg = self::get_fees_config();
 
 		$rate          = (float) $cfg['exchange_rate'];
@@ -913,9 +922,18 @@ class LCCL_DE_Membership_Form {
 		$club               = $club_unit;
 		$total              = $international_main + $family_fee + $district + $club;
 
+		if ( 'outstanding' === $type ) {
+			$international_main = 0;
+			$family_fee         = 0;
+			$district           = 0;
+			$club               = 0;
+			$total              = (float) $outstanding;
+		}
+
 		return array(
 			'is_family'          => $is_family,
 			'membership_type'    => $type,
+			'outstanding_amount' => $outstanding,
 			'members'            => $members,
 			'additional'         => $additional,
 			'rate'               => $rate,

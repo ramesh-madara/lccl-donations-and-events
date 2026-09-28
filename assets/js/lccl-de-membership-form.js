@@ -32,27 +32,41 @@
 	function calculate( form ) {
 		var type       = form.querySelector( '[name="membership_type"]' );
 		var count      = form.querySelector( '[name="family_count"]' );
+		var outInput   = form.querySelector( '[name="outstanding_amount"]' );
 		var familyWrap = form.querySelector( '[data-lccl-family]' );
 		var familyLine = form.querySelector( '[data-lccl-family-line]' );
+		var outWrap    = form.querySelector( '[data-lccl-outstanding]' );
+		var breakdown  = form.querySelector( '[data-lccl-breakdown]' );
+
 		var typeValue  = type ? type.value : '';
 		var isFamily   = 'family' === typeValue;
+		var isOut      = 'outstanding' === typeValue;
 		var members    = isFamily ? num( count ? count.value : 2, 2 ) : 1;
 		var additional = isFamily ? Math.max( 0, members - 1 ) : 0;
+
 		var rate           = num( form.getAttribute( 'data-rate' ), 330.8 );
 		var principalUsd   = num( form.getAttribute( 'data-principal-usd' ), 50 );
 		var familyUsd      = num( form.getAttribute( 'data-family-usd' ), 25 );
 		var district       = num( form.getAttribute( 'data-district' ), 4561 );
 		var club           = num( form.getAttribute( 'data-club' ), 6000 );
-		var internationalMain = principalUsd * rate;
-		var familyFee         = additional * familyUsd * rate;
-		var districtTotal     = members * district;
-		var total             = internationalMain + familyFee + districtTotal + club;
+		
+		var internationalMain = isOut ? 0 : principalUsd * rate;
+		var familyFee         = isOut ? 0 : additional * familyUsd * rate;
+		var districtTotal     = isOut ? 0 : members * district;
+		var total             = isOut ? num( outInput ? outInput.value : 0, 0 ) : (typeValue ? (internationalMain + familyFee + districtTotal + club) : 0);
+
+		if ( breakdown ) {
+			breakdown.hidden = ! typeValue || isOut;
+		}
 
 		if ( familyWrap ) {
 			familyWrap.hidden = ! isFamily;
 		}
 		if ( familyLine ) {
 			familyLine.hidden = ! ( isFamily && additional > 0 );
+		}
+		if ( outWrap ) {
+			outWrap.hidden = ! isOut;
 		}
 
 		setText( form.querySelector( '[data-lccl-rate]' ),       number( rate ) );
@@ -96,6 +110,8 @@
 			}
 		}
 
+		var outInput = form.querySelector( '[name="outstanding_amount"]' );
+
 		if ( type ) {
 			type.addEventListener( 'change', function () {
 				calculate( form );
@@ -103,6 +119,14 @@
 		}
 		if ( count ) {
 			count.addEventListener( 'change', function () {
+				calculate( form );
+			} );
+		}
+		if ( outInput ) {
+			outInput.addEventListener( 'input', function () {
+				calculate( form );
+			} );
+			outInput.addEventListener( 'change', function () {
 				calculate( form );
 			} );
 		}
