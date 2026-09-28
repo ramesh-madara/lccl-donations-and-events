@@ -184,7 +184,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 							id="lccl-mf-phone"
 							name="phone"
 							value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
-							placeholder="<?php esc_attr_e( '07X XXX XXXX', 'lccl-de' ); ?>"
+							placeholder="<?php esc_attr_e( '+94714822283', 'lccl-de' ); ?>"
 							inputmode="tel"
 							autocomplete="tel"
 							maxlength="12"
@@ -219,11 +219,11 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 				<table class="lccl-mf__table">
 					<tbody>
 						<tr>
-							<td><?php esc_html_e( 'Lions International Membership Fee', 'lccl-de' ); ?></td>
+							<td><?php esc_html_e( 'Household Membership Payment', 'lccl-de' ); ?></td>
 							<td data-lccl-intl><?php echo esc_html( LCCL_DE_Membership_Form::format_lkr( $fees['international_main'] ) ); ?></td>
 						</tr>
 						<tr data-lccl-family-line<?php echo ! empty( $fees['is_family'] ) ? '' : ' hidden'; ?>>
-							<td><?php esc_html_e( 'Additional Family Member Fee', 'lccl-de' ); ?></td>
+							<td><?php esc_html_e( 'Family Membership Payment', 'lccl-de' ); ?></td>
 							<td data-lccl-family-fee><?php echo esc_html( LCCL_DE_Membership_Form::format_lkr( $fees['family_fee'] ) ); ?></td>
 						</tr>
 						<tr>
