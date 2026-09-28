@@ -126,8 +126,8 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 					</p>
 				</div>
 
-				<div class="lccl-mf__outstanding" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
-					<div class="lccl-bdf__field lccl-mf__field--first">
+				<div class="lccl-mf__outstanding" style="margin-top: 8px;" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
+					<div class="lccl-bdf__field">
 						<label class="lccl-bdf__label" for="lccl-mf-outstanding-amount">
 							<?php esc_html_e( 'Outstanding Payment Amount (LKR)', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
 						</label>
