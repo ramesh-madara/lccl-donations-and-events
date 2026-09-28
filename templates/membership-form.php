@@ -125,6 +125,27 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 						<?php esc_html_e( 'The main member is responsible for the payment of the annual membership fees for all family members included in the membership.', 'lccl-de' ); ?>
 					</p>
 				</div>
+
+				<div class="lccl-mf__outstanding" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
+					<div class="lccl-bdf__field lccl-mf__field--first">
+						<label class="lccl-bdf__label" for="lccl-mf-outstanding-amount">
+							<?php esc_html_e( 'Outstanding Payment Amount (LKR)', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+						</label>
+						<input
+							class="lccl-bdf__input"
+							type="number"
+							step="0.01"
+							min="1"
+							id="lccl-mf-outstanding-amount"
+							name="outstanding_amount"
+							value="<?php echo esc_attr( $val( 'outstanding_amount' ) ); ?>"
+							placeholder="<?php esc_attr_e( 'e.g. 5000.00', 'lccl-de' ); ?>"
+						>
+					</div>
+					<p class="lccl-mf__note">
+						<?php esc_html_e( 'Please enter the outstanding payment amount as communicated by the club.', 'lccl-de' ); ?>
+					</p>
+				</div>
 			</div>
 
 			<div class="lccl-mf__section">

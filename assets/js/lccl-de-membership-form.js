@@ -36,6 +36,9 @@
 		var familyLine = form.querySelector( '[data-lccl-family-line]' );
 		var typeValue  = type ? type.value : '';
 		var isFamily   = 'family' === typeValue;
+		var isOut      = 'outstanding' === typeValue;
+		var outWrap    = form.querySelector( '[data-lccl-outstanding]' );
+		var amountInp  = form.querySelector( '[name="outstanding_amount"]' );
 		var members    = isFamily ? num( count ? count.value : 2, 2 ) : 1;
 		var additional = isFamily ? Math.max( 0, members - 1 ) : 0;
 		var rate           = num( form.getAttribute( 'data-rate' ), 330.8 );
@@ -47,10 +50,27 @@
 		var familyFee         = additional * familyUsd * rate;
 		var districtTotal     = members * district;
 		var total             = typeValue ? (internationalMain + familyFee + districtTotal + club) : 0;
+		
+		if ( isOut ) {
+			total = num( amountInp ? amountInp.value : 0, 0 );
+		}
+
 		var breakdown = form.querySelector( '[data-lccl-breakdown]' );
 
 		if ( breakdown ) {
-			breakdown.hidden = ! typeValue;
+			breakdown.hidden = ! typeValue || isOut;
+		}
+
+		if ( outWrap ) {
+			outWrap.hidden = ! isOut;
+		}
+
+		if ( amountInp ) {
+			if ( isOut ) {
+				amountInp.setAttribute( 'required', 'required' );
+			} else {
+				amountInp.removeAttribute( 'required' );
+			}
 		}
 
 		if ( familyWrap ) {
@@ -108,6 +128,12 @@
 		}
 		if ( count ) {
 			count.addEventListener( 'change', function () {
+				calculate( form );
+			} );
+		}
+		var amountInp = form.querySelector( '[name="outstanding_amount"]' );
+		if ( amountInp ) {
+			amountInp.addEventListener( 'input', function () {
 				calculate( form );
 			} );
 		}

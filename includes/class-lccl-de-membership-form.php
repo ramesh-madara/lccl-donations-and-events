@@ -257,8 +257,16 @@ class LCCL_DE_Membership_Form {
 			$errors[] = __( 'A valid email address is required.', 'lccl-de' );
 		}
 
-		if ( ! in_array( $membership_type, array( 'member', 'family' ), true ) ) {
+		if ( ! in_array( $membership_type, array( 'member', 'family', 'outstanding' ), true ) ) {
 			$errors[] = __( 'Please select a membership type.', 'lccl-de' );
+		}
+
+		$outstanding_amount = 0;
+		if ( 'outstanding' === $membership_type ) {
+			$outstanding_amount = (float) ( isset( $raw['outstanding_amount'] ) ? $raw['outstanding_amount'] : 0 );
+			if ( $outstanding_amount <= 0 ) {
+				$errors[] = __( 'Please enter a valid outstanding payment amount.', 'lccl-de' );
+			}
 		}
 
 		if ( ! LCCL_DE_Paycenter_Client::is_configured() ) {
@@ -278,8 +286,17 @@ class LCCL_DE_Membership_Form {
 		// ----------------------------------------------------------------
 		// Calculate fee (server-side only – never accepted from POST)
 		// ----------------------------------------------------------------
-		$breakdown = self::breakdown( $membership_type, $family_count );
-		$amount    = $breakdown['total'];
+		if ( 'outstanding' === $membership_type ) {
+			$amount = $outstanding_amount;
+			$breakdown = array(
+				'membership_type' => 'outstanding',
+				'total'           => $amount,
+				'calculated_at'   => current_time( 'mysql' ),
+			);
+		} else {
+			$breakdown = self::breakdown( $membership_type, $family_count );
+			$amount    = $breakdown['total'];
+		}
 
 		// ----------------------------------------------------------------
 		// Generate unique order reference
@@ -831,8 +848,9 @@ class LCCL_DE_Membership_Form {
 	 */
 	public static function types() {
 		return array(
-			'member' => __( 'Individual Membership', 'lccl-de' ),
-			'family' => __( 'Family Membership', 'lccl-de' ),
+			'member'      => __( 'Individual Membership', 'lccl-de' ),
+			'family'      => __( 'Family Membership', 'lccl-de' ),
+			'outstanding' => __( 'Outstanding Payment', 'lccl-de' ),
 		);
 	}
 
