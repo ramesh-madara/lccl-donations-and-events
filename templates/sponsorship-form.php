@@ -351,30 +351,30 @@ $presets_row2 = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000, 5000
 						</span>
 					</label>
 				</div>
+
+				<button
+					class="lccl-bdf__submit lccl-df__submit"
+					id="lccl-ps-submit-btn"
+					type="submit"
+					disabled aria-disabled="true"
+					data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
+				>
+					<span class="lccl-df__pay-label" data-default-text="<?php esc_attr_e( 'Support Now', 'lccl-de' ); ?>" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>">
+						<?php esc_html_e( 'Support Now', 'lccl-de' ); ?>
+					</span>
+					<span class="lccl-df__pay-spinner" hidden aria-hidden="true"></span>
+				</button>
+
+				<?php if ( ! $gateway_configured ) : ?>
+					<p class="lccl-bdf__notice" role="alert" style="margin-top:12px;">
+						<?php esc_html_e( 'Online sponsorship payments are not currently available. Please contact the club administrator.', 'lccl-de' ); ?>
+					</p>
+				<?php else : ?>
+					<p class="lccl-bdf__secure" style="margin-top:12px;font-size:13px;color:#666;">
+						<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
+					</p>
+				<?php endif; ?>
 			</div>
-
-			<button
-				class="lccl-bdf__submit lccl-df__submit"
-				id="lccl-ps-submit-btn"
-				type="submit"
-				disabled aria-disabled="true"
-				data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
-			>
-				<span class="lccl-df__pay-label" data-default-text="<?php esc_attr_e( 'Support Now', 'lccl-de' ); ?>" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>">
-					<?php esc_html_e( 'Support Now', 'lccl-de' ); ?>
-				</span>
-				<span class="lccl-df__pay-spinner" hidden aria-hidden="true"></span>
-			</button>
-
-			<?php if ( ! $gateway_configured ) : ?>
-				<p class="lccl-bdf__notice" role="alert" style="margin-top:12px;">
-					<?php esc_html_e( 'Online sponsorship payments are not currently available. Please contact the club administrator.', 'lccl-de' ); ?>
-				</p>
-			<?php else : ?>
-				<p class="lccl-bdf__secure" style="margin-top:12px;font-size:13px;color:#666;">
-					<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
-				</p>
-			<?php endif; ?>
 		</form>
 
 		<div class="lccl-ps__image-panel">
