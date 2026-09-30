@@ -309,23 +309,23 @@ $presets_row2       = ( 'USD' === $currency ) ? array( 100, 250 ) : array( 25000
 						</span>
 					</label>
 				</div>
+
+				<button
+					class="lccl-bdf__submit lccl-df__submit"
+					type="submit"
+					id="lccl-df-submit-btn"
+					disabled aria-disabled="true"
+					data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
+				>
+					<span class="lccl-df__pay-label" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>"><?php esc_html_e( 'DONATE NOW', 'lccl-de' ); ?></span>
+					<span class="lccl-df__pay-spinner" aria-hidden="true" hidden></span>
+				</button>
+
+				<p class="lccl-mf__secure-note">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+					<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
+				</p>
 			</div>
-
-			<button
-				class="lccl-bdf__submit lccl-df__submit"
-				type="submit"
-				id="lccl-df-submit-btn"
-				disabled aria-disabled="true"
-				data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
-			>
-				<span class="lccl-df__pay-label" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>"><?php esc_html_e( 'DONATE NOW', 'lccl-de' ); ?></span>
-				<span class="lccl-df__pay-spinner" aria-hidden="true" hidden></span>
-			</button>
-
-			<p class="lccl-mf__secure-note">
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-				<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
-			</p>
 		</form>
 
 		<div class="lccl-donation__image-panel">
