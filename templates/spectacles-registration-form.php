@@ -459,7 +459,7 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 		<?php wp_nonce_field( LCCL_DE_Spectacles_Submissions::ACTION, 'lccl_de_nonce' ); ?>
 
 		<button class="lccl-bdf__submit" type="submit">
-			<?php esc_html_e( 'Register', 'lccl-de' ); ?>
+			<?php esc_html_e( 'REGISTER', 'lccl-de' ); ?>
 		</button>
 	</form>
 </div>

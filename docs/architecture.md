@@ -2,9 +2,7 @@
 
 ## Current state
 
-The plugin renders the registration form, stores accepted submissions in
-`{prefix}lccl_de_blood_donors`, and exposes a frontend reviewer dashboard.
-Site admins CRUD those reviewer accounts from **Blood Donation Users**.
+The plugin acts as a comprehensive CRM, registration, and payment platform for LCCL. It handles form rendering, data storage in custom database tables, payment gateway integration via CBC Paycenter (Bancstac), and exposes restricted frontend dashboards for program reviewers. Administrative functions are nested in the WordPress dashboard under **LCCL Programs**.
 
 ### Bootstrap
 

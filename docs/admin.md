@@ -69,3 +69,13 @@ must not be the only control.
 - `show_admin_bar` is false for them
 - `login_redirect` sends them to the dashboard if they use `wp-login.php`
 - `wp_authenticate_user` blocks inactive reviewer accounts
+
+## LCCL Programs (wp-admin Dashboards)
+
+`LCCL_DE_Admin_Programs` registers a suite of administrative tools located under **"LCCL Programs"** in the WordPress admin menu:
+
+- **Blood Donors, Free Spectacles, Our Projects**: Links to load the respective frontend dashboards.
+- **Payment Dashboard**: A unified ledger for tracking real-time status of all transactions (Donations, Sponsorships, Memberships). Uses `[lccl_payment_dashboard]`. Restricted to wp-admin users only.
+- **Payment Gateway**: Configures multiple routing profiles (Donations, Member Fees, Fundraisers) for the **CBC Paycenter** integration, including endpoint, Merchant ID, and AES-256-GCM encrypted API tokens.
+- **Membership Fees**: Allows finance officers to dynamically adjust the LKR/USD exchange rate, District Fees, and Club Fees. Keeps a revision history.
+- **Notifications**: Configure recipient email addresses for admin alerts.

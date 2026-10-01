@@ -14,7 +14,9 @@ Viewed class-lccl-de-settings.php:250-450
 Viewed class-lccl-de-schema.php:1-160
 Viewed class-lccl-de-schema.php:250-346
 
-Here is a comprehensive architectural and security study of the payment gateway implementation currently used in the `lccl_membership_fee` form, designed to guide the upcoming migration to the new gateway.
+Here is a comprehensive architectural and security study of the payment gateway implementation, originally designed for Mastercard IPG and since **successfully migrated to the Commercial Bank of Ceylon (CBC) Paycenter Web 4.0 (Bancstac)** gateway.
+
+> **Update Note**: While the underlying gateway provider changed from Mastercard IPG to CBC Paycenter Web 4.0, the core architectural principles, security measures (AES-256-GCM encrypted tokens, double amount verification, atomic state transitions), and the server-to-server interaction model described in this document remain intact and apply equally to the new `class-lccl-de-paycenter-client.php` implementation.
 
 ---
 

@@ -45,12 +45,13 @@
 		return parseInt( raw, 10 ) >= 1;
 	}
 
-	function formatTotal( value ) {
+	function formatTotal( value, currency ) {
 		var raw = constrainAmount( value );
 		if ( ! raw ) {
 			return '';
 		}
-		return parseInt( raw, 10 ).toLocaleString( 'en-US' ) + ' LKR';
+		var cur = currency || 'LKR';
+		return parseInt( raw, 10 ).toLocaleString( 'en-US' ) + ' ' + cur;
 	}
 
 	function isValidEmail( value ) {
@@ -218,9 +219,19 @@
 			}
 		}
 
+		var activeCurrency = 'LKR';
+
+		function getDefault() {
+			if ( ! amount ) {
+				return '';
+			}
+			var attr = 'USD' === activeCurrency ? 'data-default-usd' : 'data-default-lkr';
+			return amount.getAttribute( attr ) || '';
+		}
+
 		function syncTotal() {
 			if ( total ) {
-				total.value = formatTotal( amount ? amount.value : '' );
+				total.value = formatTotal( amount ? amount.value : '', activeCurrency );
 			}
 			Array.prototype.forEach.call( presets, function ( btn ) {
 				var preset = btn.getAttribute( 'data-lccl-preset' );
@@ -291,6 +302,63 @@
 			} );
 		}
 
+		// ----- Currency switcher -----
+		var currencySelect = form.querySelector( '#lccl-df-currency' );
+		var currencyHidden = form.querySelector( '#lccl-df-currency-hidden' );
+		var isUsdConfigured = form.getAttribute( 'data-usd-configured' ) === '1';
+
+		if ( currencySelect ) {
+			// Initialise from the select's current value (e.g. after a server-side render).
+			activeCurrency = currencySelect.value || 'LKR';
+			if ( currencyHidden ) {
+				currencyHidden.value = activeCurrency;
+			}
+
+			currencySelect.addEventListener( 'change', function () {
+				activeCurrency = currencySelect.value || 'LKR';
+				if ( currencyHidden ) {
+					currencyHidden.value = activeCurrency;
+				}
+
+				// Swap all preset button values and labels.
+				Array.prototype.forEach.call( presets, function ( btn ) {
+					var presetKey = 'USD' === activeCurrency ? 'data-lccl-preset-usd' : 'data-lccl-preset-lkr';
+					var newVal = btn.getAttribute( presetKey );
+					if ( newVal !== null ) {
+						btn.setAttribute( 'data-lccl-preset', newVal );
+						btn.textContent = parseInt( newVal, 10 ).toLocaleString( 'en-US' ) + ' ' + activeCurrency;
+					}
+				} );
+
+				// Set the default amount for the newly selected currency.
+				var def = getDefault();
+				if ( amount ) {
+					amount.value = def ? constrainAmount( def ) : '';
+				}
+				syncTotal();
+
+				// Disable submit if USD is selected but not configured.
+				if ( btn && isGatewayConfigured ) {
+					var usdBlocked = 'USD' === activeCurrency && ! isUsdConfigured;
+					if ( usdBlocked ) {
+						btn.disabled = true;
+						btn.setAttribute( 'aria-disabled', 'true' );
+					} else {
+						// Re-apply normal terms-checkbox gate.
+						if ( terms ) {
+							btn.disabled = ! terms.checked;
+							if ( btn.disabled ) {
+								btn.setAttribute( 'aria-disabled', 'true' );
+							} else {
+								btn.removeAttribute( 'aria-disabled' );
+							}
+						}
+					}
+				}
+			} );
+		}
+		// ----- End currency switcher -----
+
 		Array.prototype.forEach.call( presets, function ( btn ) {
 			btn.addEventListener( 'click', function () {
 				var preset = btn.getAttribute( 'data-lccl-preset' );
@@ -305,6 +373,14 @@
 				setAmount( preset );
 			} );
 		} );
+
+		// Apply default amount on page load if no value was pre-filled (e.g. from a POST error).
+		if ( amount && ! isFilled( amount ) ) {
+			var initDefault = getDefault();
+			if ( initDefault ) {
+				setAmount( initDefault );
+			}
+		}
 
 		syncTotal();
 

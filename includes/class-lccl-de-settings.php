@@ -52,10 +52,11 @@ class LCCL_DE_Settings {
 	 */
 	const OPTION_PAYCENTER_PROFILES = 'lccl_de_paycenter_profiles';
 
-	const PROFILE_DONATIONS  = 'donations';
-	const PROFILE_MEMBERSHIP = 'membership';
-	const PROFILE_PROJECT_1  = 'project_1';
-	const PROFILE_PROJECT_2  = 'project_2';
+	const PROFILE_DONATIONS     = 'donations';
+	const PROFILE_DONATIONS_USD = 'donations_usd';
+	const PROFILE_MEMBERSHIP    = 'membership';
+	const PROFILE_PROJECT_1     = 'project_1';
+	const PROFILE_PROJECT_2     = 'project_2';
 
 	/**
 	 * Option that stores Annual Membership fee schedule settings.
@@ -1038,22 +1039,27 @@ class LCCL_DE_Settings {
 	 */
 	public static function known_paycenter_profiles() {
 		return array(
-			self::PROFILE_DONATIONS  => array(
+			self::PROFILE_DONATIONS     => array(
 				'key'           => self::PROFILE_DONATIONS,
-				'default_label' => __( 'Donations', 'lccl-de' ),
-				'description'   => __( 'Client credentials for public donations and donor contributions.', 'lccl-de' ),
+				'default_label' => __( 'Donations (LKR)', 'lccl-de' ),
+				'description'   => __( 'Client credentials for public LKR donations and donor contributions.', 'lccl-de' ),
 			),
-			self::PROFILE_MEMBERSHIP => array(
+			self::PROFILE_DONATIONS_USD => array(
+				'key'           => self::PROFILE_DONATIONS_USD,
+				'default_label' => __( 'Donations (USD)', 'lccl-de' ),
+				'description'   => __( 'Client credentials for USD donations (Merchant ID: LIONSCLUBUSD).', 'lccl-de' ),
+			),
+			self::PROFILE_MEMBERSHIP    => array(
 				'key'           => self::PROFILE_MEMBERSHIP,
 				'default_label' => __( 'Member Fees', 'lccl-de' ),
 				'description'   => __( 'Client credentials for club membership fee payments.', 'lccl-de' ),
 			),
-			self::PROFILE_PROJECT_1  => array(
+			self::PROFILE_PROJECT_1     => array(
 				'key'           => self::PROFILE_PROJECT_1,
 				'default_label' => __( 'Fundraisers', 'lccl-de' ),
 				'description'   => __( 'Dedicated client credentials for club fundraisers.', 'lccl-de' ),
 			),
-			self::PROFILE_PROJECT_2  => array(
+			self::PROFILE_PROJECT_2     => array(
 				'key'           => self::PROFILE_PROJECT_2,
 				'default_label' => __( 'Future Project', 'lccl-de' ),
 				'description'   => __( 'Dedicated client credentials reserved for future projects.', 'lccl-de' ),

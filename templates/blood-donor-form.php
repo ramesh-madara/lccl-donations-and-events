@@ -367,7 +367,7 @@ $notice = static function ( $key ) use ( $err ) {
 		<?php wp_nonce_field( LCCL_DE_Blood_Donor_Submissions::ACTION, 'lccl_de_nonce' ); ?>
 
 		<button class="lccl-bdf__submit" type="submit">
-			<?php esc_html_e( 'Register', 'lccl-de' ); ?>
+			<?php esc_html_e( 'REGISTER', 'lccl-de' ); ?>
 		</button>
 
 	</form>

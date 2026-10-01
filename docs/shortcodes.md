@@ -14,6 +14,7 @@ Complete reference for all shortcodes provided by the **LCCL Donations and Event
 | `[lccl_donation_form]` | Donation / Payment | General donation form with cause selection | `title`, `intro` |
 | `[lccl_membership_fee]` | Donation / Payment | Annual membership fee calculator & payment | `title`, `intro` |
 | `[lccl_project_sponsorship]` | Donation / Payment | Specific project sponsorship with cards & progress | `banner_title`, `banner_intro`, `title`, `intro` |
+| `[lccl_fundraiser_form]` | Donation / Payment | Fundraiser seat & table booking | `title`, `intro` |
 | `[lccl_blood_donation_admin]` | Dashboard | Blood donor reviewer login & data dashboard | *None* |
 | `[lccl_our_projects_admin]` | Dashboard | Join Our Projects reviewer login & dashboard | *None* |
 | `[lccl_spectacles_admin]` | Dashboard | Free Spectacles reviewer login & dashboard | *None* |
@@ -141,6 +142,24 @@ Renders an interactive split-layout page with ongoing/upcoming project progress 
   - Visual project cards displaying Project Value, Amount Raised, Amount Remaining, and progress bars.
   - Clicking "SUPPORT THIS PROJECT" on any card auto-selects the project in the form and smoothly scrolls to checkout.
   - Preset amount buttons and custom amount input.
+
+---
+
+### `[lccl_fundraiser_form]`
+Renders a fundraiser seat booking and table reservation form. 
+
+```text
+[lccl_fundraiser_form]
+[lccl_fundraiser_form title="Fundraiser Booking" intro="Reserve your seat today."]
+```
+
+- **Attributes**:
+  - `title` *(string)*: Form heading. Default: `"Fundraiser Seat Booking"`.
+  - `intro` *(string)*: Intro text. Default: Instructions.
+- **Key Features**:
+  - Dynamic Table and Ticket pricing calculations based on user selection.
+  - Calculates live total before checkout.
+  - (Currently a Concept UI implementation).
 
 ---
 

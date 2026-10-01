@@ -1,10 +1,14 @@
 # Database
 
-Blood donor registrations live in a dedicated table, not in `wp_posts`.
-Submissions are structured records; a custom table keeps them out of the
-WooCommerce / GiveWP post pile and makes boolean filters cheap.
+Registrations and payments live in dedicated tables, not in `wp_posts`.
+Submissions are structured records; custom tables keep them out of the
+WooCommerce / GiveWP post pile and make boolean filters and data exports highly efficient.
 
-## Table
+## Core Tables
+- `{prefix}lccl_de_blood_donors`: Blood donor registrations.
+- `{prefix}lccl_de_spectacles_submissions`: Free spectacles applications and file attachments.
+- `{prefix}lccl_de_project_joins`: Volunteer and partner signups.
+- `{prefix}lccl_de_payments`: Unified ledger for online Donations, Sponsorships, and Membership Fee transactions.
 
 Name: `{prefix}lccl_de_blood_donors`
 

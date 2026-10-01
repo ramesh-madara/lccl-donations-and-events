@@ -203,7 +203,8 @@ class LCCL_DE_Donation_Form {
 		$currency           = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( $profile_cfg['currency'] ) : 'LKR';
 		$values             = array();
 		$errors             = array();
-		$gateway_configured = LCCL_DE_Paycenter_Client::is_configured( self::PROFILE );
+		$gateway_configured     = LCCL_DE_Paycenter_Client::is_configured( self::PROFILE );
+		$usd_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_USD );
 
 		if ( ! empty( $_GET['lccl_df_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$errors[] = sanitize_text_field( wp_unslash( $_GET['lccl_df_error'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -262,6 +263,15 @@ class LCCL_DE_Donation_Form {
 		$raw_amount = isset( $raw['amount'] ) ? preg_replace( '/[^\d.]/', '', (string) $raw['amount'] ) : '0';
 		$amount     = (float) $raw_amount;
 
+		// Determine currency. Whitelist: LKR or USD only.
+		$submitted_currency = isset( $raw['currency'] ) ? strtoupper( sanitize_text_field( (string) $raw['currency'] ) ) : 'LKR';
+		$form_currency      = in_array( $submitted_currency, array( 'LKR', 'USD' ), true ) ? $submitted_currency : 'LKR';
+
+		// Route to the correct gateway profile based on currency.
+		$active_profile = ( 'USD' === $form_currency )
+			? LCCL_DE_Settings::PROFILE_DONATIONS_USD
+			: self::PROFILE;
+
 		$selected_causes = isset( $raw['causes'] ) && is_array( $raw['causes'] )
 			? array_values( array_intersect( $raw['causes'], array_keys( self::causes() ) ) )
 			: array();
@@ -284,11 +294,14 @@ class LCCL_DE_Donation_Form {
 			$errors[] = __( 'Mobile / WhatsApp number is required.', 'lccl-de' );
 		}
 
+		// Minimum donation: 1 LKR or 1 USD.
 		if ( $amount < 1.00 ) {
-			$errors[] = __( 'Please enter a valid donation amount of at least 1 LKR.', 'lccl-de' );
+			$errors[] = 'USD' === $form_currency
+				? __( 'Please enter a valid donation amount of at least 1 USD.', 'lccl-de' )
+				: __( 'Please enter a valid donation amount of at least 1 LKR.', 'lccl-de' );
 		}
 
-		if ( ! LCCL_DE_Paycenter_Client::is_configured( self::PROFILE ) ) {
+		if ( ! LCCL_DE_Paycenter_Client::is_configured( $active_profile ) ) {
 			$errors[] = __( 'Online donations are currently not configured. Please contact the club administrator.', 'lccl-de' );
 		}
 
@@ -314,8 +327,8 @@ class LCCL_DE_Donation_Form {
 			'message'  => $message,
 		);
 
-		$profile_cfg = LCCL_DE_Settings::get_paycenter( self::PROFILE );
-		$currency    = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( $profile_cfg['currency'] ) : 'LKR';
+		// Use the active profile's currency, not the profile-configured default.
+		$currency = $form_currency;
 
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$table,
@@ -372,10 +385,10 @@ class LCCL_DE_Donation_Form {
 			$last_name
 		);
 
-		// Call PAYMENT_INIT with Donations profile.
+		// Call PAYMENT_INIT with the correct profile (LKR = donations, USD = donations_usd).
 		$init_result = LCCL_DE_Paycenter_Client::payment_init(
 			array(
-				'profile'    => self::PROFILE,
+				'profile'    => $active_profile,
 				'order_ref'  => $order_ref,
 				'amount'     => $amount,
 				'return_url' => $return_url,
@@ -540,8 +553,13 @@ class LCCL_DE_Donation_Form {
 			return $base_result;
 		}
 
-		// Server-to-server confirmation: PAYMENT_COMPLETE with Donations profile.
-		$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid, self::PROFILE );
+		// Server-to-server confirmation: PAYMENT_COMPLETE — route to the profile that matches
+		// the currency stored on the database row (set during PAYMENT_INIT).
+		$stored_currency  = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
+		$callback_profile = ( 'USD' === $stored_currency )
+			? LCCL_DE_Settings::PROFILE_DONATIONS_USD
+			: self::PROFILE;
+		$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid, $callback_profile );
 
 		if ( is_wp_error( $response_data ) ) {
 			error_log(
@@ -580,8 +598,7 @@ class LCCL_DE_Donation_Form {
 			return $base_result;
 		}
 
-		$profile_cfg       = LCCL_DE_Settings::get_paycenter( LCCL_DE_Settings::PROFILE_DONATIONS );
-		$expected_currency = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? $profile_cfg['currency'] : 'LKR';
+		$expected_currency = $stored_currency;
 
 		if ( ! LCCL_DE_Paycenter_Client::verify_amount( $response_data, (float) $row['amount_lkr'], $expected_currency ) ) {
 			$mismatch_msg = 'Amount/currency mismatch in donation.';
