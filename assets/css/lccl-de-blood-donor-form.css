@@ -48,6 +48,15 @@
 	line-height: 1.6;
 }
 
+.lccl-bdf__form.is-currency-usd {
+	--lccl-bdf-gold-dark: #07386d;
+	--lccl-bdf-gold-light: #0a51a1;
+	--lccl-bdf-gold-hover: #116de0;
+	--lccl-bdf-primary: #0a51a1;
+	--lccl-bdf-primary-soft: #e6f0fa;
+	--lccl-bdf-border-focus: #0a51a1;
+}
+
 .lccl-bdf *,
 .lccl-bdf *::before,
 .lccl-bdf *::after {

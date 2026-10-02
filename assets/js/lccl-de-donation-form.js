@@ -313,12 +313,16 @@
 			if ( currencyHidden ) {
 				currencyHidden.value = activeCurrency;
 			}
+			form.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
 
 			currencySelect.addEventListener( 'change', function () {
 				activeCurrency = currencySelect.value || 'LKR';
 				if ( currencyHidden ) {
 					currencyHidden.value = activeCurrency;
 				}
+				
+				// Toggle CSS class on the form wrapper for styling
+				form.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
 
 				// Swap all preset button values and labels.
 				Array.prototype.forEach.call( presets, function ( btn ) {
