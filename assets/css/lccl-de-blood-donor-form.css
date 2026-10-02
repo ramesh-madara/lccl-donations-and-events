@@ -49,17 +49,12 @@
 }
 
 .lccl-bdf__form.is-currency-usd {
-	--lccl-bdf-gold-dark: #10427c;
-	--lccl-bdf-gold-light: #165cab;
-	--lccl-bdf-gold-hover: #1b6ecf;
-	--lccl-bdf-primary: #165cab;
-	--lccl-bdf-primary-soft: #eaf2fa;
-	--lccl-bdf-border-focus: #165cab;
-}
-
-.lccl-bdf__form.is-currency-usd .lccl-df__preset,
-.lccl-bdf__form.is-currency-usd button.lccl-df__preset {
-	color: #ffffff !important;
+	--lccl-bdf-gold-dark: #07386d;
+	--lccl-bdf-gold-light: #0a51a1;
+	--lccl-bdf-gold-hover: #116de0;
+	--lccl-bdf-primary: #0a51a1;
+	--lccl-bdf-primary-soft: #e6f0fa;
+	--lccl-bdf-border-focus: #0a51a1;
 }
 
 .lccl-bdf *,
@@ -2359,4 +2354,11 @@ a.lccl-terms-link:focus {
     padding: 60px 20px;
     max-width: 1200px;
     margin: 0 auto;
+}
+
+/* USD Text Color Overrides */
+.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__causes,
+.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__cause,
+.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__total-label {
+	color: #ffffff !important;
 }
