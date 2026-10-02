@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LCCL Donations and Events
  * Description:       Donation and event management for the Lions Club of Colombo Leads.
- * Version:           0.9.49
+ * Version:           0.9.50
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Ramesh Madara
@@ -15,7 +15,7 @@
 // ramesh 4.4
 defined( 'ABSPATH' ) || exit;
 
-define( 'LCCL_DE_VERSION', '0.9.49' );
+define( 'LCCL_DE_VERSION', '0.9.50' );
 define( 'LCCL_DE_FILE', __FILE__ );
 define( 'LCCL_DE_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LCCL_DE_URL', plugin_dir_url( __FILE__ ) );
@@ -45,6 +45,7 @@ require_once LCCL_DE_PATH . 'includes/class-lccl-de-file-viewer.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-notify.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-dashboard.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-payment-dashboard.php';
+require_once LCCL_DE_PATH . 'includes/class-lccl-de-testimonials.php';
 
 register_activation_hook( __FILE__, array( 'LCCL_DE_Schema', 'install' ) );
 register_activation_hook( __FILE__, array( 'LCCL_DE_Roles', 'activate' ) );
@@ -71,3 +72,4 @@ add_action( 'init', array( 'LCCL_DE_Spectacles_Dashboard', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_File_Viewer', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Dashboard', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Payment_Dashboard', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Testimonials', 'init' ) );

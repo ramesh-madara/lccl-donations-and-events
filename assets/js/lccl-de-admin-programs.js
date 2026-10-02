@@ -18,7 +18,7 @@
 	}
 
 	function knownTab( tab ) {
-		return 'users' === tab || 'sms' === tab || 'gateway' === tab || 'membership-fees' === tab || 'projects' === tab ? tab : 'programs';
+		return 'users' === tab || 'sms' === tab || 'gateway' === tab || 'membership-fees' === tab || 'projects' === tab || 'testimonials' === tab ? tab : 'programs';
 	}
 
 	function knownProgram( program ) {

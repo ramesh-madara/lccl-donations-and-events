@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 12;
+	const VERSION = 13;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -55,6 +55,20 @@ class LCCL_DE_Schema {
 		global $wpdb;
 
 		$wanted   = $wpdb->prefix . 'lccl_de_project_joins';
+		$existing = self::existing_table_name( $wanted );
+
+		return $existing ? $existing : $wanted;
+	}
+
+	/**
+	 * Testimonials table, including the WP prefix.
+	 *
+	 * @return string
+	 */
+	public static function testimonials_table() {
+		global $wpdb;
+
+		$wanted   = $wpdb->prefix . 'lccl_de_testimonials';
 		$existing = self::existing_table_name( $wanted );
 
 		return $existing ? $existing : $wanted;
@@ -394,6 +408,29 @@ class LCCL_DE_Schema {
 		) {$charset};";
 
 		dbDelta( $sponsorships_sql );
+
+		$testimonials = self::testimonials_table();
+		$testimonials_sql = "CREATE TABLE {$testimonials} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			name varchar(150) NOT NULL,
+			role varchar(150) DEFAULT NULL,
+			quote text NOT NULL,
+			photo_url varchar(500) DEFAULT NULL,
+			photo_id bigint(20) unsigned DEFAULT NULL,
+			date varchar(100) DEFAULT NULL,
+			is_active tinyint(1) NOT NULL DEFAULT 0,
+			sort_order int(11) NOT NULL DEFAULT 0,
+			created_at datetime NOT NULL,
+			updated_at datetime DEFAULT NULL,
+			updated_by bigint(20) unsigned DEFAULT NULL,
+			PRIMARY KEY  (id),
+			KEY is_active (is_active),
+			KEY sort_order (sort_order),
+			KEY created_at (created_at)
+		) {$charset};";
+
+		dbDelta( $testimonials_sql );
+
 		self::ensure_currency_columns();
 		self::$table_names = array();
 		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();

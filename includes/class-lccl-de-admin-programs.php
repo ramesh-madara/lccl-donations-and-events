@@ -68,6 +68,11 @@ class LCCL_DE_Admin_Programs {
 	const TAB_PROJECTS = 'projects';
 
 	/**
+	 * Hub Testimonials tab.
+	 */
+	const TAB_TESTIMONIALS = 'testimonials';
+
+	/**
 	 * Hook menu and assets.
 	 */
 	public static function init() {
@@ -178,6 +183,24 @@ class LCCL_DE_Admin_Programs {
 			LCCL_DE_VERSION
 		);
 
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
+		if ( self::TAB_TESTIMONIALS === $tab ) {
+			wp_enqueue_media();
+			wp_enqueue_style(
+				'lccl-de-admin-testimonials',
+				LCCL_DE_URL . 'assets/css/lccl-de-admin-testimonials.css',
+				array(),
+				LCCL_DE_VERSION
+			);
+			wp_enqueue_script(
+				'lccl-de-admin-testimonials',
+				LCCL_DE_URL . 'assets/js/lccl-de-admin-testimonials.js',
+				array( 'jquery', 'lccl-de-admin-programs' ),
+				LCCL_DE_VERSION,
+				true
+			);
+		}
+
 		wp_enqueue_script(
 			'lccl-de-admin-notify',
 			LCCL_DE_URL . 'assets/js/lccl-de-admin-notify.js',
@@ -198,9 +221,17 @@ class LCCL_DE_Admin_Programs {
 			'lccl-de-admin-programs',
 			'lcclDePrograms',
 			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'action'  => 'lccl_de_program_tab',
-				'nonce'   => wp_create_nonce( 'lccl_de_program_tab' ),
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'action'        => 'lccl_de_program_tab',
+				'nonce'         => wp_create_nonce( 'lccl_de_program_tab' ),
+				'nonce_save'    => wp_create_nonce( 'lccl_de_testimonial_save' ),
+				'nonce_delete'  => wp_create_nonce( 'lccl_de_testimonial_delete' ),
+				'nonce_toggle'  => wp_create_nonce( 'lccl_de_testimonial_toggle' ),
+				'nonce_reorder' => wp_create_nonce( 'lccl_de_testimonial_reorder' ),
+				'i18n'          => array(
+					'selectPhoto' => __( 'Select Photo', 'lccl-de' ),
+					'usePhoto'    => __( 'Use this Photo', 'lccl-de' ),
+				),
 			)
 		);
 	}
@@ -243,6 +274,8 @@ class LCCL_DE_Admin_Programs {
 			extract( self::membership_fees_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_PROJECTS === $tab ) {
 			extract( self::projects_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		} elseif ( self::TAB_TESTIMONIALS === $tab ) {
+			extract( self::testimonials_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', true, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			$tab = self::TAB_PROGRAMS;
@@ -282,6 +315,9 @@ class LCCL_DE_Admin_Programs {
 		} elseif ( self::TAB_PROJECTS === $tab ) {
 			extract( self::projects_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-projects.php';
+		} elseif ( self::TAB_TESTIMONIALS === $tab ) {
+			extract( self::testimonials_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			include LCCL_DE_PATH . 'templates/admin-testimonials.php';
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', false, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-program-workspace.php';
@@ -338,6 +374,9 @@ class LCCL_DE_Admin_Programs {
 		}
 		if ( self::TAB_PROJECTS === $tab ) {
 			return self::TAB_PROJECTS;
+		}
+		if ( self::TAB_TESTIMONIALS === $tab ) {
+			return self::TAB_TESTIMONIALS;
 		}
 
 		return self::TAB_PROGRAMS;
@@ -909,6 +948,47 @@ class LCCL_DE_Admin_Programs {
 			)
 		);
 		exit;
+	}
+
+	// ------------------------------------------------------------------
+	// Testimonials tab helpers
+	// ------------------------------------------------------------------
+
+	/**
+	 * Variables the testimonials template expects.
+	 *
+	 * @param bool $from_get Read message/error from $_GET.
+	 * @return array
+	 */
+	private static function testimonials_vars( $from_get ) {
+		$message = '';
+		$error   = '';
+
+		if ( $from_get ) {
+			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error   = isset( $_GET['error'] ) ? sanitize_text_field( rawurldecode( wp_unslash( $_GET['error'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+
+		$all = LCCL_DE_Testimonials::get_all();
+		$active   = array();
+		$inactive = array();
+
+		foreach ( $all as $t ) {
+			if ( 1 === (int) $t['is_active'] ) {
+				$active[] = $t;
+			} else {
+				$inactive[] = $t;
+			}
+		}
+
+		return array(
+			'tab'      => self::TAB_TESTIMONIALS,
+			'program'  => '',
+			'message'  => $message,
+			'error'    => $error,
+			'active'   => $active,
+			'inactive' => $inactive,
+		);
 	}
 }
 

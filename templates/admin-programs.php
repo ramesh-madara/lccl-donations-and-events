@@ -96,6 +96,17 @@ if ( LCCL_DE_Admin_Programs::TAB_PROGRAMS !== $tab ) {
 		>
 			<?php esc_html_e( 'Projects', 'lccl-de' ); ?>
 		</a>
+		<a
+			class="lccl-prog__tab<?php echo LCCL_DE_Admin_Programs::TAB_TESTIMONIALS === $tab ? ' is-current' : ''; ?>"
+			id="lccl-prog-tab-testimonials"
+			href="<?php echo esc_url( add_query_arg( array( 'page' => LCCL_DE_Admin_Programs::PAGE, 'tab' => LCCL_DE_Admin_Programs::TAB_TESTIMONIALS ), admin_url( 'admin.php' ) ) ); ?>"
+			role="tab"
+			data-tab="testimonials"
+			aria-selected="<?php echo LCCL_DE_Admin_Programs::TAB_TESTIMONIALS === $tab ? 'true' : 'false'; ?>"
+			aria-controls="lccl-prog-tab-panel"
+		>
+			<?php esc_html_e( 'Testimonials', 'lccl-de' ); ?>
+		</a>
 	</nav>
 
 	<div class="lccl-prog__stage">
@@ -120,6 +131,8 @@ if ( LCCL_DE_Admin_Programs::TAB_PROGRAMS !== $tab ) {
 				<?php include LCCL_DE_PATH . 'templates/admin-membership-fees.php'; ?>
 			<?php elseif ( LCCL_DE_Admin_Programs::TAB_PROJECTS === $tab ) : ?>
 				<?php include LCCL_DE_PATH . 'templates/admin-projects.php'; ?>
+			<?php elseif ( LCCL_DE_Admin_Programs::TAB_TESTIMONIALS === $tab ) : ?>
+				<?php include LCCL_DE_PATH . 'templates/admin-testimonials.php'; ?>
 			<?php elseif ( '' !== $program ) : ?>
 				<?php include LCCL_DE_PATH . 'templates/admin-program-workspace.php'; ?>
 			<?php else : ?>
