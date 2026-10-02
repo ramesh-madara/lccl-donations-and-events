@@ -99,8 +99,10 @@
 }
 
 .lccl-t-avatar {
-	width: 50px;
-	height: 50px;
+	width: 55px !important;
+	height: 55px !important;
+	min-width: 55px;
+	min-height: 55px;
 	border-radius: 50%;
 	object-fit: cover;
 	flex-shrink: 0;
@@ -109,6 +111,7 @@
 	align-items: center;
 	justify-content: center;
 	color: #999;
+	box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .lccl-t-author-info {
