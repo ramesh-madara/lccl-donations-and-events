@@ -93,7 +93,11 @@ if ( $can_view && $user instanceof WP_User ) {
 		<header class="lccl-bda__header">
 			<div>
 				<h2 class="lccl-bda__title lccl-bda__title--inline">
-					<?php esc_html_e( 'Donor registrations', 'lccl-de' ); ?>
+					<?php
+					global $wpdb;
+					$total_blood = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}lccl_de_blood_donors" );
+					echo esc_html( sprintf( __( 'Donor registrations (%d registrations)', 'lccl-de' ), $total_blood ) );
+					?>
 					<span class="lccl-bda__loader" data-dash-loader hidden aria-hidden="true"></span>
 				</h2>
 				<?php include LCCL_DE_PATH . 'templates/review-dash-nav.php'; ?>

@@ -94,7 +94,11 @@ if ( $can_view && $user instanceof WP_User ) {
 		<header class="lccl-bda__header">
 			<div>
 				<h2 class="lccl-bda__title lccl-bda__title--inline">
-					<?php esc_html_e( 'Project registrations', 'lccl-de' ); ?>
+					<?php
+					global $wpdb;
+					$total_projects = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}lccl_de_project_joins" );
+					echo esc_html( sprintf( __( 'Project registrations (%d registrations)', 'lccl-de' ), $total_projects ) );
+					?>
 					<span class="lccl-bda__loader" data-dash-loader hidden aria-hidden="true"></span>
 				</h2>
 				<?php include LCCL_DE_PATH . 'templates/review-dash-nav.php'; ?>
