@@ -46,6 +46,7 @@ require_once LCCL_DE_PATH . 'includes/class-lccl-de-notify.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-dashboard.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-payment-dashboard.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-testimonials.php';
+require_once LCCL_DE_PATH . 'includes/class-lccl-de-testimonials-shortcode.php';
 
 register_activation_hook( __FILE__, array( 'LCCL_DE_Schema', 'install' ) );
 register_activation_hook( __FILE__, array( 'LCCL_DE_Roles', 'activate' ) );
@@ -57,6 +58,7 @@ add_action( 'init', array( 'LCCL_DE_Admin_Users', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Admin_Programs', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Settings', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Shortcodes', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Testimonials_Shortcode', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Blood_Donor_Form', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Blood_Donor_Submissions', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Join_Projects_Form', 'init' ) );

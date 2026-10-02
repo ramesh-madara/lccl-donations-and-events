@@ -1,0 +1,47 @@
+<?php
+/**
+ * Testimonials Carousel Template.
+ *
+ * @package LCCL_Donations_And_Events
+ */
+
+defined( 'ABSPATH' ) || exit;
+?>
+
+<div class="lccl-testimonials-wrapper">
+	<div class="lccl-testimonials-carousel" data-lccl-testimonials>
+		<div class="lccl-testimonials-track">
+			<?php foreach ( $active_testimonials as $t ) : ?>
+				<div class="lccl-testimonial-slide">
+					<div class="lccl-testimonial-card-inner">
+						<div class="lccl-t-content">
+							<span class="lccl-t-quote-icon">“</span>
+							<p><?php echo nl2br( esc_html( $t['quote'] ) ); ?></p>
+						</div>
+						<div class="lccl-t-author">
+							<?php if ( ! empty( $t['photo_url'] ) ) : ?>
+								<img src="<?php echo esc_url( $t['photo_url'] ); ?>" alt="<?php echo esc_attr( $t['name'] ); ?>" class="lccl-t-avatar">
+							<?php else : ?>
+								<div class="lccl-t-avatar lccl-t-avatar-placeholder">
+									<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+										<circle cx="12" cy="7" r="4"></circle>
+									</svg>
+								</div>
+							<?php endif; ?>
+							<div class="lccl-t-author-info">
+								<h4 class="lccl-t-name"><?php echo esc_html( $t['name'] ); ?></h4>
+								<?php if ( ! empty( $t['role'] ) ) : ?>
+									<span class="lccl-t-role"><?php echo esc_html( $t['role'] ); ?></span>
+								<?php endif; ?>
+								<?php if ( ! empty( $t['date'] ) ) : ?>
+									<span class="lccl-t-date"><?php echo esc_html( $t['date'] ); ?></span>
+								<?php endif; ?>
+							</div>
+						</div>
+					</div>
+				</div>
+			<?php endforeach; ?>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,138 @@
+/*
+ * Testimonials Carousel Styles
+ */
+
+.lccl-testimonials-wrapper {
+	width: 100%;
+	overflow: hidden;
+	padding: 40px 0;
+	background: #fdfbf7;
+}
+
+.lccl-testimonials-carousel {
+	width: 100%;
+	max-width: 1200px;
+	margin: 0 auto;
+	position: relative;
+}
+
+.lccl-testimonials-track {
+	display: flex;
+	align-items: stretch;
+	/* Will be transitioned via JS */
+	will-change: transform;
+}
+
+.lccl-testimonial-slide {
+	flex: 0 0 100%;
+	min-width: 100%;
+	padding: 0 15px;
+	box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+	.lccl-testimonial-slide {
+		flex: 0 0 50%;
+		min-width: 50%;
+	}
+}
+
+@media (min-width: 1024px) {
+	.lccl-testimonial-slide {
+		flex: 0 0 33.333333%;
+		min-width: 33.333333%;
+	}
+}
+
+.lccl-testimonial-card-inner {
+	background: #ffffff;
+	border: 1px solid #f0d98a;
+	border-top: 6px solid #f7c016; /* Gold brand color */
+	border-radius: 8px;
+	padding: 30px 24px;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+	transition: box-shadow 0.3s ease, transform 0.3s ease;
+	box-sizing: border-box;
+}
+
+.lccl-testimonial-card-inner:hover {
+	box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+	transform: translateY(-4px);
+}
+
+.lccl-t-content {
+	flex-grow: 1;
+	position: relative;
+	margin-bottom: 24px;
+}
+
+.lccl-t-quote-icon {
+	position: absolute;
+	top: -15px;
+	left: -10px;
+	font-size: 60px;
+	line-height: 1;
+	color: rgba(247, 192, 22, 0.2); /* Faded Gold */
+	font-family: Georgia, serif;
+	z-index: 0;
+}
+
+.lccl-t-content p {
+	position: relative;
+	z-index: 1;
+	margin: 0;
+	font-size: 16px;
+	line-height: 1.6;
+	color: #4a4a4a;
+	font-style: italic;
+}
+
+.lccl-t-author {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	border-top: 1px solid #f0f0f0;
+	padding-top: 20px;
+}
+
+.lccl-t-avatar {
+	width: 50px;
+	height: 50px;
+	border-radius: 50%;
+	object-fit: cover;
+	flex-shrink: 0;
+	background: #f5f5f5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #999;
+}
+
+.lccl-t-author-info {
+	display: flex;
+	flex-direction: column;
+}
+
+.lccl-t-name {
+	margin: 0 0 2px;
+	font-size: 16px;
+	font-weight: 700;
+	color: #222222;
+}
+
+.lccl-t-role {
+	font-size: 13px;
+	color: #f7c016; /* Gold */
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.lccl-t-date {
+	font-size: 12px;
+	color: #888888;
+	margin-top: 2px;
+}
