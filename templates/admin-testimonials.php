@@ -23,6 +23,24 @@ wp_enqueue_media();
 			<span class="dashicons dashicons-plus"></span>
 			<?php esc_html_e( 'Add Testimonial', 'lccl-de' ); ?>
 		</button>
+		
+		<div class="lccl-de-design-selector" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+			<label for="lccl-de-testimonial-design" style="font-weight: 600;"><?php esc_html_e( 'Card Design:', 'lccl-de' ); ?></label>
+			<select id="lccl-de-testimonial-design" name="lccl_de_testimonial_design">
+				<?php $current_design = get_option('lccl_de_testimonial_design', 'design-1'); ?>
+				<option value="design-1" <?php selected($current_design, 'design-1'); ?>><?php esc_html_e('Design 1 (Gold Header)', 'lccl-de'); ?></option>
+				<option value="design-2" <?php selected($current_design, 'design-2'); ?>><?php esc_html_e('Design 2 (Minimal Left)', 'lccl-de'); ?></option>
+			</select>
+			<button type="button" class="button" id="lccl-de-save-design" data-nonce="<?php echo esc_attr( wp_create_nonce('lccl_de_testimonial_design') ); ?>"><?php esc_html_e( 'Save Design', 'lccl-de' ); ?></button>
+			<span class="spinner" id="lccl-de-design-spinner" style="float:none; margin:0;"></span>
+		</div>
+	</div>
+
+	<div class="lccl-de-design-preview-container" style="background: #fdfbf7; padding: 20px; margin-bottom: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
+		<h3 style="margin-top:0;"><?php esc_html_e('Design Preview', 'lccl-de'); ?></h3>
+		<div id="lccl-de-design-preview" style="width: 100%; max-width: 400px; margin: 0 auto;">
+			<!-- Preview is populated by JS -->
+		</div>
 	</div>
 
 	<div class="lccl-de-testimonials-grid">

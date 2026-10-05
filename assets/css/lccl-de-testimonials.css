@@ -224,3 +224,83 @@
 	line-height: 1.6;
 	color: #333;
 }
+
+/* ==============================================================
+   Design 2: Minimal Left Aligned
+   ============================================================== */
+
+.lccl-design-2 .lccl-testimonial-card-inner {
+	display: block;
+	padding: 30px 24px;
+	border: 1px solid #f0d98a;
+	border-top: 6px solid #f7c016;
+	border-radius: 8px;
+	text-align: left;
+	position: relative;
+	background: #fff;
+}
+
+.lccl-design-2 .lccl-t-quote-icon {
+	font-size: 60px;
+	color: rgba(247,192,22,0.2);
+	font-family: Georgia, serif;
+	line-height: 1;
+	position: absolute;
+	top: 5px;
+	left: 14px;
+}
+
+.lccl-design-2 .lccl-t-content {
+	padding: 0;
+	margin: 0 0 24px 0;
+	text-align: left;
+	display: block;
+	position: relative;
+	z-index: 1;
+}
+
+.lccl-design-2 .lccl-t-quote-text {
+	font-style: italic;
+	color: #4a4a4a;
+	line-height: 1.6;
+	margin: 0;
+	font-size: 16px;
+}
+
+.lccl-design-2 .lccl-t-author-block-bottom {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	border-top: 1px solid #f0f0f0;
+	padding-top: 20px;
+}
+
+.lccl-design-2 .lccl-t-avatar-wrapper {
+	width: 55px;
+	height: 55px;
+	margin: 0;
+	background: none;
+	padding: 0;
+	flex-shrink: 0;
+	position: static;
+}
+
+.lccl-design-2 .lccl-t-author-info {
+	margin: 0;
+	text-align: left;
+	padding: 0;
+}
+
+.lccl-design-2 .lccl-t-name {
+	font-size: 16px;
+	margin: 0 0 2px;
+	font-weight: bold;
+}
+
+.lccl-design-2 .lccl-t-role-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #f7c016;
+	text-transform: uppercase;
+	margin: 0;
+}

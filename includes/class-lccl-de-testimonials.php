@@ -20,6 +20,22 @@ class LCCL_DE_Testimonials {
 		add_action( 'wp_ajax_lccl_de_testimonial_delete', array( __CLASS__, 'ajax_delete' ) );
 		add_action( 'wp_ajax_lccl_de_testimonial_toggle', array( __CLASS__, 'ajax_toggle' ) );
 		add_action( 'wp_ajax_lccl_de_testimonial_reorder', array( __CLASS__, 'ajax_reorder' ) );
+		add_action( 'wp_ajax_lccl_de_testimonial_design_save', array( __CLASS__, 'ajax_design_save' ) );
+	}
+
+	/**
+	 * Save the active design.
+	 */
+	public static function ajax_design_save() {
+		check_ajax_referer( 'lccl_de_testimonial_design', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array( 'message' => __( 'Permission denied.', 'lccl-de' ) ) );
+		}
+
+		$design = isset( $_POST['design'] ) ? sanitize_text_field( wp_unslash( $_POST['design'] ) ) : 'design-1';
+		update_option( 'lccl_de_testimonial_design', $design );
+
+		wp_send_json_success( array( 'message' => __( 'Design updated.', 'lccl-de' ) ) );
 	}
 
 	/**
