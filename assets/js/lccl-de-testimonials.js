@@ -70,7 +70,11 @@
 				}, transitionSpeed);
 			}
 
+			let isModalOpen = false;
+
 			function startCarousel() {
+				if (isModalOpen) return;
+				clearInterval(interval);
 				interval = setInterval(nextSlide, delay);
 			}
 
@@ -86,8 +90,14 @@
 			$carousel.on('mouseleave', startCarousel);
 			
 			// Custom events for modal
-			$carousel.on('pauseCarousel', stopCarousel);
-			$carousel.on('resumeCarousel', startCarousel);
+			$carousel.on('pauseCarousel', function() {
+				isModalOpen = true;
+				stopCarousel();
+			});
+			$carousel.on('resumeCarousel', function() {
+				isModalOpen = false;
+				startCarousel();
+			});
 			
 			// Handle window resize to prevent visual glitches
 			$(window).on('resize', function() {
