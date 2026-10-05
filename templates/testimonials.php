@@ -6,7 +6,7 @@
  */
 
 defined( 'ABSPATH' ) || exit;
-<?php
+
 $design = get_option('lccl_de_testimonial_design', 'design-1');
 ?>
 
