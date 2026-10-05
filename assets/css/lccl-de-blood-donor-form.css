@@ -913,7 +913,7 @@
 	margin: 0;
 	padding: 0;
 	list-style: none;
-	background-color: var(--lccl-bdf-heading);
+	background-color: #ffffff;
 	border: 1px solid var(--lccl-bdf-border);
 	border-top: none;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -926,7 +926,7 @@
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li {
 	padding: 10px;
-	color: #ffffff;
+	color: var(--lccl-bdf-heading);
 	font-size: 14px;
 	font-weight: 700;
 	cursor: pointer;
@@ -936,12 +936,12 @@
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li:focus,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li:hover,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li:focus {
-	background-color: var(--lccl-bdf-gold-hover);
+	background-color: #f7f7f7;
 	outline: none;
 }
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li[aria-selected="true"],
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li[aria-selected="true"] {
-	background-color: var(--lccl-bdf-gold-dark);
+	background-color: var(--lccl-bdf-primary-soft);
 	outline: none;
 }
 
