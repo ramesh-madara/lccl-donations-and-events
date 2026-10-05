@@ -19,12 +19,7 @@ wp_enqueue_media();
 	</div>
 
 	<div class="lccl-de-toolbar">
-		<button type="button" class="lccl-de-btn lccl-de-btn--primary" id="lccl-de-add-testimonial">
-			<span class="dashicons dashicons-plus"></span>
-			<?php esc_html_e( 'Add Testimonial', 'lccl-de' ); ?>
-		</button>
-		
-		<div class="lccl-de-design-selector" style="margin-left: auto; display: flex; align-items: center; gap: 10px;">
+		<div class="lccl-de-design-selector" style="display: flex; align-items: center; gap: 10px;">
 			<label for="lccl-de-testimonial-design" style="font-weight: 600;"><?php esc_html_e( 'Card Design:', 'lccl-de' ); ?></label>
 			<select id="lccl-de-testimonial-design" name="lccl_de_testimonial_design">
 				<?php $current_design = get_option('lccl_de_testimonial_design', 'design-1'); ?>
@@ -41,6 +36,13 @@ wp_enqueue_media();
 		<div id="lccl-de-design-preview" style="width: 100%; max-width: 400px; margin: 0 auto;">
 			<!-- Preview is populated by JS -->
 		</div>
+	</div>
+
+	<div style="margin-bottom: 20px;">
+		<button type="button" class="lccl-de-btn lccl-de-btn--primary" id="lccl-de-add-testimonial">
+			<span class="dashicons dashicons-plus"></span>
+			<?php esc_html_e( 'Add Testimonial', 'lccl-de' ); ?>
+		</button>
 	</div>
 
 	<div class="lccl-de-testimonials-grid">
