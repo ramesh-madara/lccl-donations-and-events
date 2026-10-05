@@ -70,5 +70,37 @@
 				});
 			});
 		});
+
+		// Truncation check for "Read more..." button
+		function checkTruncation() {
+			$('.lccl-t-quote-text').each(function() {
+				// We give a small 2px buffer for rounding errors
+				if (this.scrollHeight > this.clientHeight + 2) {
+					$(this).siblings('.lccl-t-read-more').show();
+				} else {
+					$(this).siblings('.lccl-t-read-more').hide();
+				}
+			});
+		}
+
+		// Use a slight timeout to ensure fonts and layout are fully rendered
+		setTimeout(checkTruncation, 100);
+		$(window).on('resize', checkTruncation);
+
+		// Modal logic
+		$(document).on('click', '.lccl-t-read-more', function(e) {
+			e.preventDefault();
+			const fullQuote = $(this).siblings('.lccl-t-quote-text').data('full-quote');
+			const formattedQuote = fullQuote.replace(/\n/g, '<br>');
+			$('.lccl-t-modal-content').html(formattedQuote);
+			$('.lccl-t-modal-overlay').fadeIn(200);
+		});
+
+		$(document).on('click', '.lccl-t-modal-close, .lccl-t-modal-overlay', function(e) {
+			if (e.target === this) {
+				$('.lccl-t-modal-overlay').fadeOut(200);
+			}
+		});
+
 	});
 })(jQuery);

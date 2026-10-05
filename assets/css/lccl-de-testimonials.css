@@ -46,99 +46,167 @@
 
 .lccl-testimonial-card-inner {
 	background: #ffffff;
-	border: 1px solid #f0d98a;
-	border-top: 6px solid #f7c016; /* Gold brand color */
 	border-radius: 8px;
-	padding: 30px 24px;
 	height: 100%;
 	display: flex;
 	flex-direction: column;
-	box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+	align-items: center;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 	transition: box-shadow 0.3s ease, transform 0.3s ease;
 	box-sizing: border-box;
+	overflow: hidden;
+	position: relative;
+	border: 1px solid #e0e0e0;
 }
 
 .lccl-testimonial-card-inner:hover {
-	box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+	box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 	transform: translateY(-4px);
 }
 
-.lccl-t-content {
-	flex-grow: 1;
-	position: relative;
-	margin-bottom: 24px;
+.lccl-t-header-block {
+	width: 100%;
+	height: 80px;
+	background-color: #f7c016; /* Gold accent */
+	flex-shrink: 0;
 }
 
-.lccl-t-quote-icon {
-	position: absolute;
-	top: -15px;
-	left: -10px;
-	font-size: 60px;
-	line-height: 1;
-	color: rgba(247, 192, 22, 0.2); /* Faded Gold */
-	font-family: Georgia, serif;
-	z-index: 0;
-}
-
-.lccl-t-content p {
-	position: relative;
-	z-index: 1;
-	margin: 0;
-	font-size: 16px;
-	line-height: 1.6;
-	color: #4a4a4a;
-	font-style: italic;
-}
-
-.lccl-t-author {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-	border-top: 1px solid #f0f0f0;
-	padding-top: 20px;
+.lccl-t-avatar-wrapper {
+	width: 80px;
+	height: 80px;
+	margin-top: -40px; /* Overlap the header block */
+	border-radius: 50%;
+	background: #ffffff;
+	padding: 4px; /* White border effect */
+	z-index: 2;
 }
 
 .lccl-t-avatar {
-	width: 55px !important;
-	height: 55px !important;
-	min-width: 55px !important;
-	min-height: 55px !important;
-	max-width: 55px !important;
-	max-height: 55px !important;
-	aspect-ratio: 1 / 1 !important;
-	border-radius: 50% !important;
-	object-fit: cover !important;
-	flex: 0 0 55px !important;
-	background: #f5f5f5;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	object-fit: cover;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	background: #f5f5f5;
 	color: #999;
-	box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .lccl-t-author-info {
-	display: flex;
-	flex-direction: column;
+	text-align: center;
+	margin-top: 15px;
+	padding: 0 20px;
 }
 
 .lccl-t-name {
-	margin: 0 0 2px;
-	font-size: 16px;
+	margin: 0;
+	font-size: 18px;
 	font-weight: 700;
 	color: #222222;
 }
 
-.lccl-t-role {
-	font-size: 13px;
-	color: #f7c016; /* Gold */
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-}
-
 .lccl-t-date {
+	display: block;
 	font-size: 12px;
 	color: #888888;
 	margin-top: 2px;
+}
+
+.lccl-t-content {
+	flex-grow: 1;
+	text-align: center;
+	padding: 20px 30px 30px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.lccl-t-role-title {
+	margin: 0 0 15px;
+	font-size: 18px;
+	font-weight: 600;
+	color: #333;
+}
+
+.lccl-t-quote-container {
+	position: relative;
+	width: 100%;
+}
+
+.lccl-t-quote-text {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.6;
+	color: #555555;
+	/* Truncate to 4 lines */
+	display: -webkit-box;
+	-webkit-line-clamp: 4;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.lccl-t-read-more {
+	background: none;
+	border: none;
+	padding: 0;
+	margin-top: 5px;
+	color: #f7c016; /* Gold link */
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+.lccl-t-read-more:hover {
+	color: #c9a012;
+}
+
+/* Modal Styles */
+.lccl-t-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.6);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	box-sizing: border-box;
+}
+
+.lccl-t-modal {
+	background: #ffffff;
+	border-radius: 8px;
+	max-width: 600px;
+	width: 100%;
+	padding: 40px;
+	position: relative;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.lccl-t-modal-close {
+	position: absolute;
+	top: 10px;
+	right: 15px;
+	background: none;
+	border: none;
+	font-size: 28px;
+	line-height: 1;
+	color: #666;
+	cursor: pointer;
+}
+
+.lccl-t-modal-close:hover {
+	color: #222;
+}
+
+.lccl-t-modal-content {
+	font-size: 16px;
+	line-height: 1.6;
+	color: #333;
 }

@@ -14,11 +14,9 @@ defined( 'ABSPATH' ) || exit;
 			<?php foreach ( $active_testimonials as $t ) : ?>
 				<div class="lccl-testimonial-slide">
 					<div class="lccl-testimonial-card-inner">
-						<div class="lccl-t-content">
-							<span class="lccl-t-quote-icon">“</span>
-							<p><?php echo nl2br( esc_html( $t['quote'] ) ); ?></p>
-						</div>
-						<div class="lccl-t-author">
+						<div class="lccl-t-header-block"></div>
+						
+						<div class="lccl-t-avatar-wrapper">
 							<?php if ( ! empty( $t['photo_url'] ) ) : ?>
 								<img src="<?php echo esc_url( $t['photo_url'] ); ?>" alt="<?php echo esc_attr( $t['name'] ); ?>" class="lccl-t-avatar">
 							<?php else : ?>
@@ -29,19 +27,38 @@ defined( 'ABSPATH' ) || exit;
 									</svg>
 								</div>
 							<?php endif; ?>
-							<div class="lccl-t-author-info">
-								<h4 class="lccl-t-name"><?php echo esc_html( $t['name'] ); ?></h4>
-								<?php if ( ! empty( $t['role'] ) ) : ?>
-									<span class="lccl-t-role"><?php echo esc_html( $t['role'] ); ?></span>
-								<?php endif; ?>
-								<?php if ( ! empty( $t['date'] ) ) : ?>
-									<span class="lccl-t-date"><?php echo esc_html( $t['date'] ); ?></span>
-								<?php endif; ?>
+						</div>
+
+						<div class="lccl-t-author-info">
+							<h4 class="lccl-t-name"><?php echo esc_html( $t['name'] ); ?></h4>
+							<?php if ( ! empty( $t['date'] ) ) : ?>
+								<span class="lccl-t-date"><?php echo esc_html( $t['date'] ); ?></span>
+							<?php endif; ?>
+						</div>
+
+						<div class="lccl-t-content">
+							<?php if ( ! empty( $t['role'] ) ) : ?>
+								<h5 class="lccl-t-role-title"><?php echo esc_html( $t['role'] ); ?></h5>
+							<?php endif; ?>
+							
+							<div class="lccl-t-quote-container">
+								<p class="lccl-t-quote-text" data-full-quote="<?php echo esc_attr( $t['quote'] ); ?>">
+									<?php echo nl2br( esc_html( $t['quote'] ) ); ?>
+								</p>
+								<button type="button" class="lccl-t-read-more" style="display: none;"><?php esc_html_e( 'Read more', 'lccl-de' ); ?></button>
 							</div>
 						</div>
 					</div>
 				</div>
 			<?php endforeach; ?>
 		</div>
+	</div>
+</div>
+
+<!-- Testimonial Modal -->
+<div class="lccl-t-modal-overlay" style="display: none;">
+	<div class="lccl-t-modal">
+		<button type="button" class="lccl-t-modal-close">&times;</button>
+		<div class="lccl-t-modal-content"></div>
 	</div>
 </div>
