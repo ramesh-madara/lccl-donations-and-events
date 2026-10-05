@@ -23,10 +23,30 @@
 			const delay = 3000;
 			const transitionSpeed = 600;
 
+			function updateCenterClass(isTransitioning = false) {
+				$slides.removeClass('is-center');
+				// During transition, the 'next' slides will become the visible ones.
+				const offset = isTransitioning ? 1 : 0;
+				if ($(window).width() >= 1024) {
+					$slides.eq(1 + offset).addClass('is-center');
+				} else if ($(window).width() >= 768) {
+					$slides.eq(offset).addClass('is-center');
+					$slides.eq(1 + offset).addClass('is-center');
+				} else {
+					$slides.eq(offset).addClass('is-center');
+				}
+			}
+
+			// Initial set
+			updateCenterClass();
+
 			function nextSlide() {
 				// Calculate width dynamically in case of resize
 				const slideWidth = $slides.first().outerWidth();
 				
+				// Pre-apply center class for the incoming center slide to trigger CSS transition
+				updateCenterClass(true);
+
 				$track.css({
 					'transition': 'transform ' + transitionSpeed + 'ms ease-in-out',
 					'transform': 'translateX(-' + slideWidth + 'px)'
@@ -44,6 +64,9 @@
 					
 					// Re-cache slides
 					$slides = $track.find('.lccl-testimonial-slide');
+					
+					// Re-apply center class immediately without transition offset
+					updateCenterClass();
 				}, transitionSpeed);
 			}
 
@@ -68,6 +91,7 @@
 					'transition': 'none',
 					'transform': 'translateX(0)'
 				});
+				updateCenterClass();
 			});
 		});
 
