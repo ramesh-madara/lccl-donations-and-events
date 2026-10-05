@@ -31,17 +31,16 @@ defined( 'ABSPATH' ) || exit;
 
 						<div class="lccl-t-author-info">
 							<h4 class="lccl-t-name"><?php echo esc_html( $t['name'] ); ?></h4>
-							<?php if ( ! empty( $t['date'] ) ) : ?>
-								<span class="lccl-t-date"><?php echo esc_html( $t['date'] ); ?></span>
-							<?php endif; ?>
-						</div>
-
-						<div class="lccl-t-content">
 							<?php if ( ! empty( $t['role'] ) ) : ?>
 								<h5 class="lccl-t-role-title"><?php echo esc_html( $t['role'] ); ?></h5>
 							<?php endif; ?>
-							
-							<div class="lccl-t-quote-container">
+							<?php /* if ( ! empty( $t['date'] ) ) : ?>
+								<span class="lccl-t-date"><?php echo esc_html( $t['date'] ); ?></span>
+							<?php endif; */ ?>
+						</div>
+
+						<div class="lccl-t-content">
+							<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>">
 								<p class="lccl-t-quote-text" data-full-quote="<?php echo esc_attr( $t['quote'] ); ?>">
 									<?php echo nl2br( esc_html( $t['quote'] ) ); ?>
 								</p>

@@ -114,9 +114,19 @@
 		// Modal logic
 		$(document).on('click', '.lccl-t-read-more', function(e) {
 			e.preventDefault();
+			const $container = $(this).closest('.lccl-t-quote-container');
+			const name = $container.data('author-name') || '';
+			const role = $container.data('author-role') || '';
 			const fullQuote = $(this).siblings('.lccl-t-quote-text').data('full-quote');
 			const formattedQuote = fullQuote.replace(/\n/g, '<br>');
-			$('.lccl-t-modal-content').html(formattedQuote);
+			
+			let modalHtml = '<h4 class="lccl-t-name" style="margin-top:0;">' + name + '</h4>';
+			if (role) {
+				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:13px; font-weight:normal; margin-bottom:20px; color:#666;">' + role + '</h5>';
+			}
+			modalHtml += '<div class="lccl-t-modal-quote" style="margin-top: 15px;">' + formattedQuote + '</div>';
+			
+			$('.lccl-t-modal-content').html(modalHtml);
 			$('.lccl-t-modal-overlay').fadeIn(200);
 		});
 
