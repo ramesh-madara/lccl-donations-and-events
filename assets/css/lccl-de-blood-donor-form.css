@@ -28,6 +28,7 @@
 	--lccl-bdf-gold-hover: #f9cd47;
 	--lccl-bdf-required: #d0021b;
 	--lccl-bdf-primary: #f7c016;
+	--lccl-bdf-primary-medium: #ffeb99;
 	--lccl-bdf-primary-soft: #fff6d4;
 	--lccl-bdf-font: "CooperHewitt-Book", sans-serif;
 	--lccl-bdf-gap: 22px;
@@ -53,6 +54,7 @@
 	--lccl-bdf-gold-light: #0a51a1;
 	--lccl-bdf-gold-hover: #116de0;
 	--lccl-bdf-primary: #0a51a1;
+	--lccl-bdf-primary-medium: #cce0f5;
 	--lccl-bdf-primary-soft: #e6f0fa;
 	--lccl-bdf-border-focus: #0a51a1;
 }
@@ -941,7 +943,7 @@
 }
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li[aria-selected="true"],
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li[aria-selected="true"] {
-	background-color: var(--lccl-bdf-primary-soft);
+	background-color: var(--lccl-bdf-primary-medium);
 	outline: none;
 }
 
