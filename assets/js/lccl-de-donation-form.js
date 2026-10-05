@@ -481,6 +481,68 @@
 				setNotice( form, event.target.getAttribute( 'name' ) || '', '' );
 			}
 		} );
+
+		// Custom Currency Select Logic
+		var customSelect = form.querySelector( '[data-lccl-custom-select]' );
+		if ( customSelect ) {
+			var selectTrigger = customSelect.querySelector( '[data-lccl-select-trigger]' );
+			var selectValueSpan = customSelect.querySelector( '[data-lccl-select-value]' );
+			var selectOptionsWrap = customSelect.querySelector( '[data-lccl-select-options]' );
+			var selectOptions = customSelect.querySelectorAll( 'li[role="option"]' );
+
+			var toggleSelect = function() {
+				var isOpen = ! selectOptionsWrap.hidden;
+				if ( isOpen ) {
+					selectOptionsWrap.hidden = true;
+					selectTrigger.setAttribute( 'aria-expanded', 'false' );
+					customSelect.classList.remove( 'is-open' );
+				} else {
+					selectOptionsWrap.hidden = false;
+					selectTrigger.setAttribute( 'aria-expanded', 'true' );
+					customSelect.classList.add( 'is-open' );
+				}
+			};
+
+			selectTrigger.addEventListener( 'click', function( e ) {
+				e.preventDefault();
+				toggleSelect();
+			} );
+
+			document.addEventListener( 'click', function( e ) {
+				if ( ! customSelect.contains( e.target ) && ! selectOptionsWrap.hidden ) {
+					toggleSelect();
+				}
+			} );
+
+			Array.prototype.forEach.call( selectOptions, function( opt ) {
+				opt.addEventListener( 'click', function() {
+					var val = opt.getAttribute( 'data-value' );
+					selectValueSpan.textContent = val;
+					
+					// Update hidden real select
+					if ( currencySelect && currencySelect.value !== val ) {
+						currencySelect.value = val;
+						
+						var evt;
+						if ( typeof Event === 'function' ) {
+							evt = new Event( 'change', { bubbles: true } );
+						} else {
+							evt = document.createEvent( 'Event' );
+							evt.initEvent( 'change', true, true );
+						}
+						currencySelect.dispatchEvent( evt );
+					}
+					
+					// Update aria selected
+					Array.prototype.forEach.call( selectOptions, function( o ) {
+						o.removeAttribute( 'aria-selected' );
+					} );
+					opt.setAttribute( 'aria-selected', 'true' );
+					
+					toggleSelect();
+				} );
+			} );
+		}
 	}
 
 	function init() {

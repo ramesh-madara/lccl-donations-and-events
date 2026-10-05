@@ -141,14 +141,25 @@ $default_usd        = 100;
 						data-default-usd="<?php echo esc_attr( (string) $default_usd ); ?>"
 						required
 					>
-					<select
-						class="lccl-df__currency-select"
-						id="lccl-df-currency"
-						aria-label="<?php esc_attr_e( 'Currency', 'lccl-de' ); ?>"
-					>
-						<option value="LKR"<?php selected( $currency, 'LKR' ); ?>>LKR</option>
-						<option value="USD"<?php selected( $currency, 'USD' ); ?>>USD</option>
-					</select>
+					<div class="lccl-df__custom-select" data-lccl-custom-select>
+						<select
+							class="lccl-df__currency-select"
+							id="lccl-df-currency"
+							aria-label="<?php esc_attr_e( 'Currency', 'lccl-de' ); ?>"
+							tabindex="-1"
+						>
+							<option value="LKR"<?php selected( $currency, 'LKR' ); ?>>LKR</option>
+							<option value="USD"<?php selected( $currency, 'USD' ); ?>>USD</option>
+						</select>
+						<button type="button" class="lccl-df__custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" data-lccl-select-trigger>
+							<span data-lccl-select-value><?php echo esc_html( $currency ); ?></span>
+							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+						</button>
+						<ul class="lccl-df__custom-select-options" role="listbox" data-lccl-select-options hidden>
+							<li role="option" tabindex="0" data-value="LKR" <?php echo 'LKR' === $currency ? 'aria-selected="true"' : ''; ?>>LKR</li>
+							<li role="option" tabindex="0" data-value="USD" <?php echo 'USD' === $currency ? 'aria-selected="true"' : ''; ?>>USD</li>
+						</ul>
+					</div>
 					<input type="hidden" name="currency" id="lccl-df-currency-hidden" value="<?php echo esc_attr( $currency ); ?>">
 				</div>
 				<?php $notice( 'amount' ); ?>
