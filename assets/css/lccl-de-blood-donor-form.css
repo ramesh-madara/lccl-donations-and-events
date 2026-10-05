@@ -2401,3 +2401,9 @@ a.lccl-terms-link:focus {
 .lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__total-label {
 	color: #ffffff !important;
 }
+
+/* Sponsorship form USD color overrides */
+.lccl-bdf.lccl-bdf--sponsorship.is-currency-usd .lccl-df__total-label {
+	color: #ffffff !important;
+}
+

@@ -45,12 +45,13 @@
 		return parseInt( raw, 10 ) >= 1;
 	}
 
-	function formatTotal( value ) {
+	function formatTotal( value, currency ) {
 		var raw = constrainAmount( value );
 		if ( ! raw ) {
 			return '';
 		}
-		return parseInt( raw, 10 ).toLocaleString( 'en-US' ) + ' LKR';
+		var cur = currency || 'LKR';
+		return parseInt( raw, 10 ).toLocaleString( 'en-US' ) + ' ' + cur;
 	}
 
 	function constrainPhone( value ) {
@@ -219,9 +220,24 @@
 			terms.addEventListener( 'change', handleProjectStatus );
 		}
 
+		var activeCurrency = 'LKR';
+		var currencyHidden = form.querySelector( '#lccl-ps-currency-hidden' );
+		var isUsdConfigured = form.getAttribute( 'data-usd-configured' ) === '1';
+		if ( currencyHidden ) {
+			activeCurrency = currencyHidden.value || 'LKR';
+		}
+
+		function getDefault() {
+			if ( ! amount ) {
+				return '';
+			}
+			var attr = 'USD' === activeCurrency ? 'data-default-usd' : 'data-default-lkr';
+			return amount.getAttribute( attr ) || '';
+		}
+
 		function syncTotal() {
 			if ( total ) {
-				total.value = formatTotal( amount ? amount.value : '' );
+				total.value = formatTotal( amount ? amount.value : '', activeCurrency );
 			}
 			Array.prototype.forEach.call( presets, function ( btn ) {
 				var preset = btn.getAttribute( 'data-lccl-preset' );
@@ -472,6 +488,118 @@
 		} );
 
 		syncTotal();
+
+		// ----- Currency switcher -----
+		var currencySelect = form.querySelector( '#lccl-ps-currency' );
+		if ( currencySelect ) {
+			// Initialize class state on page load
+			var outerWrap = form.closest( '.lccl-bdf--sponsorship' );
+			if ( outerWrap ) {
+				outerWrap.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
+			}
+
+			currencySelect.addEventListener( 'change', function () {
+				activeCurrency = currencySelect.value || 'LKR';
+				if ( currencyHidden ) {
+					currencyHidden.value = activeCurrency;
+				}
+
+				// Toggle CSS class for color shifts
+				if ( outerWrap ) {
+					outerWrap.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
+				}
+
+				// Swap all preset button values and labels.
+				Array.prototype.forEach.call( presets, function ( btn ) {
+					var presetKey = 'USD' === activeCurrency ? 'data-lccl-preset-usd' : 'data-lccl-preset-lkr';
+					var newVal = btn.getAttribute( presetKey );
+					if ( newVal !== null ) {
+						btn.setAttribute( 'data-lccl-preset', newVal );
+						btn.textContent = parseInt( newVal, 10 ).toLocaleString( 'en-US' ) + ' ' + activeCurrency;
+					}
+				} );
+
+				// Set the default amount for the newly selected currency.
+				var def = getDefault();
+				if ( amount ) {
+					amount.value = def ? constrainAmount( def ) : '';
+				}
+				syncTotal();
+
+				// Disable submit if USD is selected but not configured.
+				if ( submitBtn && isGatewayConfigured ) {
+					var usdBlocked = 'USD' === activeCurrency && ! isUsdConfigured;
+					if ( usdBlocked ) {
+						submitBtn.disabled = true;
+						submitBtn.setAttribute( 'aria-disabled', 'true' );
+					} else {
+						// Re-run project status check (which manages enabled/disabled correctly)
+						handleProjectStatus();
+					}
+				}
+			} );
+		}
+
+		// ----- Custom Currency Dropdown Logic -----
+		var customSelect = form.querySelector( '[data-lccl-custom-select]' );
+		if ( customSelect ) {
+			var selectTrigger = customSelect.querySelector( '[data-lccl-select-trigger]' );
+			var selectValueSpan = customSelect.querySelector( '[data-lccl-select-value]' );
+			var selectOptionsWrap = customSelect.querySelector( '[data-lccl-select-options]' );
+			var selectOptions = customSelect.querySelectorAll( 'li[role="option"]' );
+
+			var toggleCurrencyDropdown = function() {
+				var isOpen = ! selectOptionsWrap.hidden;
+				if ( isOpen ) {
+					selectOptionsWrap.hidden = true;
+					selectTrigger.setAttribute( 'aria-expanded', 'false' );
+					customSelect.classList.remove( 'is-open' );
+				} else {
+					selectOptionsWrap.hidden = false;
+					selectTrigger.setAttribute( 'aria-expanded', 'true' );
+					customSelect.classList.add( 'is-open' );
+				}
+			};
+
+			selectTrigger.addEventListener( 'click', function( e ) {
+				e.preventDefault();
+				toggleCurrencyDropdown();
+			} );
+
+			document.addEventListener( 'click', function( e ) {
+				if ( ! customSelect.contains( e.target ) && ! selectOptionsWrap.hidden ) {
+					toggleCurrencyDropdown();
+				}
+			} );
+
+			Array.prototype.forEach.call( selectOptions, function( opt ) {
+				opt.addEventListener( 'click', function() {
+					var val = opt.getAttribute( 'data-value' );
+					selectValueSpan.textContent = val;
+
+					// Update hidden real select and fire change
+					if ( currencySelect && currencySelect.value !== val ) {
+						currencySelect.value = val;
+						var evt;
+						if ( typeof Event === 'function' ) {
+							evt = new Event( 'change', { bubbles: true } );
+						} else {
+							evt = document.createEvent( 'Event' );
+							evt.initEvent( 'change', true, true );
+						}
+						currencySelect.dispatchEvent( evt );
+					}
+
+					// Update aria-selected
+					Array.prototype.forEach.call( selectOptions, function( o ) {
+						o.removeAttribute( 'aria-selected' );
+					} );
+					opt.setAttribute( 'aria-selected', 'true' );
+
+					toggleCurrencyDropdown();
+				} );
+			} );
+		}
 	}
 
 	function start() {
