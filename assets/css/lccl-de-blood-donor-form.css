@@ -894,7 +894,7 @@
 .lccl-bdf.lccl-bdf--donation select.lccl-df__currency-select:focus {
 	outline: none;
 	box-shadow: none;
-	background-color: var(--lccl-bdf-heading);
+	background-color: var(--lccl-bdf-gold-hover);
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__currency-select option {
