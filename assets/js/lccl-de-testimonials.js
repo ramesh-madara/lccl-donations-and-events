@@ -85,6 +85,10 @@
 			$carousel.on('mouseenter', stopCarousel);
 			$carousel.on('mouseleave', startCarousel);
 			
+			// Custom events for modal
+			$carousel.on('pauseCarousel', stopCarousel);
+			$carousel.on('resumeCarousel', startCarousel);
+			
 			// Handle window resize to prevent visual glitches
 			$(window).on('resize', function() {
 				$track.css({
@@ -114,25 +118,33 @@
 		// Modal logic
 		$(document).on('click', '.lccl-t-read-more', function(e) {
 			e.preventDefault();
+			const $cardInner = $(this).closest('.lccl-testimonial-card-inner');
 			const $container = $(this).closest('.lccl-t-quote-container');
 			const name = $container.data('author-name') || '';
 			const role = $container.data('author-role') || '';
 			const fullQuote = $(this).siblings('.lccl-t-quote-text').data('full-quote');
 			const formattedQuote = fullQuote.replace(/\n/g, '<br>');
+			const avatarHtml = $cardInner.find('.lccl-t-avatar-wrapper').html();
 			
-			let modalHtml = '<h4 class="lccl-t-name" style="margin-top:0;">' + name + '</h4>';
+			let modalHtml = '<div style="width: 80px; height: 80px; margin: 0 auto 15px auto;">' + avatarHtml + '</div>';
+			modalHtml += '<h4 class="lccl-t-name" style="margin-top:0; text-align:center;">' + name + '</h4>';
 			if (role) {
-				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:13px; font-weight:normal; margin-bottom:20px; color:#666;">' + role + '</h5>';
+				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:13px; font-weight:normal; margin-bottom:20px; color:#666; text-align:center;">' + role + '</h5>';
 			}
-			modalHtml += '<div class="lccl-t-modal-quote" style="margin-top: 15px;">' + formattedQuote + '</div>';
+			modalHtml += '<div class="lccl-t-modal-quote" style="margin-top: 15px; text-align:center;">' + formattedQuote + '</div>';
 			
 			$('.lccl-t-modal-content').html(modalHtml);
 			$('.lccl-t-modal-overlay').fadeIn(200);
+			
+			// Pause all carousels
+			$('.lccl-testimonials-carousel').trigger('pauseCarousel');
 		});
 
 		$(document).on('click', '.lccl-t-modal-close, .lccl-t-modal-overlay', function(e) {
 			if (e.target === this) {
 				$('.lccl-t-modal-overlay').fadeOut(200);
+				// Resume all carousels
+				$('.lccl-testimonials-carousel').trigger('resumeCarousel');
 			}
 		});
 
