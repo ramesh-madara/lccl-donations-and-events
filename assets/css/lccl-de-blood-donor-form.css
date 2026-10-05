@@ -916,6 +916,7 @@
 	background-color: var(--lccl-bdf-heading);
 	border: 1px solid var(--lccl-bdf-border);
 	border-top: none;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 	z-index: 10;
 }
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options[hidden],
@@ -933,11 +934,14 @@
 }
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li:hover,
 .lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li:focus,
-.lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li[aria-selected="true"],
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li:hover,
-.lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li:focus,
-.lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li[aria-selected="true"] {
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li:focus {
 	background-color: var(--lccl-bdf-gold-hover);
+	outline: none;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options li[aria-selected="true"],
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options li[aria-selected="true"] {
+	background-color: var(--lccl-bdf-gold-dark);
 	outline: none;
 }
 
@@ -2402,7 +2406,7 @@ a.lccl-terms-link:focus {
 }
 
 /* Sponsorship form USD color overrides */
-.lccl-bdf.lccl-bdf--sponsorship.is-currency-usd .lccl-df__total-label {
+.lccl-bdf.lccl-bdf--sponsorship form.is-currency-usd .lccl-df__total-label {
 	color: #ffffff !important;
 }
 
