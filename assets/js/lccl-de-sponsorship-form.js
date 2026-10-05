@@ -495,7 +495,7 @@
 			// Initialize class state on page load
 			var outerWrap = form.closest( '.lccl-bdf--sponsorship' );
 			if ( outerWrap ) {
-				outerWrap.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
+				form.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
 			}
 
 			currencySelect.addEventListener( 'change', function () {
@@ -506,7 +506,7 @@
 
 				// Toggle CSS class for color shifts
 				if ( outerWrap ) {
-					outerWrap.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
+					form.classList.toggle( 'is-currency-usd', 'USD' === activeCurrency );
 				}
 
 				// Swap all preset button values and labels.

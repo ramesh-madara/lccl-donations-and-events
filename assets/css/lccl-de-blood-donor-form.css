@@ -1682,15 +1682,14 @@
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__amount-row {
 	display: flex;
 	align-items: stretch;
-	max-width: 240px;
+	max-width: 100%;
 	margin: 0 0 8px;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__amount-input,
 .lccl-bdf.lccl-bdf--sponsorship input.lccl-df__amount-input {
-	width: 150px;
-	min-width: 150px;
-	max-width: 150px;
+	flex: 1 1 auto;
+	min-width: 0;
 	height: 49px;
 	min-height: 49px;
 	margin: 0;

@@ -74,7 +74,7 @@ $presets_row1      = ( 'USD' === $currency ) ? $usd_presets_row1 : $lkr_presets_
 $presets_row2      = ( 'USD' === $currency ) ? $usd_presets_row2 : $lkr_presets_row2;
 $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway_configured : false;
 ?>
-<div class="lccl-bdf lccl-bdf--sponsorship<?php echo 'USD' === $currency ? ' is-currency-usd' : ''; ?>">
+<div class="lccl-bdf lccl-bdf--sponsorship">
 	<?php if ( '' !== $atts['banner_title'] || '' !== $atts['banner_intro'] ) : ?>
 		<header class="lccl-ps__banner">
 			<?php if ( '' !== $atts['banner_title'] ) : ?>
@@ -88,7 +88,7 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 
 	<div class="lccl-ps">
 		<form
-			class="lccl-bdf__form lccl-ps__form"
+			class="lccl-bdf__form lccl-ps__form<?php echo 'USD' === $currency ? ' is-currency-usd' : ''; ?>"
 			id="lccl-ps-form"
 			method="post"
 			action="<?php echo esc_url( remove_query_arg( array( LCCL_DE_Sponsorship_Form::QA_RETURN, LCCL_DE_Sponsorship_Form::QA_CANCEL, LCCL_DE_Sponsorship_Form::QA_ORDER_REF, 'reqid', 'ReqID', 'lccl_ps_error' ) ) ); ?>"
