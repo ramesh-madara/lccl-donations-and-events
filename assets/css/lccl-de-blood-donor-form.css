@@ -1155,7 +1155,7 @@
 	background-color: var(--lccl-bdf-gold-light);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -1177,7 +1177,7 @@
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: 400;
 	line-height: 49px;
 	text-align: right;
@@ -1469,7 +1469,7 @@
 	background-color: var(--lccl-bdf-gold-light);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -1489,7 +1489,7 @@
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: 400;
 	line-height: 49px;
 	text-align: right;
@@ -1837,7 +1837,7 @@
 	background-color: var(--lccl-bdf-gold-light);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
@@ -1859,7 +1859,7 @@
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
-	font-size: 21px;
+	font-size: 20px;
 	font-weight: 400;
 	line-height: 49px;
 	text-align: right;
