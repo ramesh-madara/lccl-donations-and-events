@@ -1065,8 +1065,8 @@
 
 .lccl-bdf.lccl-bdf--donation .lccl-bdf__input,
 .lccl-bdf.lccl-bdf--donation input.lccl-bdf__input {
-	height: 40px;
-	min-height: 40px;
+	height: 49px;
+	min-height: 49px;
 	padding: 8px 13px;
 	border-radius: 0;
 	font-size: 17px;
@@ -1103,7 +1103,7 @@
 	justify-content: center;
 	width: 168px;
 	min-width: 168px;
-	height: 40px;
+	height: 49px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
@@ -1117,8 +1117,8 @@
 .lccl-bdf.lccl-bdf--donation input.lccl-df__total-input {
 	width: 200px;
 	max-width: 100%;
-	height: 40px;
-	min-height: 40px;
+	height: 49px;
+	min-height: 49px;
 	margin: 0;
 	padding: 0 20px 0 10px;
 	border: none;
