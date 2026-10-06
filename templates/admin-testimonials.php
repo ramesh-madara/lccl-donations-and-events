@@ -26,16 +26,51 @@ wp_enqueue_media();
 				<option value="design-1" <?php selected($current_design, 'design-1'); ?>><?php esc_html_e('Design 1 (Gold Header)', 'lccl-de'); ?></option>
 				<option value="design-2" <?php selected($current_design, 'design-2'); ?>><?php esc_html_e('Design 2 (Minimal Left)', 'lccl-de'); ?></option>
 			</select>
-			<button type="button" class="button" id="lccl-de-save-design" data-nonce="<?php echo esc_attr( wp_create_nonce('lccl_de_testimonial_design') ); ?>"><?php esc_html_e( 'Save Design', 'lccl-de' ); ?></button>
+			
+			<label for="lccl-de-testimonial-scroll" style="font-weight: 600; margin-left: 15px;"><?php esc_html_e( 'Scroll Behavior:', 'lccl-de' ); ?></label>
+			<select id="lccl-de-testimonial-scroll" name="lccl_de_testimonial_scroll">
+				<?php $current_scroll = get_option('lccl_de_testimonial_scroll', 'scroll-snap'); ?>
+				<option value="scroll-snap" <?php selected($current_scroll, 'scroll-snap'); ?>><?php esc_html_e('Auto-Snap (Default)', 'lccl-de'); ?></option>
+				<option value="scroll-constant" <?php selected($current_scroll, 'scroll-constant'); ?>><?php esc_html_e('Constant Smooth Scroll', 'lccl-de'); ?></option>
+				<option value="scroll-manual" <?php selected($current_scroll, 'scroll-manual'); ?>><?php esc_html_e('Manual with Buttons', 'lccl-de'); ?></option>
+			</select>
+			
+			<button type="button" class="button" id="lccl-de-save-design" data-nonce="<?php echo esc_attr( wp_create_nonce('lccl_de_testimonial_design') ); ?>"><?php esc_html_e( 'Save Settings', 'lccl-de' ); ?></button>
 			<span class="spinner" id="lccl-de-design-spinner" style="float:none; margin:0;"></span>
 		</div>
 	</div>
 
 	<div class="lccl-de-design-preview-container" style="background: #fdfbf7; padding: 20px; margin-bottom: 20px; border: 1px solid #ccd0d4; border-radius: 4px;">
-		<h3 style="margin-top:0;"><?php esc_html_e('Design Preview', 'lccl-de'); ?></h3>
-		<div id="lccl-de-design-preview" style="width: 100%; max-width: 400px; margin: 0 auto;">
-			<!-- Preview is populated by JS -->
+		<h3 style="margin-top:0;"><?php esc_html_e('Design & Scroll Preview', 'lccl-de'); ?></h3>
+		<div id="lccl-de-design-preview" style="width: 100%; max-width: 900px; margin: 0 auto; overflow: hidden; padding-bottom: 20px;">
+			<!-- Injected via JS instantly -->
 		</div>
+
+		<?php 
+		$active_testimonials = $active;
+		if ( empty( $active_testimonials ) ) {
+			$active_testimonials = array(
+				array( 'name' => 'John Doe', 'role' => 'Volunteer', 'quote' => 'This is an amazing organization!', 'photo_url' => '' ),
+				array( 'name' => 'Jane Smith', 'role' => 'Donor', 'quote' => 'I love supporting this cause. They do great work.', 'photo_url' => '' ),
+				array( 'name' => 'Bob Johnson', 'role' => 'Partner', 'quote' => 'A very rewarding experience partnering with them.', 'photo_url' => '' )
+			);
+		}
+		?>
+		
+		<template id="lccl-tpl-design-1">
+			<?php 
+			$design = 'design-1'; 
+			$scroll = ''; // Will be injected by JS
+			include LCCL_DE_PATH . 'templates/testimonials.php'; 
+			?>
+		</template>
+		<template id="lccl-tpl-design-2">
+			<?php 
+			$design = 'design-2'; 
+			$scroll = ''; // Will be injected by JS
+			include LCCL_DE_PATH . 'templates/testimonials.php'; 
+			?>
+		</template>
 	</div>
 
 	<div style="margin-bottom: 20px;">

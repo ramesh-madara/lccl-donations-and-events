@@ -33,9 +33,12 @@ class LCCL_DE_Testimonials {
 		}
 
 		$design = isset( $_POST['design'] ) ? sanitize_text_field( wp_unslash( $_POST['design'] ) ) : 'design-1';
+		$scroll = isset( $_POST['scroll'] ) ? sanitize_text_field( wp_unslash( $_POST['scroll'] ) ) : 'scroll-snap';
+		
 		update_option( 'lccl_de_testimonial_design', $design );
+		update_option( 'lccl_de_testimonial_scroll', $scroll );
 
-		wp_send_json_success( array( 'message' => __( 'Design updated.', 'lccl-de' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Settings updated.', 'lccl-de' ) ) );
 	}
 
 	/**

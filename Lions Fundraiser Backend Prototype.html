@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<!-- saved from url=(0053)https://colomboleads.org/lions-fundraiser-backend.php -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Lions Fundraiser Backend Prototype</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: #f4f5f7;
+    color: #333;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+header {
+    background: #252525;
+    color: #fff;
+    padding: 16px 25px;
+}
+
+header strong {
+    color: #f7c600;
+    font-size: 20px;
+}
+
+.wrap {
+    max-width: 1450px;
+    margin: auto;
+    padding: 25px;
+}
+
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.stat {
+    background: #fff;
+    border: 1px solid #e5e5e5;
+    padding: 20px;
+}
+
+.stat small {
+    color: #777;
+}
+
+.stat strong {
+    display: block;
+    font-size: 27px;
+    margin-top: 8px;
+}
+
+.nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.nav a {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 11px 16px;
+    color: #333;
+    text-decoration: none;
+}
+
+.nav a.active {
+    background: #f7c600;
+    border-color: #f7c600;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 20px;
+}
+
+.card {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+.card h2 {
+    margin: 0 0 18px;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.card h3 {
+    margin: 20px 0 12px;
+    font-size: 15px;
+    text-transform: uppercase;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 10px;
+    margin-bottom: 13px;
+    font-size: 14px;
+}
+
+textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+button,
+.btn {
+    border: 0;
+    background: #f7c600;
+    color: #222;
+    padding: 10px 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 13px;
+}
+
+.btn.dark {
+    background: #333;
+    color: #fff;
+}
+
+.btn.light {
+    background: #eee;
+}
+
+.btn.red {
+    background: #d9534f;
+    color: #fff;
+}
+
+.event-list a {
+    display: block;
+    border: 1px solid #e4e4e4;
+    padding: 13px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: #333;
+}
+
+.event-list a.selected {
+    border-left: 4px solid #f7c600;
+    background: #fff9df;
+}
+
+.event-list small {
+    display: block;
+    color: #777;
+    margin-top: 5px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    font-size: 11px;
+    background: #eee;
+    text-transform: uppercase;
+}
+
+.badge.upcoming {
+    background: #e6f0ff;
+    color: #245a9a;
+}
+
+.badge.ongoing {
+    background: #e7f7e9;
+    color: #28723a;
+}
+
+.badge.completed {
+    background: #eee;
+    color: #666;
+}
+
+.badge.draft {
+    background: #fff4d1;
+    color: #866900;
+}
+
+.badge.booked {
+    background: #eee;
+    color: #666;
+}
+
+.badge.available {
+    background: #e7f7e9;
+    color: #28723a;
+}
+
+.flash {
+    padding: 13px 16px;
+    margin-bottom: 20px;
+    background: #e7f7e9;
+    border-left: 4px solid #37a34a;
+}
+
+.flash.error {
+    background: #fdeaea;
+    border-left-color: #d9534f;
+}
+
+.info {
+    padding: 13px;
+    background: #fff9df;
+    border-left: 4px solid #f7c600;
+    margin-bottom: 18px;
+    line-height: 1.5;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 18px;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+th,
+td {
+    padding: 11px 9px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+    vertical-align: middle;
+}
+
+th {
+    background: #f7f7f7;
+}
+
+.actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.progress {
+    background: #eee;
+    height: 12px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress span {
+    display: block;
+    height: 100%;
+    background: #f7c600;
+}
+
+.map {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 7px;
+}
+
+.map-seat {
+    border-radius: 50%;
+    padding: 8px 2px;
+    background: #72a8e8;
+    text-align: center;
+    font-size: 10px;
+}
+
+.map-seat.booked {
+    background: #aaa;
+    color: #fff;
+}
+
+.legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 15px;
+    font-size: 12px;
+}
+
+.legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #72a8e8;
+    margin-right: 5px;
+}
+
+.legend .booked::before {
+    background: #aaa;
+}
+
+@media (max-width: 1000px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard {
+        grid-template-columns: repeat(2,1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .dashboard,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1154.0" data-gr-ext-installed="">
+
+<header>
+    <div class="wrap" style="padding:0;">
+        <strong>LIONS CLUB OF COLOMBO LEADS – FUNDRAISER MANAGEMENT</strong>
+    </div>
+</header>
+
+<div class="wrap">
+
+
+<div class="dashboard">
+
+    <div class="stat">
+        <small>Total Events</small>
+        <strong>1</strong>
+    </div>
+
+    <div class="stat">
+        <small>Public Booking Events</small>
+        <strong>1</strong>
+    </div>
+
+    <div class="stat">
+        <small>Total Bookings</small>
+        <strong>0</strong>
+    </div>
+
+    <div class="stat">
+        <small>Total Confirmed Revenue</small>
+        <strong>LKR 0.00</strong>
+    </div>
+
+</div>
+
+<div class="nav">
+    <a href="https://colomboleads.org/lions-fundraiser-backend.php?tab=overview" class="active">
+        EVENTS
+    </a>
+    <a href="https://colomboleads.org/lions-fundraiser-backend.php?tab=create" class="">
+        ADD NEW EVENT
+    </a>
+    <a href="https://colomboleads.org/lions-fundraiser-backend.php?tab=bookings" class="">
+        ALL BOOKINGS
+    </a>
+</div>
+
+
+
+<div class="grid">
+
+    <!-- EVENT LIST / CONFIGURATION -->
+    <div>
+
+        <div class="card">
+
+            <h2>EVENTS</h2>
+
+            <div class="event-list">
+
+                
+                    <a href="https://colomboleads.org/lions-fundraiser-backend.php?event=1" class="selected">
+
+                        <strong>LCCL FUNDRAISER</strong>
+
+                        <small>
+                            2026-11-15 |
+                            Grand Ballroom - Hotel Galadari                        </small>
+
+                        <small>
+                            <span class="badge upcoming">
+                                upcoming                            </span>
+
+                                                            <span class="badge ongoing">PUBLIC</span>
+                                                    </small>
+
+                    </a>
+
+                
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>EVENT CONFIGURATION</h2>
+
+            <form method="post">
+
+                <input type="hidden" name="action" value="update_event">
+                <input type="hidden" name="event_id" value="1">
+
+                <label>EVENT NAME</label>
+                <input name="name" value="LCCL FUNDRAISER" required="">
+
+                <label>EVENT DATE</label>
+                <input name="event_date" type="date" value="2026-11-15">
+
+                <label>EVENT TIME</label>
+                <input name="event_time" type="time" value="19:00">
+
+                <label>VENUE</label>
+                <input name="venue" value="Grand Ballroom - Hotel Galadari">
+
+                <label>TICKET PRICE (LKR)</label>
+                <input name="ticket_price" type="number" min="0" step="0.01" value="6500">
+
+                <label>EVENT STATUS</label>
+                <select name="status">
+                                            <option value="draft">
+                            DRAFT                        </option>
+                                            <option value="upcoming" selected="">
+                            UPCOMING                        </option>
+                                            <option value="ongoing">
+                            ONGOING                        </option>
+                                            <option value="completed">
+                            COMPLETED                        </option>
+                                            <option value="archived">
+                            ARCHIVED                        </option>
+                                    </select>
+
+                <label>DESCRIPTION</label>
+                <textarea name="description">Community fundraising event.</textarea>
+
+                <label style="font-weight:normal;">
+                    <input type="checkbox" name="public_booking" style="width:auto;" checked="">
+                    Make this event available for public booking
+                </label>
+
+                <button type="submit">SAVE EVENT SETTINGS</button>
+
+            </form>
+
+            <hr style="border:0;border-top:1px solid #eee;margin:20px 0;">
+
+            <form method="post">
+
+                <input type="hidden" name="action" value="toggle_public_booking">
+                <input type="hidden" name="event_id" value="1">
+
+                <button class="btn red" type="submit">
+                    CLOSE PUBLIC BOOKING                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN MANAGEMENT AREA -->
+    <div>
+
+        <div class="card">
+
+            <h2>
+                LCCL FUNDRAISER            </h2>
+
+            <div class="info">
+
+                <strong>
+                    2026-11-15                    &nbsp; | &nbsp;
+                    19:00                    &nbsp; | &nbsp;
+                    Grand Ballroom - Hotel Galadari                </strong>
+
+                <br>
+
+                Public Booking:
+                <strong>
+                    OPEN                </strong>
+
+            </div>
+
+            <h3>TABLE TYPES</h3>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>TYPE</th>
+                            <th>CAPACITY</th>
+                            <th>PRICE</th>
+                            <th>TABLES</th>
+                            <th>AVAILABLE</th>
+                            <th>BOOKED</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <h3>Add Table Type</h3>
+
+            <form method="post">
+
+                <input type="hidden" name="action" value="add_table_type">
+                <input type="hidden" name="event_id" value="1">
+
+                <div class="form-grid">
+
+                    <div>
+                        <label>TABLE TYPE NAME</label>
+                        <input name="name" placeholder="10-Seater Table" required="">
+                    </div>
+
+                    <div>
+                        <label>CAPACITY</label>
+                        <input name="capacity" type="number" min="1" value="10" required="">
+                    </div>
+
+                    <div>
+                        <label>PRICE (LKR)</label>
+                        <input name="price" type="number" min="0" step="0.01" value="78000" required="">
+                    </div>
+
+                    <div style="align-self:end;">
+                        <button type="submit">ADD TABLE TYPE</button>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        <div class="card">
+
+            <h2>GENERATE TABLE INVENTORY</h2>
+
+            <div class="info">
+                Use this section to create the actual tables for the venue.
+                For example, generate 50 × 10-seater tables without manually entering
+                each table. The system will create T01–T50 and their associated seats.
+            </div>
+
+            
+                <p>Add a table type first.</p>
+
+            
+        </div>
+
+        <div class="card">
+
+            <h2>TABLE INVENTORY</h2>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>TABLE</th>
+                            <th>TYPE</th>
+                            <th>CAPACITY</th>
+                            <th>PRICE</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    
+                        <tr>
+                            <td colspan="5">
+                                No tables generated yet.
+                            </td>
+                        </tr>
+
+                    
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>BOOKING SUMMARY</h2>
+
+            
+            <div class="dashboard" style="grid-template-columns:repeat(4,1fr);">
+
+                <div class="stat">
+                    <small>Confirmed Bookings</small>
+                    <strong>0</strong>
+                </div>
+
+                <div class="stat">
+                    <small>Confirmed Revenue</small>
+                    <strong>LKR 0.00</strong>
+                </div>
+
+                <div class="stat">
+                    <small>Available Tables</small>
+                    <strong>0</strong>
+                </div>
+
+                <div class="stat">
+                    <small>Booked Tables</small>
+                    <strong>0</strong>
+                </div>
+
+            </div>
+
+            
+            <h3>FUNDRAISING / EVENT GOAL</h3>
+
+            <div style="display:flex;justify-content:space-between;">
+                <span>Goal</span>
+                <strong>LKR 1,000,000.00</strong>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;margin-top:8px;">
+                <span>Raised</span>
+                <strong>LKR 0.00</strong>
+            </div>
+
+            <div class="progress">
+                <span style="width:0%;"></span>
+            </div>
+
+            <p class="small">
+                In production, the goal should be configurable for each fundraiser/event
+                and the raised amount should be calculated automatically from successful payments.
+            </p>
+
+        </div>
+
+        <div class="card">
+
+            <h2>SEATING MAP – PROTOTYPE</h2>
+
+            <div class="info">
+                <strong>Blue = Available</strong> &nbsp; | &nbsp;
+                <strong>Grey = Booked</strong>.
+                Table status and seat status are maintained separately in the backend,
+                while a table booking reserves all seats belonging to that table.
+            </div>
+
+            <div class="map">
+
+                
+            </div>
+
+            <div class="legend">
+                <span>Available</span>
+                <span class="booked">Booked</span>
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>RECENT BOOKINGS</h2>
+
+            <div class="table-wrap">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>REFERENCE</th>
+                            <th>CUSTOMER</th>
+                            <th>TYPE</th>
+                            <th>QTY</th>
+                            <th>AMOUNT</th>
+                            <th>PAYMENT</th>
+                            <th>BOOKING</th>
+                            <th>TIMESTAMP</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    
+                        <tr>
+                            <td colspan="8">No bookings for this event.</td>
+                        </tr>
+
+                    
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+        <div class="card">
+
+            <h2>DEMO BOOKING TEST</h2>
+
+            <div class="info">
+                This section is only for demonstrating how a successful payment callback
+                would create a confirmed booking and update seat/table availability.
+                It should be removed from the production admin interface.
+            </div>
+
+            <form method="post">
+
+                <input type="hidden" name="action" value="create_demo_booking">
+                <input type="hidden" name="event_id" value="1">
+
+                <div class="form-grid">
+
+                    <div>
+                        <label>BOOKING TYPE</label>
+
+                        <select name="booking_type" id="demoBookingType">
+                            <option value="individual">Individual Seats</option>
+                            <option value="table">Table Booking</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>QUANTITY</label>
+                        <input name="quantity" type="number" min="1" value="1">
+                    </div>
+
+                    <div>
+                        <label>FIRST NAME</label>
+                        <input name="first_name" value="Demo">
+                    </div>
+
+                    <div>
+                        <label>LAST NAME</label>
+                        <input name="last_name" value="Customer">
+                    </div>
+
+                    <div>
+                        <label>EMAIL</label>
+                        <input name="email" type="email" value="demo@example.com">
+                    </div>
+
+                    <div>
+                        <label>MOBILE</label>
+                        <input name="mobile" value="+94714822283">
+                    </div>
+
+                    <div class="full">
+                        <label>TABLE TYPE (ONLY FOR TABLE BOOKING)</label>
+
+                        <select name="table_type_id">
+
+                            <option value="">Select table type</option>
+
+                            
+                        </select>
+                    </div>
+
+                </div>
+
+                <button type="submit">CREATE DEMO CONFIRMED BOOKING</button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+
+</div>
+
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

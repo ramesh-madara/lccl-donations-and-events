@@ -19,9 +19,87 @@
 .lccl-testimonials-track {
 	display: flex;
 	align-items: stretch;
-	/* Will be transitioned via JS */
+	/* Will be transitioned via JS by default */
 	will-change: transform;
 }
+
+/* ==============================================================
+   Scroll Behaviors
+   ============================================================== */
+
+/* 1. Constant Scroll */
+@keyframes lccl-marquee {
+	0% { transform: translateX(0); }
+	100% { transform: translateX(-50%); }
+}
+.lccl-scroll-constant .lccl-testimonials-track {
+	width: max-content;
+	animation: lccl-marquee 40s linear infinite;
+}
+.lccl-scroll-constant .lccl-testimonials-carousel:hover .lccl-testimonials-track {
+	animation-play-state: paused;
+}
+.lccl-scroll-constant .lccl-testimonial-slide {
+	/* Override the flexing width for constant scrolling */
+	flex: 0 0 350px;
+	min-width: 350px;
+}
+.lccl-scroll-constant .lccl-testimonial-card-inner {
+	transform: scale(1) !important;
+	opacity: 1 !important;
+}
+
+/* 2. Manual Scroll */
+.lccl-scroll-manual .lccl-testimonials-carousel {
+	position: relative;
+}
+.lccl-scroll-manual .lccl-testimonials-track {
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: none; /* Firefox */
+	-ms-overflow-style: none;  /* IE and Edge */
+	padding-bottom: 20px; /* Space for shadow */
+}
+.lccl-scroll-manual .lccl-testimonials-track::-webkit-scrollbar {
+	display: none;
+}
+.lccl-scroll-manual .lccl-testimonial-slide {
+	scroll-snap-align: center;
+}
+.lccl-scroll-manual .lccl-testimonial-card-inner {
+	transform: scale(1) !important;
+	opacity: 1 !important;
+}
+.lccl-t-nav {
+	position: absolute;
+	top: 50%;
+	transform: translateY(-50%);
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 50%;
+	width: 44px;
+	height: 44px;
+	display: none; /* Hidden by default */
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+	z-index: 10;
+	color: #666;
+	transition: all 0.3s ease;
+}
+.lccl-scroll-manual .lccl-t-nav {
+	display: flex; /* Only show in manual mode */
+}
+.lccl-t-nav:hover {
+	background: #f7c016;
+	color: #fff;
+	border-color: #f7c016;
+}
+.lccl-t-nav-prev { left: 23px; }
+.lccl-t-nav-next { right: 23px; }
 
 .lccl-testimonial-slide {
 	flex: 0 0 100%;
@@ -82,9 +160,9 @@
 }
 
 .lccl-t-avatar-wrapper {
-	width: 80px;
-	height: 80px;
-	margin-top: -40px; /* Overlap the header block */
+	width: 88px;
+	height: 88px;
+	margin-top: -44px; /* Overlap the header block */
 	border-radius: 50%;
 	background: #ffffff;
 	padding: 4px; /* White border effect */
@@ -130,15 +208,15 @@
 .lccl-t-content {
 	flex-grow: 1;
 	text-align: center;
-	padding: 20px 30px 30px;
+	padding: 30px 30px 40px; /* Increased padding to make card ~5% taller */
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 }
 
 .lccl-t-role-title {
-	margin: 0 0 15px;
-	font-size: 13px;
+	margin: 5px 0 15px; /* Brought 5px lower */
+	font-size: 12.35px; /* 5% smaller than 13px */
 	font-weight: 400;
 	color: #666;
 }
@@ -196,6 +274,7 @@
 .lccl-t-modal {
 	background: #ffffff;
 	border-radius: 8px;
+	border-top: 6px solid #f7c016;
 	max-width: 600px;
 	width: 100%;
 	padding: 40px;
@@ -231,7 +310,7 @@
 
 .lccl-design-2 .lccl-testimonial-card-inner {
 	display: block;
-	padding: 30px 24px;
+	padding: 40px 24px; /* Increased top/bottom padding to make taller */
 	border: 1px solid #f0d98a;
 	border-top: 6px solid #f7c016;
 	border-radius: 8px;
@@ -276,8 +355,8 @@
 }
 
 .lccl-design-2 .lccl-t-avatar-wrapper {
-	width: 55px;
-	height: 55px;
+	width: 61px;
+	height: 61px;
 	margin: 0;
 	background: none;
 	padding: 0;
@@ -298,9 +377,9 @@
 }
 
 .lccl-design-2 .lccl-t-role-title {
-	font-size: 13px;
+	font-size: 12.35px;
 	font-weight: 600;
 	color: #f7c016;
 	text-transform: uppercase;
-	margin: 0;
+	margin: 5px 0 0;
 }

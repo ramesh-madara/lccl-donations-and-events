@@ -1,0 +1,91 @@
+﻿/*
+ * Fundraiser Admin Tab Styles
+ */
+.lccl-fr-dashboard {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+	margin-bottom: 28px;
+}
+.lccl-fr-stat {
+	background: #fff;
+	border: 1px solid #e5e5e5;
+	border-left: 4px solid #f7c016;
+	padding: 20px 22px;
+	border-radius: 2px;
+}
+.lccl-fr-stat__label { color: #777; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; margin: 0 0 6px; }
+.lccl-fr-stat__value { font-size: 26px; font-weight: 700; color: #222; margin: 0; }
+.lccl-fr-nav { display: flex; gap: 4px; margin-bottom: 22px; border-bottom: 2px solid #e5e5e5; padding-bottom: 0; }
+.lccl-fr-nav__btn {
+	padding: 10px 20px; border: 1px solid #ddd; border-bottom: none;
+	background: #f9f9f9; cursor: pointer; font-size: 13px; font-weight: 600;
+	color: #555; border-radius: 3px 3px 0 0; text-transform: uppercase; letter-spacing: .3px;
+	transition: all .2s;
+}
+.lccl-fr-nav__btn.is-active { background: #fff; border-color: #e5e5e5; border-bottom: 2px solid #fff; color: #222; margin-bottom: -2px; }
+.lccl-fr-nav__btn:hover:not(.is-active) { background: #fff; color: #222; }
+.lccl-fr-panel { display: none; }
+.lccl-fr-panel.is-active { display: block; }
+.lccl-fr-grid { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+.lccl-fr-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.lccl-fr-card__header {
+	background: #f9f9f9; border-bottom: 1px solid #e0e0e0;
+	padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+}
+.lccl-fr-card__title { margin: 0; font-size: 14px; font-weight: 700; color: #222; text-transform: uppercase; letter-spacing: .3px; }
+.lccl-fr-card__body { padding: 20px; }
+.lccl-fr-event-item {
+	display: block; padding: 14px 16px; border-bottom: 1px solid #f0f0f0;
+	cursor: pointer; transition: background .15s; text-decoration: none; color: #333;
+}
+.lccl-fr-event-item:last-child { border-bottom: none; }
+.lccl-fr-event-item:hover, .lccl-fr-event-item.is-selected { background: #fffdf0; border-left: 3px solid #f7c016; padding-left: 13px; }
+.lccl-fr-event-item.is-selected { font-weight: 600; }
+.lccl-fr-event-item__name { font-weight: 600; font-size: 13px; color: #222; display: block; margin-bottom: 3px; }
+.lccl-fr-event-item__meta { font-size: 12px; color: #888; }
+.lccl-fr-badge { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.lccl-fr-badge--upcoming { background: #e6f0ff; color: #245a9a; }
+.lccl-fr-badge--ongoing { background: #e7f7e9; color: #28723a; }
+.lccl-fr-badge--draft { background: #fff4d1; color: #866900; }
+.lccl-fr-badge--completed { background: #eee; color: #666; }
+.lccl-fr-badge--archived { background: #f5e0e0; color: #a33; }
+.lccl-fr-badge--public { background: #e7f7e9; color: #28723a; }
+.lccl-fr-badge--closed { background: #f5e0e0; color: #a33; }
+.lccl-fr-form-row { margin-bottom: 16px; }
+.lccl-fr-form-row label { display: block; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .3px; color: #555; margin-bottom: 5px; }
+.lccl-fr-form-row input, .lccl-fr-form-row select, .lccl-fr-form-row textarea {
+	width: 100%; border: 1px solid #ccc; border-radius: 3px;
+	padding: 8px 10px; font-size: 13px; background: #fafafa;
+}
+.lccl-fr-form-row textarea { min-height: 70px; resize: vertical; }
+.lccl-fr-form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lccl-fr-btn { padding: 8px 16px; border-radius: 3px; border: 0; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; text-transform: uppercase; letter-spacing: .3px; }
+.lccl-fr-btn--primary { background: #f7c016; color: #222; }
+.lccl-fr-btn--primary:hover { background: #e5b000; }
+.lccl-fr-btn--secondary { background: #f1f1f1; color: #333; border: 1px solid #ddd; }
+.lccl-fr-btn--secondary:hover { background: #e5e5e5; }
+.lccl-fr-btn--danger { background: #d9534f; color: #fff; }
+.lccl-fr-btn--danger:hover { background: #c9302c; }
+.lccl-fr-btn--sm { padding: 5px 10px; font-size: 11px; }
+.lccl-fr-btn-row { display: flex; gap: 8px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+.lccl-fr-table-wrap { overflow-x: auto; }
+.lccl-fr-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.lccl-fr-table th, .lccl-fr-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; text-align: left; vertical-align: middle; }
+.lccl-fr-table th { background: #f7f7f7; font-weight: 700; color: #555; text-transform: uppercase; font-size: 11px; letter-spacing: .3px; }
+.lccl-fr-table tr:last-child td { border-bottom: none; }
+.lccl-fr-table tr:hover td { background: #fafafa; }
+.lccl-fr-info { padding: 12px 16px; background: #fffdf0; border-left: 4px solid #f7c016; border-radius: 0 3px 3px 0; font-size: 13px; line-height: 1.5; margin-bottom: 16px; }
+.lccl-fr-type-row { display: grid; grid-template-columns: 1fr auto auto auto auto; gap: 8px; align-items: center; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+.lccl-fr-type-row:last-child { border-bottom: none; }
+.lccl-fr-inventory-bar { background: #eee; height: 8px; border-radius: 4px; overflow: hidden; min-width: 80px; }
+.lccl-fr-inventory-bar span { display: block; height: 100%; background: #f7c016; border-radius: 4px; }
+.lccl-fr-event-detail-header { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+.lccl-fr-event-detail-title { font-size: 20px; font-weight: 700; color: #222; margin: 0 0 4px; }
+.lccl-fr-event-detail-meta { font-size: 13px; color: #777; }
+.lccl-fr-empty { text-align: center; color: #999; padding: 40px 20px; font-size: 14px; }
+.lccl-fr-flash { padding: 12px 16px; border-radius: 3px; margin-bottom: 16px; font-size: 13px; }
+.lccl-fr-flash--success { background: #e7f7e9; border-left: 4px solid #37a34a; color: #28723a; }
+.lccl-fr-flash--error { background: #fdeaea; border-left: 4px solid #d9534f; color: #a33; }
+@media (max-width: 1100px) { .lccl-fr-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .lccl-fr-dashboard { grid-template-columns: 1fr 1fr; } }

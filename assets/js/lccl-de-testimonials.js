@@ -4,14 +4,57 @@
 (function($) {
 	'use strict';
 
-	$(document).ready(function() {
-		$('.lccl-testimonials-carousel').each(function() {
+	window.initLcclTestimonials = function($context) {
+		const $target = $context ? $context.find('.lccl-testimonials-carousel') : $('.lccl-testimonials-carousel');
+		$target.each(function() {
 			const $carousel = $(this);
 			const $track = $carousel.find('.lccl-testimonials-track');
 			let $slides = $track.find('.lccl-testimonial-slide');
 			
-			// Don't initialize if empty
-			if ($slides.length === 0) return;
+			// Don't initialize if empty or already initialized
+			if ($slides.length === 0 || $carousel.hasClass('is-initialized')) return;
+			$carousel.addClass('is-initialized');
+
+			const scrollMode = $carousel.closest('.lccl-testimonials-wrapper').attr('class').match(/lccl-scroll-([a-z-]+)/);
+			const mode = scrollMode ? scrollMode[1] : 'snap';
+			
+			// If constant or manual, we don't resize cards via JS classes.
+			if (mode === 'constant') {
+				// Double the track exactly once for a perfect 50% marquee loop
+				$track.append($slides.clone());
+				return; // Handled completely by CSS keyframes
+			}
+
+			// If manual, just setup buttons and native scroll
+			if (mode === 'manual') {
+				// Add drag to scroll script using vanilla JS
+				let isDown = false;
+				let startX;
+				let scrollLeft;
+				
+				$track[0].addEventListener('mousedown', (e) => {
+					isDown = true;
+					startX = e.pageX - $track[0].offsetLeft;
+					scrollLeft = $track[0].scrollLeft;
+				});
+				$track[0].addEventListener('mouseleave', () => { isDown = false; });
+				$track[0].addEventListener('mouseup', () => { isDown = false; });
+				$track[0].addEventListener('mousemove', (e) => {
+					if (!isDown) return;
+					e.preventDefault();
+					const x = e.pageX - $track[0].offsetLeft;
+					const walk = (x - startX) * 2;
+					$track[0].scrollLeft = scrollLeft - walk;
+				});
+
+				$carousel.find('.lccl-t-nav-next').on('click', function() {
+					$track.animate({ scrollLeft: '+=' + $slides.first().outerWidth() }, 300);
+				});
+				$carousel.find('.lccl-t-nav-prev').on('click', function() {
+					$track.animate({ scrollLeft: '-=' + $slides.first().outerWidth() }, 300);
+				});
+				return; // No auto-scroll
+			}
 
 			// If we have 3 or fewer slides, duplicate them so the infinite loop works seamlessly on desktop
 			if ($slides.length <= 3) {
@@ -136,7 +179,7 @@
 			const formattedQuote = fullQuote.replace(/\n/g, '<br>');
 			const avatarHtml = $cardInner.find('.lccl-t-avatar-wrapper').html();
 			
-			let modalHtml = '<div style="width: 80px; height: 80px; margin: 0 auto 15px auto;">' + avatarHtml + '</div>';
+			let modalHtml = '<div style="width: 88px; height: 88px; margin: 0 auto 15px auto;">' + avatarHtml + '</div>';
 			modalHtml += '<h4 class="lccl-t-name" style="margin-top:0; text-align:center;">' + name + '</h4>';
 			if (role) {
 				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:13px; font-weight:normal; margin-bottom:20px; color:#666; text-align:center;">' + role + '</h5>';
@@ -158,5 +201,10 @@
 			}
 		});
 
+	};
+
+	$(document).ready(function() {
+		window.initLcclTestimonials();
 	});
+
 })(jQuery);

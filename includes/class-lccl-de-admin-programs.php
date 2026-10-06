@@ -73,6 +73,11 @@ class LCCL_DE_Admin_Programs {
 	const TAB_TESTIMONIALS = 'testimonials';
 
 	/**
+	 * Hub Fundraiser tab.
+	 */
+	const TAB_FUNDRAISER = 'fundraiser';
+
+	/**
 	 * Hook menu and assets.
 	 */
 	public static function init() {
@@ -192,12 +197,49 @@ class LCCL_DE_Admin_Programs {
 				array(),
 				LCCL_DE_VERSION
 			);
+			wp_enqueue_style(
+				'lccl-de-testimonials',
+				LCCL_DE_URL . 'assets/css/lccl-de-testimonials.css',
+				array(),
+				LCCL_DE_VERSION
+			);
+			wp_enqueue_script(
+				'lccl-de-testimonials',
+				LCCL_DE_URL . 'assets/js/lccl-de-testimonials.js',
+				array( 'jquery' ),
+				LCCL_DE_VERSION,
+				true
+			);
 			wp_enqueue_script(
 				'lccl-de-admin-testimonials',
 				LCCL_DE_URL . 'assets/js/lccl-de-admin-testimonials.js',
+				array( 'jquery', 'lccl-de-admin-programs', 'lccl-de-testimonials' ),
+				LCCL_DE_VERSION,
+				true
+			);
+		}
+
+		if ( self::TAB_FUNDRAISER === $tab ) {
+			wp_enqueue_style(
+				'lccl-de-admin-fundraiser',
+				LCCL_DE_URL . 'assets/css/lccl-de-admin-fundraiser.css',
+				array(),
+				LCCL_DE_VERSION
+			);
+			wp_enqueue_script(
+				'lccl-de-admin-fundraiser',
+				LCCL_DE_URL . 'assets/js/lccl-de-admin-fundraiser.js',
 				array( 'jquery', 'lccl-de-admin-programs' ),
 				LCCL_DE_VERSION,
 				true
+			);
+			wp_localize_script(
+				'lccl-de-admin-fundraiser',
+				'lcclFundraiser',
+				array(
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'lccl_de_fundraiser_admin' ),
+				)
 			);
 		}
 
@@ -276,6 +318,8 @@ class LCCL_DE_Admin_Programs {
 			extract( self::projects_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_TESTIMONIALS === $tab ) {
 			extract( self::testimonials_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+		} elseif ( self::TAB_FUNDRAISER === $tab ) {
+			extract( self::fundraiser_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', true, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			$tab = self::TAB_PROGRAMS;
@@ -318,6 +362,9 @@ class LCCL_DE_Admin_Programs {
 		} elseif ( self::TAB_TESTIMONIALS === $tab ) {
 			extract( self::testimonials_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-testimonials.php';
+		} elseif ( self::TAB_FUNDRAISER === $tab ) {
+			extract( self::fundraiser_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			include LCCL_DE_PATH . 'templates/admin-fundraiser.php';
 		} elseif ( '' !== $program ) {
 			extract( self::tab_vars( 'notifications', false, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-program-workspace.php';
@@ -377,6 +424,9 @@ class LCCL_DE_Admin_Programs {
 		}
 		if ( self::TAB_TESTIMONIALS === $tab ) {
 			return self::TAB_TESTIMONIALS;
+		}
+		if ( self::TAB_FUNDRAISER === $tab ) {
+			return self::TAB_FUNDRAISER;
 		}
 
 		return self::TAB_PROGRAMS;
@@ -990,5 +1040,29 @@ class LCCL_DE_Admin_Programs {
 			'inactive' => $inactive,
 		);
 	}
+	private static function fundraiser_vars( $from_get ) {
+		$message = '';
+		$error   = '';
+		if ( $from_get ) {
+			$message = isset( $_GET['message'] ) ? sanitize_key( wp_unslash( $_GET['message'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$error   = isset( $_GET['error'] ) ? sanitize_text_field( rawurldecode( wp_unslash( $_GET['error'] ) ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		}
+		$fr_events   = LCCL_DE_Fundraiser::get_all_events();
+		foreach ( $fr_events as &$ev ) {
+			$ev['types'] = LCCL_DE_Fundraiser::get_table_types( $ev['id'] );
+			$ev['tables'] = LCCL_DE_Fundraiser::get_tables( $ev['id'] );
+		}
+		unset( $ev );
+		$fr_stats    = LCCL_DE_Fundraiser::get_stats();
+		$fr_bookings = LCCL_DE_Fundraiser::get_bookings();
+		return array(
+			'tab'         => self::TAB_FUNDRAISER,
+			'program'     => '',
+			'message'     => $message,
+			'error'       => $error,
+			'fr_events'   => $fr_events,
+			'fr_stats'    => $fr_stats,
+			'fr_bookings' => $fr_bookings,
+		);
+	}
 }
-

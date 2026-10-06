@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<!-- saved from url=(0046)https://colomboleads.org//lions-fundraiser.php -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCCL FUNDRAISER – Booking Prototype</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f7f7f7;
+    color: #333;
+}
+
+.topbar {
+    background: #252525;
+    color: #f7c600;
+    padding: 10px 20px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.container {
+    max-width: 1180px;
+    margin: 35px auto;
+    padding: 0 18px;
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(320px, .85fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.card,
+.event-card {
+    background: #fff;
+    border: 1px solid #ededed;
+    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+
+.card {
+    padding: 30px;
+}
+
+h1 {
+    margin: 0 0 8px;
+    font-size: 29px;
+    font-weight: 400;
+}
+
+h2 {
+    margin: 0 0 8px;
+    font-size: 23px;
+    font-weight: 400;
+}
+
+.intro {
+    color: #666;
+    line-height: 1.55;
+    margin: 0 0 25px;
+}
+
+.section-title {
+    font-size: 16px;
+    margin: 25px 0 12px;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+}
+
+label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 15px;
+}
+
+.required {
+    color: #d40000;
+}
+
+input,
+select {
+    width: 100%;
+    height: 46px;
+    border: 1px solid #ccc;
+    background: #fafafa;
+    padding: 0 13px;
+    font-size: 15px;
+    color: #555;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 17px;
+}
+
+.booking-type {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.type-option {
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 17px;
+    cursor: pointer;
+}
+
+.type-option:hover {
+    border-color: #d6a900;
+}
+
+.type-option.active {
+    border: 2px solid #d6a900;
+    background: #fff9df;
+}
+
+.type-option input {
+    width: auto;
+    height: auto;
+    margin-right: 8px;
+}
+
+.type-title {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.type-help {
+    display: block;
+    color: #777;
+    font-size: 13px;
+    margin: 7px 0 0 25px;
+    line-height: 1.4;
+}
+
+.booking-panel {
+    display: none;
+}
+
+.booking-panel.active {
+    display: block;
+}
+
+.note {
+    padding: 13px 15px;
+    background: #fff9df;
+    border-left: 4px solid #d6a900;
+    margin: 15px 0;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.seat-info {
+    padding: 14px;
+    background: #f5f5f5;
+    margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.table-selector {
+    margin-top: 15px;
+}
+
+.table-status-note {
+    margin-top: 8px;
+    color: #777;
+    font-size: 12px;
+}
+
+.summary {
+    border-top: 1px solid #ddd;
+    margin-top: 25px;
+    padding-top: 18px;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    color: #555;
+    gap: 15px;
+}
+
+.total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    background: #f7f7f7;
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.total span:first-child {
+    background: #f7c600;
+    padding: 16px 20px;
+    font-size: 16px;
+}
+
+.total span:last-child {
+    padding: 16px 20px;
+}
+
+.terms {
+    margin: 20px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.terms input {
+    width: auto;
+    height: auto;
+    margin-right: 8px;
+}
+
+.button {
+    width: 100%;
+    border: 0;
+    background: #f7c600;
+    color: #fff;
+    padding: 17px;
+    font-size: 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.button:hover {
+    background: #e4b600;
+}
+
+.secure {
+    text-align: center;
+    color: #888;
+    font-size: 12px;
+    padding-top: 12px;
+}
+
+.dummy-image {
+    min-height: 430px;
+    background:
+        linear-gradient(rgba(12,47,95,.78), rgba(12,47,95,.68)),
+        radial-gradient(circle at 70% 25%, #f7c600 0 7%, transparent 8%),
+        linear-gradient(135deg, #123c72, #1e5e9d);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 35px;
+}
+
+.dummy-image h3 {
+    font-size: 34px;
+    margin: 0 0 15px;
+}
+
+.dummy-image p {
+    font-size: 17px;
+    line-height: 1.55;
+}
+
+.event-details {
+    padding: 24px;
+}
+
+.event-details h2 {
+    margin-bottom: 18px;
+}
+
+.detail {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    gap: 15px;
+}
+
+.detail strong {
+    font-weight: 500;
+    text-align: right;
+}
+
+.seat-map {
+    margin-top: 22px;
+    background: #f4f4f4;
+    padding: 18px;
+    text-align: center;
+}
+
+.stage {
+    background: #222;
+    color: #fff;
+    padding: 9px;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+.seat-map-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+}
+
+.seat-dot {
+    font-size: 10px;
+    padding: 8px 2px;
+    background: #72a8e8; /* AVAILABLE */
+    border-radius: 50%;
+}
+
+.seat-dot.sold {
+    background: #aaa; /* BOOKED */
+    color: #fff;
+}
+
+.legend {
+    display: flex;
+    justify-content: center;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 13px;
+    font-size: 11px;
+    color: #666;
+}
+
+.legend span::before {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #72a8e8;
+    margin-right: 4px;
+}
+
+.legend .booked::before {
+    background: #aaa;
+}
+
+.small {
+    color: #777;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+@media (max-width: 850px) {
+    .layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 560px) {
+    .row,
+    .booking-type {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 20px;
+    }
+
+    .seat-map-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+</style>
+</head>
+
+<body data-new-gr-c-s-check-loaded="14.1154.0" data-gr-ext-installed="">
+
+<div class="topbar">
+    LCCL FUNDRAISER    &nbsp; | &nbsp;
+    15 November 2026    &nbsp; | &nbsp;
+    Grand Ballroom - Hotel Galadari</div>
+
+<div class="container">
+    <div class="layout">
+
+        <!-- BOOKING FORM -->
+        <div class="card">
+
+            <h1>LCCL FUNDRAISER</h1>
+
+            <p class="intro">
+                Book individual seats or reserve a table for this fundraising event.
+                Your booking will be confirmed after successful payment.
+            </p>
+
+            <div class="section-title">
+                Booking Type <span class="required">*</span>
+            </div>
+
+            <div class="booking-type">
+
+                <label class="type-option active" id="typeIndividual">
+                    <input type="radio" name="booking_type" value="individual" checked="">
+                    <span class="type-title">Individual Seats</span>
+                    <span class="type-help">
+                        Book one or more seats. The system will assign available seats automatically.
+                    </span>
+                </label>
+
+                <label class="type-option" id="typeTable">
+                    <input type="radio" name="booking_type" value="table">
+                    <span class="type-title">Table Booking</span>
+                    <span class="type-help">
+                        Select an available table. All seats assigned to the table will be reserved together.
+                    </span>
+                </label>
+
+            </div>
+
+            <!-- INDIVIDUAL SEAT BOOKING -->
+            <div id="individualPanel" class="booking-panel active">
+
+                <div class="section-title">Individual Seat Booking</div>
+
+                <div class="row">
+                    <div>
+                        <label for="ticketQty">
+                            Number of Seats <span class="required">*</span>
+                        </label>
+                        <input id="ticketQty" type="number" min="1" max="10" value="1">
+                    </div>
+
+                    <div>
+                        <label>Ticket Price</label>
+                        <input id="ticketPrice" type="text" value="LKR 6,500.00" readonly="">
+                    </div>
+                </div>
+
+                <div class="note">
+                    Individual seat bookings do not require you to select a table.
+                    The system will allocate available seats automatically, preferably together.
+                </div>
+
+                <div class="seat-info" id="seatAllocation"><strong>Seats to be assigned:</strong> 1<br><span class="small">Prototype allocation. In production, seats will be temporarily locked during payment and confirmed only after successful payment.</span></div>
+
+            </div>
+
+            <!-- TABLE BOOKING -->
+            <div id="tablePanel" class="booking-panel">
+
+                <div class="section-title">Table Booking</div>
+
+                <div class="row">
+
+                    <div>
+                        <label for="tableType">
+                            Table Type <span class="required">*</span>
+                        </label>
+
+                        <select id="tableType">
+                            <option value="">Select table type</option>
+
+                                                            <option value="10" data-capacity="10" data-price="78000">
+                                    10-Seater Table                                    – LKR 78,000.00                                </option>
+                                                            <option value="5" data-capacity="5" data-price="40000">
+                                    5-Seater Table                                    – LKR 40,000.00                                </option>
+                            
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="tableQty">
+                            Number of Tables <span class="required">*</span>
+                        </label>
+
+                        <input id="tableQty" type="number" min="1" max="10" value="1">
+                    </div>
+
+                </div>
+
+                <div class="note">
+                    Select the available table(s) you would like to reserve.
+                    Booked tables are not available for selection.
+                </div>
+
+                <div class="table-selector">
+
+                    <label for="availableTable">
+                        Select Table(s) <span class="required">*</span>
+                    </label>
+
+                    <select id="availableTable" multiple="" size="6"><option value="">Select a table type first</option></select>
+
+                    <div class="table-status-note">
+                        Hold Ctrl (Windows) or Command (Mac) to select multiple tables.
+                        The production version can use a searchable multi-select for easier selection.
+                    </div>
+
+                </div>
+
+                <div class="seat-info" id="tableAllocation"><strong>Table reservation:</strong> Select a table type and available table(s).</div>
+
+            </div>
+
+            <!-- ATTENDEE INFORMATION -->
+            <div class="section-title">Attendee Information</div>
+
+            <div class="row">
+
+                <div>
+                    <label>
+                        First Name <span class="required">*</span>
+                    </label>
+                    <input type="text" placeholder="Saman">
+                </div>
+
+                <div>
+                    <label>
+                        Last Name <span class="required">*</span>
+                    </label>
+                    <input type="text" placeholder="Perera">
+                </div>
+
+            </div>
+
+            <div class="row">
+
+                <div>
+                    <label>
+                        Email Address <span class="required">*</span>
+                    </label>
+                    <input type="email" placeholder="name@example.com">
+                </div>
+
+                <div>
+                    <label>
+                        Mobile / WhatsApp Number <span class="required">*</span>
+                    </label>
+                    <input type="tel" placeholder="+94714822283">
+                </div>
+
+            </div>
+
+            <!-- SUMMARY -->
+            <div class="summary">
+
+                <div class="summary-line">
+                    <span>Booking Type</span>
+                    <strong id="summaryType">Individual Seats</strong>
+                </div>
+
+                <div class="summary-line">
+                    <span>Seats / Tables</span>
+                    <strong id="summaryQuantity">1 Seat</strong>
+                </div>
+
+                <div class="summary-line">
+                    <span>Assigned / Selected</span>
+                    <strong id="summarySelection">1</strong>
+                </div>
+
+                <div class="total">
+                    <span>TOTAL AMOUNT</span>
+                    <span id="totalAmount">LKR 6,500.00</span>
+                </div>
+
+            </div>
+
+            <div class="terms">
+
+                <label>
+                    <input type="checkbox" id="terms">
+                    I have read and agree to the
+                    <a href="https://colomboleads.org//lions-fundraiser.php#" onclick="return false;">Terms &amp; Conditions</a>.
+                </label>
+
+            </div>
+
+            <button class="button" type="button" id="paymentButton">
+                PROCEED TO PAYMENT
+            </button>
+
+            <div class="secure">
+                🔒 Payments are processed securely via Commercial Bank of Ceylon (CBC) PayCenter.
+            </div>
+
+        </div>
+
+        <!-- EVENT INFORMATION / SEATING MAP -->
+        <aside class="event-card">
+
+            <div class="dummy-image">
+                <div>
+                    <h3>TOGETHER,<br>WE SERVE</h3>
+                    <p>
+                        Support our fundraising initiatives and help us continue
+                        making a meaningful difference in our community.
+                    </p>
+                </div>
+            </div>
+
+            <div class="event-details">
+
+                <h2>Event Details</h2>
+
+                <div class="detail">
+                    <span>Date</span>
+                    <strong>15 November 2026</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Time</span>
+                    <strong>7:00 PM</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Venue</span>
+                    <strong>Grand Ballroom - Hotel Galadari</strong>
+                </div>
+
+                <div class="detail">
+                    <span>Individual Seat</span>
+                    <strong>LKR 6,500.00</strong>
+                </div>
+
+                <div class="seat-map">
+
+                    <div class="stage">
+                        STAGE / MAIN AREA
+                    </div>
+
+                    <div class="seat-map-grid">
+
+                        
+                            <div class="seat-dot ">
+                                1                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                2                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                3                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                4                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                5                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                6                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                7                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                8                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                9                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                10                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                11                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                12                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                13                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                14                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                15                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                16                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                17                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                18                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                19                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                20                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                21                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                22                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                23                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                24                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                25                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                26                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                27                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                28                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                29                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                30                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                31                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                32                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                33                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                34                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                35                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                36                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                37                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                38                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                39                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                40                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                41                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                42                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                43                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                44                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                45                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                46                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                47                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                48                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                49                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                50                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                51                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                52                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                53                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                54                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                55                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                56                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                57                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                58                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                59                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                60                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                61                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                62                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                63                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                64                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                65                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                66                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                67                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                68                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                69                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                70                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                71                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                72                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                73                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                74                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                75                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                76                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                77                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                78                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                79                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                80                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                81                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                82                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                83                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                84                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                85                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                86                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                87                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                88                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                89                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                90                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                91                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                92                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                93                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                94                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                95                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                96                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                97                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                98                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                99                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                100                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                101                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                102                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                103                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                104                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                105                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                106                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                107                            </div>
+
+                        
+                            <div class="seat-dot sold">
+                                108                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                109                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                110                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                111                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                112                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                113                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                114                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                115                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                116                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                117                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                118                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                119                            </div>
+
+                        
+                            <div class="seat-dot ">
+                                120                            </div>
+
+                        
+                    </div>
+
+                    <div class="legend">
+                        <span>Available</span>
+                        <span class="booked">Booked</span>
+                    </div>
+
+                    <p class="small">
+                        Seating map is for reference. Individual seat allocation
+                        and table availability are determined by the booking system.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+    </div>
+</div>
+
+<script>
+const ticketPrice = 6500;
+const tableTypes = {"10":{"label":"10-Seater Table","capacity":10,"price":78000},"5":{"label":"5-Seater Table","capacity":5,"price":40000}};
+const tables = [{"id":"T01","type":"10","seats":[1,2,3,4,5,6,7,8,9,10],"status":"available"},{"id":"T02","type":"10","seats":[11,12,13,14,15,16,17,18,19,20],"status":"available"},{"id":"T03","type":"10","seats":[21,22,23,24,25,26,27,28,29,30],"status":"booked"},{"id":"T04","type":"10","seats":[31,32,33,34,35,36,37,38,39,40],"status":"available"},{"id":"T05","type":"10","seats":[41,42,43,44,45,46,47,48,49,50],"status":"available"},{"id":"T06","type":"10","seats":[51,52,53,54,55,56,57,58,59,60],"status":"available"},{"id":"T07","type":"10","seats":[61,62,63,64,65,66,67,68,69,70],"status":"booked"},{"id":"T08","type":"10","seats":[71,72,73,74,75,76,77,78,79,80],"status":"available"},{"id":"T09","type":"10","seats":[81,82,83,84,85,86,87,88,89,90],"status":"available"},{"id":"T10","type":"10","seats":[91,92,93,94,95,96,97,98,99,100],"status":"available"},{"id":"T11","type":"10","seats":[101,102,103,104,105,106,107,108,109,110],"status":"available"},{"id":"T12","type":"10","seats":[111,112,113,114,115,116,117,118,119,120],"status":"available"},{"id":"T13","type":"10","seats":[121,122,123,124,125,126,127,128,129,130],"status":"available"},{"id":"T14","type":"10","seats":[131,132,133,134,135,136,137,138,139,140],"status":"available"},{"id":"T15","type":"10","seats":[141,142,143,144,145,146,147,148,149,150],"status":"available"},{"id":"T16","type":"10","seats":[151,152,153,154,155,156,157,158,159,160],"status":"available"},{"id":"T17","type":"10","seats":[161,162,163,164,165,166,167,168,169,170],"status":"available"},{"id":"T18","type":"10","seats":[171,172,173,174,175,176,177,178,179,180],"status":"booked"},{"id":"T19","type":"10","seats":[181,182,183,184,185,186,187,188,189,190],"status":"available"},{"id":"T20","type":"10","seats":[191,192,193,194,195,196,197,198,199,200],"status":"available"},{"id":"T21","type":"10","seats":[201,202,203,204,205,206,207,208,209,210],"status":"available"},{"id":"T22","type":"10","seats":[211,212,213,214,215,216,217,218,219,220],"status":"available"},{"id":"T23","type":"10","seats":[221,222,223,224,225,226,227,228,229,230],"status":"available"},{"id":"T24","type":"10","seats":[231,232,233,234,235,236,237,238,239,240],"status":"available"},{"id":"T25","type":"10","seats":[241,242,243,244,245,246,247,248,249,250],"status":"available"},{"id":"T26","type":"10","seats":[251,252,253,254,255,256,257,258,259,260],"status":"available"},{"id":"T27","type":"10","seats":[261,262,263,264,265,266,267,268,269,270],"status":"available"},{"id":"T28","type":"10","seats":[271,272,273,274,275,276,277,278,279,280],"status":"available"},{"id":"T29","type":"10","seats":[281,282,283,284,285,286,287,288,289,290],"status":"available"},{"id":"T30","type":"10","seats":[291,292,293,294,295,296,297,298,299,300],"status":"available"},{"id":"T31","type":"10","seats":[301,302,303,304,305,306,307,308,309,310],"status":"booked"},{"id":"T32","type":"10","seats":[311,312,313,314,315,316,317,318,319,320],"status":"available"},{"id":"T33","type":"10","seats":[321,322,323,324,325,326,327,328,329,330],"status":"available"},{"id":"T34","type":"10","seats":[331,332,333,334,335,336,337,338,339,340],"status":"available"},{"id":"T35","type":"10","seats":[341,342,343,344,345,346,347,348,349,350],"status":"available"},{"id":"T36","type":"10","seats":[351,352,353,354,355,356,357,358,359,360],"status":"available"},{"id":"T37","type":"10","seats":[361,362,363,364,365,366,367,368,369,370],"status":"available"},{"id":"T38","type":"10","seats":[371,372,373,374,375,376,377,378,379,380],"status":"available"},{"id":"T39","type":"10","seats":[381,382,383,384,385,386,387,388,389,390],"status":"available"},{"id":"T40","type":"10","seats":[391,392,393,394,395,396,397,398,399,400],"status":"available"},{"id":"T41","type":"5","seats":[201,202,203,204,205],"status":"available"},{"id":"T42","type":"5","seats":[206,207,208,209,210],"status":"available"},{"id":"T43","type":"5","seats":[211,212,213,214,215],"status":"available"},{"id":"T44","type":"5","seats":[216,217,218,219,220],"status":"booked"},{"id":"T45","type":"5","seats":[221,222,223,224,225],"status":"available"},{"id":"T46","type":"5","seats":[226,227,228,229,230],"status":"available"},{"id":"T47","type":"5","seats":[231,232,233,234,235],"status":"available"},{"id":"T48","type":"5","seats":[236,237,238,239,240],"status":"available"},{"id":"T49","type":"5","seats":[241,242,243,244,245],"status":"available"},{"id":"T50","type":"5","seats":[246,247,248,249,250],"status":"available"}];
+
+const individualPanel = document.getElementById('individualPanel');
+const tablePanel = document.getElementById('tablePanel');
+
+const typeIndividual = document.getElementById('typeIndividual');
+const typeTable = document.getElementById('typeTable');
+
+const ticketQty = document.getElementById('ticketQty');
+const tableType = document.getElementById('tableType');
+const tableQty = document.getElementById('tableQty');
+const availableTable = document.getElementById('availableTable');
+
+const seatAllocation = document.getElementById('seatAllocation');
+const tableAllocation = document.getElementById('tableAllocation');
+
+const summaryType = document.getElementById('summaryType');
+const summaryQuantity = document.getElementById('summaryQuantity');
+const summarySelection = document.getElementById('summarySelection');
+const totalAmount = document.getElementById('totalAmount');
+
+let selectedTables = [];
+
+function money(n) {
+    return 'LKR ' + Number(n).toLocaleString('en-LK', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+function getAvailableTables(type) {
+    return tables.filter(table =>
+        table.type === type &&
+        table.status === 'available'
+    );
+}
+
+function populateAvailableTables() {
+
+    const type = tableType.value;
+
+    availableTable.innerHTML = '';
+
+    selectedTables = [];
+
+    if (!type) {
+        availableTable.innerHTML =
+            '<option value="">Select a table type first</option>';
+
+        updateTableSummary();
+        return;
+    }
+
+    const available = getAvailableTables(type);
+
+    if (available.length === 0) {
+        availableTable.innerHTML =
+            '<option value="">No tables currently available</option>';
+
+        updateTableSummary();
+        return;
+    }
+
+    available.forEach(table => {
+
+        const option = document.createElement('option');
+
+        option.value = table.id;
+
+        option.textContent =
+            table.id +
+            ' – ' +
+            tableTypes[type].label;
+
+        availableTable.appendChild(option);
+
+    });
+
+    updateTableSummary();
+}
+
+function allocateSeats(qty) {
+
+    /*
+     * Prototype only.
+     * Production version must perform this allocation against
+     * the database using a transaction/temporary booking lock.
+     */
+
+    const sold = [3,4,5,27,28,76,77,108];
+
+    const available = [];
+
+    for (let i = 1; i <= 120; i++) {
+        if (!sold.includes(i)) {
+            available.push(i);
+        }
+    }
+
+    for (let i = 0; i <= available.length - qty; i++) {
+
+        const group = available.slice(i, i + qty);
+
+        let contiguous = true;
+
+        for (let j = 1; j < group.length; j++) {
+
+            if (group[j] !== group[j - 1] + 1) {
+                contiguous = false;
+                break;
+            }
+
+        }
+
+        if (contiguous) {
+            return group;
+        }
+    }
+
+    return [];
+}
+
+function updateIndividual() {
+
+    const qty = Math.max(
+        1,
+        parseInt(ticketQty.value || 1, 10)
+    );
+
+    const seats = allocateSeats(qty);
+
+    summaryType.textContent = 'Individual Seats';
+
+    summaryQuantity.textContent =
+        qty + (qty === 1 ? ' Seat' : ' Seats');
+
+    summarySelection.textContent =
+        seats.length === qty
+            ? seats.join(', ')
+            : 'Not enough seats available';
+
+    totalAmount.textContent =
+        money(qty * ticketPrice);
+
+    seatAllocation.innerHTML =
+        '<strong>Seats to be assigned:</strong> ' +
+        (
+            seats.length === qty
+                ? seats.join(', ') +
+                  '<br><span class="small">' +
+                  'Prototype allocation. In production, seats will be temporarily locked during payment and confirmed only after successful payment.' +
+                  '</span>'
+                : 'Not enough seats are available.'
+        );
+}
+
+function updateTableSummary() {
+
+    const type = tableType.value;
+
+    const qty = Math.max(
+        1,
+        parseInt(tableQty.value || 1, 10)
+    );
+
+    if (!type) {
+
+        summaryType.textContent = 'Table Booking';
+
+        summaryQuantity.textContent =
+            qty + (qty === 1 ? ' Table' : ' Tables');
+
+        summarySelection.textContent =
+            'Select table(s)';
+
+        totalAmount.textContent = money(0);
+
+        tableAllocation.innerHTML =
+            '<strong>Table reservation:</strong> ' +
+            'Select a table type and available table(s).';
+
+        return;
+    }
+
+    const selected = Array.from(
+        availableTable.selectedOptions
+    ).map(option => option.value);
+
+    selectedTables = selected;
+
+    const price = Number(
+        tableTypes[type].price
+    );
+
+    summaryType.textContent =
+        'Table Booking';
+
+    summaryQuantity.textContent =
+        selected.length +
+        (selected.length === 1 ? ' Table' : ' Tables');
+
+    summarySelection.textContent =
+        selected.length
+            ? selected.join(', ')
+            : 'Select table(s)';
+
+    totalAmount.textContent =
+        money(selected.length * price);
+
+    const selectedTableObjects =
+        tables.filter(table =>
+            selected.includes(table.id)
+        );
+
+    const seatList = [];
+
+    selectedTableObjects.forEach(table => {
+        seatList.push(
+            table.id +
+            ': Seats ' +
+            table.seats.join(', ')
+        );
+    });
+
+    tableAllocation.innerHTML =
+        '<strong>Selected table(s):</strong> ' +
+        (
+            seatList.length
+                ? seatList.join('<br>')
+                : 'Select table(s) from the list.'
+        );
+}
+
+document.querySelectorAll(
+    'input[name="booking_type"]'
+).forEach(radio => {
+
+    radio.addEventListener('change', () => {
+
+        const individual =
+            radio.value === 'individual' &&
+            radio.checked;
+
+        individualPanel.classList.toggle(
+            'active',
+            individual
+        );
+
+        tablePanel.classList.toggle(
+            'active',
+            !individual
+        );
+
+        typeIndividual.classList.toggle(
+            'active',
+            individual
+        );
+
+        typeTable.classList.toggle(
+            'active',
+            !individual
+        );
+
+        if (individual) {
+            updateIndividual();
+        } else {
+            populateAvailableTables();
+            updateTableSummary();
+        }
+
+    });
+
+});
+
+ticketQty.addEventListener(
+    'input',
+    updateIndividual
+);
+
+tableType.addEventListener(
+    'change',
+    populateAvailableTables
+);
+
+tableQty.addEventListener(
+    'input',
+    updateTableSummary
+);
+
+availableTable.addEventListener(
+    'change',
+    updateTableSummary
+);
+
+document.getElementById(
+    'paymentButton'
+).addEventListener('click', () => {
+
+    const bookingType =
+        document.querySelector(
+            'input[name="booking_type"]:checked'
+        ).value;
+
+    if (!document.getElementById('terms').checked) {
+
+        alert(
+            'Please agree to the Terms & Conditions before proceeding.'
+        );
+
+        return;
+    }
+
+    if (
+        bookingType === 'table' &&
+        selectedTables.length === 0
+    ) {
+
+        alert(
+            'Please select the table(s) you would like to reserve.'
+        );
+
+        return;
+    }
+
+    alert(
+        'Prototype only\\n\\n' +
+        'Production flow should temporarily lock the selected seats/tables, ' +
+        'redirect the customer to the payment gateway, and confirm the booking ' +
+        'only after receiving a successful payment response.'
+    );
+
+});
+
+updateIndividual();
+</script>
+
+
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true" style="visibility: visible !important;"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

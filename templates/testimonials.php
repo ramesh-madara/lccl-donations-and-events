@@ -7,10 +7,15 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$design = get_option('lccl_de_testimonial_design', 'design-1');
+if ( ! isset( $design ) ) {
+	$design = get_option('lccl_de_testimonial_design', 'design-1');
+}
+if ( ! isset( $scroll ) ) {
+	$scroll = get_option('lccl_de_testimonial_scroll', 'scroll-snap');
+}
 ?>
 
-<div class="lccl-testimonials-wrapper lccl-<?php echo esc_attr( $design ); ?>">
+<div class="lccl-testimonials-wrapper lccl-<?php echo esc_attr( $design ); ?> lccl-<?php echo esc_attr( $scroll ); ?>">
 	<div class="lccl-testimonials-carousel" data-lccl-testimonials>
 		<div class="lccl-testimonials-track">
 			<?php foreach ( $active_testimonials as $t ) : ?>
@@ -88,6 +93,13 @@ $design = get_option('lccl_de_testimonial_design', 'design-1');
 				</div>
 			<?php endforeach; ?>
 		</div>
+		
+		<button type="button" class="lccl-t-nav lccl-t-nav-prev" aria-label="Previous testimonial">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+		</button>
+		<button type="button" class="lccl-t-nav lccl-t-nav-next" aria-label="Next testimonial">
+			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+		</button>
 	</div>
 </div>
 

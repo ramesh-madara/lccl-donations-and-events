@@ -18,11 +18,21 @@
 	}
 
 	function knownTab( tab ) {
-		return 'users' === tab || 'sms' === tab || 'gateway' === tab || 'membership-fees' === tab || 'projects' === tab || 'testimonials' === tab ? tab : 'programs';
+		var nav = document.querySelector( '[data-lccl-tabs]' );
+		if ( ! nav ) return 'programs';
+		var links = nav.querySelectorAll( '[data-tab]' );
+		for ( var i = 0; i < links.length; i++ ) {
+			if ( links[i].getAttribute( 'data-tab' ) === tab ) return tab;
+		}
+		return 'programs';
 	}
 
 	function knownProgram( program ) {
-		return ( 'blood-donation' === program || 'our-projects' === program || 'free-spectacles' === program ) ? program : '';
+		var links = document.querySelectorAll( '[data-program]' );
+		for ( var i = 0; i < links.length; i++ ) {
+			if ( links[i].getAttribute( 'data-program' ) === program ) return program;
+		}
+		return '';
 	}
 
 	function tabFromUrl() {

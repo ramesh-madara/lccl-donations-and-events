@@ -3,207 +3,417 @@
  * Fundraiser Seat Booking form.
  *
  * @package LCCL_Donations_And_Events
+ * 
+ * @var array $active_event
  */
 
 defined( 'ABSPATH' ) || exit;
 
 $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
+
+if ( ! $active_event ) {
+	echo '<div class="lccl-fr-card" style="margin-top:20px; text-align:center;"><p>No active fundraiser event found.</p></div>';
+	return;
+}
+
+$types = LCCL_DE_Fundraiser::get_table_types( $active_event['id'] );
+$tables = LCCL_DE_Fundraiser::get_tables( $active_event['id'] );
+$ticket_price = (float) $active_event['ticket_price'];
+
+// Group tables by type ID
+$tables_by_type = array();
+foreach ( $tables as $tbl ) {
+	if ( ! isset( $tables_by_type[ $tbl['type_id'] ] ) ) {
+		$tables_by_type[ $tbl['type_id'] ] = array();
+	}
+	$tables_by_type[ $tbl['type_id'] ][] = $tbl;
+}
+
+// Ensure JS gets the data
+$js_data = array(
+	'ticket_price' => $ticket_price,
+	'types'        => $types,
+	'tables'       => $tables_by_type,
+);
 ?>
-<div class="lccl-bdf lccl-bdf--membership lccl-bdf--fundraiser">
-	<div class="lccl-membership-layout">
-		<form
-			class="lccl-bdf__form lccl-membership__form"
-			onsubmit="return false;"
-			id="lccl-fundraiser-form"
-			novalidate
-		>
+<div class="lccl-fr-wrapper">
+	<div class="lccl-fr-layout">
+
+		<!-- BOOKING FORM -->
+		<form method="POST" action="" id="lccl-fundraiser-form" class="lccl-fr-card event-card" novalidate style="margin: 0; display: block;">
 			<?php wp_nonce_field( LCCL_DE_Fundraiser_Form::NONCE_ACTION, LCCL_DE_Fundraiser_Form::NONCE_FIELD ); ?>
+			<input type="hidden" name="event_id" value="<?php echo esc_attr( $active_event['id'] ); ?>">
 
-			<header class="lccl-bdf__header">
-				<h2 class="lccl-bdf__title"><?php esc_html_e( 'LCCL FUNDRAISER', 'lccl-de' ); ?></h2>
-				<p class="lccl-bdf__intro"><?php esc_html_e( 'Important: This payment is specifically for the Colombo Leads Fundraiser.', 'lccl-de' ); ?></p>
-				<p class="lccl-bdf__required-note">
-					<?php
-					printf(
-						/* translators: %s: required field asterisk. */
-						esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
-						'<span class="lccl-bdf__req">*</span>'
-					);
-					?>
-				</p>
-			</header>
+			<h1><?php echo esc_html( $active_event['name'] ); ?></h1>
+			<p class="intro">
+				<?php esc_html_e( 'Book individual seats or reserve a table for this fundraising event.', 'lccl-de' ); ?>
+				<?php esc_html_e( 'Your booking will be confirmed after successful payment.', 'lccl-de' ); ?>
+			</p>
 
-			<div class="lccl-mf">
-				<div class="lccl-mf__section">
-				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field lccl-mf__field--first">
-						<label class="lccl-bdf__label"><?php esc_html_e( 'Ticket Price (LKR)', 'lccl-de' ); ?></label>
-						<input class="lccl-bdf__input" type="number" value="6500" readonly>
-					</div>
-					<div class="lccl-bdf__field lccl-mf__field--first">
-						<label class="lccl-bdf__label"><?php esc_html_e( 'Table Price (LKR)', 'lccl-de' ); ?></label>
-						<input class="lccl-bdf__input" type="number" value="78000" readonly>
-					</div>
-				</div>
-
-				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-fundraiser-tickets"><?php esc_html_e( 'Number of Tickets', 'lccl-de' ); ?></label>
-						<input class="lccl-bdf__input" type="number" id="lccl-fundraiser-tickets" name="num_tickets" min="1">
-					</div>
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-fundraiser-tables"><?php esc_html_e( 'Number of Tables', 'lccl-de' ); ?></label>
-						<input class="lccl-bdf__input" type="number" id="lccl-fundraiser-tables" name="num_tables" min="1">
-					</div>
-				</div>
-
-				<input type="hidden" name="ticketCount" id="lccl-fundraiser-hidden-tickets">
-
-				<div class="lccl-bdf__field" id="lccl-fundraiser-tables-container" style="margin-top: 24px;">
-					<label class="lccl-bdf__label"><?php esc_html_e( 'Select Tables', 'lccl-de' ); ?></label>
-					<div class="lccl-fundraiser__table-grid" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-						<?php for ( $i = 1; $i <= 30; $i++ ) : ?>
-							<label class="lccl-fundraiser__table-label" style="display: flex; align-items: center; gap: 5px; width: calc(20% - 10px); padding: 5px; background: var(--lccl-bdf-primary-soft); border-radius: 4px; cursor: pointer;">
-								<input type="checkbox" name="selectedTables[]" value="T<?php echo $i; ?>" class="lccl-fundraiser__table-cb">
-								<span style="font-size: 14px; font-weight: 600; color: var(--lccl-bdf-heading);">T<?php echo $i; ?></span>
-							</label>
-						<?php endfor; ?>
-					</div>
-				</div>
+			<div class="section-title">
+				<?php esc_html_e( 'Booking Type', 'lccl-de' ); ?> <span class="required">*</span>
 			</div>
 
-			<div class="lccl-mf__section">
-				<h3 class="lccl-mf__section-title"><?php esc_html_e( 'Attendee Information', 'lccl-de' ); ?></h3>
-				<div class="lccl-bdf__field lccl-mf__field--first">
-					<label class="lccl-bdf__label" for="lccl-fundraiser-name"><?php esc_html_e( 'Name on Tickets', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span></label>
-					<input class="lccl-bdf__input" type="text" id="lccl-fundraiser-name" name="attendee_name" required>
-				</div>
-				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-fundraiser-email"><?php esc_html_e( 'Email Address', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span></label>
-						<input class="lccl-bdf__input" type="email" id="lccl-fundraiser-email" name="attendee_email" required>
-					</div>
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-fundraiser-phone"><?php esc_html_e( 'Mobile Number', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span></label>
-						<input class="lccl-bdf__input" type="tel" id="lccl-fundraiser-phone" name="attendee_phone" required>
-					</div>
-				</div>
-			</div>
-
-			<div class="lccl-df__summary">
-				<div class="lccl-df__summary-row lccl-df__summary-row--total">
-					<span class="lccl-df__summary-label"><?php esc_html_e( 'Total Amount', 'lccl-de' ); ?></span>
-					<span class="lccl-df__summary-value"><span class="lccl-df__currency-code">LKR</span> <span id="lccl-fundraiser-total-display">0.00</span></span>
-					<input type="hidden" name="total_amount" id="lccl-fundraiser-total-hidden" value="0">
-				</div>
-			</div>
-
-			<div class="lccl-bdf__terms">
-				<label class="lccl-bdf__terms-label">
-					<input class="lccl-bdf__checkbox" type="checkbox" name="terms" id="lccl-fundraiser-terms" required>
-					<span>
-						<?php
-						printf(
-							/* translators: %s: link to terms and conditions */
-							esc_html__( 'I agree to the %s.', 'lccl-de' ),
-							'<a href="' . esc_url( get_privacy_policy_url() ) . '" target="_blank">' . esc_html__( 'Terms and Conditions', 'lccl-de' ) . '</a>'
-						);
-						?>
+			<div class="booking-type">
+				<label class="type-option active" id="typeIndividual">
+					<input type="radio" name="booking_type" value="individual" checked>
+					<span class="type-title"><?php esc_html_e( 'Individual Seats', 'lccl-de' ); ?></span>
+					<span class="type-help">
+						<?php esc_html_e( 'Book one or more seats. The system will assign available seats automatically.', 'lccl-de' ); ?>
+					</span>
+				</label>
+				<label class="type-option" id="typeTable">
+					<input type="radio" name="booking_type" value="table">
+					<span class="type-title"><?php esc_html_e( 'Table Booking', 'lccl-de' ); ?></span>
+					<span class="type-help">
+						<?php esc_html_e( 'Select an available table. All seats assigned to the table will be reserved together.', 'lccl-de' ); ?>
 					</span>
 				</label>
 			</div>
 
-			<button
-				class="lccl-bdf__submit lccl-df__submit lccl-mf__pay-btn"
-				type="button"
-				id="lccl-fundraiser-submit-btn"
-				disabled aria-disabled="true"
-				onclick="alert('This is a concept UI. Payments and database connections are disabled.');"
-			>
-				<span class="lccl-mf__pay-label"><?php esc_html_e( 'Proceed to Payment', 'lccl-de' ); ?></span>
+			<!-- INDIVIDUAL SEAT BOOKING -->
+			<div id="panelIndividual" class="booking-panel active">
+				<div class="section-title"><?php esc_html_e( 'Individual Seat Booking', 'lccl-de' ); ?></div>
+				<div class="lccl-fr-row">
+					<div>
+						<label for="ticketQty"><?php esc_html_e( 'Number of Seats', 'lccl-de' ); ?> <span class="required">*</span></label>
+						<input type="number" name="qty" id="ticketQty" min="1" max="10" value="1">
+					</div>
+					<div>
+						<label><?php esc_html_e( 'Ticket Price', 'lccl-de' ); ?></label>
+						<input type="text" value="LKR <?php echo esc_attr( number_format( $ticket_price, 2 ) ); ?>" readonly>
+					</div>
+				</div>
+				<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #666; line-height: 1.5;">
+					<?php esc_html_e( 'Individual seat bookings do not require you to select a table. The system will allocate available seats automatically, preferably together.', 'lccl-de' ); ?>
+				</div>
+				<div class="seat-info" style="padding: 12px 15px; background: #f5f5f5; font-size: 13px; line-height: 1.5;">
+					<strong><?php esc_html_e( 'Seats to be assigned:', 'lccl-de' ); ?></strong> <span id="indivSeatCount">1</span><br>
+					<span class="small" style="color: #777; font-size: 11px;"><?php esc_html_e( 'The system will allocate available seats automatically.', 'lccl-de' ); ?></span>
+				</div>
+			</div>
+
+			<!-- TABLE BOOKING -->
+			<div id="panelTable" class="booking-panel" style="display: none;">
+				<div class="section-title"><?php esc_html_e( 'Table Booking', 'lccl-de' ); ?></div>
+				<div class="lccl-fr-row">
+					<div>
+						<label for="tableTypeSelect"><?php esc_html_e( 'Table Type', 'lccl-de' ); ?> <span class="required">*</span></label>
+						<select id="tableTypeSelect">
+							<option value=""><?php esc_html_e( 'Select table type', 'lccl-de' ); ?></option>
+							<?php foreach ( $types as $t ) : ?>
+								<option value="<?php echo esc_attr( $t['id'] ); ?>" data-price="<?php echo esc_attr( $t['price'] ); ?>"><?php echo esc_html( $t['name'] ); ?> – LKR <?php echo esc_html( number_format( $t['price'], 2 ) ); ?></option>
+							<?php endforeach; ?>
+						</select>
+					</div>
+					<div>
+						<label for="tableQty"><?php esc_html_e( 'Number of Tables', 'lccl-de' ); ?> <span class="required">*</span></label>
+						<input type="number" id="tableQty" min="1" max="10" value="1" disabled>
+					</div>
+				</div>
+				<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #666; line-height: 1.5;">
+					<?php esc_html_e( 'Select the available table(s) you would like to reserve. Booked tables are not available for selection.', 'lccl-de' ); ?>
+				</div>
+				<div class="table-selector" style="margin-bottom: 15px;">
+					<label for="tableSelect"><?php esc_html_e( 'Select Table(s)', 'lccl-de' ); ?> <span class="required">*</span></label>
+					<select name="selectedTables[]" id="tableSelect" multiple size="6" disabled style="height: auto; min-height: 120px;">
+						<option value=""><?php esc_html_e( 'Select a table type first', 'lccl-de' ); ?></option>
+					</select>
+					<div class="table-status-note" style="font-size: 11px; color: #777; margin-top: 5px;">
+						<?php esc_html_e( 'Hold Ctrl (Windows) or Command (Mac) to select multiple tables.', 'lccl-de' ); ?>
+					</div>
+				</div>
+			</div>
+
+			<!-- ATTENDEE INFORMATION -->
+			<div class="section-title"><?php esc_html_e( 'Attendee Information', 'lccl-de' ); ?></div>
+			<div class="lccl-fr-row">
+				<div style="grid-column: span 2;">
+					<label><?php esc_html_e( 'Name on Tickets', 'lccl-de' ); ?> <span class="required">*</span></label>
+					<input type="text" name="attendee_name" required>
+				</div>
+			</div>
+			<div class="lccl-fr-row">
+				<div>
+					<label><?php esc_html_e( 'Email Address', 'lccl-de' ); ?> <span class="required">*</span></label>
+					<input type="email" name="attendee_email" required>
+				</div>
+				<div>
+					<label><?php esc_html_e( 'Mobile Number', 'lccl-de' ); ?> <span class="required">*</span></label>
+					<input type="tel" name="attendee_phone" required>
+				</div>
+			</div>
+
+			<!-- SUMMARY -->
+			<div class="summary" style="margin-top: 25px;">
+				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span><?php esc_html_e( 'Booking Type', 'lccl-de' ); ?></span>
+					<strong id="summaryType"><?php esc_html_e( 'Individual Seats', 'lccl-de' ); ?></strong>
+				</div>
+				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span><?php esc_html_e( 'Seats / Tables', 'lccl-de' ); ?></span>
+					<strong id="summaryQuantity"><?php esc_html_e( '1 Seat', 'lccl-de' ); ?></strong>
+				</div>
+				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span><?php esc_html_e( 'Assigned / Selected', 'lccl-de' ); ?></span>
+					<strong id="summarySelection">1</strong>
+				</div>
+				<div class="total">
+					<span><?php esc_html_e( 'TOTAL AMOUNT', 'lccl-de' ); ?></span>
+					<span>LKR <span id="lccl-fundraiser-total-display"><?php echo number_format( $ticket_price, 2 ); ?></span></span>
+					<input type="hidden" name="total_amount" id="lccl-fundraiser-total-hidden" value="<?php echo esc_attr( $ticket_price ); ?>">
+				</div>
+			</div>
+
+			<div class="terms">
+				<label style="display: flex; align-items: center; font-size: 14px; margin-top: 20px;">
+					<input type="checkbox" id="terms_agree" required style="width: auto; height: auto; margin-right: 8px;">
+					<span><?php esc_html_e( 'I have read and agree to the', 'lccl-de' ); ?> <a href="#" onclick="return false;"><?php esc_html_e( 'Terms & Conditions', 'lccl-de' ); ?></a>.</span>
+				</label>
+			</div>
+
+			<button class="lccl-fr-button" type="submit" id="lccl-fundraiser-submit" style="margin-top: 20px;" disabled>
+				<?php esc_html_e( 'PROCEED TO PAYMENT', 'lccl-de' ); ?>
 			</button>
 
-				<p class="lccl-mf__secure-note">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-					<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
-				</p>
+			<div class="secure">
+				<?php esc_html_e( '🔒 Payments are processed securely via Commercial Bank of Ceylon (CBC) PayCenter.', 'lccl-de' ); ?>
 			</div>
+
 		</form>
 
-		<div class="lccl-membership__image-panel">
-			<img
-				class="lccl-membership__image"
-				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/membership-1.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/membership-1.jpg' ); ?>"
-				alt="<?php esc_attr_e( 'Fundraiser - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
-				loading="lazy"
-				style="border-radius: 8px;"
-			>
-		</div>
-	</div>
+		<!-- EVENT INFORMATION / SEATING MAP -->
+		<aside class="event-card">
+			<div class="dummy-image">
+				<div>
+					<h3><?php esc_html_e( 'TOGETHER,', 'lccl-de' ); ?><br><?php esc_html_e( 'WE SERVE', 'lccl-de' ); ?></h3>
+					<p><?php esc_html_e( 'Support our fundraising initiatives and help us continue making a meaningful difference in our community.', 'lccl-de' ); ?></p>
+				</div>
+			</div>
+			
+			<div class="event-details">
+				<h2><?php echo esc_html( $active_event['name'] ); ?></h2>
+				<div class="detail">
+					<span><?php esc_html_e( 'Date', 'lccl-de' ); ?></span>
+					<strong><?php echo esc_html( $active_event['event_date'] ? gmdate( '15 M Y', strtotime( $active_event['event_date'] ) ) : 'TBA' ); ?></strong>
+				</div>
+				<div class="detail">
+					<span><?php esc_html_e( 'Time', 'lccl-de' ); ?></span>
+					<strong><?php echo esc_html( $active_event['event_time'] ? gmdate( 'h:i A', strtotime( $active_event['event_time'] ) ) : 'TBA' ); ?></strong>
+				</div>
+				<div class="detail">
+					<span><?php esc_html_e( 'Venue', 'lccl-de' ); ?></span>
+					<strong><?php echo esc_html( $active_event['venue'] ?: 'TBA' ); ?></strong>
+				</div>
+				<div class="detail">
+					<span><?php esc_html_e( 'Base Ticket', 'lccl-de' ); ?></span>
+					<strong>LKR <?php echo esc_html( number_format( $ticket_price, 2 ) ); ?></strong>
+				</div>
 
-	<div class="lccl-fundraiser__map-container" style="margin-top: 40px; text-align: center;">
-		<h3 class="lccl-bdf__title" style="margin-bottom: 20px; font-size: 1.5rem; text-align: center;"><?php esc_html_e( 'Seating Map', 'lccl-de' ); ?></h3>
-		<img src="https://i.imgur.com/gFRICVl.jpeg" alt="Seating Map" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+				<div class="seat-map">
+					<div class="stage"><?php esc_html_e( 'STAGE', 'lccl-de' ); ?></div>
+					<div class="seat-map-grid">
+						<?php for ( $i = 0; $i < 40; $i++ ) : ?>
+							<div class="seat-dot <?php echo ( wp_rand(0, 10) < 3 ) ? 'sold' : ''; ?>"></div>
+						<?php endfor; ?>
+					</div>
+					<div class="legend">
+						<span><?php esc_html_e( 'Available', 'lccl-de' ); ?></span>
+						<span class="booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?></span>
+					</div>
+				</div>
+			</div>
+		</aside>
+
 	</div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-	const form = document.getElementById('lccl-fundraiser-form');
+	var fundData = <?php echo wp_json_encode( $js_data ); ?>;
+	var form = document.getElementById('lccl-fundraiser-form');
 	if (!form) return;
 
-	const numTickets = document.getElementById('lccl-fundraiser-tickets');
-	const numTables = document.getElementById('lccl-fundraiser-tables');
-	const hiddenTickets = document.getElementById('lccl-fundraiser-hidden-tickets');
-	const tablesContainer = document.getElementById('lccl-fundraiser-tables-container');
-	const checkboxes = document.querySelectorAll('.lccl-fundraiser__table-cb');
+	var typeIndiv = document.getElementById('typeIndividual');
+	var typeTable = document.getElementById('typeTable');
+	var panelIndiv = document.getElementById('panelIndividual');
+	var panelTable = document.getElementById('panelTable');
 	
-	const totalDisplay = document.getElementById('lccl-fundraiser-total-display');
-	const totalHidden = document.getElementById('lccl-fundraiser-total-hidden');
-	const submitBtn = document.getElementById('lccl-fundraiser-submit-btn');
-	const termsCb = document.getElementById('lccl-fundraiser-terms');
-
-	const ticketPrice = 6500;
-	const tablePrice = 78000;
+	var inputQty = document.getElementById('ticketQty');
+	var indivSeatCount = document.getElementById('indivSeatCount');
+	var inputTableQty = document.getElementById('tableQty');
+	var selectType = document.getElementById('tableTypeSelect');
+	var selectTable = document.getElementById('tableSelect');
 	
-	let requestedTablesCount = 0;
+	var totalDisp = document.getElementById('lccl-fundraiser-total-display');
+	var totalHid = document.getElementById('lccl-fundraiser-total-hidden');
+	
+	var sumType = document.getElementById('summaryType');
+	var sumQty = document.getElementById('summaryQuantity');
+	var sumSel = document.getElementById('summarySelection');
 
-	function calculateTotal() {
-		let tickets = parseInt(numTickets.value, 10) || 0;
-		let tables = parseInt(numTables.value, 10) || 0;
-		requestedTablesCount = tables;
-
-		let total = (tickets * ticketPrice) + (tables * tablePrice);
-		
-		totalDisplay.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-		totalHidden.value = total;
-
-		checkFormValidity();
+	var submitBtn = document.getElementById('lccl-fundraiser-submit');
+	var termsAgree = document.getElementById('terms_agree');
+	
+	var mode = 'individual';
+	
+	function formatLKR(val) {
+		return val.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 	}
 
-	function checkFormValidity() {
-		const isValid = termsCb.checked && parseInt(totalHidden.value, 10) > 0;
-		if (isValid) {
+	function validateState() {
+		var valid = false;
+		if (mode === 'individual') {
+			var q = parseInt(inputQty.value) || 0;
+			valid = q > 0;
+		} else {
+			var tq = parseInt(inputTableQty.value) || 0;
+			var type = selectType.value;
+			var selCount = 0;
+			for (var i = 0; i < selectTable.options.length; i++) {
+				if (selectTable.options[i].selected && selectTable.options[i].value !== '') selCount++;
+			}
+			valid = (type !== '' && tq > 0 && selCount === tq);
+		}
+		
+		if (valid && termsAgree.checked) {
 			submitBtn.removeAttribute('disabled');
-			submitBtn.removeAttribute('aria-disabled');
 		} else {
 			submitBtn.setAttribute('disabled', 'disabled');
-			submitBtn.setAttribute('aria-disabled', 'true');
 		}
 	}
-
-	numTickets.addEventListener('input', calculateTotal);
-	numTables.addEventListener('input', calculateTotal);
-	termsCb.addEventListener('change', checkFormValidity);
-
-	checkboxes.forEach(cb => {
-		cb.addEventListener('change', function() {
-			let checkedCount = document.querySelectorAll('.lccl-fundraiser__table-cb:checked').length;
-			if (checkedCount > requestedTablesCount) {
-				alert(`You can only select ${requestedTablesCount} tables.`);
-				this.checked = false;
+	
+	function updateTotal() {
+		var tot = 0;
+		if (mode === 'individual') {
+			var q = parseInt(inputQty.value) || 0;
+			tot = q * fundData.ticket_price;
+			indivSeatCount.textContent = q;
+			
+			sumType.textContent = 'Individual Seats';
+			sumQty.textContent = q + (q === 1 ? ' Seat' : ' Seats');
+			sumSel.textContent = q;
+		} else {
+			var tq = parseInt(inputTableQty.value) || 0;
+			var type = selectType.value;
+			var selCount = 0;
+			for (var i = 0; i < selectTable.options.length; i++) {
+				if (selectTable.options[i].selected && selectTable.options[i].value !== '') selCount++;
 			}
-		});
+			
+			if (type && type !== '') {
+				var opt = selectType.options[selectType.selectedIndex];
+				var p = parseFloat(opt.getAttribute('data-price')) || 0;
+				tot = tq * p;
+			}
+			
+			sumType.textContent = 'Table Booking';
+			sumQty.textContent = tq + (tq === 1 ? ' Table' : ' Tables');
+			sumSel.textContent = selCount + ' of ' + tq;
+		}
+		
+		totalDisp.textContent = formatLKR(tot);
+		totalHid.value = tot;
+		validateState();
+	}
+	
+	function switchMode(m) {
+		mode = m;
+		if (m === 'individual') {
+			typeIndiv.classList.add('active');
+			typeTable.classList.remove('active');
+			panelIndiv.style.display = 'block';
+			panelTable.style.display = 'none';
+		} else {
+			typeTable.classList.add('active');
+			typeIndiv.classList.remove('active');
+			panelTable.style.display = 'block';
+			panelIndiv.style.display = 'none';
+		}
+		updateTotal();
+	}
+
+	typeIndiv.addEventListener('click', function() {
+		typeIndiv.querySelector('input').checked = true;
+		switchMode('individual');
 	});
+	
+	typeTable.addEventListener('click', function() {
+		typeTable.querySelector('input').checked = true;
+		switchMode('table');
+	});
+	
+	inputQty.addEventListener('input', updateTotal);
+	inputTableQty.addEventListener('input', function() {
+		// Prevent user from selecting more tables than available
+		var max = 0;
+		for (var i = 0; i < selectTable.options.length; i++) {
+			if (!selectTable.options[i].disabled && selectTable.options[i].value !== '') max++;
+		}
+		var v = parseInt(this.value) || 1;
+		if (v > max) this.value = max;
+		updateTotal();
+	});
+	
+	selectType.addEventListener('change', function() {
+		var tid = this.value;
+		selectTable.innerHTML = '';
+		if (!tid || tid === '') {
+			selectTable.innerHTML = '<option value="">Select a table type first</option>';
+			selectTable.setAttribute('disabled', 'disabled');
+			inputTableQty.setAttribute('disabled', 'disabled');
+		} else {
+			var avail = fundData.tables[tid] || [];
+			var c = 0;
+			for (var i = 0; i < avail.length; i++) {
+				if (parseInt(avail[i].is_booked) === 0) {
+					var opt = document.createElement('option');
+					opt.value = avail[i].id;
+					opt.textContent = avail[i].table_label;
+					selectTable.appendChild(opt);
+					c++;
+				}
+			}
+			if (c === 0) {
+				selectTable.innerHTML = '<option value="">No available tables for this tier</option>';
+				selectTable.setAttribute('disabled', 'disabled');
+				inputTableQty.setAttribute('disabled', 'disabled');
+			} else {
+				selectTable.removeAttribute('disabled');
+				inputTableQty.removeAttribute('disabled');
+			}
+		}
+		updateTotal();
+	});
+	
+	selectTable.addEventListener('change', function() {
+		var selCount = 0;
+		for (var i = 0; i < this.options.length; i++) {
+			if (this.options[i].selected && this.options[i].value !== '') selCount++;
+		}
+		
+		var max = parseInt(inputTableQty.value) || 1;
+		if (selCount > max) {
+			// Deselect the last selected one
+			// Browser multiselect natively supports ctrl+click, 
+			// if they select too many, we just alert them and revert
+			alert('You can only select ' + max + ' table(s). Increase the "Number of Tables" to select more.');
+			// Simply validate down
+			for (var j = this.options.length - 1; j >= 0; j--) {
+				if (this.options[j].selected) {
+					this.options[j].selected = false;
+					selCount--;
+					if (selCount <= max) break;
+				}
+			}
+		}
+		
+		updateTotal();
+	});
+	
+	termsAgree.addEventListener('change', validateState);
+	
+	// Init
+	updateTotal();
 });
 </script>

@@ -19,6 +19,7 @@ Complete reference for all shortcodes provided by the **LCCL Donations and Event
 | `[lccl_our_projects_admin]` | Dashboard | Join Our Projects reviewer login & dashboard | *None* |
 | `[lccl_spectacles_admin]` | Dashboard | Free Spectacles reviewer login & dashboard | *None* |
 | `[lccl_payment_dashboard]` | Dashboard | Unified payments monitor dashboard (wp-admin accounts only) | *None* |
+| `[lccl_testimonials]` | UI Component | Auto-scrolling carousel of active testimonials | *None* |
 | `[lccl_hello]` | Utility | Scaffolding card to test plugin rendering | `title`, `message` |
 
 All shortcodes are also mapped as **WPBakery Page Builder** elements under the **LCCL** category.
@@ -201,7 +202,25 @@ Frontend payment monitoring dashboard for reviewing all payment routes (Donation
 
 ---
 
-## 4. Developer / Test Utility
+## 4. UI Components
+
+### `[lccl_testimonials]`
+Renders a dynamic, auto-scrolling carousel of active testimonials managed from the WP Admin dashboard.
+
+```text
+[lccl_testimonials]
+```
+
+- **Attributes**: None.
+- **Key Features**:
+  - Automatically fetches and displays only "Active" testimonials.
+  - Infinite auto-scrolling loop (pauses when hovering or when the read-more popup is open).
+  - Truncates long testimonials and automatically adds a "Read more" popup modal.
+  - Card design (Gold Header vs Minimal Left) is globally controlled via **WP Admin → LCCL Programs → Testimonials**.
+
+---
+
+## 5. Developer / Test Utility
 
 ### `[lccl_hello]`
 A lightweight scaffolding card used to verify that the plugin is active, styles are loading, and shortcodes render correctly.

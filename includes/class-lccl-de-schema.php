@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 13;
+	const VERSION = 14;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -431,9 +431,13 @@ class LCCL_DE_Schema {
 
 		dbDelta( $testimonials_sql );
 
+		// Fundraiser tables
+		LCCL_DE_Fundraiser::install( $charset );
+
 		self::ensure_currency_columns();
 		self::$table_names = array();
 		LCCL_DE_Spectacles_Submissions::backfill_letter_tokens();
+		LCCL_DE_Fundraiser::install_sample_event();
 		self::create_default_pages();
 		update_option( self::OPTION, self::VERSION );
 	}

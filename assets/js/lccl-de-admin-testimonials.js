@@ -368,55 +368,37 @@
 		}
 
 		// Design Selector & Preview
-		const mockTestimonial = {
-			name: 'Michael Noth',
-			role: 'Best Testimonial Plugin ever',
-			quote: 'This is hands down the best testimonial plugin I\'ve ever used! It\'s packed with amazing features that allow me to create a stunning and professional testimonial section on my website.',
-		};
-
 		function updateDesignPreview() {
 			const design = $('#lccl-de-testimonial-design').val();
-			const placeholderSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+			const scroll = $('#lccl-de-testimonial-scroll').val();
+			const $preview = $('#lccl-de-design-preview');
 			
-			let html = '';
-			if (design === 'design-1') {
-				html = `
-					<div class="lccl-testimonial-card-inner lccl-design-1-preview" style="background:#fff; border-radius:8px; border:1px solid #e0e0e0; display:flex; flex-direction:column; align-items:center; overflow:hidden;">
-						<div style="width:100%; height:80px; background:#f7c016;"></div>
-						<div style="width:80px; height:80px; margin-top:-40px; border-radius:50%; background:#fff; padding:4px; box-sizing:border-box;">
-							<div style="width:100%; height:100%; border-radius:50%; background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#999;">${placeholderSvg}</div>
-						</div>
-						<h4 style="margin:15px 0 0; font-size:18px; color:#222; text-align:center; font-weight:bold;">${mockTestimonial.name}</h4>
-						<h5 style="margin:0 0 15px; font-size:13px; font-weight:normal; color:#666; text-align:center;">${mockTestimonial.role}</h5>
-						<p style="margin:0; padding:0 30px 30px; font-size:15px; color:#555; text-align:center;">${mockTestimonial.quote}</p>
-					</div>
-				`;
-			} else {
-				// Design 2 Minimal Left
-				html = `
-					<div class="lccl-testimonial-card-inner lccl-design-2-preview" style="background:#fff; border-radius:8px; border:1px solid #f0d98a; border-top:6px solid #f7c016; padding:30px 24px; text-align:left; position:relative;">
-						<div style="font-size:60px; color:rgba(247,192,22,0.2); font-family:Georgia, serif; line-height:1; position:absolute; top:5px; left:14px;">“</div>
-						<p style="margin:0 0 24px 0; font-size:16px; color:#4a4a4a; font-style:italic; position:relative; z-index:1; line-height:1.6;">${mockTestimonial.quote}</p>
-						<div style="display:flex; align-items:center; gap:16px; border-top:1px solid #f0f0f0; padding-top:20px;">
-							<div style="width:55px; height:55px; border-radius:50%; background:#f5f5f5; display:flex; align-items:center; justify-content:center; color:#999; flex-shrink:0;">${placeholderSvg}</div>
-							<div>
-								<h4 style="margin:0 0 2px; font-size:16px; font-weight:bold; color:#222;">${mockTestimonial.name}</h4>
-								<h5 style="margin:0; font-size:13px; font-weight:600; color:#f7c016; text-transform:uppercase;">${mockTestimonial.role}</h5>
-							</div>
-						</div>
-					</div>
-				`;
+			// Pause existing carousel if any
+			$preview.find('.lccl-testimonials-carousel').trigger('pauseCarousel');
+
+			// Get template HTML
+			const templateId = design === 'design-1' ? '#lccl-tpl-design-1' : '#lccl-tpl-design-2';
+			let html = $(templateId).html();
+			
+			$preview.html(html);
+			
+			// Apply scroll class
+			$preview.find('.lccl-testimonials-wrapper').addClass('lccl-' + scroll);
+			
+			// Initialize slider
+			if (typeof window.initLcclTestimonials === 'function') {
+				window.initLcclTestimonials($preview);
 			}
-			$('#lccl-de-design-preview').html(html);
 		}
 
-		$('#lccl-de-testimonial-design').on('change', updateDesignPreview);
+		$('#lccl-de-testimonial-design, #lccl-de-testimonial-scroll').on('change', updateDesignPreview);
 		updateDesignPreview();
 
 		$('#lccl-de-save-design').on('click', function() {
 			const $btn = $(this);
 			const $spinner = $('#lccl-de-design-spinner');
 			const design = $('#lccl-de-testimonial-design').val();
+			const scroll = $('#lccl-de-testimonial-scroll').val();
 			const nonce = $btn.data('nonce');
 			
 			$btn.prop('disabled', true);
@@ -428,7 +410,8 @@
 				data: {
 					action: 'lccl_de_testimonial_design_save',
 					nonce: nonce,
-					design: design
+					design: design,
+					scroll: scroll
 				},
 				success: function(response) {
 					$btn.prop('disabled', false);
