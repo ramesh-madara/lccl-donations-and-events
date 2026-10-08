@@ -1965,8 +1965,12 @@
 						styles: { fontSize: 8, cellPadding: 2 },
 						headStyles: { fillColor: [29, 35, 39], halign: 'center' },
 						columnStyles: {
-							0: { halign: 'center' },
-							9: { cellWidth: 25 }
+							0: { halign: 'center', cellWidth: 10 },
+							1: { cellWidth: 35 },
+							2: { halign: 'center' },
+							4: { halign: 'center' },
+							6: { cellWidth: 35 },
+							9: { cellWidth: 55 }
 						}
 					} );
 					
