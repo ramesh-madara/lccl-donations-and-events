@@ -1930,7 +1930,7 @@
 							doc.addImage( logoImg, imgType, 14, 10, imgWidth, imgHeight );
 						} catch ( e ) {}
 						doc.setFontSize(16);
-						doc.text('LCCL - Free Spectacles Registrations', 14 + imgWidth + 10, 10 + (imgHeight / 2) + 5);
+						doc.text('LCCL - Free Spectacles Registrations', 14 + imgWidth + 4, 10 + (imgHeight / 2), { baseline: 'middle' });
 						startY = 10 + imgHeight + 8;
 					} else {
 						doc.setFontSize(16);
