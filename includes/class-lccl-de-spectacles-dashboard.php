@@ -68,7 +68,7 @@ class LCCL_DE_Spectacles_Dashboard {
 		$logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'full' ) : '';
 		if ( ! $logo_url ) {
 			$upload_dir = wp_upload_dir();
-			$logo_url   = $upload_dir['baseurl'] . '/2021/09/LCCL-LOGO.png';
+			$logo_url   = $upload_dir['baseurl'] . '/2021/09/Logo-resize-replace-01.png';
 		}
 
 		$script_data  = array(

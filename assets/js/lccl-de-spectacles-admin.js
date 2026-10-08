@@ -1930,11 +1930,11 @@
 							doc.addImage( logoImg, imgType, 14, 10, imgWidth, imgHeight );
 						} catch ( e ) {}
 						doc.setFontSize(16);
-						doc.text('LCCL - Free Spectacles Registrations', 14 + imgWidth + 4, 10 + (imgHeight / 2), { baseline: 'middle' });
+						doc.text('LIONS CLUB OF COLOMBO LEADS - FREE SPECTACLES REGISTRATIONS', 14 + imgWidth + 4, 10 + (imgHeight / 2), { baseline: 'middle' });
 						startY = 10 + imgHeight + 8;
 					} else {
 						doc.setFontSize(16);
-						doc.text('LCCL - Free Spectacles Registrations', 14, 22);
+						doc.text('LIONS CLUB OF COLOMBO LEADS - FREE SPECTACLES REGISTRATIONS', 14, 22);
 						startY = 30;
 					}
 					
@@ -1946,13 +1946,13 @@
 						return [
 							index + 1,
 							item.child_first_name + ' ' + item.child_last_name,
-							item.age_label || item.age || '',
-							item.grade_label || item.grade || '',
+							item.age || '',
 							item.school_name || '',
+							item.grade ? item.grade.replace('grade-', '') : '',
 							item.district || '',
 							item.guardian_name || '',
 							item.phone || '',
-							item.eye_condition_label || '',
+							item.wear_spectacles_label || '',
 							vision,
 							item.comments || ''
 						];
@@ -1960,10 +1960,14 @@
 					
 					doc.autoTable( {
 						startY: startY,
-						head: [ [ '#', 'Student Name', 'Age', 'Year', 'School', 'District', 'Guardian', 'Phone', 'Eye Cond.', 'Vision Diff.', 'Comments' ] ],
+						head: [ [ '#', 'STUDENT NAME', 'AGE (YEARS)', 'SCHOOL', 'YEAR', 'DISTRICT', 'GUARDIAN', 'PHONE', 'USES SPECTACLES', 'VISION DIFFICULTIES', 'SPECTACLE ELIGIBILITY' ] ],
 						body: tableBody,
 						styles: { fontSize: 8, cellPadding: 2 },
-						headStyles: { fillColor: [29, 35, 39] }
+						headStyles: { fillColor: [29, 35, 39], halign: 'center' },
+						columnStyles: {
+							0: { halign: 'center' },
+							9: { cellWidth: 25 }
+						}
 					} );
 					
 					doc.save( 'spectacles-report.pdf' );
