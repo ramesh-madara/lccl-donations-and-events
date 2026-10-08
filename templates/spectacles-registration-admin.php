@@ -151,11 +151,20 @@ if ( $can_view && $user instanceof WP_User ) {
 					<option value=""><?php esc_html_e( 'All letters', 'lccl-de' ); ?></option>
 				</select>
 			</div>
-			<div class="lccl-bda__field lccl-bda__field--clear">
-				<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
-				<button class="lccl-bda__clear" type="button" data-action="clear-filters">
-					<?php esc_html_e( 'Clear Filters', 'lccl-de' ); ?>
-				</button>
+			<div class="lccl-bda__field lccl-bda__field--clear" style="flex-direction:row; align-items:flex-end; gap:16px;">
+				<div style="display:flex; flex-direction:column; margin-top:auto;">
+					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
+					<button class="lccl-bda__clear" type="button" data-action="clear-filters">
+						<?php esc_html_e( 'Clear Filters', 'lccl-de' ); ?>
+					</button>
+				</div>
+				<div style="display:flex; flex-direction:column; margin-top:auto;">
+					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
+					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="export-pdf" style="padding:4px 12px; margin:0;">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px; vertical-align:middle; display:inline-block;"><path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+						<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'Export PDF', 'lccl-de' ); ?></span>
+					</button>
+				</div>
 			</div>
 		</form>
 

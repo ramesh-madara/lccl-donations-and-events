@@ -67,6 +67,7 @@ class LCCL_DE_Dashboard {
 			'nonce'       => wp_create_nonce( 'wp_rest' ),
 			'loggedIn'    => $can_view ? 1 : 0,
 			'canManage'   => $can_manage ? 1 : 0,
+			'canComment'  => LCCL_DE_Roles::can_comment_submissions( $user ) ? 1 : 0,
 			'displayName' => $can_view ? self::display_name( $user ) : '',
 			'districts'   => array_keys( LCCL_DE_Blood_Donor_Form::get_districts() ),
 			'perPage'     => 20,
@@ -196,6 +197,19 @@ class LCCL_DE_Dashboard {
 				),
 			)
 		);
+
+		register_rest_route(
+			self::REST_NS,
+			'/donors/(?P<id>\d+)/comments',
+			array(
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( __CLASS__, 'rest_update_comment' ),
+					'permission_callback' => array( __CLASS__, 'rest_can_comment' ),
+					'args'                => $id_args,
+				),
+			)
+		);
 	}
 
 	/**
@@ -205,6 +219,23 @@ class LCCL_DE_Dashboard {
 	 */
 	public static function rest_can_view() {
 		return LCCL_DE_Roles::can_view_submissions();
+	}
+
+	/**
+	 * Permission for commenting on registrations.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public static function rest_can_comment() {
+		if ( LCCL_DE_Roles::can_comment_submissions() ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'lccl_de_forbidden',
+			__( 'You do not have permission to comment.', 'lccl-de' ),
+			array( 'status' => 403 )
+		);
 	}
 
 	/**
@@ -617,6 +648,51 @@ class LCCL_DE_Dashboard {
 	}
 
 	/**
+	 * Update comments for a donor. Commenters and admins only.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function rest_update_comment( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$row = self::get_donor_row( (int) $request['id'] );
+		if ( ! $row ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		$params = $request->get_json_params();
+		if ( ! is_array( $params ) ) {
+			$params = $request->get_params();
+		}
+
+		$comments = isset( $params['comments'] ) ? sanitize_textarea_field( $params['comments'] ) : '';
+
+		$saved = $wpdb->update(
+			LCCL_DE_Schema::blood_donors_table(),
+			array(
+				'comments'   => $comments,
+				'updated_at' => current_time( 'mysql' ),
+				'updated_by' => get_current_user_id(),
+			),
+			array( 'id' => (int) $row['id'] ),
+			array( '%s', '%s', '%d' ),
+			array( '%d' )
+		);
+
+		if ( false === $saved ) {
+			return new WP_Error(
+				'lccl_de_update',
+				__( 'The comment could not be saved. Please try again.', 'lccl-de' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$fresh = self::get_donor_row( (int) $row['id'] );
+		return new WP_REST_Response( self::present_detail( $fresh ), 200 );
+	}
+
+	/**
 	 * Delete one donor. Site administrators only.
 	 *
 	 * @param WP_REST_Request $request Request.
@@ -686,6 +762,7 @@ class LCCL_DE_Dashboard {
 		$payload = array(
 			'logged_in'    => true,
 			'can_manage'   => $can_manage,
+			'can_comment'  => LCCL_DE_Roles::can_comment_submissions( $user ),
 			'nonce'        => wp_create_nonce( 'wp_rest' ),
 			'display_name' => self::display_name( $user ),
 			'user_login'   => $user->user_login,
@@ -758,6 +835,7 @@ class LCCL_DE_Dashboard {
 			'donation_preference_label' => isset( $prefs[ $row['donation_preference'] ] ) ? $prefs[ $row['donation_preference'] ] : $row['donation_preference'],
 			'donated_before'            => $row['donated_before'],
 			'donated_before_label'      => isset( $history[ $row['donated_before'] ] ) ? $history[ $row['donated_before'] ] : $row['donated_before'],
+			'comments'                  => isset( $row['comments'] ) ? $row['comments'] : '',
 			'consent'                   => (int) $row['consent'],
 			'updated_at'                => $updated,
 			'updated_label'             => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',

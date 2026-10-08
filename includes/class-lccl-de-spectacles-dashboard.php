@@ -63,11 +63,20 @@ class LCCL_DE_Spectacles_Dashboard {
 		$can_manage   = LCCL_DE_Roles::can_manage_donors();
 		$user         = wp_get_current_user();
 		$current_dash = 'spectacles';
+		
+		$logo_id  = get_theme_mod( 'custom_logo' );
+		$logo_url = $logo_id ? wp_get_attachment_image_url( $logo_id, 'full' ) : '';
+		if ( ! $logo_url ) {
+			$upload_dir = wp_upload_dir();
+			$logo_url   = $upload_dir['baseurl'] . '/2021/09/LCCL-LOGO.png';
+		}
+
 		$script_data  = array(
 			'restUrl'            => esc_url_raw( rest_url( self::REST_NS . '/' ) ),
 			'nonce'              => wp_create_nonce( 'wp_rest' ),
 			'loggedIn'           => $can_view ? 1 : 0,
 			'canManage'          => $can_manage ? 1 : 0,
+			'canComment'         => LCCL_DE_Roles::can_comment_submissions( $user ) ? 1 : 0,
 			'displayName'        => $can_view ? self::display_name( $user ) : '',
 			'districts'          => array_keys( LCCL_DE_Spectacles_Form::districts() ),
 			'perPage'            => 20,
@@ -81,6 +90,7 @@ class LCCL_DE_Spectacles_Dashboard {
 			'lastEyeExams'       => LCCL_DE_Spectacles_Form::last_eye_exams(),
 			'visionDifficulties' => LCCL_DE_Spectacles_Form::vision_difficulties(),
 			'schoolLetters'      => LCCL_DE_Spectacles_Form::school_letters(),
+			'logoUrl'            => $logo_url,
 		);
 
 		wp_localize_script(
@@ -141,6 +151,38 @@ class LCCL_DE_Spectacles_Dashboard {
 			)
 		);
 
+		register_rest_route(
+			self::REST_NS,
+			'/spectacles/export',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'rest_export' ),
+				'permission_callback' => array( 'LCCL_DE_Dashboard', 'rest_can_view' ),
+				'args'                => array(
+					'search'        => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'district'      => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					),
+					'gender'        => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'grade'         => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'school_letter' => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+				),
+			)
+		);
+
 		$id_args = array(
 			'id' => array(
 				'type'              => 'integer',
@@ -168,6 +210,19 @@ class LCCL_DE_Spectacles_Dashboard {
 					'methods'             => WP_REST_Server::DELETABLE,
 					'callback'            => array( __CLASS__, 'rest_delete' ),
 					'permission_callback' => array( 'LCCL_DE_Dashboard', 'rest_can_manage' ),
+					'args'                => $id_args,
+				),
+			)
+		);
+
+		register_rest_route(
+			self::REST_NS,
+			'/spectacles/(?P<id>\d+)/comments',
+			array(
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( __CLASS__, 'rest_update_comment' ),
+					'permission_callback' => array( __CLASS__, 'rest_can_comment' ),
 					'args'                => $id_args,
 				),
 			)
@@ -293,6 +348,74 @@ class LCCL_DE_Spectacles_Dashboard {
 	}
 
 	/**
+	 * Unpaginated export of filtered rows with all details.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response
+	 */
+	public static function rest_export( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$table         = LCCL_DE_Schema::spectacles_table();
+		$search        = trim( (string) $request->get_param( 'search' ) );
+		$district      = (string) $request->get_param( 'district' );
+		$gender        = (string) $request->get_param( 'gender' );
+		$grade         = (string) $request->get_param( 'grade' );
+		$school_letter = (string) $request->get_param( 'school_letter' );
+
+		$where  = array( '1=1' );
+		$params = array();
+
+		if ( '' !== $search ) {
+			$like     = '%' . $wpdb->esc_like( $search ) . '%';
+			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR guardian_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
+			$params[] = $like;
+			$params[] = $like;
+			$params[] = $like;
+			$params[] = $like;
+			$params[] = $like;
+			$params[] = $like;
+			$params[] = $like;
+			$params[] = $like;
+		}
+
+		if ( '' !== $district ) {
+			$where[]  = 'district = %s';
+			$params[] = $district;
+		}
+
+		if ( '' !== $gender ) {
+			$where[]  = 'gender = %s';
+			$params[] = $gender;
+		}
+
+		if ( '' !== $grade ) {
+			$where[]  = 'grade = %s';
+			$params[] = $grade;
+		}
+
+		if ( '' !== $school_letter ) {
+			$where[]  = 'school_letter = %s';
+			$params[] = $school_letter;
+		}
+
+		$where_sql = implode( ' AND ', $where );
+		
+		$list_sql = "SELECT *
+			FROM {$table}
+			WHERE {$where_sql}
+			ORDER BY created_at ASC, id ASC";
+
+		$rows  = $params ? $wpdb->get_results( $wpdb->prepare( $list_sql, $params ), ARRAY_A ) : $wpdb->get_results( $list_sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$items = array();
+		foreach ( (array) $rows as $row ) {
+			$items[] = self::present_detail( $row );
+		}
+
+		return new WP_REST_Response( array( 'items' => $items ), 200 );
+	}
+
+	/**
 	 * One registration.
 	 *
 	 * @param WP_REST_Request $request Request.
@@ -398,6 +521,64 @@ class LCCL_DE_Spectacles_Dashboard {
 			),
 			200
 		);
+	}
+
+	/**
+	 * Permission check for updating comments.
+	 *
+	 * @return bool|WP_Error
+	 */
+	public static function rest_can_comment() {
+		if ( LCCL_DE_Roles::can_comment_submissions() ) {
+			return true;
+		}
+
+		return new WP_Error(
+			'rest_forbidden',
+			__( 'You do not have permission to comment on registrations.', 'lccl-de' ),
+			array( 'status' => 403 )
+		);
+	}
+
+	/**
+	 * Update only the comments column for one registration.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function rest_update_comment( WP_REST_Request $request ) {
+		global $wpdb;
+
+		$row = self::get_row( (int) $request['id'] );
+		if ( ! $row ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		$params   = $request->get_json_params();
+		$comments = isset( $params['comments'] ) ? trim( (string) $params['comments'] ) : '';
+
+		$updated = $wpdb->update(
+			LCCL_DE_Schema::spectacles_table(),
+			array( 'comments' => $comments ),
+			array( 'id' => (int) $row['id'] ),
+			array( '%s' ),
+			array( '%d' )
+		);
+
+		if ( false === $updated ) {
+			return new WP_Error(
+				'lccl_de_update',
+				__( 'The comments could not be saved. Please try again.', 'lccl-de' ),
+				array( 'status' => 500 )
+			);
+		}
+
+		$fresh = self::get_row( (int) $row['id'] );
+		if ( ! $fresh ) {
+			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
+		}
+
+		return new WP_REST_Response( self::present_detail( $fresh ), 200 );
 	}
 
 	/**
@@ -541,6 +722,7 @@ class LCCL_DE_Spectacles_Dashboard {
 			'letter_view_url'          => '',
 			'letter_download_url'      => '',
 			'consent'                  => (int) $row['consent'],
+			'comments'                 => isset( $row['comments'] ) ? $row['comments'] : '',
 			'updated_at'               => $updated,
 			'updated_label'            => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
 			'updated_by'               => isset( $row['updated_by'] ) ? (int) $row['updated_by'] : 0,

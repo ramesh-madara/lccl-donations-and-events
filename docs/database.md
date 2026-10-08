@@ -9,6 +9,11 @@ WooCommerce / GiveWP post pile and make boolean filters and data exports highly 
 - `{prefix}lccl_de_spectacles_submissions`: Free spectacles applications and file attachments.
 - `{prefix}lccl_de_project_joins`: Volunteer and partner signups.
 - `{prefix}lccl_de_payments`: Unified ledger for online Donations, Sponsorships, and Membership Fee transactions.
+- `{prefix}lccl_de_testimonials`: Website testimonials managed from wp-admin.
+- `{prefix}lccl_de_fr_events`: Fundraiser events definition.
+- `{prefix}lccl_de_fr_table_types`: Fundraiser table types (e.g. VIP, Standard) and capacities.
+- `{prefix}lccl_de_fr_tables`: Individual tables instantiated for a fundraiser event.
+- `{prefix}lccl_de_fr_bookings`: Fundraiser seat and table bookings.
 
 Name: `{prefix}lccl_de_blood_donors`
 
@@ -41,7 +46,10 @@ runs again.
 | `notify_campaigns` | `tinyint(1)` | yes | `notify_campaigns` | **Boolean.** `1` if the campaign checkbox was ticked, `0` otherwise. Never NULL. |
 | `consent` | `tinyint(1)` | yes | `consent` | Boolean. Always `1` on a successful insert — the row is not saved without consent. |
 | `ip_address` | `varchar(45)` NULL | — | request | For rate limiting / abuse review. IPv4 or IPv6. |
+| `comments` | `text` NULL | no | REST API | Reviewer/commenter notes. |
 | `created_at` | `datetime` | yes | — | Site local time via `current_time( 'mysql' )` |
+| `updated_at` | `datetime` NULL | no | REST API | Last edit timestamp. |
+| `updated_by` | `bigint(20) unsigned` NULL | no | REST API | ID of admin who last edited. |
 
 ## Why those types
 

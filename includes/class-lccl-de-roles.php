@@ -18,14 +18,24 @@ class LCCL_DE_Roles {
 	const ROLE = 'lccl_blood_donation_reviewer';
 
 	/**
+	 * WordPress role slug for commenters. Holds view_lccl_submissions and comment_lccl_submissions.
+	 */
+	const COMMENTER_ROLE = 'lccl_program_commenter';
+
+	/**
 	 * Capability that unlocks frontend dashboards and submission REST routes.
 	 */
 	const CAP = 'view_lccl_submissions';
 
 	/**
+	 * Capability that unlocks commenting on submissions.
+	 */
+	const COMMENT_CAP = 'comment_lccl_submissions';
+
+	/**
 	 * Bump when the role's capability set or display name changes.
 	 */
-	const VERSION = 2;
+	const VERSION = 4;
 
 	/**
 	 * Option that stores the installed role version.
@@ -120,12 +130,46 @@ class LCCL_DE_Roles {
 			);
 			$role = get_role( self::ROLE );
 		} else {
-			self::rename_role( $label );
+			self::rename_role( self::ROLE, $label );
 		}
 
 		if ( $role ) {
 			$role->add_cap( self::CAP );
 			$role->remove_cap( 'read' );
+		}
+
+		$commenter_label = __( 'LCCL Program Commenter', 'lccl-de' );
+		
+		$old_role_slug = 'lccl_blood_donation_commenter';
+		if ( get_role( $old_role_slug ) ) {
+			$old_users = get_users( array( 'role' => $old_role_slug ) );
+			foreach ( $old_users as $u ) {
+				$u->add_role( self::COMMENTER_ROLE );
+				$u->remove_role( $old_role_slug );
+			}
+			remove_role( $old_role_slug );
+		}
+		
+		$commenter_role  = get_role( self::COMMENTER_ROLE );
+
+		if ( ! $commenter_role ) {
+			add_role(
+				self::COMMENTER_ROLE,
+				$commenter_label,
+				array(
+					self::CAP         => true,
+					self::COMMENT_CAP => true,
+				)
+			);
+			$commenter_role = get_role( self::COMMENTER_ROLE );
+		} else {
+			self::rename_role( self::COMMENTER_ROLE, $commenter_label );
+		}
+
+		if ( $commenter_role ) {
+			$commenter_role->add_cap( self::CAP );
+			$commenter_role->add_cap( self::COMMENT_CAP );
+			$commenter_role->remove_cap( 'read' );
 		}
 
 		update_option( self::OPTION, self::VERSION );
@@ -144,7 +188,7 @@ class LCCL_DE_Roles {
 			return false;
 		}
 
-		return in_array( self::ROLE, (array) $user->roles, true );
+		return in_array( self::ROLE, (array) $user->roles, true ) || in_array( self::COMMENTER_ROLE, (array) $user->roles, true );
 	}
 
 	/**
@@ -203,6 +247,30 @@ class LCCL_DE_Roles {
 		$user = self::resolve_user( $user );
 
 		return $user && $user->ID && user_can( $user, 'manage_options' );
+	}
+
+	/**
+	 * Whether the user may comment on registrations.
+	 *
+	 * @param WP_User|int|null $user User or ID.
+	 * @return bool
+	 */
+	public static function can_comment_submissions( $user = null ) {
+		$user = self::resolve_user( $user );
+
+		if ( ! $user || ! $user->ID ) {
+			return false;
+		}
+
+		if ( user_can( $user, 'manage_options' ) ) {
+			return true;
+		}
+
+		if ( ! user_can( $user, self::COMMENT_CAP ) ) {
+			return false;
+		}
+
+		return self::is_active( $user->ID );
 	}
 
 	/**
@@ -487,21 +555,22 @@ class LCCL_DE_Roles {
 	/**
 	 * Update the stored display name for an existing role.
 	 *
+	 * @param string $role_slug Role slug.
 	 * @param string $label Role name shown in wp-admin.
 	 */
-	private static function rename_role( $label ) {
+	private static function rename_role( $role_slug, $label ) {
 		global $wp_roles;
 
 		if ( ! $wp_roles instanceof WP_Roles ) {
 			$wp_roles = wp_roles();
 		}
 
-		if ( ! $wp_roles instanceof WP_Roles || ! isset( $wp_roles->roles[ self::ROLE ] ) ) {
+		if ( ! $wp_roles instanceof WP_Roles || ! isset( $wp_roles->roles[ $role_slug ] ) ) {
 			return;
 		}
 
-		$wp_roles->roles[ self::ROLE ]['name'] = $label;
-		$wp_roles->role_names[ self::ROLE ]    = $label;
+		$wp_roles->roles[ $role_slug ]['name'] = $label;
+		$wp_roles->role_names[ $role_slug ]    = $label;
 		update_option( $wp_roles->role_key, $wp_roles->roles );
 	}
 

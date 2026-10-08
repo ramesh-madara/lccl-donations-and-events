@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 14;
+	const VERSION = 16;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -247,6 +247,7 @@ class LCCL_DE_Schema {
 			notify_campaigns tinyint(1) NOT NULL DEFAULT 0,
 			consent tinyint(1) NOT NULL DEFAULT 0,
 			ip_address varchar(45) DEFAULT NULL,
+			comments text,
 			created_at datetime NOT NULL,
 			updated_at datetime DEFAULT NULL,
 			updated_by bigint(20) unsigned DEFAULT NULL,
@@ -334,6 +335,7 @@ class LCCL_DE_Schema {
 			letter_token char(32) DEFAULT NULL,
 			consent tinyint(1) NOT NULL DEFAULT 0,
 			ip_address varchar(45) DEFAULT NULL,
+			comments text,
 			created_at datetime NOT NULL,
 			updated_at datetime DEFAULT NULL,
 			updated_by bigint(20) unsigned DEFAULT NULL,

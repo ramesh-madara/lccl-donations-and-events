@@ -35,6 +35,13 @@ the form stylesheet rather than left to inherit.
 | --- | --- | --- |
 | `assets/css/lccl-de-blood-donor-form.css` | Registration form | `.lccl-bdf` |
 | `assets/css/lccl-de-blood-donation-admin.css` | Reviewer login + dashboard | `.lccl-bda` |
+| `assets/css/lccl-de-admin-programs.css` | wp-admin dashboard hub | `.lccl-de-admin` |
+| `assets/css/lccl-de-admin-fundraiser.css` | wp-admin fundraiser events | `.lccl-de-fr-admin` |
+| `assets/css/lccl-de-admin-testimonials.css` | wp-admin testimonials | `.lccl-de-testim-admin` |
+| `assets/css/lccl-de-fundraiser-form.css` | Fundraiser booking form | `.lccl-fr` |
+| `assets/css/lccl-de-payment-dashboard.css` | Payment dashboard UI | `.lccl-pd` |
+| `assets/css/lccl-de-testimonials.css` | Testimonial carousel | `.lccl-testim` |
+| `assets/css/lccl-de-file-viewer.css` | Secure file preview modal | `.lccl-fv` |
 | `assets/css/lccl-de.css` | Hello card | `.lccl-de-card` |
 
 Two classes relate to the district dependency described in

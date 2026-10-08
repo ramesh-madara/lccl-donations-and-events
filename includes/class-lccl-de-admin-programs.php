@@ -307,21 +307,21 @@ class LCCL_DE_Admin_Programs {
 		$notify_action = '';
 
 		if ( self::TAB_USERS === $tab ) {
-			extract( self::users_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::users_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_SMS === $tab ) {
-			extract( self::sms_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::sms_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_GATEWAY === $tab ) {
-			extract( self::gateway_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::gateway_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_MEMBERSHIP_FEES === $tab ) {
-			extract( self::membership_fees_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::membership_fees_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_PROJECTS === $tab ) {
-			extract( self::projects_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::projects_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_TESTIMONIALS === $tab ) {
-			extract( self::testimonials_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::testimonials_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( self::TAB_FUNDRAISER === $tab ) {
-			extract( self::fundraiser_vars( true ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::fundraiser_vars( true ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 		} elseif ( '' !== $program ) {
-			extract( self::tab_vars( 'notifications', true, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::tab_vars( 'notifications', true, $program ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			$tab = self::TAB_PROGRAMS;
 		}
 
@@ -345,28 +345,28 @@ class LCCL_DE_Admin_Programs {
 
 		ob_start();
 		if ( self::TAB_USERS === $tab ) {
-			extract( self::users_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::users_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-users.php';
 		} elseif ( self::TAB_SMS === $tab ) {
-			extract( self::sms_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::sms_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-sms.php';
 		} elseif ( self::TAB_GATEWAY === $tab ) {
-			extract( self::gateway_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::gateway_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-gateway.php';
 		} elseif ( self::TAB_MEMBERSHIP_FEES === $tab ) {
-			extract( self::membership_fees_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::membership_fees_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-membership-fees.php';
 		} elseif ( self::TAB_PROJECTS === $tab ) {
-			extract( self::projects_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::projects_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-projects.php';
 		} elseif ( self::TAB_TESTIMONIALS === $tab ) {
-			extract( self::testimonials_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::testimonials_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-testimonials.php';
 		} elseif ( self::TAB_FUNDRAISER === $tab ) {
-			extract( self::fundraiser_vars( false ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::fundraiser_vars( false ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-fundraiser.php';
 		} elseif ( '' !== $program ) {
-			extract( self::tab_vars( 'notifications', false, $program ), EXTR_SKIP ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
+			extract( self::tab_vars( 'notifications', false, $program ), EXTR_OVERWRITE ); // phpcs:ignore WordPress.PHP.DontExtract.extract_extract
 			include LCCL_DE_PATH . 'templates/admin-program-workspace.php';
 		} else {
 			include LCCL_DE_PATH . 'templates/admin-programs-grid.php';

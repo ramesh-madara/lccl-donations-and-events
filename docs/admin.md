@@ -9,11 +9,12 @@ them even if a URL is guessed.
 | Person | wp-admin | Frontend dashboard |
 | --- | --- | --- |
 | Site administrator (`manage_options`) | **Blood Donation Users** menu | Can open the same dashboard to preview |
-| Blood Donation Reviewer | Redirected away | Login + read-only donor list |
+| Program Reviewer | Redirected away | Login + read-only registration list |
+| Program Commenter | Redirected away | Login + read-only registration list + edit comments |
 | Everyone else | Unchanged | Login form only |
 
-Role slug: `lccl_blood_donation_reviewer`.  
-Capability: `view_lccl_submissions`.  
+Role slugs: `lccl_blood_donation_reviewer`, `lccl_program_commenter`.  
+Capabilities: `view_lccl_submissions`, `comment_lccl_submissions`.  
 Version option: `lccl_de_roles_version`. Bump `LCCL_DE_Roles::VERSION` when
 the capability set changes so existing accounts are updated.
 
@@ -22,9 +23,9 @@ login and the REST session route both reject them.
 
 ## Blood Donation Users (wp-admin)
 
-`LCCL_DE_Admin_Users` registers a top-level menu. It lists **only** this
-role. Create / edit / deactivate / delete use `wp_insert_user()`,
-`wp_update_user()`, and `wp_delete_user()`. There is no role dropdown.
+`LCCL_DE_Admin_Users` registers a top-level menu. It lists **only** the
+reviewer and commenter roles. Create / edit / deactivate / delete use `wp_insert_user()`,
+`wp_update_user()`, and `wp_delete_user()`. There is a role dropdown to select between Program Reviewer and Program Commenter.
 
 Fields: username (create only), email, first name, last name, password
 (required on create, optional on edit), inactive checkbox.
@@ -47,6 +48,7 @@ Namespace `lccl-de/v1`:
 | POST | `/session/forgot` | Public, rate-limited. `retrieve_password()`. |
 | GET | `/donors` | Reviewer or admin. Search, district, notify, page. |
 | GET | `/donors/{id}` | Same. One registration. IP only for admins. |
+| PUT | `/donors/{id}/comments` | Commenter or admin. Edit the comments field. |
 
 Cookie auth after login. Each response that can issue a session returns a
 fresh `wp_rest` nonce. JS sends it as `X-WP-Nonce`.
@@ -78,4 +80,6 @@ must not be the only control.
 - **Payment Dashboard**: A unified ledger for tracking real-time status of all transactions (Donations, Sponsorships, Memberships). Uses `[lccl_payment_dashboard]`. Restricted to wp-admin users only.
 - **Payment Gateway**: Configures multiple routing profiles (Donations, Member Fees, Fundraisers) for the **CBC Paycenter** integration, including endpoint, Merchant ID, and AES-256-GCM encrypted API tokens.
 - **Membership Fees**: Allows finance officers to dynamically adjust the LKR/USD exchange rate, District Fees, and Club Fees. Keeps a revision history.
+- **Testimonials**: Admin interface for managing the testimonials carousel. Allows adding, editing, ordering, and activating quotes and photos.
+- **Fundraiser**: Admin interface to create fundraiser events, configure table types (prices and capacities), generate table inventory, and monitor bookings.
 - **Notifications**: Configure recipient email addresses for admin alerts.

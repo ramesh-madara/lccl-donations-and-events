@@ -11,15 +11,33 @@ classes, and hooks each one's static `init()` on `init`:
 
 ```php
 register_activation_hook( __FILE__, array( 'LCCL_DE_Schema', 'install' ) );
-register_activation_hook( __FILE__, array( 'LCCL_DE_Roles', 'install' ) );
+register_activation_hook( __FILE__, array( 'LCCL_DE_Roles', 'activate' ) );
+
 add_action( 'plugins_loaded', array( 'LCCL_DE_Schema', 'maybe_install' ) );
 add_action( 'init', array( 'LCCL_DE_Roles', 'maybe_install' ), 5 );
 add_action( 'init', array( 'LCCL_DE_Access', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Admin_Users', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Admin_Programs', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Settings', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Shortcodes', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Testimonials_Shortcode', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Blood_Donor_Form', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Blood_Donor_Submissions', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Join_Projects_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Join_Projects_Submissions', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Join_Projects_Dashboard', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Donation_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Membership_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Fundraiser_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Fundraiser', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Sponsorship_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Spectacles_Form', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Spectacles_Submissions', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Spectacles_Dashboard', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_File_Viewer', 'init' ) );
 add_action( 'init', array( 'LCCL_DE_Dashboard', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Payment_Dashboard', 'init' ) );
+add_action( 'init', array( 'LCCL_DE_Testimonials', 'init' ) );
 ```
 
 Registering on `init` rather than at file load keeps shortcode registration
@@ -61,7 +79,6 @@ be the only thing protecting personal data.
 ## Open questions
 
 - Real blood bank list, see [filters.md](filters.md).
-- Whether the events side reuses this form structure or needs its own tables.
 - Whether reviewers should be able to export submissions, and in what format.
 - Retention policy for personal data, given the consent wording promises
   withdrawal of optional communications.

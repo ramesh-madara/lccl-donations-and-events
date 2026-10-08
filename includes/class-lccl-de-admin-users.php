@@ -82,16 +82,16 @@ class LCCL_DE_Admin_Users {
 	}
 
 	/**
-	 * Reviewer accounts only.
+	 * Reviewer and commenter accounts only.
 	 *
 	 * @return WP_User[]
 	 */
 	public static function get_reviewers() {
 		return get_users(
 			array(
-				'role'    => LCCL_DE_Roles::ROLE,
-				'orderby' => 'registered',
-				'order'   => 'DESC',
+				'role__in' => array( LCCL_DE_Roles::ROLE, LCCL_DE_Roles::COMMENTER_ROLE ),
+				'orderby'  => 'registered',
+				'order'    => 'DESC',
 			)
 		);
 	}
@@ -146,7 +146,7 @@ class LCCL_DE_Admin_Users {
 				'first_name'          => $values['first_name'],
 				'last_name'           => $values['last_name'],
 				'display_name'        => trim( $values['first_name'] . ' ' . $values['last_name'] ),
-				'role'                => LCCL_DE_Roles::ROLE,
+				'role'                => $values['role'],
 				'show_admin_bar_front' => false,
 			)
 		);
@@ -156,8 +156,8 @@ class LCCL_DE_Admin_Users {
 		}
 
 		$created = get_userdata( $user_id );
-		if ( $created && ! in_array( LCCL_DE_Roles::ROLE, (array) $created->roles, true ) ) {
-			$created->set_role( LCCL_DE_Roles::ROLE );
+		if ( $created && ! in_array( $values['role'], (array) $created->roles, true ) ) {
+			$created->set_role( $values['role'] );
 		}
 
 		update_user_meta( $user_id, LCCL_DE_Roles::DISABLED_META, $values['disabled'] ? '1' : '' );
@@ -194,7 +194,7 @@ class LCCL_DE_Admin_Users {
 			'first_name'   => $values['first_name'],
 			'last_name'    => $values['last_name'],
 			'display_name' => trim( $values['first_name'] . ' ' . $values['last_name'] ),
-			'role'         => LCCL_DE_Roles::ROLE,
+			'role'         => $values['role'],
 		);
 
 		if ( '' !== $values['user_pass'] ) {
@@ -272,6 +272,7 @@ class LCCL_DE_Admin_Users {
 		$first     = isset( $post['first_name'] ) ? sanitize_text_field( $post['first_name'] ) : '';
 		$last      = isset( $post['last_name'] ) ? sanitize_text_field( $post['last_name'] ) : '';
 		$password  = isset( $post['user_pass'] ) ? (string) $post['user_pass'] : '';
+		$role      = isset( $post['role'] ) && LCCL_DE_Roles::COMMENTER_ROLE === $post['role'] ? LCCL_DE_Roles::COMMENTER_ROLE : LCCL_DE_Roles::ROLE;
 		$disabled  = ! empty( $post['disabled'] );
 
 		if ( $creating ) {
@@ -308,6 +309,7 @@ class LCCL_DE_Admin_Users {
 			'first_name' => $first,
 			'last_name'  => $last,
 			'user_pass'  => $password,
+			'role'       => $role,
 			'disabled'   => $disabled,
 		);
 	}

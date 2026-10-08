@@ -46,7 +46,7 @@ $notices = array(
 	$disabled = $is_edit && ! LCCL_DE_Roles::is_active( $edit->ID );
 	?>
 	<div class="lccl-prog__toolbar">
-		<p><?php echo $is_edit ? esc_html__( 'Update this reviewer account.', 'lccl-de' ) : esc_html__( 'Create an account that can open every program dashboard. It cannot reach wp-admin.', 'lccl-de' ); ?></p>
+		<p><?php echo $is_edit ? esc_html__( 'Update this account.', 'lccl-de' ) : esc_html__( 'Create an account that can open program dashboards. It cannot reach wp-admin.', 'lccl-de' ); ?></p>
 	</div>
 
 	<form method="post" action="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>" data-lccl-user-form novalidate>
@@ -72,6 +72,15 @@ $notices = array(
 				<th scope="row"><label for="lccl-de-user-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></label></th>
 				<td>
 					<input type="email" id="lccl-de-user-email" name="user_email" required maxlength="191" autocomplete="email" value="<?php echo $is_edit ? esc_attr( $edit->user_email ) : ''; ?>">
+				</td>
+			</tr>
+			<tr>
+				<th scope="row"><label for="lccl-de-user-role"><?php esc_html_e( 'Role', 'lccl-de' ); ?></label></th>
+				<td>
+					<select id="lccl-de-user-role" name="role">
+						<option value="<?php echo esc_attr( LCCL_DE_Roles::ROLE ); ?>" <?php echo $is_edit ? selected( in_array( LCCL_DE_Roles::ROLE, (array) $edit->roles, true ), true, false ) : ''; ?>><?php esc_html_e( 'Program Reviewer', 'lccl-de' ); ?></option>
+						<option value="<?php echo esc_attr( LCCL_DE_Roles::COMMENTER_ROLE ); ?>" <?php echo $is_edit ? selected( in_array( LCCL_DE_Roles::COMMENTER_ROLE, (array) $edit->roles, true ), true, false ) : ''; ?>><?php esc_html_e( 'Program Commenter', 'lccl-de' ); ?></option>
+					</select>
 				</td>
 			</tr>
 			<tr>
@@ -112,7 +121,7 @@ $notices = array(
 
 		<p class="submit">
 			<button type="submit" class="button button-primary">
-				<?php echo $is_edit ? esc_html__( 'Save reviewer', 'lccl-de' ) : esc_html__( 'Create reviewer', 'lccl-de' ); ?>
+				<?php echo $is_edit ? esc_html__( 'Save account', 'lccl-de' ) : esc_html__( 'Create account', 'lccl-de' ); ?>
 			</button>
 			<a class="button" href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url() ); ?>"><?php esc_html_e( 'Cancel', 'lccl-de' ); ?></a>
 		</p>
@@ -120,9 +129,9 @@ $notices = array(
 <?php else : ?>
 	<?php $users = LCCL_DE_Admin_Users::get_reviewers(); ?>
 	<div class="lccl-prog__toolbar">
-		<p><?php esc_html_e( 'Add, edit, or deactivate reviewer accounts.', 'lccl-de' ); ?></p>
+		<p><?php esc_html_e( 'Add, edit, or deactivate dashboard accounts.', 'lccl-de' ); ?></p>
 		<a class="button button-primary" href="<?php echo esc_url( LCCL_DE_Admin_Programs::users_url( array( 'action' => 'add' ) ) ); ?>">
-			<?php esc_html_e( 'Add reviewer', 'lccl-de' ); ?>
+			<?php esc_html_e( 'Add user', 'lccl-de' ); ?>
 		</a>
 	</div>
 
@@ -132,6 +141,7 @@ $notices = array(
 				<th><?php esc_html_e( 'Name', 'lccl-de' ); ?></th>
 				<th><?php esc_html_e( 'Username', 'lccl-de' ); ?></th>
 				<th><?php esc_html_e( 'Email', 'lccl-de' ); ?></th>
+				<th><?php esc_html_e( 'Role', 'lccl-de' ); ?></th>
 				<th><?php esc_html_e( 'Status', 'lccl-de' ); ?></th>
 				<th><?php esc_html_e( 'Registered', 'lccl-de' ); ?></th>
 				<th><?php esc_html_e( 'Actions', 'lccl-de' ); ?></th>
@@ -140,7 +150,7 @@ $notices = array(
 		<tbody>
 			<?php if ( empty( $users ) ) : ?>
 				<tr>
-					<td colspan="6"><?php esc_html_e( 'No reviewer accounts yet.', 'lccl-de' ); ?></td>
+					<td colspan="7"><?php esc_html_e( 'No accounts yet.', 'lccl-de' ); ?></td>
 				</tr>
 			<?php endif; ?>
 			<?php foreach ( $users as $user ) : ?>
@@ -155,6 +165,7 @@ $notices = array(
 					</td>
 					<td><?php echo esc_html( $user->user_login ); ?></td>
 					<td><?php echo esc_html( $user->user_email ); ?></td>
+					<td><?php echo in_array( LCCL_DE_Roles::COMMENTER_ROLE, (array) $user->roles, true ) ? esc_html__( 'Commenter', 'lccl-de' ) : esc_html__( 'Reviewer', 'lccl-de' ); ?></td>
 					<td>
 						<span class="lccl-prog__pill<?php echo $active ? ' lccl-prog__pill--yes' : ''; ?>">
 							<?php echo $active ? esc_html__( 'Active', 'lccl-de' ) : esc_html__( 'Inactive', 'lccl-de' ); ?>

@@ -120,6 +120,7 @@
 		function applySession( data ) {
 			canManage = !!( data && data.can_manage );
 			cfg.canManage = canManage ? 1 : 0;
+			cfg.canComment = ( data && data.can_comment ) ? 1 : 0;
 			if ( data && data.blood_banks ) {
 				cfg.bloodBanks = data.blood_banks;
 			}
@@ -908,6 +909,112 @@
 			addPersonField( grid, 'Updated', item.updated_label );
 			addPersonField( grid, 'Updated by', item.updated_by_label );
 			panel.appendChild( grid );
+			
+			addCommentsField( panel, item );
+		}
+
+		function saveComments( item, panel, textArea, btn ) {
+			var comments = textArea.value.replace( /^\s+|\s+$/g, '' );
+			var cfg = window.lcclBda || {};
+			
+			api( 'donors/' + item.id + '/comments', {
+				method: 'PUT',
+				body: JSON.stringify( { comments: comments } )
+			} ).then( function ( saved ) {
+				state.details[ saved.id ] = saved;
+				if ( panel.isConnected ) {
+					fillPersonPanel( panel, saved, false );
+				}
+				showToast( ( saved.name || 'Registration' ) + '’s comments were saved.', 'success' );
+			} ).catch( function ( err ) {
+				showToast( err.message || 'Comments could not be saved.', 'error', formatErrorCopy( err ) );
+				if ( btn ) {
+					btn.disabled = false;
+					var spinner = btn.querySelector('.lccl-bda__loader');
+					if (spinner) spinner.remove();
+				}
+			} );
+		}
+
+		function addCommentsField( panel, item ) {
+			var cfg = window.lcclBda || {};
+			var wrap = el( 'div', 'lccl-bda__person-comments' );
+			var label = el( 'h3', 'lccl-bda__person-comments-label', 'Comments' );
+			var canComment = !! parseInt( cfg.canComment, 10 ) || !! parseInt( cfg.canManage, 10 );
+			var hasComment = !! ( item.comments && item.comments.replace( /^\s+|\s+$/g, '' ) );
+			
+			wrap.style.marginTop = '24px';
+			wrap.style.paddingTop = '16px';
+			wrap.style.borderTop = '1px solid #dcdcde';
+			
+			label.style.fontSize = '14px';
+			label.style.fontWeight = '600';
+			label.style.color = '#1d2327';
+			label.style.margin = '0 0 12px 0';
+			wrap.appendChild( label );
+			
+			var displayWrap = el( 'div', 'lccl-bda__comments-display' );
+			var textP = el( 'p', 'lccl-bda__person-value', item.comments || 'No comments.' );
+			textP.style.whiteSpace = 'pre-wrap';
+			textP.style.margin = canComment ? '0 0 12px 0' : '0';
+			displayWrap.appendChild( textP );
+			
+			var formWrap = el( 'div', 'lccl-bda__comments-edit' );
+			formWrap.hidden = true;
+			
+			if ( canComment ) {
+				var actions = el( 'div', 'lccl-bda__person-actions' );
+				var editBtn = actionButton( 'edit', hasComment ? 'Edit comment' : 'Add comment' );
+				actions.appendChild( editBtn );
+				displayWrap.appendChild( actions );
+				
+				var form = el( 'form', 'lccl-bda__comments-form' );
+				var textArea = el( 'textarea', 'lccl-bda__input' );
+				var formActions = el( 'div', 'lccl-bda__person-actions' );
+				var cancelBtn = actionButton( 'cancel', 'Cancel' );
+				var saveBtn = actionButton( 'save', 'Save', 'lccl-bda__action--save' );
+				
+				textArea.value = item.comments || '';
+				textArea.rows = 4;
+				textArea.style.width = '100%';
+				textArea.style.marginBottom = '12px';
+				textArea.style.display = 'block';
+				
+				saveBtn.type = 'submit';
+				
+				formActions.appendChild( cancelBtn );
+				formActions.appendChild( saveBtn );
+				
+				form.appendChild( textArea );
+				form.appendChild( formActions );
+				
+				editBtn.addEventListener( 'click', function () {
+					displayWrap.hidden = true;
+					formWrap.hidden = false;
+					textArea.focus();
+				} );
+				
+				cancelBtn.addEventListener( 'click', function () {
+					formWrap.hidden = true;
+					displayWrap.hidden = false;
+					textArea.value = item.comments || '';
+				} );
+				
+				form.addEventListener( 'submit', function ( e ) {
+					e.preventDefault();
+					saveBtn.disabled = true;
+					var spinner = el( 'span', 'lccl-bda__loader lccl-bda__loader--btn' );
+					spinner.setAttribute( 'aria-hidden', 'true' );
+					saveBtn.insertBefore( spinner, saveBtn.firstChild );
+					saveComments( item, panel, textArea, saveBtn );
+				} );
+				
+				formWrap.appendChild( form );
+			}
+			
+			wrap.appendChild( displayWrap );
+			wrap.appendChild( formWrap );
+			panel.appendChild( wrap );
 		}
 
 		function fillPersonEdit( panel, item ) {
