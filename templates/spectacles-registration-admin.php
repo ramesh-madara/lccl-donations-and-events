@@ -161,6 +161,7 @@ if ( $can_view && $user instanceof WP_User ) {
 				<div style="display:flex; flex-direction:column; margin-top:auto;">
 					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
 					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="export-pdf" style="height: 48px; font-size: 16px;">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px; vertical-align:middle; display:inline-block;"><path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
 						<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'EXPORT PDF', 'lccl-de' ); ?></span>
 					</button>
 				</div>
