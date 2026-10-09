@@ -11,7 +11,14 @@ defined( 'ABSPATH' ) || exit;
 
 $current_dash = isset( $current_dash ) ? $current_dash : 'blood';
 ?>
+<?php
+$user = wp_get_current_user();
+$is_only_commenter = in_array( 'lccl_program_commenter', (array) $user->roles, true ) 
+	&& ! in_array( 'administrator', (array) $user->roles, true ) 
+	&& ! in_array( 'lccl_blood_donation_reviewer', (array) $user->roles, true );
+?>
 <nav class="lccl-bda__nav" aria-label="<?php esc_attr_e( 'Programs', 'lccl-de' ); ?>">
+	<?php if ( ! $is_only_commenter ) : ?>
 	<a
 		class="lccl-bda__nav-btn<?php echo 'blood' === $current_dash ? ' is-current' : ''; ?>"
 		href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>"
@@ -26,6 +33,7 @@ $current_dash = isset( $current_dash ) ? $current_dash : 'blood';
 	>
 		<?php esc_html_e( 'OUR PROJECTS', 'lccl-de' ); ?>
 	</a>
+	<?php endif; ?>
 	<a
 		class="lccl-bda__nav-btn<?php echo 'spectacles' === $current_dash ? ' is-current' : ''; ?>"
 		href="<?php echo esc_url( LCCL_DE_Roles::spectacles_dashboard_url() ); ?>"

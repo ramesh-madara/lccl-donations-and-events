@@ -1923,8 +1923,8 @@
 					var startY = 30;
 					
 					if ( logoImg ) {
-						var imgWidth = 32;
-						var imgHeight = 32 * (logoImg.height / logoImg.width);
+						var imgWidth = 48;
+						var imgHeight = 48 * (logoImg.height / logoImg.width);
 						var imgType = cfg.logoUrl.match(/\.png$/i) ? 'PNG' : 'JPEG';
 						try {
 							doc.addImage( logoImg, imgType, 14, 10, imgWidth, imgHeight );
@@ -1960,10 +1960,10 @@
 					
 					doc.autoTable( {
 						startY: startY,
-						head: [ [ '#', 'STUDENT NAME', 'AGE (YEARS)', 'SCHOOL', 'YEAR', 'DISTRICT', 'GUARDIAN', 'PHONE', 'USES SPECTACLES', 'VISION DIFFICULTIES', 'SPECTACLE ELIGIBILITY' ] ],
+						head: [ [ '#', 'STUDENT NAME', 'AGE (YEARS)', 'SCHOOL', 'YEAR', 'DISTRICT', 'GUARDIAN', 'PHONE', 'USES SPECTACLES', 'VISION DIFFICULTIES', 'COMMENTS' ] ],
 						body: tableBody,
 						styles: { fontSize: 8, cellPadding: 2 },
-						headStyles: { fillColor: [29, 35, 39], halign: 'center' },
+						headStyles: { fillColor: [29, 35, 39], halign: 'center', valign: 'middle', minCellHeight: 12 },
 						columnStyles: {
 							0: { halign: 'center', cellWidth: 10 },
 							1: { cellWidth: 35 },
