@@ -42,6 +42,15 @@ class LCCL_DE_Join_Projects_Dashboard {
 	public static function render( $atts ) {
 		unset( $atts );
 
+		$user = wp_get_current_user();
+		$is_only_commenter = in_array( 'lccl_program_commenter', (array) $user->roles, true ) 
+			&& ! in_array( 'administrator', (array) $user->roles, true ) 
+			&& ! in_array( 'lccl_blood_donation_reviewer', (array) $user->roles, true );
+
+		if ( $user->ID && $is_only_commenter ) {
+			return '<script>window.location.replace("' . esc_url_raw( LCCL_DE_Roles::spectacles_dashboard_url() ) . '");</script>';
+		}
+
 		nocache_headers();
 
 		wp_enqueue_style(
