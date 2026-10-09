@@ -1870,7 +1870,28 @@
 				
 				var overlay = el( 'div', 'lccl-bda__export-overlay' );
 				var dialog = el( 'div', 'lccl-bda__export-dialog' );
-				var spinner = el( 'span', 'lccl-bda__loader lccl-bda__loader--lg' );
+				var animWrapper = el( 'div' );
+				animWrapper.innerHTML = '<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" style="margin: 0 auto 20px; display: block;">' +
+					'<style>' +
+					'@keyframes filePulse { 0% { filter: drop-shadow(0 4px 6px rgba(34,113,177,0.2)); transform: translateY(0); } 50% { filter: drop-shadow(0 10px 12px rgba(34,113,177,0.3)); transform: translateY(-6px); } 100% { filter: drop-shadow(0 4px 6px rgba(34,113,177,0.2)); transform: translateY(0); } }' +
+					'@keyframes lineDraw { 0% { stroke-dashoffset: 24; opacity: 0; } 15% { opacity: 1; } 80% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }' +
+					'.doc-group { animation: filePulse 2s infinite ease-in-out; transform-origin: center; }' +
+					'.doc-base { fill: #ffffff; stroke: #2271b1; stroke-width: 2.5; stroke-linejoin: round; }' +
+					'.doc-fold { fill: #e5f1fb; stroke: #2271b1; stroke-width: 2.5; stroke-linejoin: round; }' +
+					'.doc-line { stroke: #2271b1; stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 24; stroke-dashoffset: 24; animation: lineDraw 1.5s infinite; }' +
+					'.l1 { animation-delay: 0s; }' +
+					'.l2 { animation-delay: 0.2s; }' +
+					'.l3 { stroke-dasharray: 14; stroke-dashoffset: 14; animation-delay: 0.4s; }' +
+					'</style>' +
+					'<g class="doc-group">' +
+					'<path class="doc-base" d="M16 6 L34 6 L44 16 L44 54 L16 54 Z" />' +
+					'<path class="doc-fold" d="M34 6 L34 16 L44 16 Z" />' +
+					'<line class="doc-line l1" x1="23" y1="28" x2="37" y2="28" />' +
+					'<line class="doc-line l2" x1="23" y1="36" x2="37" y2="36" />' +
+					'<line class="doc-line l3" x1="23" y1="44" x2="31" y2="44" />' +
+					'</g>' +
+					'</svg>';
+				var animationSvg = animWrapper.firstChild;
 				var message = el( 'p', '', 'The report is being built...' );
 				
 				overlay.style.position = 'fixed';
@@ -1890,15 +1911,14 @@
 				dialog.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
 				dialog.style.textAlign = 'center';
 				
-				spinner.style.display = 'block';
-				spinner.style.margin = '0 auto 16px auto';
+				dialog.style.textAlign = 'center';
 				
 				message.style.margin = '0';
 				message.style.fontSize = '16px';
 				message.style.fontWeight = '600';
 				message.style.color = '#1d2327';
 				
-				dialog.appendChild( spinner );
+				dialog.appendChild( animationSvg );
 				dialog.appendChild( message );
 				overlay.appendChild( dialog );
 				document.body.appendChild( overlay );
