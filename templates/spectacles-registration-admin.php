@@ -154,13 +154,13 @@ if ( $can_view && $user instanceof WP_User ) {
 			<div class="lccl-bda__field lccl-bda__field--clear" style="flex-direction:row; align-items:flex-end; gap:16px;">
 				<div style="display:flex; flex-direction:column; margin-top:auto;">
 					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
-					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="clear-filters">
+					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="clear-filters" style="height: 48px;">
 						<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'CLEAR FILTERS', 'lccl-de' ); ?></span>
 					</button>
 				</div>
 				<div style="display:flex; flex-direction:column; margin-top:auto;">
 					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
-					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="export-pdf">
+					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="export-pdf" style="height: 48px;">
 						<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'EXPORT PDF', 'lccl-de' ); ?></span>
 					</button>
 				</div>
