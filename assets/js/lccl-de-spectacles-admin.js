@@ -1978,6 +1978,15 @@
 						];
 					} );
 					
+					var now = new Date();
+					var day = String(now.getDate()).padStart(2, '0');
+					var month = String(now.getMonth() + 1).padStart(2, '0');
+					var year = now.getFullYear();
+					var hours = String(now.getHours()).padStart(2, '0');
+					var minutes = String(now.getMinutes()).padStart(2, '0');
+					var seconds = String(now.getSeconds()).padStart(2, '0');
+					var timestamp = 'Generated on : ' + day + '/' + month + '/' + year + ', ' + hours + ':' + minutes + ':' + seconds;
+					
 					doc.autoTable( {
 						startY: startY,
 						head: [ [ '#', 'STUDENT NAME', 'AGE (YEARS)', 'SCHOOL', 'YEAR', 'DISTRICT', 'GUARDIAN', 'PHONE', 'USES SPECTACLES', 'VISION DIFFICULTIES', 'OPTICIAN COMMENTS' ] ],
@@ -1991,12 +2000,14 @@
 							4: { halign: 'center' },
 							6: { cellWidth: 35 },
 							9: { cellWidth: 55 }
+						},
+						didDrawPage: function ( data ) {
+							doc.setFontSize(8);
+							doc.setTextColor(150, 150, 150);
+							doc.text( timestamp, 14, doc.internal.pageSize.height - 10 );
+							doc.setTextColor(0, 0, 0);
 						}
 					} );
-					
-					var finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : startY;
-					doc.setFontSize(8);
-					doc.text( 'Generated on: ' + new Date().toLocaleString(), 14, finalY + 8 );
 					
 					doc.save( 'spectacles-report.pdf' );
 					showToast( 'Report built successfully.', 'success' );
