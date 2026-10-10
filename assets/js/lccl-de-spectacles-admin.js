@@ -1079,7 +1079,7 @@
 		function addCommentsField( panel, item ) {
 			var cfg = window.lcclSra || {};
 			var wrap = el( 'div', 'lccl-bda__person-comments' );
-			var label = el( 'h3', 'lccl-bda__person-comments-label', 'Comments' );
+			var label = el( 'h3', 'lccl-bda__person-comments-label', 'OPTICIAN COMMENT' );
 			var canComment = !! parseInt( cfg.canComment, 10 ) || !! parseInt( cfg.canManage, 10 );
 			var hasComment = !! ( item.comments && item.comments.replace( /^\s+|\s+$/g, '' ) );
 			
@@ -1980,7 +1980,7 @@
 					
 					doc.autoTable( {
 						startY: startY,
-						head: [ [ '#', 'STUDENT NAME', 'AGE (YEARS)', 'SCHOOL', 'YEAR', 'DISTRICT', 'GUARDIAN', 'PHONE', 'USES SPECTACLES', 'VISION DIFFICULTIES', 'COMMENTS' ] ],
+						head: [ [ '#', 'STUDENT NAME', 'AGE (YEARS)', 'SCHOOL', 'YEAR', 'DISTRICT', 'GUARDIAN', 'PHONE', 'USES SPECTACLES', 'VISION DIFFICULTIES', 'OPTICIAN COMMENTS' ] ],
 						body: tableBody,
 						styles: { fontSize: 8, cellPadding: 2 },
 						headStyles: { fillColor: [29, 35, 39], halign: 'center', valign: 'middle', minCellHeight: 12 },
@@ -1993,6 +1993,10 @@
 							9: { cellWidth: 55 }
 						}
 					} );
+					
+					var finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY : startY;
+					doc.setFontSize(8);
+					doc.text( 'Generated on: ' + new Date().toLocaleString(), 14, finalY + 8 );
 					
 					doc.save( 'spectacles-report.pdf' );
 					showToast( 'Report built successfully.', 'success' );
