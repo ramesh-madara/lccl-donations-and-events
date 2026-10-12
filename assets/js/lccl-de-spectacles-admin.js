@@ -1985,7 +1985,7 @@
 					var hours = String(now.getHours()).padStart(2, '0');
 					var minutes = String(now.getMinutes()).padStart(2, '0');
 					var seconds = String(now.getSeconds()).padStart(2, '0');
-					var timestamp = 'Generated on : ' + day + '/' + month + '/' + year + ', ' + hours + ':' + minutes + ':' + seconds;
+					var timestamp = 'Report Generated : ' + day + '/' + month + '/' + year + ', ' + hours + ':' + minutes + ':' + seconds;
 					
 					doc.autoTable( {
 						startY: startY,
