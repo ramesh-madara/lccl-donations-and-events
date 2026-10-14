@@ -129,6 +129,9 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 					<div class="lccl-frx-editor-header__actions">
 						<span class="lccl-frx-badge" id="frx-hdr-public-badge"></span>
 						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--outline" id="frx-btn-toggle-public"></button>
+						<a href="<?php echo esc_url( LCCL_DE_Roles::fundraiser_page_url() ); ?>" target="_blank" rel="noopener noreferrer" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--outline" style="text-decoration:none;display:inline-flex;align-items:center;gap:4px;" title="<?php esc_attr_e( 'Open public seat booking page in a new tab', 'lccl-de' ); ?>">
+							<span>↗</span> <?php esc_html_e( 'Booking Page', 'lccl-de' ); ?>
+						</a>
 						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--danger" id="frx-btn-delete-event"><?php esc_html_e( 'Delete Event', 'lccl-de' ); ?></button>
 					</div>
 				</div>

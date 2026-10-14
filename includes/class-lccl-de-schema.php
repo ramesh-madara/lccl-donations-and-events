@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 17;
+	const VERSION = 18;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -465,19 +465,9 @@ class LCCL_DE_Schema {
 	/**
 	 * Creates default pages for the plugin if they do not exist.
 	 */
-	private static function create_default_pages() {
-		$page_slug = 'fundraiser-seat-booking';
-		$page_exists = get_page_by_path( $page_slug );
-		
-		if ( ! $page_exists ) {
-			wp_insert_post( array(
-				'post_type'    => 'page',
-				'post_name'    => $page_slug,
-				'post_title'   => 'Fundraiser Seat Booking',
-				'post_content' => '[lccl_fundraiser_form]',
-				'post_status'  => 'publish',
-				'post_author'  => 1
-			) );
+	public static function create_default_pages() {
+		if ( class_exists( 'LCCL_DE_Roles' ) ) {
+			LCCL_DE_Roles::ensure_fundraiser_page();
 		}
 	}
 }

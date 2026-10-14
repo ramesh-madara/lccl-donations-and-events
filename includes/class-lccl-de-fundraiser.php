@@ -27,6 +27,11 @@ class LCCL_DE_Fundraiser {
 		add_action( 'wp_ajax_lccl_de_fr_toggle_seat_block',          array( __CLASS__, 'ajax_toggle_seat_block' ) );
 		add_action( 'wp_ajax_lccl_de_fundraiser_toggle_seat_block',  array( __CLASS__, 'ajax_toggle_seat_block' ) );
 		add_action( 'wp_ajax_lccl_de_fr_clear_seat_blocks',         array( __CLASS__, 'ajax_clear_seat_blocks' ) );
+
+		// Ensure public booking page exists.
+		if ( class_exists( 'LCCL_DE_Roles' ) ) {
+			LCCL_DE_Roles::ensure_fundraiser_page();
+		}
 	}
 
 	/* -----------------------------------------------------------------------

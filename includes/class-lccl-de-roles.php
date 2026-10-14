@@ -68,9 +68,14 @@ class LCCL_DE_Roles {
 	const PAYMENT_DASHBOARD_PAGE_OPTION = 'lccl_de_payment_dashboard_page_id';
 
 	/**
+	 * Option that stores the Fundraiser Seat Booking public form page ID.
+	 */
+	const FUNDRAISER_PAGE_OPTION = 'lccl_de_fundraiser_page_id';
+
+	/**
 	 * Bump when a new plugin-owned dashboard page is added so it is created once.
 	 */
-	const PAGES_VERSION = 2;
+	const PAGES_VERSION = 3;
 
 	/**
 	 * Option that stores the dashboard-page bootstrap version.
@@ -332,6 +337,15 @@ class LCCL_DE_Roles {
 	}
 
 	/**
+	 * Fundraiser seat booking public form URL.
+	 *
+	 * @return string
+	 */
+	public static function fundraiser_page_url() {
+		return self::page_url( self::stored_page_id( self::FUNDRAISER_PAGE_OPTION ) );
+	}
+
+	/**
 	 * Whether the user can access wp-admin.
 	 *
 	 * Only users with wp-admin access (administrators, editors, authors, etc.)
@@ -382,6 +396,7 @@ class LCCL_DE_Roles {
 		self::ensure_projects_page();
 		self::ensure_spectacles_page();
 		self::ensure_payment_dashboard_page();
+		self::ensure_fundraiser_page();
 		self::remove_join_page();
 		update_option( self::PAGES_OPTION, self::PAGES_VERSION, false );
 	}
@@ -443,6 +458,20 @@ class LCCL_DE_Roles {
 	}
 
 	/**
+	 * Create or recover the page that hosts [lccl_fundraiser_form].
+	 *
+	 * @return int Page ID or 0.
+	 */
+	public static function ensure_fundraiser_page() {
+		return self::ensure_named_page(
+			self::FUNDRAISER_PAGE_OPTION,
+			'fundraiser-seat-booking',
+			__( 'Fundraiser Seat Booking', 'lccl-de' ),
+			'[lccl_fundraiser_form]'
+		);
+	}
+
+	/**
 	 * Forget the old plugin-owned public form page option. Never delete the page.
 	 */
 	public static function remove_join_page() {
@@ -460,7 +489,7 @@ class LCCL_DE_Roles {
 	 * @param string $option Option that stores the page ID.
 	 * @return int
 	 */
-	private static function stored_page_id( $option ) {
+	public static function stored_page_id( $option ) {
 		$page_id = (int) get_option( $option, 0 );
 
 		if ( $page_id && self::is_usable_page( get_post( $page_id ) ) ) {
@@ -501,6 +530,15 @@ class LCCL_DE_Roles {
 	private static function ensure_named_page( $option, $slug, $title, $content ) {
 		$page_id = self::stored_page_id( $option );
 		if ( $page_id ) {
+			$existing_post = get_post( $page_id );
+			if ( $existing_post && empty( trim( (string) $existing_post->post_content ) ) ) {
+				wp_update_post(
+					array(
+						'ID'           => $page_id,
+						'post_content' => $content,
+					)
+				);
+			}
 			return $page_id;
 		}
 
@@ -518,8 +556,23 @@ class LCCL_DE_Roles {
 				continue;
 			}
 
+			if ( empty( trim( (string) $page->post_content ) ) ) {
+				wp_update_post(
+					array(
+						'ID'           => $page->ID,
+						'post_content' => $content,
+					)
+				);
+			}
+
 			update_option( $option, (int) $page->ID, false );
 			return (int) $page->ID;
+		}
+
+		$author_id = get_current_user_id();
+		if ( ! $author_id ) {
+			$admin_user = get_user_by( 'email', get_option( 'admin_email' ) );
+			$author_id  = $admin_user ? $admin_user->ID : 0;
 		}
 
 		$page_id = wp_insert_post(
@@ -529,6 +582,7 @@ class LCCL_DE_Roles {
 				'post_status'  => 'publish',
 				'post_type'    => 'page',
 				'post_content' => $content,
+				'post_author'  => $author_id,
 			),
 			true
 		);
@@ -538,6 +592,7 @@ class LCCL_DE_Roles {
 		}
 
 		update_option( $option, (int) $page_id, false );
+		flush_rewrite_rules( false );
 
 		return (int) $page_id;
 	}
