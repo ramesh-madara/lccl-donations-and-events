@@ -39,7 +39,28 @@ class LCCL_DE_Fundraiser_Form {
 				'</div>';
 		}
 
-		$active_event = LCCL_DE_Fundraiser::get_active_public_event();
+		// Error notification from redirect
+		if ( ! empty( $_GET['lccl_fnd_error'] ) || ! empty( $_GET['lccl_mf_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$err_msg = ! empty( $_GET['lccl_fnd_error'] ) ? sanitize_text_field( wp_unslash( $_GET['lccl_fnd_error'] ) ) : sanitize_text_field( wp_unslash( $_GET['lccl_mf_error'] ) );
+			$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #dc2626; padding:16px 20px; background:#fef2f2;">' .
+				'<h3 style="margin:0 0 6px 0; color:#dc2626; font-size:16px;">' . esc_html__( 'Booking Notice', 'lccl-de' ) . '</h3>' .
+				'<p style="margin:0; color:#991b1b; font-size:14px; line-height: 1.5;">' . esc_html( $err_msg ) . '</p>' .
+				'</div>';
+		}
+
+		$active_event = null;
+		if ( ! empty( $_GET['event_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$active_event = LCCL_DE_Fundraiser::get_event( (int) $_GET['event_id'] );
+		}
+		if ( ! $active_event ) {
+			$active_event = LCCL_DE_Fundraiser::get_active_public_event();
+		}
+		if ( ! $active_event ) {
+			global $wpdb;
+			$ev_table = LCCL_DE_Fundraiser::events_table();
+			// Fallback to the latest active/upcoming event
+			$active_event = $wpdb->get_row( "SELECT * FROM `{$ev_table}` WHERE status != 'archived' ORDER BY id ASC LIMIT 1", ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		}
 
 		ob_start();
 		include LCCL_DE_PATH . 'templates/fundraiser-form.php';
@@ -64,7 +85,6 @@ class LCCL_DE_Fundraiser_Form {
 		$attendee_email  = sanitize_email( $raw['attendee_email'] ?? '' );
 		$attendee_phone  = sanitize_text_field( $raw['attendee_phone'] ?? '' );
 		$qty             = (int) ( $raw['qty'] ?? 1 );
-		$total_amount    = (float) ( $raw['total_amount'] ?? 0 );
 		$selected_tables = isset( $raw['selectedTables'] ) && is_array( $raw['selectedTables'] )
 			? array_map( 'intval', $raw['selectedTables'] )
 			: array();
@@ -73,9 +93,9 @@ class LCCL_DE_Fundraiser_Form {
 		if ( ! $event_id ) $errors[] = __( 'No active event selected.', 'lccl-de' );
 		if ( '' === $attendee_name ) $errors[] = __( 'Name is required.', 'lccl-de' );
 		if ( '' === $attendee_email || ! is_email( $attendee_email ) ) $errors[] = __( 'A valid email address is required.', 'lccl-de' );
-		if ( $total_amount <= 0 ) $errors[] = __( 'Total amount must be greater than zero.', 'lccl-de' );
 
 		global $wpdb;
+		$total_amount = 0.0;
 
 		// Server-side booking guard: Whole Table Mode
 		if ( 'table' === $booking_type ) {
@@ -83,26 +103,46 @@ class LCCL_DE_Fundraiser_Form {
 				$errors[] = __( 'Please select at least one table to book.', 'lccl-de' );
 			} else {
 				$tbl = LCCL_DE_Fundraiser::tables_table();
+				$tt  = LCCL_DE_Fundraiser::table_types_table();
+				$calc_table_total = 0.0;
+
 				foreach ( $selected_tables as $tid ) {
 					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					$t_row = $wpdb->get_row( $wpdb->prepare(
-						"SELECT is_booked, is_blocked, booking_mode FROM `{$tbl}` WHERE id = %d AND event_id = %d",
+						"SELECT ta.is_booked, ta.is_blocked, ta.booking_mode, ta.table_label, ty.price
+						 FROM `{$tbl}` ta
+						 JOIN `{$tt}` ty ON ta.type_id = ty.id
+						 WHERE ta.id = %d AND ta.event_id = %d",
 						$tid,
 						$event_id
 					), ARRAY_A );
+
 					if ( ! $t_row || 'table' !== $t_row['booking_mode'] ) {
-						$errors[] = __( 'One or more selected tables are not available for whole-table booking.', 'lccl-de' );
+						$errors[] = __( 'One or more selected tables are allocated to individual seats and cannot be booked as whole tables.', 'lccl-de' );
 						break;
 					}
 					if ( (int) $t_row['is_blocked'] === 1 ) {
-						$errors[] = __( 'One or more selected tables have been reserved or blocked by administration.', 'lccl-de' );
+						$errors[] = sprintf(
+							/* translators: %s: table label */
+							__( 'Table %s has been reserved or blocked by event administration.', 'lccl-de' ),
+							$t_row['table_label']
+						);
 						break;
 					}
 					if ( (int) $t_row['is_booked'] === 1 ) {
-						$errors[] = __( 'One or more selected tables have just been booked by another attendee. Please try again.', 'lccl-de' );
+						$errors[] = sprintf(
+							/* translators: %s: table label */
+							__( 'Table %s has just been booked by another attendee. Please select a different table.', 'lccl-de' ),
+							$t_row['table_label']
+						);
 						break;
 					}
+
+					$calc_table_total += (float) $t_row['price'];
 				}
+
+				$qty          = count( $selected_tables );
+				$total_amount = $calc_table_total;
 			}
 		}
 
@@ -123,12 +163,20 @@ class LCCL_DE_Fundraiser_Form {
 					// Automatic allocation: assign lowest available sequential seat numbers
 					$allocated    = array_slice( $avail, 0, $qty );
 					$seat_numbers = implode( ',', $allocated );
+
+					$ev_row = LCCL_DE_Fundraiser::get_event( $event_id );
+					$base_ticket_price = $ev_row ? (float) $ev_row['ticket_price'] : 0.0;
+					$total_amount      = $qty * $base_ticket_price;
 				}
 			}
 		}
 
+		if ( $total_amount <= 0 && empty( $errors ) ) {
+			$errors[] = __( 'Total amount must be greater than zero.', 'lccl-de' );
+		}
+
 		if ( $errors ) {
-			wp_safe_redirect( add_query_arg( array( 'lccl_mf_error' => rawurlencode( implode( ' ', $errors ) ) ), wp_get_referer() ?: get_permalink() ) );
+			wp_safe_redirect( add_query_arg( array( 'lccl_fnd_error' => rawurlencode( implode( ' ', $errors ) ) ), wp_get_referer() ?: get_permalink() ) );
 			exit;
 		}
 
