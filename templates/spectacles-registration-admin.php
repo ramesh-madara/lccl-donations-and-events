@@ -151,6 +151,23 @@ if ( $can_view && $user instanceof WP_User ) {
 					<option value=""><?php esc_html_e( 'All letters', 'lccl-de' ); ?></option>
 				</select>
 			</div>
+			<div class="lccl-bda__field">
+				<label class="lccl-bda__label" for="lccl-sra-eligibility"><?php esc_html_e( 'Eligibility', 'lccl-de' ); ?></label>
+				<select class="lccl-bda__select" id="lccl-sra-eligibility" name="eligibility">
+					<option value=""><?php esc_html_e( 'All eligibility', 'lccl-de' ); ?></option>
+					<option value="eligible"><?php esc_html_e( 'Eligible', 'lccl-de' ); ?></option>
+					<option value="not_eligible"><?php esc_html_e( 'Not eligible', 'lccl-de' ); ?></option>
+					<option value="pending"><?php esc_html_e( 'Not assessed', 'lccl-de' ); ?></option>
+				</select>
+			</div>
+			<div class="lccl-bda__field">
+				<label class="lccl-bda__label" for="lccl-sra-comment-status"><?php esc_html_e( 'Comments', 'lccl-de' ); ?></label>
+				<select class="lccl-bda__select" id="lccl-sra-comment-status" name="comment_status">
+					<option value=""><?php esc_html_e( 'All comments', 'lccl-de' ); ?></option>
+					<option value="has_comment"><?php esc_html_e( 'With comments (Visited)', 'lccl-de' ); ?></option>
+					<option value="no_comment"><?php esc_html_e( 'Without comments (Pending)', 'lccl-de' ); ?></option>
+				</select>
+			</div>
 			<div class="lccl-bda__field lccl-bda__field--clear" style="flex-direction:row; align-items:flex-end; gap:16px;">
 				<div style="display:flex; flex-direction:column; margin-top:auto;">
 					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>

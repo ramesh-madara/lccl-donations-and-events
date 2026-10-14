@@ -92,6 +92,8 @@
 		var genderSelect = root.querySelector( '#lccl-sra-gender' );
 		var gradeSelect = root.querySelector( '#lccl-sra-grade' );
 		var letterSelect = root.querySelector( '#lccl-sra-letter' );
+		var eligibilitySelect = root.querySelector( '#lccl-sra-eligibility' );
+		var commentSelect = root.querySelector( '#lccl-sra-comment-status' );
 		var displayName = root.querySelector( '[data-display-name]' );
 		var dashLoader = root.querySelector( '[data-dash-loader]' );
 		var loginModal = root.querySelector( '[data-login-modal]' );
@@ -225,6 +227,12 @@
 			if ( letterSelect && letterSelect.value ) {
 				query.push( 'school_letter=' + encodeURIComponent( letterSelect.value ) );
 			}
+			if ( eligibilitySelect && eligibilitySelect.value ) {
+				query.push( 'eligibility=' + encodeURIComponent( eligibilitySelect.value ) );
+			}
+			if ( commentSelect && commentSelect.value ) {
+				query.push( 'comment_status=' + encodeURIComponent( commentSelect.value ) );
+			}
 			query.push( 'per_page=' + currentPerPage() );
 			query.push( 'page=' + Math.max( 1, state.page || 1 ) );
 			return query.join( '&' );
@@ -259,6 +267,12 @@
 			}
 			if ( letterSelect ) {
 				letterSelect.value = '';
+			}
+			if ( eligibilitySelect ) {
+				eligibilitySelect.value = '';
+			}
+			if ( commentSelect ) {
+				commentSelect.value = '';
 			}
 			if ( perPageSelect ) {
 				perPageSelect.value = String( defaultPerPage );
@@ -1053,19 +1067,22 @@
 			grid.appendChild( wrap );
 		}
 
-		function saveComments( item, panel, textArea, btn ) {
+		function saveComments( item, panel, textArea, eligibility, btn ) {
 			var comments = textArea.value.replace( /^\s+|\s+$/g, '' );
 			var cfg = window.lcclSra || {};
 			
 			api( 'spectacles/' + item.id + '/comments', {
 				method: 'PUT',
-				body: JSON.stringify( { comments: comments } )
+				body: JSON.stringify( {
+					comments: comments,
+					eligibility: eligibility
+				} )
 			} ).then( function ( saved ) {
 				state.details[ saved.id ] = saved;
 				if ( panel.isConnected ) {
 					fillPersonPanel( panel, saved, false );
 				}
-				showToast( ( saved.name || 'Registration' ) + '’s comments were saved.', 'success' );
+				showToast( ( saved.name || 'Registration' ) + '’s assessment was saved.', 'success' );
 			} ).catch( function ( err ) {
 				showToast( err.message || 'Comments could not be saved.', 'error', formatErrorCopy( err ) );
 				if ( btn ) {
@@ -1081,7 +1098,7 @@
 			var wrap = el( 'div', 'lccl-bda__person-comments' );
 			var label = el( 'h3', 'lccl-bda__person-comments-label', 'OPTICIAN COMMENT' );
 			var canComment = !! parseInt( cfg.canComment, 10 ) || !! parseInt( cfg.canManage, 10 );
-			var hasComment = !! ( item.comments && item.comments.replace( /^\s+|\s+$/g, '' ) );
+			var hasComment = !! ( ( item.comments && item.comments.replace( /^\s+|\s+$/g, '' ) ) || item.eligibility );
 			
 			wrap.style.marginTop = '24px';
 			wrap.style.paddingTop = '16px';
@@ -1094,6 +1111,44 @@
 			wrap.appendChild( label );
 			
 			var displayWrap = el( 'div', 'lccl-bda__comments-display' );
+
+			var eligRow = el( 'div', 'lccl-bda__eligibility-row' );
+			eligRow.style.margin = '0 0 12px 0';
+			eligRow.style.display = 'flex';
+			eligRow.style.alignItems = 'center';
+			eligRow.style.gap = '8px';
+
+			var eligLabel = el( 'span', '', 'Eligibility:' );
+			eligLabel.style.fontWeight = '600';
+			eligLabel.style.color = '#1d2327';
+			eligLabel.style.fontSize = '14px';
+			eligRow.appendChild( eligLabel );
+
+			var eligBadge = el( 'span', 'lccl-bda__badge' );
+			eligBadge.style.display = 'inline-block';
+			eligBadge.style.padding = '3px 10px';
+			eligBadge.style.borderRadius = '4px';
+			eligBadge.style.fontSize = '12px';
+			eligBadge.style.fontWeight = '600';
+			eligBadge.style.textTransform = 'uppercase';
+			eligBadge.style.letterSpacing = '0.5px';
+
+			if ( item.eligibility === 'eligible' ) {
+				eligBadge.textContent = 'Eligible';
+				eligBadge.style.backgroundColor = '#e6f4ea';
+				eligBadge.style.color = '#137333';
+			} else if ( item.eligibility === 'not_eligible' ) {
+				eligBadge.textContent = 'Not eligible';
+				eligBadge.style.backgroundColor = '#fce8e6';
+				eligBadge.style.color = '#c5221f';
+			} else {
+				eligBadge.textContent = 'Not assessed';
+				eligBadge.style.backgroundColor = '#f1f3f4';
+				eligBadge.style.color = '#5f6368';
+			}
+			eligRow.appendChild( eligBadge );
+			displayWrap.appendChild( eligRow );
+
 			var textP = el( 'p', 'lccl-bda__person-value', item.comments || 'No comments.' );
 			textP.style.whiteSpace = 'pre-wrap';
 			textP.style.margin = canComment ? '0 0 12px 0' : '0';
@@ -1109,34 +1164,108 @@
 				displayWrap.appendChild( actions );
 				
 				var form = el( 'form', 'lccl-bda__comments-form' );
+
+				// Eligibility radio group
+				var eligField = el( 'div', 'lccl-bda__field' );
+				eligField.style.marginBottom = '14px';
+
+				var eligFieldTitle = el( 'label', 'lccl-bda__label', 'Eligibility:' );
+				eligFieldTitle.style.fontWeight = '600';
+				eligFieldTitle.style.fontSize = '14px';
+				eligFieldTitle.style.color = '#1d2327';
+				eligFieldTitle.style.display = 'block';
+				eligFieldTitle.style.marginBottom = '8px';
+				eligField.appendChild( eligFieldTitle );
+
+				var eligRadios = el( 'div' );
+				eligRadios.style.display = 'flex';
+				eligRadios.style.alignItems = 'center';
+				eligRadios.style.gap = '20px';
+				eligRadios.style.flexWrap = 'wrap';
+
+				var optEligLabel = el( 'label' );
+				optEligLabel.style.display = 'inline-flex';
+				optEligLabel.style.alignItems = 'center';
+				optEligLabel.style.gap = '6px';
+				optEligLabel.style.cursor = 'pointer';
+				optEligLabel.style.fontSize = '14px';
+
+				var radElig = document.createElement( 'input' );
+				radElig.type = 'radio';
+				radElig.name = 'spectacles_eligibility_' + item.id;
+				radElig.value = 'eligible';
+				radElig.checked = ( item.eligibility === 'eligible' );
+				optEligLabel.appendChild( radElig );
+				optEligLabel.appendChild( document.createTextNode( 'Eligible' ) );
+				eligRadios.appendChild( optEligLabel );
+
+				var optNotEligLabel = el( 'label' );
+				optNotEligLabel.style.display = 'inline-flex';
+				optNotEligLabel.style.alignItems = 'center';
+				optNotEligLabel.style.gap = '6px';
+				optNotEligLabel.style.cursor = 'pointer';
+				optNotEligLabel.style.fontSize = '14px';
+
+				var radNotElig = document.createElement( 'input' );
+				radNotElig.type = 'radio';
+				radNotElig.name = 'spectacles_eligibility_' + item.id;
+				radNotElig.value = 'not_eligible';
+				radNotElig.checked = ( item.eligibility === 'not_eligible' );
+				optNotEligLabel.appendChild( radNotElig );
+				optNotEligLabel.appendChild( document.createTextNode( 'Not eligible' ) );
+				eligRadios.appendChild( optNotEligLabel );
+
+				var clearEligBtn = el( 'button', 'lccl-bda__text-button', 'Clear' );
+				clearEligBtn.type = 'button';
+				clearEligBtn.style.fontSize = '12px';
+				clearEligBtn.style.color = '#666';
+				clearEligBtn.style.textDecoration = 'underline';
+				clearEligBtn.style.padding = '0';
+				clearEligBtn.style.marginLeft = '8px';
+				clearEligBtn.addEventListener( 'click', function () {
+					radElig.checked = false;
+					radNotElig.checked = false;
+				} );
+				eligRadios.appendChild( clearEligBtn );
+
+				eligField.appendChild( eligRadios );
+				form.appendChild( eligField );
+
+				// Comment textarea
+				var commentField = el( 'div', 'lccl-bda__field' );
+				commentField.style.marginBottom = '12px';
+
 				var textArea = el( 'textarea', 'lccl-bda__input' );
-				var formActions = el( 'div', 'lccl-bda__person-actions' );
-				var cancelBtn = actionButton( 'cancel', 'Cancel' );
-				var saveBtn = actionButton( 'save', 'Save', 'lccl-bda__action--save' );
-				
 				textArea.value = item.comments || '';
 				textArea.rows = 4;
 				textArea.style.width = '100%';
-				textArea.style.marginBottom = '12px';
 				textArea.style.display = 'block';
-				
+				commentField.appendChild( textArea );
+				form.appendChild( commentField );
+
+				var formActions = el( 'div', 'lccl-bda__person-actions' );
+				var cancelBtn = actionButton( 'cancel', 'Cancel' );
+				var saveBtn = actionButton( 'save', 'Save', 'lccl-bda__action--save' );
 				saveBtn.type = 'submit';
 				
 				formActions.appendChild( cancelBtn );
 				formActions.appendChild( saveBtn );
-				
-				form.appendChild( textArea );
 				form.appendChild( formActions );
 				
 				editBtn.addEventListener( 'click', function () {
 					displayWrap.hidden = true;
 					formWrap.hidden = false;
+					radElig.checked = ( item.eligibility === 'eligible' );
+					radNotElig.checked = ( item.eligibility === 'not_eligible' );
+					textArea.value = item.comments || '';
 					textArea.focus();
 				} );
 				
 				cancelBtn.addEventListener( 'click', function () {
 					formWrap.hidden = true;
 					displayWrap.hidden = false;
+					radElig.checked = ( item.eligibility === 'eligible' );
+					radNotElig.checked = ( item.eligibility === 'not_eligible' );
 					textArea.value = item.comments || '';
 				} );
 				
@@ -1146,7 +1275,15 @@
 					var spinner = el( 'span', 'lccl-bda__loader lccl-bda__loader--btn' );
 					spinner.setAttribute( 'aria-hidden', 'true' );
 					saveBtn.insertBefore( spinner, saveBtn.firstChild );
-					saveComments( item, panel, textArea, saveBtn );
+
+					var selectedElig = null;
+					if ( radElig.checked ) {
+						selectedElig = 'eligible';
+					} else if ( radNotElig.checked ) {
+						selectedElig = 'not_eligible';
+					}
+
+					saveComments( item, panel, textArea, selectedElig, saveBtn );
 				} );
 				
 				formWrap.appendChild( form );
@@ -1939,24 +2076,94 @@
 					var logoImg = results[ 2 ];
 					var items = data && data.items ? data.items : [];
 					
+					var totalRegistered = items.length;
+					var visitedOpticians = 0;
+					var currentSpectacleUsers = 0;
+					var eligibleStudents = 0;
+
+					items.forEach( function ( it ) {
+						var hasComment = !! ( it.comments && it.comments.replace( /^\s+|\s+$/g, '' ) );
+						if ( hasComment ) {
+							visitedOpticians++;
+						}
+						if ( it.wear_spectacles === 'yes' ) {
+							currentSpectacleUsers++;
+						}
+						if ( it.eligibility === 'eligible' ) {
+							eligibleStudents++;
+						}
+					} );
+					var pendingVisits = totalRegistered - visitedOpticians;
+
 					var doc = new window.jspdf.jsPDF( { orientation: 'landscape', format: 'a4' } );
-					var startY = 30;
+					var startY = 28;
 					
 					if ( logoImg ) {
-						var imgWidth = 48;
-						var imgHeight = 48 * (logoImg.height / logoImg.width);
+						var imgWidth = 44;
+						var imgHeight = 44 * (logoImg.height / logoImg.width);
 						var imgType = cfg.logoUrl.match(/\.png$/i) ? 'PNG' : 'JPEG';
 						try {
 							doc.addImage( logoImg, imgType, 14, 10, imgWidth, imgHeight );
 						} catch ( e ) {}
-						doc.setFontSize(16);
-						doc.text('LIONS CLUB OF COLOMBO LEADS - FREE SPECTACLES REGISTRATIONS', 14 + imgWidth + 4, 10 + (imgHeight / 2), { baseline: 'middle' });
-						startY = 10 + imgHeight + 8;
+						doc.setFont( 'helvetica', 'bold' );
+						doc.setFontSize( 15 );
+						doc.setTextColor( 20, 20, 20 );
+						doc.text( 'LIONS CLUB OF COLOMBO LEADS - FREE SPECTACLES REGISTRATIONS', 14 + imgWidth + 6, 10 + ( imgHeight / 2 ), { baseline: 'middle' } );
+						startY = Math.max( 28, 10 + imgHeight + 6 );
 					} else {
-						doc.setFontSize(16);
-						doc.text('LIONS CLUB OF COLOMBO LEADS - FREE SPECTACLES REGISTRATIONS', 14, 22);
-						startY = 30;
+						doc.setFont( 'helvetica', 'bold' );
+						doc.setFontSize( 15 );
+						doc.setTextColor( 20, 20, 20 );
+						doc.text( 'LIONS CLUB OF COLOMBO LEADS - FREE SPECTACLES REGISTRATIONS', 14, 18 );
+						startY = 26;
 					}
+
+					// Render the 5 stat summary cards
+					var statBoxes = [
+						{ label: 'TOTAL REGISTERED', value: totalRegistered },
+						{ label: 'VISITED OPTICIANS', value: visitedOpticians },
+						{ label: 'PENDING VISITS', value: pendingVisits },
+						{ label: 'CURRENT SPECTACLE USERS', value: currentSpectacleUsers },
+						{ label: 'ELIGIBLE STUDENTS', value: eligibleStudents }
+					];
+
+					var cardGap = 3;
+					var totalAvailableWidth = 269; // 297mm A4 width - 28mm (14mm margins each side)
+					var cardWidth = ( totalAvailableWidth - ( ( statBoxes.length - 1 ) * cardGap ) ) / statBoxes.length;
+					var cardHeight = 20;
+					var headerHeight = 8;
+					var valueHeight = 12;
+
+					statBoxes.forEach( function ( box, idx ) {
+						var cardX = 14 + idx * ( cardWidth + cardGap );
+						var cardY = startY;
+
+						// Outer rounded container card with light border
+						doc.setDrawColor( 218, 222, 228 );
+						doc.setLineWidth( 0.4 );
+						doc.setFillColor( 255, 255, 255 );
+						doc.roundedRect( cardX, cardY, cardWidth, cardHeight, 2, 2, 'FD' );
+
+						// Top header with dark background
+						doc.setFillColor( 33, 37, 41 );
+						doc.roundedRect( cardX, cardY, cardWidth, headerHeight, 2, 2, 'F' );
+						// Flatten bottom corners of header
+						doc.rect( cardX, cardY + headerHeight - 2, cardWidth, 2, 'F' );
+
+						// Header label
+						doc.setFont( 'helvetica', 'bold' );
+						doc.setFontSize( 7.5 );
+						doc.setTextColor( 255, 255, 255 );
+						doc.text( box.label, cardX + ( cardWidth / 2 ), cardY + ( headerHeight / 2 ) + 0.8, { align: 'center', baseline: 'middle' } );
+
+						// Value
+						doc.setFont( 'helvetica', 'bold' );
+						doc.setFontSize( 16 );
+						doc.setTextColor( 20, 20, 20 );
+						doc.text( String( box.value ), cardX + ( cardWidth / 2 ), cardY + headerHeight + ( valueHeight / 2 ) + 0.8, { align: 'center', baseline: 'middle' } );
+					} );
+
+					startY = startY + cardHeight + 8;
 					
 					var tableBody = items.map( function ( item, index ) {
 						var vision = item.vision_difficulty_labels ? item.vision_difficulty_labels.join(', ') : '';
@@ -2037,6 +2244,12 @@
 			}
 			if ( letterSelect ) {
 				letterSelect.value = '';
+			}
+			if ( eligibilitySelect ) {
+				eligibilitySelect.value = '';
+			}
+			if ( commentSelect ) {
+				commentSelect.value = '';
 			}
 			state.page = 1;
 			loadDonors( { closeDetail: true } );

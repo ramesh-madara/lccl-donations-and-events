@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 18;
+	const VERSION = 19;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -336,6 +336,7 @@ class LCCL_DE_Schema {
 			consent tinyint(1) NOT NULL DEFAULT 0,
 			ip_address varchar(45) DEFAULT NULL,
 			comments text,
+			eligibility varchar(32) DEFAULT NULL,
 			created_at datetime NOT NULL,
 			updated_at datetime DEFAULT NULL,
 			updated_by bigint(20) unsigned DEFAULT NULL,
@@ -347,10 +348,16 @@ class LCCL_DE_Schema {
 			KEY created_at (created_at),
 			KEY phone (phone),
 			KEY email (email),
+			KEY eligibility (eligibility),
 			UNIQUE KEY letter_token (letter_token)
 		) {$charset};";
 
 		dbDelta( $spectacles_sql );
+
+		$has_eligibility = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'eligibility' ) );
+		if ( empty( $has_eligibility ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN eligibility varchar(32) DEFAULT NULL AFTER comments, ADD INDEX eligibility (eligibility)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
 
 		$payments     = self::payments_table();
 		$payments_sql = "CREATE TABLE {$payments} (
