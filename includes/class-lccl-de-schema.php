@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 16;
+	const VERSION = 17;
 
 	/**
 	 * Option that stores the installed schema version.

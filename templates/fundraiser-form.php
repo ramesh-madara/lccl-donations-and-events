@@ -19,6 +19,9 @@ if ( ! $active_event ) {
 $types = LCCL_DE_Fundraiser::get_table_types( $active_event['id'] );
 $tables = LCCL_DE_Fundraiser::get_tables( $active_event['id'] );
 $ticket_price = (float) $active_event['ticket_price'];
+$avail_seats = LCCL_DE_Fundraiser::get_available_seat_numbers( $active_event['id'] );
+$available_seats_count = count( $avail_seats );
+$pool_stats = LCCL_DE_Fundraiser::get_pool_stats( $active_event['id'] );
 
 // Group tables by type ID
 $tables_by_type = array();
@@ -31,9 +34,10 @@ foreach ( $tables as $tbl ) {
 
 // Ensure JS gets the data
 $js_data = array(
-	'ticket_price' => $ticket_price,
-	'types'        => $types,
-	'tables'       => $tables_by_type,
+	'ticket_price'          => $ticket_price,
+	'types'                 => $types,
+	'tables'                => $tables_by_type,
+	'available_seats_count' => $available_seats_count,
 );
 ?>
 <div class="lccl-fr-wrapper">
@@ -77,19 +81,26 @@ $js_data = array(
 				<div class="lccl-fr-row">
 					<div>
 						<label for="ticketQty"><?php esc_html_e( 'Number of Seats', 'lccl-de' ); ?> <span class="required">*</span></label>
-						<input type="number" name="qty" id="ticketQty" min="1" max="10" value="1">
+						<input type="number" name="qty" id="ticketQty" min="<?php echo $available_seats_count > 0 ? '1' : '0'; ?>" max="<?php echo esc_attr( min( 10, $available_seats_count ) ); ?>" value="<?php echo $available_seats_count > 0 ? '1' : '0'; ?>" <?php echo $available_seats_count === 0 ? 'disabled' : ''; ?>>
 					</div>
 					<div>
 						<label><?php esc_html_e( 'Ticket Price', 'lccl-de' ); ?></label>
 						<input type="text" value="LKR <?php echo esc_attr( number_format( $ticket_price, 2 ) ); ?>" readonly>
 					</div>
 				</div>
-				<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #666; line-height: 1.5;">
-					<?php esc_html_e( 'Individual seat bookings do not require you to select a table. The system will allocate available seats automatically, preferably together.', 'lccl-de' ); ?>
-				</div>
+				<?php if ( $available_seats_count === 0 ) : ?>
+					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #dc2626; font-weight: 600;">
+						<?php esc_html_e( 'Notice: All individual seats for this event are currently booked or reserved.', 'lccl-de' ); ?>
+					</div>
+				<?php else : ?>
+					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #666; line-height: 1.5;">
+						<?php esc_html_e( 'Individual seat bookings do not require you to select a table. The system will allocate available seats automatically in ascending sequence.', 'lccl-de' ); ?>
+					</div>
+				<?php endif; ?>
 				<div class="seat-info" style="padding: 12px 15px; background: #f5f5f5; font-size: 13px; line-height: 1.5;">
-					<strong><?php esc_html_e( 'Seats to be assigned:', 'lccl-de' ); ?></strong> <span id="indivSeatCount">1</span><br>
-					<span class="small" style="color: #777; font-size: 11px;"><?php esc_html_e( 'The system will allocate available seats automatically.', 'lccl-de' ); ?></span>
+					<strong><?php esc_html_e( 'Seats to be assigned:', 'lccl-de' ); ?></strong> <span id="indivSeatCount"><?php echo $available_seats_count > 0 ? '1' : '0'; ?></span>
+					<span style="color:#777; font-size:12px; margin-left:8px;">(<?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'seats available', 'lccl-de' ); ?>)</span><br>
+					<span class="small" style="color: #777; font-size: 11px;"><?php esc_html_e( 'Auto-allocated seat numbers will appear in your confirmation email upon payment completion.', 'lccl-de' ); ?></span>
 				</div>
 			</div>
 
@@ -213,13 +224,20 @@ $js_data = array(
 				<div class="seat-map">
 					<div class="stage"><?php esc_html_e( 'STAGE', 'lccl-de' ); ?></div>
 					<div class="seat-map-grid">
-						<?php for ( $i = 0; $i < 40; $i++ ) : ?>
-							<div class="seat-dot <?php echo ( wp_rand(0, 10) < 3 ) ? 'sold' : ''; ?>"></div>
+						<?php
+						$seat_total   = max( 1, (int) ( $pool_stats['seats_total'] ?? 0 ) );
+						$seat_booked  = (int) ( $pool_stats['seats_booked'] ?? 0 );
+						$seat_blocked = (int) ( $pool_stats['seat_pool_blocked'] ?? 0 );
+						for ( $i = 0; $i < 40; $i++ ) :
+							$r = $i / 40.0;
+							$is_sold = ( $r < ( ( $seat_booked + $seat_blocked ) / $seat_total ) );
+						?>
+							<div class="seat-dot <?php echo $is_sold ? 'sold' : ''; ?>"></div>
 						<?php endfor; ?>
 					</div>
 					<div class="legend">
-						<span><?php esc_html_e( 'Available', 'lccl-de' ); ?></span>
-						<span class="booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?></span>
+						<span><?php esc_html_e( 'Available Seats', 'lccl-de' ); ?> (<?php echo esc_html( $available_seats_count ); ?>)</span>
+						<span class="booked"><?php esc_html_e( 'Booked / Reserved', 'lccl-de' ); ?></span>
 					</div>
 				</div>
 			</div>
@@ -265,7 +283,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		var valid = false;
 		if (mode === 'individual') {
 			var q = parseInt(inputQty.value) || 0;
-			valid = q > 0;
+			var maxSeats = fundData.available_seats_count !== undefined ? fundData.available_seats_count : 10;
+			valid = q > 0 && q <= maxSeats;
 		} else {
 			var tq = parseInt(inputTableQty.value) || 0;
 			var type = selectType.value;
@@ -287,12 +306,17 @@ document.addEventListener('DOMContentLoaded', function() {
 		var tot = 0;
 		if (mode === 'individual') {
 			var q = parseInt(inputQty.value) || 0;
+			var maxSeats = fundData.available_seats_count !== undefined ? fundData.available_seats_count : 10;
+			if (q > maxSeats) {
+				inputQty.value = maxSeats;
+				q = maxSeats;
+			}
 			tot = q * fundData.ticket_price;
 			indivSeatCount.textContent = q;
 			
 			sumType.textContent = 'Individual Seats';
 			sumQty.textContent = q + (q === 1 ? ' Seat' : ' Seats');
-			sumSel.textContent = q;
+			sumSel.textContent = q + ' (Auto-assigned)';
 		} else {
 			var tq = parseInt(inputTableQty.value) || 0;
 			var type = selectType.value;
@@ -309,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			
 			sumType.textContent = 'Table Booking';
 			sumQty.textContent = tq + (tq === 1 ? ' Table' : ' Tables');
-			sumSel.textContent = selCount + ' of ' + tq;
+			sumSel.textContent = selCount + ' of ' + tq + ' table(s)';
 		}
 		
 		totalDisp.textContent = formatLKR(tot);
@@ -345,7 +369,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	
 	inputQty.addEventListener('input', updateTotal);
 	inputTableQty.addEventListener('input', function() {
-		// Prevent user from selecting more tables than available
 		var max = 0;
 		for (var i = 0; i < selectTable.options.length; i++) {
 			if (!selectTable.options[i].disabled && selectTable.options[i].value !== '') max++;
@@ -363,24 +386,26 @@ document.addEventListener('DOMContentLoaded', function() {
 			selectTable.setAttribute('disabled', 'disabled');
 			inputTableQty.setAttribute('disabled', 'disabled');
 		} else {
-			var avail = fundData.tables[tid] || [];
+			// Filter strictly to Table Pool tables that are unbooked and unblocked
+			var avail = ( fundData.tables[tid] || [] ).filter( function ( t ) {
+				return t.booking_mode === 'table' && parseInt( t.is_booked ) === 0 && parseInt( t.is_blocked ) === 0;
+			} );
 			var c = 0;
 			for (var i = 0; i < avail.length; i++) {
-				if (parseInt(avail[i].is_booked) === 0) {
-					var opt = document.createElement('option');
-					opt.value = avail[i].id;
-					opt.textContent = avail[i].table_label;
-					selectTable.appendChild(opt);
-					c++;
-				}
+				var opt = document.createElement('option');
+				opt.value = avail[i].id;
+				opt.textContent = avail[i].table_label;
+				selectTable.appendChild(opt);
+				c++;
 			}
 			if (c === 0) {
-				selectTable.innerHTML = '<option value="">No available tables for this tier</option>';
+				selectTable.innerHTML = '<option value="">No available tables in Table Pool for this tier</option>';
 				selectTable.setAttribute('disabled', 'disabled');
 				inputTableQty.setAttribute('disabled', 'disabled');
 			} else {
 				selectTable.removeAttribute('disabled');
 				inputTableQty.removeAttribute('disabled');
+				inputTableQty.max = c;
 			}
 		}
 		updateTotal();
@@ -394,11 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		
 		var max = parseInt(inputTableQty.value) || 1;
 		if (selCount > max) {
-			// Deselect the last selected one
-			// Browser multiselect natively supports ctrl+click, 
-			// if they select too many, we just alert them and revert
 			alert('You can only select ' + max + ' table(s). Increase the "Number of Tables" to select more.');
-			// Simply validate down
 			for (var j = this.options.length - 1; j >= 0; j--) {
 				if (this.options[j].selected) {
 					this.options[j].selected = false;
