@@ -1768,6 +1768,116 @@
 	}
 }
 
+/* Spectacles eligibility radio buttons & pills for high contrast on gold background */
+.lccl-bda .lccl-bda__eligibility-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 18px;
+	background: #ffffff !important;
+	border: 1.5px solid #d0d2d6;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+	user-select: none;
+	transition: all 0.15s ease-in-out;
+}
+
+.lccl-bda .lccl-bda__eligibility-pill:hover {
+	border-color: #8c8f94;
+	background: #ffffff !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.lccl-bda .lccl-bda__eligibility-pill input[type="radio"],
+.lccl-bda input[type="radio"].lccl-bda__radio-input {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	min-height: 20px;
+	margin: 0;
+	padding: 0;
+	background-color: #ffffff !important;
+	border: 2.5px solid #50575e;
+	border-radius: 50%;
+	outline: none;
+	cursor: pointer;
+	display: inline-grid;
+	place-content: center;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.lccl-bda .lccl-bda__eligibility-pill input[type="radio"]::before,
+.lccl-bda input[type="radio"].lccl-bda__radio-input::before {
+	content: "";
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	transform: scale(0);
+	transition: transform 0.15s ease;
+	background-color: #1d2327;
+}
+
+.lccl-bda .lccl-bda__eligibility-pill--eligible input[type="radio"]::before {
+	background-color: #137333;
+}
+
+.lccl-bda .lccl-bda__eligibility-pill--not-eligible input[type="radio"]::before {
+	background-color: #c5221f;
+}
+
+.lccl-bda .lccl-bda__eligibility-pill input[type="radio"]:checked,
+.lccl-bda input[type="radio"].lccl-bda__radio-input:checked {
+	border-color: currentColor;
+	background-color: #ffffff !important;
+}
+
+.lccl-bda .lccl-bda__eligibility-pill input[type="radio"]:checked::before,
+.lccl-bda input[type="radio"].lccl-bda__radio-input:checked::before {
+	transform: scale(1);
+}
+
+.lccl-bda .lccl-bda__eligibility-pill--eligible.is-checked {
+	border-color: #137333;
+	color: #137333;
+	background: #ffffff !important;
+	box-shadow: 0 0 0 1px #137333, 0 2px 5px rgba(19, 115, 51, 0.15);
+}
+
+.lccl-bda .lccl-bda__eligibility-pill--not-eligible.is-checked {
+	border-color: #c5221f;
+	color: #c5221f;
+	background: #ffffff !important;
+	box-shadow: 0 0 0 1px #c5221f, 0 2px 5px rgba(197, 34, 31, 0.15);
+}
+
+.lccl-bda .lccl-bda__eligibility-clear-btn {
+	display: inline-flex;
+	align-items: center;
+	padding: 7px 14px;
+	background: #ffffff !important;
+	border: 1px solid #d0d2d6;
+	border-radius: 6px;
+	font-size: 13px;
+	font-weight: 500;
+	color: #646970;
+	cursor: pointer;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+	transition: all 0.15s ease-in-out;
+}
+
+.lccl-bda .lccl-bda__eligibility-clear-btn:hover {
+	border-color: #8c8f94;
+	color: #1d2327;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.lccl-bda * {
 		transition: none !important;

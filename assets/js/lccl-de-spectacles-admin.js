@@ -1114,9 +1114,14 @@
 
 			var eligRow = el( 'div', 'lccl-bda__eligibility-row' );
 			eligRow.style.margin = '0 0 12px 0';
-			eligRow.style.display = 'flex';
+			eligRow.style.display = 'inline-flex';
 			eligRow.style.alignItems = 'center';
-			eligRow.style.gap = '8px';
+			eligRow.style.gap = '10px';
+			eligRow.style.padding = '6px 14px';
+			eligRow.style.background = '#ffffff';
+			eligRow.style.border = '1px solid #dcd7be';
+			eligRow.style.borderRadius = '6px';
+			eligRow.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
 
 			var eligLabel = el( 'span', '', 'Eligibility:' );
 			eligLabel.style.fontWeight = '600';
@@ -1180,53 +1185,56 @@
 				var eligRadios = el( 'div' );
 				eligRadios.style.display = 'flex';
 				eligRadios.style.alignItems = 'center';
-				eligRadios.style.gap = '20px';
+				eligRadios.style.gap = '14px';
 				eligRadios.style.flexWrap = 'wrap';
 
-				var optEligLabel = el( 'label' );
-				optEligLabel.style.display = 'inline-flex';
-				optEligLabel.style.alignItems = 'center';
-				optEligLabel.style.gap = '6px';
-				optEligLabel.style.cursor = 'pointer';
-				optEligLabel.style.fontSize = '14px';
+				function syncPillStates() {
+					if ( radElig.checked ) {
+						optEligLabel.classList.add( 'is-checked' );
+						optNotEligLabel.classList.remove( 'is-checked' );
+					} else if ( radNotElig.checked ) {
+						optNotEligLabel.classList.add( 'is-checked' );
+						optEligLabel.classList.remove( 'is-checked' );
+					} else {
+						optEligLabel.classList.remove( 'is-checked' );
+						optNotEligLabel.classList.remove( 'is-checked' );
+					}
+				}
 
+				var optEligLabel = el( 'label', 'lccl-bda__eligibility-pill lccl-bda__eligibility-pill--eligible' );
 				var radElig = document.createElement( 'input' );
 				radElig.type = 'radio';
+				radElig.className = 'lccl-bda__radio-input';
 				radElig.name = 'spectacles_eligibility_' + item.id;
 				radElig.value = 'eligible';
 				radElig.checked = ( item.eligibility === 'eligible' );
+				radElig.addEventListener( 'change', syncPillStates );
 				optEligLabel.appendChild( radElig );
 				optEligLabel.appendChild( document.createTextNode( 'Eligible' ) );
 				eligRadios.appendChild( optEligLabel );
 
-				var optNotEligLabel = el( 'label' );
-				optNotEligLabel.style.display = 'inline-flex';
-				optNotEligLabel.style.alignItems = 'center';
-				optNotEligLabel.style.gap = '6px';
-				optNotEligLabel.style.cursor = 'pointer';
-				optNotEligLabel.style.fontSize = '14px';
-
+				var optNotEligLabel = el( 'label', 'lccl-bda__eligibility-pill lccl-bda__eligibility-pill--not-eligible' );
 				var radNotElig = document.createElement( 'input' );
 				radNotElig.type = 'radio';
+				radNotElig.className = 'lccl-bda__radio-input';
 				radNotElig.name = 'spectacles_eligibility_' + item.id;
 				radNotElig.value = 'not_eligible';
 				radNotElig.checked = ( item.eligibility === 'not_eligible' );
+				radNotElig.addEventListener( 'change', syncPillStates );
 				optNotEligLabel.appendChild( radNotElig );
 				optNotEligLabel.appendChild( document.createTextNode( 'Not eligible' ) );
 				eligRadios.appendChild( optNotEligLabel );
 
-				var clearEligBtn = el( 'button', 'lccl-bda__text-button', 'Clear' );
+				var clearEligBtn = el( 'button', 'lccl-bda__eligibility-clear-btn', 'Clear selection' );
 				clearEligBtn.type = 'button';
-				clearEligBtn.style.fontSize = '12px';
-				clearEligBtn.style.color = '#666';
-				clearEligBtn.style.textDecoration = 'underline';
-				clearEligBtn.style.padding = '0';
-				clearEligBtn.style.marginLeft = '8px';
 				clearEligBtn.addEventListener( 'click', function () {
 					radElig.checked = false;
 					radNotElig.checked = false;
+					syncPillStates();
 				} );
 				eligRadios.appendChild( clearEligBtn );
+
+				syncPillStates();
 
 				eligField.appendChild( eligRadios );
 				form.appendChild( eligField );
@@ -1257,6 +1265,7 @@
 					formWrap.hidden = false;
 					radElig.checked = ( item.eligibility === 'eligible' );
 					radNotElig.checked = ( item.eligibility === 'not_eligible' );
+					syncPillStates();
 					textArea.value = item.comments || '';
 					textArea.focus();
 				} );
@@ -1266,6 +1275,7 @@
 					displayWrap.hidden = false;
 					radElig.checked = ( item.eligibility === 'eligible' );
 					radNotElig.checked = ( item.eligibility === 'not_eligible' );
+					syncPillStates();
 					textArea.value = item.comments || '';
 				} );
 				
@@ -2206,6 +2216,7 @@
 							2: { halign: 'center' },
 							4: { halign: 'center' },
 							6: { cellWidth: 35 },
+							8: { halign: 'center' },
 							9: { cellWidth: 55 }
 						},
 						didDrawPage: function ( data ) {
