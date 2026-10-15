@@ -867,6 +867,10 @@ class LCCL_DE_Spectacles_Submissions {
 	 * @return bool
 	 */
 	private static function is_rate_limited() {
+		if ( is_user_logged_in() ) {
+			return false;
+		}
+
 		$ip = self::request_ip();
 		if ( '' === $ip ) {
 			return false;
@@ -874,11 +878,11 @@ class LCCL_DE_Spectacles_Submissions {
 
 		$key   = 'lccl_de_sp_rl_' . md5( $ip );
 		$count = (int) get_transient( $key );
-		if ( $count >= 8 ) {
+		if ( $count >= 100 ) {
 			return true;
 		}
 
-		set_transient( $key, $count + 1, HOUR_IN_SECONDS );
+		set_transient( $key, $count + 1, 15 * MINUTE_IN_SECONDS );
 		return false;
 	}
 
