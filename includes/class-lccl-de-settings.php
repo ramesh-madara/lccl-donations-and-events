@@ -1102,6 +1102,30 @@ class LCCL_DE_Settings {
 	}
 
 	/**
+	 * Map a currency code to the corresponding CBC Paycenter profile.
+	 * Foreign currencies (USD, GBP, EUR, CNY) map to centralized shared merchant profiles.
+	 * Domestic currency (LKR) routes to the form's specific default profile.
+	 *
+	 * @param string $currency             Currency code (e.g. LKR, USD, GBP, EUR, CNY).
+	 * @param string $default_lkr_profile  Profile key to use for LKR (e.g. PROFILE_DONATIONS or PROFILE_PROJECT_1).
+	 * @return string
+	 */
+	public static function resolve_paycenter_profile( $currency, $default_lkr_profile = self::PROFILE_DONATIONS ) {
+		switch ( strtoupper( sanitize_text_field( (string) $currency ) ) ) {
+			case 'USD':
+				return self::PROFILE_DONATIONS_USD;
+			case 'GBP':
+				return self::PROFILE_DONATIONS_GBP;
+			case 'EUR':
+				return self::PROFILE_DONATIONS_EUR;
+			case 'CNY':
+				return self::PROFILE_DONATIONS_CNY;
+			default:
+				return $default_lkr_profile;
+		}
+	}
+
+	/**
 	 * Default / blank CBC Paycenter configuration for a profile.
 	 *
 	 * @param string $profile Profile key.

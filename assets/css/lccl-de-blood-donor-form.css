@@ -876,14 +876,14 @@
 	line-height: 1.2;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chips {
+.lccl-bdf .lccl-df__currency-chips {
 	display: flex;
 	gap: 8px;
 	width: 100%;
 	margin: 0 0 6px;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip {
+.lccl-bdf .lccl-df__currency-chip {
 	flex: 1 1 0;
 	min-width: 0;
 	height: 46px;
@@ -906,86 +906,86 @@
 }
 
 /* LKR */
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr {
+.lccl-bdf .lccl-df__currency-chip--lkr {
 	background-color: #fefce8;
 	border-color: #c9a012;
 	color: #b45309;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr:hover,
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr:focus {
+.lccl-bdf .lccl-df__currency-chip--lkr:hover,
+.lccl-bdf .lccl-df__currency-chip--lkr:focus {
 	background-color: #fef08a;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr.is-active {
+.lccl-bdf .lccl-df__currency-chip--lkr.is-active {
 	background-color: #c8960f;
 	border-color: #c8960f;
 	color: #000000;
 }
 
 /* USD */
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd {
+.lccl-bdf .lccl-df__currency-chip--usd {
 	background-color: #e6f0fa;
 	border-color: #0a51a1;
 	color: #0a51a1;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd:hover,
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd:focus {
+.lccl-bdf .lccl-df__currency-chip--usd:hover,
+.lccl-bdf .lccl-df__currency-chip--usd:focus {
 	background-color: #cce0f5;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd.is-active {
+.lccl-bdf .lccl-df__currency-chip--usd.is-active {
 	background-color: #0a51a1;
 	border-color: #0a51a1;
 	color: #ffffff;
 }
 
 /* GBP */
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp {
+.lccl-bdf .lccl-df__currency-chip--gbp {
 	background-color: #f2edf9;
 	border-color: #6941A5;
 	color: #6941A5;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp:hover,
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp:focus {
+.lccl-bdf .lccl-df__currency-chip--gbp:hover,
+.lccl-bdf .lccl-df__currency-chip--gbp:focus {
 	background-color: #e5dbf2;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp.is-active {
+.lccl-bdf .lccl-df__currency-chip--gbp.is-active {
 	background-color: #6941A5;
 	border-color: #6941A5;
 	color: #ffffff;
 }
 
 /* EUR */
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur {
+.lccl-bdf .lccl-df__currency-chip--eur {
 	background-color: #e8f5f6;
 	border-color: #16858A;
 	color: #16858A;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur:hover,
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur:focus {
+.lccl-bdf .lccl-df__currency-chip--eur:hover,
+.lccl-bdf .lccl-df__currency-chip--eur:focus {
 	background-color: #d1ecee;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur.is-active {
+.lccl-bdf .lccl-df__currency-chip--eur.is-active {
 	background-color: #16858A;
 	border-color: #16858A;
 	color: #ffffff;
 }
 
 /* CNY */
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny {
+.lccl-bdf .lccl-df__currency-chip--cny {
 	background-color: #faebea;
 	border-color: #C93B35;
 	color: #C93B35;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny:hover,
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny:focus {
+.lccl-bdf .lccl-df__currency-chip--cny:hover,
+.lccl-bdf .lccl-df__currency-chip--cny:focus {
 	background-color: #f5d7d5;
 }
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny.is-active {
+.lccl-bdf .lccl-df__currency-chip--cny.is-active {
 	background-color: #C93B35;
 	border-color: #C93B35;
 	color: #ffffff;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__currency-desc {
+.lccl-bdf .lccl-df__currency-desc {
 	margin: 6px 0 16px;
 	color: #6b7280;
 	font-family: var(--lccl-bdf-font);
@@ -2580,68 +2580,63 @@ a.lccl-terms-link:focus {
 }
 
 /* Currency Text Color Overrides for dark theme backgrounds (USD, GBP, EUR, CNY) */
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__causes,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__cause,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__total-label,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__preset,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__preset:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__preset.is-active,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__submit,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__submit:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__submit:focus,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__custom-select-trigger,
+.lccl-bdf form.is-currency-usd .lccl-df__causes,
+.lccl-bdf form.is-currency-usd .lccl-df__cause,
+.lccl-bdf form.is-currency-usd .lccl-df__total-label,
+.lccl-bdf form.is-currency-usd .lccl-df__preset,
+.lccl-bdf form.is-currency-usd .lccl-df__preset:hover,
+.lccl-bdf form.is-currency-usd .lccl-df__preset.is-active,
+.lccl-bdf form.is-currency-usd .lccl-df__submit,
+.lccl-bdf form.is-currency-usd .lccl-df__submit:hover,
+.lccl-bdf form.is-currency-usd .lccl-df__submit:focus,
+.lccl-bdf form.is-currency-usd .lccl-df__custom-select-trigger,
 
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__causes,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__cause,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__total-label,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__preset,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__preset:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__preset.is-active,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__submit,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__submit:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__submit:focus,
-.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__custom-select-trigger,
+.lccl-bdf form.is-currency-gbp .lccl-df__causes,
+.lccl-bdf form.is-currency-gbp .lccl-df__cause,
+.lccl-bdf form.is-currency-gbp .lccl-df__total-label,
+.lccl-bdf form.is-currency-gbp .lccl-df__preset,
+.lccl-bdf form.is-currency-gbp .lccl-df__preset:hover,
+.lccl-bdf form.is-currency-gbp .lccl-df__preset.is-active,
+.lccl-bdf form.is-currency-gbp .lccl-df__submit,
+.lccl-bdf form.is-currency-gbp .lccl-df__submit:hover,
+.lccl-bdf form.is-currency-gbp .lccl-df__submit:focus,
+.lccl-bdf form.is-currency-gbp .lccl-df__custom-select-trigger,
 
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__causes,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__cause,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__total-label,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__preset,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__preset:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__preset.is-active,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__submit,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__submit:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__submit:focus,
-.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__custom-select-trigger,
+.lccl-bdf form.is-currency-eur .lccl-df__causes,
+.lccl-bdf form.is-currency-eur .lccl-df__cause,
+.lccl-bdf form.is-currency-eur .lccl-df__total-label,
+.lccl-bdf form.is-currency-eur .lccl-df__preset,
+.lccl-bdf form.is-currency-eur .lccl-df__preset:hover,
+.lccl-bdf form.is-currency-eur .lccl-df__preset.is-active,
+.lccl-bdf form.is-currency-eur .lccl-df__submit,
+.lccl-bdf form.is-currency-eur .lccl-df__submit:hover,
+.lccl-bdf form.is-currency-eur .lccl-df__submit:focus,
+.lccl-bdf form.is-currency-eur .lccl-df__custom-select-trigger,
 
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__causes,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__cause,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__total-label,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__preset,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__preset:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__preset.is-active,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__submit,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__submit:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__submit:focus,
-.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__custom-select-trigger {
+.lccl-bdf form.is-currency-cny .lccl-df__causes,
+.lccl-bdf form.is-currency-cny .lccl-df__cause,
+.lccl-bdf form.is-currency-cny .lccl-df__total-label,
+.lccl-bdf form.is-currency-cny .lccl-df__preset,
+.lccl-bdf form.is-currency-cny .lccl-df__preset:hover,
+.lccl-bdf form.is-currency-cny .lccl-df__preset.is-active,
+.lccl-bdf form.is-currency-cny .lccl-df__submit,
+.lccl-bdf form.is-currency-cny .lccl-df__submit:hover,
+.lccl-bdf form.is-currency-cny .lccl-df__submit:focus,
+.lccl-bdf form.is-currency-cny .lccl-df__custom-select-trigger {
 	color: #ffffff !important;
 }
 
 /* Explicit LKR Text Color Overrides for gold backgrounds */
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__causes,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__cause,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__total-label,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__preset,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__preset:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__preset.is-active,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__submit,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__submit:hover,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__submit:focus,
-.lccl-bdf.lccl-bdf--donation form.is-currency-lkr .lccl-df__custom-select-trigger {
+.lccl-bdf form.is-currency-lkr .lccl-df__causes,
+.lccl-bdf form.is-currency-lkr .lccl-df__cause,
+.lccl-bdf form.is-currency-lkr .lccl-df__total-label,
+.lccl-bdf form.is-currency-lkr .lccl-df__preset,
+.lccl-bdf form.is-currency-lkr .lccl-df__preset:hover,
+.lccl-bdf form.is-currency-lkr .lccl-df__preset.is-active,
+.lccl-bdf form.is-currency-lkr .lccl-df__submit,
+.lccl-bdf form.is-currency-lkr .lccl-df__submit:hover,
+.lccl-bdf form.is-currency-lkr .lccl-df__submit:focus,
+.lccl-bdf form.is-currency-lkr .lccl-df__custom-select-trigger {
 	color: #000000 !important;
-}
-
-/* Sponsorship form USD color overrides */
-.lccl-bdf.lccl-bdf--sponsorship form.is-currency-usd .lccl-df__total-label {
-	color: #ffffff !important;
 }
 

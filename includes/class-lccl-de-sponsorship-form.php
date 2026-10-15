@@ -123,8 +123,12 @@ class LCCL_DE_Sponsorship_Form {
 	 *
 	 * @return string
 	 */
-	public static function amount_error_message() {
-		return __( 'Please enter a valid sponsorship amount of at least 1 LKR.', 'lccl-de' );
+	public static function amount_error_message( $currency = 'LKR' ) {
+		return sprintf(
+			/* translators: %s: currency code */
+			__( 'Please enter a valid sponsorship amount of at least 1 %s.', 'lccl-de' ),
+			strtoupper( $currency )
+		);
 	}
 
 	/**
@@ -305,12 +309,15 @@ class LCCL_DE_Sponsorship_Form {
 			true
 		);
 
-		$profile_cfg        = LCCL_DE_Settings::get_paycenter( self::PROFILE );
-		$currency           = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( (string) $profile_cfg['currency'] ) : 'LKR';
-		$values             = array();
-		$errors             = array();
+		$profile_cfg            = LCCL_DE_Settings::get_paycenter( self::PROFILE );
+		$currency               = isset( $profile_cfg['currency'] ) && '' !== $profile_cfg['currency'] ? strtoupper( (string) $profile_cfg['currency'] ) : 'LKR';
+		$values                 = array();
+		$errors                 = array();
 		$gateway_configured     = LCCL_DE_Paycenter_Client::is_configured( self::PROFILE );
 		$usd_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_USD );
+		$gbp_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_GBP );
+		$eur_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_EUR );
+		$cny_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_CNY );
 
 		if ( ! empty( $_GET['lccl_ps_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$errors[] = sanitize_text_field( wp_unslash( $_GET['lccl_ps_error'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -372,14 +379,13 @@ class LCCL_DE_Sponsorship_Form {
 		$raw_amount = isset( $raw['amount'] ) ? preg_replace( '/[^\d.]/', '', (string) $raw['amount'] ) : '0';
 		$amount     = (float) $raw_amount;
 
-		// Determine currency. Whitelist: LKR or USD only.
+		// Determine currency. Whitelist: LKR, USD, GBP, EUR, CNY.
+		$allowed_currencies = array( 'LKR', 'USD', 'GBP', 'EUR', 'CNY' );
 		$submitted_currency = isset( $raw['currency'] ) ? strtoupper( sanitize_text_field( (string) $raw['currency'] ) ) : 'LKR';
-		$form_currency      = in_array( $submitted_currency, array( 'LKR', 'USD' ), true ) ? $submitted_currency : 'LKR';
+		$form_currency      = in_array( $submitted_currency, $allowed_currencies, true ) ? $submitted_currency : 'LKR';
 
 		// Route to the correct gateway profile based on currency.
-		$active_profile = ( 'USD' === $form_currency )
-			? LCCL_DE_Settings::PROFILE_DONATIONS_USD
-			: self::PROFILE;
+		$active_profile = LCCL_DE_Settings::resolve_paycenter_profile( $form_currency, self::PROFILE );
 
 		$errors = array();
 
@@ -396,9 +402,11 @@ class LCCL_DE_Sponsorship_Form {
 			$errors[] = __( 'Mobile / WhatsApp number is required.', 'lccl-de' );
 		}
 		if ( $amount < 1.00 ) {
-			$errors[] = 'USD' === $form_currency
-				? __( 'Please enter a valid sponsorship amount of at least 1 USD.', 'lccl-de' )
-				: __( 'Please enter a valid sponsorship amount of at least 1 LKR.', 'lccl-de' );
+			$errors[] = sprintf(
+				/* translators: %s: currency code */
+				__( 'Please enter a valid sponsorship amount of at least 1 %s.', 'lccl-de' ),
+				$form_currency
+			);
 		}
 		if ( isset( $project_data['status'] ) && 'completed' === $project_data['status'] ) {
 			wp_safe_redirect(
@@ -624,9 +632,7 @@ class LCCL_DE_Sponsorship_Form {
 
 		// Use the profile matching the stored currency for payment_complete.
 		$stored_currency  = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
-		$callback_profile = ( 'USD' === $stored_currency )
-			? LCCL_DE_Settings::PROFILE_DONATIONS_USD
-			: self::PROFILE;
+		$callback_profile = LCCL_DE_Settings::resolve_paycenter_profile( $stored_currency, self::PROFILE );
 
 		$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid, $callback_profile );
 

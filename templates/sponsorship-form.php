@@ -61,18 +61,60 @@ if ( ! isset( $projects[ $project ] ) ) {
 		$project = array_key_first( $projects );
 	}
 }
-$lkr_presets_row1  = array( 10000, 25000, 50000 );
-$lkr_presets_row2  = array( 100000, 200000 );
-$usd_presets_row1  = array( 100, 500, 1000 );
-$usd_presets_row2  = array( 5000, 10000 );
-$default_lkr       = 10000;
-$default_usd       = 100;
-$amount            = $val( 'amount' );
-$amount            = '' !== $amount ? $amount : ( 'USD' === $currency ? (string) $default_usd : (string) $default_lkr );
-$total             = LCCL_DE_Sponsorship_Form::format_amount( $amount, $currency );
-$presets_row1      = ( 'USD' === $currency ) ? $usd_presets_row1 : $lkr_presets_row1;
-$presets_row2      = ( 'USD' === $currency ) ? $usd_presets_row2 : $lkr_presets_row2;
+$lkr_presets_row1       = array( 10000, 25000, 50000 );
+$lkr_presets_row2       = array( 100000, 200000 );
+$usd_presets_row1       = array( 100, 500, 1000 );
+$usd_presets_row2       = array( 5000, 10000 );
+$gbp_presets_row1       = array( 100, 500, 1000 );
+$gbp_presets_row2       = array( 5000, 10000 );
+$eur_presets_row1       = array( 100, 500, 1000 );
+$eur_presets_row2       = array( 5000, 10000 );
+$cny_presets_row1       = array( 500, 2000, 5000 );
+$cny_presets_row2       = array( 10000, 25000 );
+
+$default_lkr            = 10000;
+$default_usd            = 100;
+$default_gbp            = 100;
+$default_eur            = 100;
+$default_cny            = 500;
+
+switch ( $currency ) {
+	case 'USD':
+		$presets_row1 = $usd_presets_row1;
+		$presets_row2 = $usd_presets_row2;
+		$default_amt  = $default_usd;
+		break;
+	case 'GBP':
+		$presets_row1 = $gbp_presets_row1;
+		$presets_row2 = $gbp_presets_row2;
+		$default_amt  = $default_gbp;
+		break;
+	case 'EUR':
+		$presets_row1 = $eur_presets_row1;
+		$presets_row2 = $eur_presets_row2;
+		$default_amt  = $default_eur;
+		break;
+	case 'CNY':
+		$presets_row1 = $cny_presets_row1;
+		$presets_row2 = $cny_presets_row2;
+		$default_amt  = $default_cny;
+		break;
+	case 'LKR':
+	default:
+		$presets_row1 = $lkr_presets_row1;
+		$presets_row2 = $lkr_presets_row2;
+		$default_amt  = $default_lkr;
+		break;
+}
+
+$amount                 = $val( 'amount' );
+$amount                 = '' !== $amount ? $amount : (string) $default_amt;
+$total                  = LCCL_DE_Sponsorship_Form::format_amount( $amount, $currency );
 $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway_configured : false;
+$gbp_gateway_configured = isset( $gbp_gateway_configured ) ? (bool) $gbp_gateway_configured : false;
+$eur_gateway_configured = isset( $eur_gateway_configured ) ? (bool) $eur_gateway_configured : false;
+$cny_gateway_configured = isset( $cny_gateway_configured ) ? (bool) $cny_gateway_configured : false;
+$currency_form_class    = ' is-currency-' . strtolower( $currency );
 ?>
 <div class="lccl-bdf lccl-bdf--sponsorship">
 	<?php if ( '' !== $atts['banner_title'] || '' !== $atts['banner_intro'] ) : ?>
@@ -88,15 +130,19 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 
 	<div class="lccl-ps">
 		<form
-			class="lccl-bdf__form lccl-ps__form<?php echo 'USD' === $currency ? ' is-currency-usd' : ''; ?>"
+			class="lccl-bdf__form lccl-ps__form<?php echo esc_attr( $currency_form_class ); ?>"
 			id="lccl-ps-form"
 			method="post"
 			action="<?php echo esc_url( remove_query_arg( array( LCCL_DE_Sponsorship_Form::QA_RETURN, LCCL_DE_Sponsorship_Form::QA_CANCEL, LCCL_DE_Sponsorship_Form::QA_ORDER_REF, 'reqid', 'ReqID', 'lccl_ps_error' ) ) ); ?>"
 			data-required-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::required_field_message() ); ?>"
-			data-amount-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::amount_error_message() ); ?>"
+			data-amount-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::amount_error_message( $currency ) ); ?>"
 			data-email-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::email_error_message() ); ?>"
 			data-phone-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::phone_error_message() ); ?>"
+			data-lkr-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
 			data-usd-configured="<?php echo $usd_gateway_configured ? '1' : '0'; ?>"
+			data-gbp-configured="<?php echo $gbp_gateway_configured ? '1' : '0'; ?>"
+			data-eur-configured="<?php echo $eur_gateway_configured ? '1' : '0'; ?>"
+			data-cny-configured="<?php echo $cny_gateway_configured ? '1' : '0'; ?>"
 			novalidate
 		>
 			<?php wp_nonce_field( LCCL_DE_Sponsorship_Form::NONCE_ACTION, LCCL_DE_Sponsorship_Form::NONCE_FIELD ); ?>
@@ -186,6 +232,36 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 					<?php $notice( 'project' ); ?>
 				</div>
 
+				<!-- Currency Selector Chips -->
+				<div class="lccl-df__currency-section">
+					<span class="lccl-df__section-label"><?php esc_html_e( 'SELECT CURRENCY', 'lccl-de' ); ?></span>
+					<div class="lccl-df__currency-chips" role="radiogroup" aria-label="<?php esc_attr_e( 'Select Currency', 'lccl-de' ); ?>">
+						<?php
+						$currencies = array(
+							'LKR' => 'LKR',
+							'USD' => 'USD',
+							'GBP' => 'GBP',
+							'EUR' => 'EUR',
+							'CNY' => 'CNY',
+						);
+						foreach ( $currencies as $c_code => $c_label ) :
+							$is_curr_active = ( $c_code === $currency );
+						?>
+							<button
+								type="button"
+								class="lccl-df__currency-chip lccl-df__currency-chip--<?php echo strtolower( $c_code ); ?><?php echo $is_curr_active ? ' is-active' : ''; ?>"
+								data-lccl-currency="<?php echo esc_attr( $c_code ); ?>"
+								role="radio"
+								aria-checked="<?php echo $is_curr_active ? 'true' : 'false'; ?>"
+							>
+								<?php echo esc_html( $c_label ); ?>
+							</button>
+						<?php endforeach; ?>
+					</div>
+					<p class="lccl-df__currency-desc"><?php esc_html_e( 'Select a currency to preview the active state.', 'lccl-de' ); ?></p>
+				</div>
+
+				<label for="lccl-ps-amount" class="lccl-df__section-label"><?php esc_html_e( 'SPONSORSHIP AMOUNT', 'lccl-de' ); ?></label>
 				<div class="lccl-df__amount-row<?php echo esc_attr( $invalid( 'amount' ) ); ?>">
 					<input
 						class="lccl-df__amount-input"
@@ -198,9 +274,12 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 						autocomplete="off"
 						maxlength="12"
 						data-lccl-validate="amount"
-						data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::amount_error_message() ); ?>"
+						data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::amount_error_message( $currency ) ); ?>"
 						data-default-lkr="<?php echo esc_attr( (string) $default_lkr ); ?>"
 						data-default-usd="<?php echo esc_attr( (string) $default_usd ); ?>"
+						data-default-gbp="<?php echo esc_attr( (string) $default_gbp ); ?>"
+						data-default-eur="<?php echo esc_attr( (string) $default_eur ); ?>"
+						data-default-cny="<?php echo esc_attr( (string) $default_cny ); ?>"
 						required
 					>
 					<div class="lccl-df__custom-select" data-lccl-custom-select>
@@ -212,6 +291,9 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 						>
 							<option value="LKR"<?php selected( $currency, 'LKR' ); ?>>LKR</option>
 							<option value="USD"<?php selected( $currency, 'USD' ); ?>>USD</option>
+							<option value="GBP"<?php selected( $currency, 'GBP' ); ?>>GBP</option>
+							<option value="EUR"<?php selected( $currency, 'EUR' ); ?>>EUR</option>
+							<option value="CNY"<?php selected( $currency, 'CNY' ); ?>>CNY</option>
 						</select>
 						<button type="button" class="lccl-df__custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" data-lccl-select-trigger>
 							<span data-lccl-select-value><?php echo esc_html( $currency ); ?></span>
@@ -220,6 +302,9 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 						<ul class="lccl-df__custom-select-options" role="listbox" data-lccl-select-options hidden>
 							<li role="option" tabindex="0" data-value="LKR" <?php echo 'LKR' === $currency ? 'aria-selected="true"' : ''; ?>>LKR</li>
 							<li role="option" tabindex="0" data-value="USD" <?php echo 'USD' === $currency ? 'aria-selected="true"' : ''; ?>>USD</li>
+							<li role="option" tabindex="0" data-value="GBP" <?php echo 'GBP' === $currency ? 'aria-selected="true"' : ''; ?>>GBP</li>
+							<li role="option" tabindex="0" data-value="EUR" <?php echo 'EUR' === $currency ? 'aria-selected="true"' : ''; ?>>EUR</li>
+							<li role="option" tabindex="0" data-value="CNY" <?php echo 'CNY' === $currency ? 'aria-selected="true"' : ''; ?>>CNY</li>
 						</ul>
 					</div>
 					<input type="hidden" name="currency" id="lccl-ps-currency-hidden" value="<?php echo esc_attr( $currency ); ?>">
@@ -229,17 +314,40 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 				<div class="lccl-df__presets" role="group" aria-label="<?php esc_attr_e( 'Suggested amounts', 'lccl-de' ); ?>">
 					<div class="lccl-df__preset-row">
 						<?php
-						$preset_pairs_row1 = array_map( null, $lkr_presets_row1, $usd_presets_row1 );
-						foreach ( $preset_pairs_row1 as $pair ) :
-							$lkr_val = $pair[0];
-							$usd_val = $pair[1];
-							$active_val = ( 'USD' === $currency ) ? $usd_val : $lkr_val;
+						$preset_tuples_row1 = array_map( null, $lkr_presets_row1, $usd_presets_row1, $gbp_presets_row1, $eur_presets_row1, $cny_presets_row1 );
+						foreach ( $preset_tuples_row1 as $tuple ) :
+							$lkr_val = $tuple[0];
+							$usd_val = $tuple[1];
+							$gbp_val = $tuple[2];
+							$eur_val = $tuple[3];
+							$cny_val = $tuple[4];
+							switch ( $currency ) {
+								case 'USD':
+									$active_val = $usd_val;
+									break;
+								case 'GBP':
+									$active_val = $gbp_val;
+									break;
+								case 'EUR':
+									$active_val = $eur_val;
+									break;
+								case 'CNY':
+									$active_val = $cny_val;
+									break;
+								case 'LKR':
+								default:
+									$active_val = $lkr_val;
+									break;
+							}
 						?>
 							<button
 								class="lccl-df__preset<?php echo ( (string) $active_val === (string) $amount ) ? ' is-active' : ''; ?>"
 								type="button"
 								data-lccl-preset-lkr="<?php echo esc_attr( (string) $lkr_val ); ?>"
 								data-lccl-preset-usd="<?php echo esc_attr( (string) $usd_val ); ?>"
+								data-lccl-preset-gbp="<?php echo esc_attr( (string) $gbp_val ); ?>"
+								data-lccl-preset-eur="<?php echo esc_attr( (string) $eur_val ); ?>"
+								data-lccl-preset-cny="<?php echo esc_attr( (string) $cny_val ); ?>"
 								data-lccl-preset="<?php echo esc_attr( (string) $active_val ); ?>"
 							>
 								<?php echo esc_html( number_format( $active_val ) . ' ' . $currency ); ?>
@@ -248,17 +356,40 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 					</div>
 					<div class="lccl-df__preset-row">
 						<?php
-						$preset_pairs_row2 = array_map( null, $lkr_presets_row2, $usd_presets_row2 );
-						foreach ( $preset_pairs_row2 as $pair ) :
-							$lkr_val = $pair[0];
-							$usd_val = $pair[1];
-							$active_val = ( 'USD' === $currency ) ? $usd_val : $lkr_val;
+						$preset_tuples_row2 = array_map( null, $lkr_presets_row2, $usd_presets_row2, $gbp_presets_row2, $eur_presets_row2, $cny_presets_row2 );
+						foreach ( $preset_tuples_row2 as $tuple ) :
+							$lkr_val = $tuple[0];
+							$usd_val = $tuple[1];
+							$gbp_val = $tuple[2];
+							$eur_val = $tuple[3];
+							$cny_val = $tuple[4];
+							switch ( $currency ) {
+								case 'USD':
+									$active_val = $usd_val;
+									break;
+								case 'GBP':
+									$active_val = $gbp_val;
+									break;
+								case 'EUR':
+									$active_val = $eur_val;
+									break;
+								case 'CNY':
+									$active_val = $cny_val;
+									break;
+								case 'LKR':
+								default:
+									$active_val = $lkr_val;
+									break;
+							}
 						?>
 							<button
 								class="lccl-df__preset<?php echo ( (string) $active_val === (string) $amount ) ? ' is-active' : ''; ?>"
 								type="button"
 								data-lccl-preset-lkr="<?php echo esc_attr( (string) $lkr_val ); ?>"
 								data-lccl-preset-usd="<?php echo esc_attr( (string) $usd_val ); ?>"
+								data-lccl-preset-gbp="<?php echo esc_attr( (string) $gbp_val ); ?>"
+								data-lccl-preset-eur="<?php echo esc_attr( (string) $eur_val ); ?>"
+								data-lccl-preset-cny="<?php echo esc_attr( (string) $cny_val ); ?>"
 								data-lccl-preset="<?php echo esc_attr( (string) $active_val ); ?>"
 							>
 								<?php echo esc_html( number_format( $active_val ) . ' ' . $currency ); ?>
