@@ -88,7 +88,7 @@ switch ( $currency ) {
 		break;
 }
 
-$currency_form_class = ( 'LKR' !== $currency ) ? ' is-currency-' . strtolower( $currency ) : '';
+$currency_form_class = ' is-currency-' . strtolower( $currency );
 ?>
 <div class="lccl-bdf lccl-bdf--donation">
 	<div class="lccl-donation-layout">

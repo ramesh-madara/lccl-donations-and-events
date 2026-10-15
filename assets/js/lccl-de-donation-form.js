@@ -330,10 +330,8 @@
 			} );
 
 			// Toggle currency theme classes on the form wrapper
-			form.classList.remove( 'is-currency-usd', 'is-currency-gbp', 'is-currency-eur', 'is-currency-cny' );
-			if ( 'LKR' !== activeCurrency ) {
-				form.classList.add( 'is-currency-' + activeCurrency.toLowerCase() );
-			}
+			form.classList.remove( 'is-currency-lkr', 'is-currency-usd', 'is-currency-gbp', 'is-currency-eur', 'is-currency-cny' );
+			form.classList.add( 'is-currency-' + activeCurrency.toLowerCase() );
 
 			// Swap all preset button values and labels.
 			Array.prototype.forEach.call( presets, function ( btn ) {
