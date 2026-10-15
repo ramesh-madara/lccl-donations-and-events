@@ -2180,6 +2180,17 @@
 						if ( item.vision_other ) {
 							vision += (vision ? ', ' : '') + item.vision_other;
 						}
+						var comment = item.comments ? item.comments.replace( /^\s+|\s+$/g, '' ) : '';
+						var elig = item.eligibility;
+						var commentDisplay = '';
+						if ( elig === 'eligible' ) {
+							commentDisplay = comment ? ( 'ELIGIBLE - ' + comment ) : 'ELIGIBLE';
+						} else if ( elig === 'not_eligible' ) {
+							commentDisplay = comment ? ( 'NOT ELIGIBLE - ' + comment ) : 'NOT ELIGIBLE';
+						} else {
+							commentDisplay = comment;
+						}
+
 						return [
 							index + 1,
 							item.child_first_name + ' ' + item.child_last_name,
@@ -2191,7 +2202,7 @@
 							item.phone || '',
 							item.wear_spectacles_label || '',
 							vision,
-							item.comments || ''
+							commentDisplay
 						];
 					} );
 					
