@@ -51,7 +51,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 								esc_html__( 'Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Reference Number: %3$s', 'lccl-de' ),
 								'<strong>' . esc_html( $payment_success['member_name'] ) . '</strong>',
 								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
-								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
+								'<code>' . esc_html( ! empty( $payment_success['order_ref'] ) ? $payment_success['order_ref'] : $payment_success['receipt'] ) . '</code>'
 							);
 							?>
 						</span>

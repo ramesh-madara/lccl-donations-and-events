@@ -114,7 +114,7 @@ $usd_gateway_configured = isset( $usd_gateway_configured ) ? (bool) $usd_gateway
 								'<strong>' . esc_html( $payment_success['sponsor_name'] ) . '</strong>',
 								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
 								esc_html( $payment_success['project_label'] ),
-								'<code>' . esc_html( $payment_success['receipt'] ?: $payment_success['order_ref'] ) . '</code>'
+								'<code>' . esc_html( ! empty( $payment_success['order_ref'] ) ? $payment_success['order_ref'] : $payment_success['receipt'] ) . '</code>'
 							);
 							?>
 						</span>
