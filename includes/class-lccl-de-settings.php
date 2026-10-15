@@ -54,6 +54,9 @@ class LCCL_DE_Settings {
 
 	const PROFILE_DONATIONS     = 'donations';
 	const PROFILE_DONATIONS_USD = 'donations_usd';
+	const PROFILE_DONATIONS_GBP = 'donations_gbp';
+	const PROFILE_DONATIONS_EUR = 'donations_eur';
+	const PROFILE_DONATIONS_CNY = 'donations_cny';
 	const PROFILE_MEMBERSHIP    = 'membership';
 	const PROFILE_PROJECT_1     = 'project_1';
 	const PROFILE_PROJECT_2     = 'project_2';
@@ -1049,6 +1052,21 @@ class LCCL_DE_Settings {
 				'default_label' => __( 'Donations (USD)', 'lccl-de' ),
 				'description'   => __( 'Client credentials for USD donations (Merchant ID: LIONSCLUBUSD).', 'lccl-de' ),
 			),
+			self::PROFILE_DONATIONS_GBP => array(
+				'key'           => self::PROFILE_DONATIONS_GBP,
+				'default_label' => __( 'Donations (GBP)', 'lccl-de' ),
+				'description'   => __( 'Client credentials for British Pound (GBP) donations.', 'lccl-de' ),
+			),
+			self::PROFILE_DONATIONS_EUR => array(
+				'key'           => self::PROFILE_DONATIONS_EUR,
+				'default_label' => __( 'Donations (EUR)', 'lccl-de' ),
+				'description'   => __( 'Client credentials for Euro (EUR) donations.', 'lccl-de' ),
+			),
+			self::PROFILE_DONATIONS_CNY => array(
+				'key'           => self::PROFILE_DONATIONS_CNY,
+				'default_label' => __( 'Donations (CNY)', 'lccl-de' ),
+				'description'   => __( 'Client credentials for Chinese Yuan (CNY) donations.', 'lccl-de' ),
+			),
 			self::PROFILE_MEMBERSHIP    => array(
 				'key'           => self::PROFILE_MEMBERSHIP,
 				'default_label' => __( 'Member Fees', 'lccl-de' ),
@@ -1093,6 +1111,17 @@ class LCCL_DE_Settings {
 		$known = self::known_paycenter_profiles();
 		$label = isset( $known[ $profile ]['default_label'] ) ? $known[ $profile ]['default_label'] : __( 'CBC Paycenter', 'lccl-de' );
 
+		$currency = 'LKR';
+		if ( self::PROFILE_DONATIONS_USD === $profile ) {
+			$currency = 'USD';
+		} elseif ( self::PROFILE_DONATIONS_GBP === $profile ) {
+			$currency = 'GBP';
+		} elseif ( self::PROFILE_DONATIONS_EUR === $profile ) {
+			$currency = 'EUR';
+		} elseif ( self::PROFILE_DONATIONS_CNY === $profile ) {
+			$currency = 'CNY';
+		}
+
 		return array(
 			'label'       => $label,
 			'enabled'     => ( self::PROFILE_MEMBERSHIP === $profile ) ? 1 : 0,
@@ -1101,7 +1130,7 @@ class LCCL_DE_Settings {
 			'client_id'   => '',
 			'auth_token'  => '',
 			'hmac_secret' => '',
-			'currency'    => 'LKR',
+			'currency'    => $currency,
 		);
 	}
 
@@ -1142,7 +1171,7 @@ class LCCL_DE_Settings {
 		$cfg['hmac_secret'] = self::decrypt_secret( isset( $stored_item['hmac_secret'] ) ? (string) $stored_item['hmac_secret'] : '' );
 
 		// Validate stored currency; fall back to LKR if not a known value.
-		$allowed_currencies = array( 'LKR', 'USD' );
+		$allowed_currencies = array( 'LKR', 'USD', 'GBP', 'EUR', 'CNY' );
 		$raw_currency       = strtoupper( sanitize_text_field( (string) $cfg['currency'] ) );
 		$cfg['currency']    = in_array( $raw_currency, $allowed_currencies, true ) ? $raw_currency : 'LKR';
 
@@ -1210,7 +1239,7 @@ class LCCL_DE_Settings {
 		}
 
 		// Sanitize and validate currency selection.
-		$allowed_currencies = array( 'LKR', 'USD' );
+		$allowed_currencies = array( 'LKR', 'USD', 'GBP', 'EUR', 'CNY' );
 		$before_currency    = isset( $before['currency'] ) ? $before['currency'] : 'LKR';
 		$raw_currency       = isset( $input['paycenter_currency'] ) ? strtoupper( sanitize_text_field( trim( (string) $input['paycenter_currency'] ) ) ) : $before_currency;
 		$currency           = in_array( $raw_currency, $allowed_currencies, true ) ? $raw_currency : 'LKR';

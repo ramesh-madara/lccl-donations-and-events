@@ -205,6 +205,9 @@ class LCCL_DE_Donation_Form {
 		$errors             = array();
 		$gateway_configured     = LCCL_DE_Paycenter_Client::is_configured( self::PROFILE );
 		$usd_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_USD );
+		$gbp_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_GBP );
+		$eur_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_EUR );
+		$cny_gateway_configured = LCCL_DE_Paycenter_Client::is_configured( LCCL_DE_Settings::PROFILE_DONATIONS_CNY );
 
 		if ( ! empty( $_GET['lccl_df_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$errors[] = sanitize_text_field( wp_unslash( $_GET['lccl_df_error'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -263,14 +266,22 @@ class LCCL_DE_Donation_Form {
 		$raw_amount = isset( $raw['amount'] ) ? preg_replace( '/[^\d.]/', '', (string) $raw['amount'] ) : '0';
 		$amount     = (float) $raw_amount;
 
-		// Determine currency. Whitelist: LKR or USD only.
+		// Determine currency. Whitelist: LKR, USD, GBP, EUR, CNY.
+		$allowed_currencies = array( 'LKR', 'USD', 'GBP', 'EUR', 'CNY' );
 		$submitted_currency = isset( $raw['currency'] ) ? strtoupper( sanitize_text_field( (string) $raw['currency'] ) ) : 'LKR';
-		$form_currency      = in_array( $submitted_currency, array( 'LKR', 'USD' ), true ) ? $submitted_currency : 'LKR';
+		$form_currency      = in_array( $submitted_currency, $allowed_currencies, true ) ? $submitted_currency : 'LKR';
 
 		// Route to the correct gateway profile based on currency.
-		$active_profile = ( 'USD' === $form_currency )
-			? LCCL_DE_Settings::PROFILE_DONATIONS_USD
-			: self::PROFILE;
+		$active_profile = self::PROFILE;
+		if ( 'USD' === $form_currency ) {
+			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_USD;
+		} elseif ( 'GBP' === $form_currency ) {
+			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_GBP;
+		} elseif ( 'EUR' === $form_currency ) {
+			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_EUR;
+		} elseif ( 'CNY' === $form_currency ) {
+			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_CNY;
+		}
 
 		$selected_causes = isset( $raw['causes'] ) && is_array( $raw['causes'] )
 			? array_values( array_intersect( $raw['causes'], array_keys( self::causes() ) ) )
@@ -556,9 +567,16 @@ class LCCL_DE_Donation_Form {
 		// Server-to-server confirmation: PAYMENT_COMPLETE — route to the profile that matches
 		// the currency stored on the database row (set during PAYMENT_INIT).
 		$stored_currency  = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
-		$callback_profile = ( 'USD' === $stored_currency )
-			? LCCL_DE_Settings::PROFILE_DONATIONS_USD
-			: self::PROFILE;
+		$callback_profile = self::PROFILE;
+		if ( 'USD' === $stored_currency ) {
+			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_USD;
+		} elseif ( 'GBP' === $stored_currency ) {
+			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_GBP;
+		} elseif ( 'EUR' === $stored_currency ) {
+			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_EUR;
+		} elseif ( 'CNY' === $stored_currency ) {
+			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_CNY;
+		}
 		$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid, $callback_profile );
 
 		if ( is_wp_error( $response_data ) ) {

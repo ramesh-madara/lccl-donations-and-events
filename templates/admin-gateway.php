@@ -315,6 +315,15 @@ $error   = isset( $error ) ? $error : '';
 										<option value="USD" <?php selected( isset( $cfg['currency'] ) ? $cfg['currency'] : 'LKR', 'USD' ); ?>>
 											<?php esc_html_e( 'USD — US Dollar', 'lccl-de' ); ?>
 										</option>
+										<option value="GBP" <?php selected( isset( $cfg['currency'] ) ? $cfg['currency'] : 'LKR', 'GBP' ); ?>>
+											<?php esc_html_e( 'GBP — British Pound', 'lccl-de' ); ?>
+										</option>
+										<option value="EUR" <?php selected( isset( $cfg['currency'] ) ? $cfg['currency'] : 'LKR', 'EUR' ); ?>>
+											<?php esc_html_e( 'EUR — Euro', 'lccl-de' ); ?>
+										</option>
+										<option value="CNY" <?php selected( isset( $cfg['currency'] ) ? $cfg['currency'] : 'LKR', 'CNY' ); ?>>
+											<?php esc_html_e( 'CNY — Chinese Yuan', 'lccl-de' ); ?>
+										</option>
 									</select>
 									<p class="description"><?php esc_html_e( 'Currency sent to the CBC Paycenter gateway for this payment route. Must match the currency configured in your Bancstac merchant account.', 'lccl-de' ); ?></p>
 								</td>

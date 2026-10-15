@@ -59,6 +59,36 @@
 	--lccl-bdf-border-focus: #0a51a1;
 }
 
+.lccl-bdf__form.is-currency-gbp {
+	--lccl-bdf-gold-dark: #581c87;
+	--lccl-bdf-gold-light: #7c3aed;
+	--lccl-bdf-gold-hover: #8b5cf6;
+	--lccl-bdf-primary: #7c3aed;
+	--lccl-bdf-primary-medium: #ddd6fe;
+	--lccl-bdf-primary-soft: #f5f3ff;
+	--lccl-bdf-border-focus: #7c3aed;
+}
+
+.lccl-bdf__form.is-currency-eur {
+	--lccl-bdf-gold-dark: #0f766e;
+	--lccl-bdf-gold-light: #0d9488;
+	--lccl-bdf-gold-hover: #14b8a6;
+	--lccl-bdf-primary: #0d9488;
+	--lccl-bdf-primary-medium: #99f6e4;
+	--lccl-bdf-primary-soft: #f0fdfa;
+	--lccl-bdf-border-focus: #0d9488;
+}
+
+.lccl-bdf__form.is-currency-cny {
+	--lccl-bdf-gold-dark: #9f1239;
+	--lccl-bdf-gold-light: #e11d48;
+	--lccl-bdf-gold-hover: #f43f5e;
+	--lccl-bdf-primary: #e11d48;
+	--lccl-bdf-primary-medium: #fecdd3;
+	--lccl-bdf-primary-soft: #fff1f2;
+	--lccl-bdf-border-focus: #e11d48;
+}
+
 .lccl-bdf *,
 .lccl-bdf *::before,
 .lccl-bdf *::after {
@@ -826,6 +856,142 @@
 
 .lccl-bdf.lccl-bdf--donation .lccl-df {
 	padding: 8px 28px 8px;
+}
+
+/* Currency Selector Chips Section */
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-section {
+	margin: 0 0 16px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__section-label,
+.lccl-bdf.lccl-bdf--donation label.lccl-df__section-label {
+	display: block;
+	margin: 0 0 8px;
+	color: #555555;
+	font-family: var(--lccl-bdf-font);
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	line-height: 1.2;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chips {
+	display: flex;
+	gap: 8px;
+	width: 100%;
+	margin: 0 0 6px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 46px;
+	padding: 0 4px;
+	border-radius: 0;
+	border-width: 1.5px;
+	border-style: solid;
+	font-family: var(--lccl-bdf-font);
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	box-sizing: border-box;
+	outline: none;
+}
+
+/* LKR */
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr {
+	background-color: #fefce8;
+	border-color: #c9a012;
+	color: #b45309;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr:focus {
+	background-color: #fef08a;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--lkr.is-active {
+	background-color: #c8960f;
+	border-color: #c8960f;
+	color: #ffffff;
+}
+
+/* USD */
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd {
+	background-color: #eff6ff;
+	border-color: #3b82f6;
+	color: #1d4ed8;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd:focus {
+	background-color: #dbeafe;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--usd.is-active {
+	background-color: #1d4ed8;
+	border-color: #1d4ed8;
+	color: #ffffff;
+}
+
+/* GBP */
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp {
+	background-color: #f5f3ff;
+	border-color: #8b5cf6;
+	color: #6d28d9;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp:focus {
+	background-color: #ede9fe;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--gbp.is-active {
+	background-color: #7c3aed;
+	border-color: #7c3aed;
+	color: #ffffff;
+}
+
+/* EUR */
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur {
+	background-color: #ecfdf5;
+	border-color: #14b8a6;
+	color: #0f766e;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur:focus {
+	background-color: #ccfbf1;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--eur.is-active {
+	background-color: #0d9488;
+	border-color: #0d9488;
+	color: #ffffff;
+}
+
+/* CNY */
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny {
+	background-color: #fff1f2;
+	border-color: #fb7185;
+	color: #be123c;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny:hover,
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny:focus {
+	background-color: #ffe4e6;
+}
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-chip--cny.is-active {
+	background-color: #e11d48;
+	border-color: #e11d48;
+	color: #ffffff;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__currency-desc {
+	margin: 6px 0 16px;
+	color: #6b7280;
+	font-family: var(--lccl-bdf-font);
+	font-size: 13px;
+	font-weight: 400;
+	line-height: 1.4;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__amount-row {
@@ -2400,10 +2566,19 @@ a.lccl-terms-link:focus {
     margin: 0 auto;
 }
 
-/* USD Text Color Overrides */
+/* Currency Text Color Overrides for dark theme backgrounds */
 .lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__causes,
 .lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__cause,
-.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__total-label {
+.lccl-bdf.lccl-bdf--donation form.is-currency-usd .lccl-df__total-label,
+.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__causes,
+.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__cause,
+.lccl-bdf.lccl-bdf--donation form.is-currency-gbp .lccl-df__total-label,
+.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__causes,
+.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__cause,
+.lccl-bdf.lccl-bdf--donation form.is-currency-eur .lccl-df__total-label,
+.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__causes,
+.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__cause,
+.lccl-bdf.lccl-bdf--donation form.is-currency-cny .lccl-df__total-label {
 	color: #ffffff !important;
 }
 
