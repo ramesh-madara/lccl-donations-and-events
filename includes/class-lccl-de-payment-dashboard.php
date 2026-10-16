@@ -588,7 +588,13 @@ class LCCL_DE_Payment_Dashboard {
 			$message = (string) $row['extra_message'];
 			if ( is_array( $gw_json ) ) {
 				if ( ! empty( $gw_json['causes'] ) ) {
-					$causes = (array) $gw_json['causes'];
+					$all_c  = class_exists( 'LCCL_DE_Donation_Form' ) ? LCCL_DE_Donation_Form::causes() : array();
+					$causes = array_map(
+						static function( $k ) use ( $all_c ) {
+							return isset( $all_c[ $k ] ) ? $all_c[ $k ] : $k;
+						},
+						(array) $gw_json['causes']
+					);
 				}
 				if ( empty( $message ) && ! empty( $gw_json['message'] ) ) {
 					$message = (string) $gw_json['message'];

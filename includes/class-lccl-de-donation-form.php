@@ -121,14 +121,15 @@ class LCCL_DE_Donation_Form {
 	 */
 	public static function causes() {
 		return array(
-			'diabetes'        => __( 'Diabetes Awareness & Screening', 'lccl-de' ),
-			'vision'          => __( 'Vision & Eye Care', 'lccl-de' ),
-			'hunger'          => __( 'Hunger & Food Assistance', 'lccl-de' ),
-			'environment'     => __( 'Environment', 'lccl-de' ),
-			'child-cancer'    => __( 'Childhood Cancer Support', 'lccl-de' ),
-			'youth'           => __( 'Youth & Education', 'lccl-de' ),
-			'disaster-relief' => __( 'Disaster Relief', 'lccl-de' ),
-			'humanitarian'    => __( 'Humanitarian Assistance', 'lccl-de' ),
+			'where-most-needed' => __( 'Where Most Needed', 'lccl-de' ),
+			'diabetes'          => __( 'Diabetes Awareness & Screening', 'lccl-de' ),
+			'vision'            => __( 'Vision & Eye Care', 'lccl-de' ),
+			'hunger'            => __( 'Hunger & Food Assistance', 'lccl-de' ),
+			'environment'       => __( 'Environment', 'lccl-de' ),
+			'child-cancer'      => __( 'Childhood Cancer Support', 'lccl-de' ),
+			'youth'             => __( 'Youth & Education', 'lccl-de' ),
+			'disaster-relief'   => __( 'Disaster Relief', 'lccl-de' ),
+			'humanitarian'      => __( 'Humanitarian Assistance', 'lccl-de' ),
 		);
 	}
 
@@ -272,16 +273,7 @@ class LCCL_DE_Donation_Form {
 		$form_currency      = in_array( $submitted_currency, $allowed_currencies, true ) ? $submitted_currency : 'LKR';
 
 		// Route to the correct gateway profile based on currency.
-		$active_profile = self::PROFILE;
-		if ( 'USD' === $form_currency ) {
-			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_USD;
-		} elseif ( 'GBP' === $form_currency ) {
-			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_GBP;
-		} elseif ( 'EUR' === $form_currency ) {
-			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_EUR;
-		} elseif ( 'CNY' === $form_currency ) {
-			$active_profile = LCCL_DE_Settings::PROFILE_DONATIONS_CNY;
-		}
+		$active_profile = LCCL_DE_Settings::resolve_paycenter_profile( $form_currency, self::PROFILE );
 
 		$selected_causes = isset( $raw['causes'] ) && is_array( $raw['causes'] )
 			? array_values( array_intersect( $raw['causes'], array_keys( self::causes() ) ) )
@@ -567,16 +559,7 @@ class LCCL_DE_Donation_Form {
 		// Server-to-server confirmation: PAYMENT_COMPLETE — route to the profile that matches
 		// the currency stored on the database row (set during PAYMENT_INIT).
 		$stored_currency  = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
-		$callback_profile = self::PROFILE;
-		if ( 'USD' === $stored_currency ) {
-			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_USD;
-		} elseif ( 'GBP' === $stored_currency ) {
-			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_GBP;
-		} elseif ( 'EUR' === $stored_currency ) {
-			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_EUR;
-		} elseif ( 'CNY' === $stored_currency ) {
-			$callback_profile = LCCL_DE_Settings::PROFILE_DONATIONS_CNY;
-		}
+		$callback_profile = LCCL_DE_Settings::resolve_paycenter_profile( $stored_currency, self::PROFILE );
 		$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid, $callback_profile );
 
 		if ( is_wp_error( $response_data ) ) {
@@ -827,6 +810,21 @@ class LCCL_DE_Donation_Form {
 		$order_ref  = (string) $row['order_ref'];
 		$ref        = $receipt ?: $order_ref;
 
+		// Decode causes if present.
+		$meta          = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
+		$causes_labels = array();
+
+		if ( is_array( $meta ) && ! empty( $meta['causes'] ) && is_array( $meta['causes'] ) ) {
+			$all_causes = self::causes();
+			foreach ( $meta['causes'] as $ckey ) {
+				if ( isset( $all_causes[ $ckey ] ) ) {
+					$causes_labels[] = $all_causes[ $ckey ];
+				}
+			}
+		}
+
+		$areas_supported = ! empty( $causes_labels ) ? implode( ', ', $causes_labels ) : __( 'General Community Service', 'lccl-de' );
+
 		$subject = sprintf(
 			/* translators: 1: currency, 2: amount formatted, 3: donor name */
 			__( '[Donation Alert] Received %1$s %2$s from %3$s', 'lccl-de' ),
@@ -836,9 +834,9 @@ class LCCL_DE_Donation_Form {
 		);
 
 		$body = sprintf(
-			/* translators: 1: name, 2: currency, 3: amount, 4: email, 5: phone, 6: receipt, 7: order_ref, 8: date */
+			/* translators: 1: name, 2: currency, 3: amount, 4: email, 5: phone, 6: receipt, 7: order_ref, 8: date, 9: causes */
 			__(
-				"A new online donation has been received!\n\nDonor Details:\n----------------------------------------\nName:      %1\$s\nAmount:    %2\$s %3\$s\nEmail:     %4\$s\nPhone:     %5\$s\nReceipt:   %6\$s\nOrder Ref: %7\$s\nDate/Time: %8\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
+				"A new online donation has been received!\n\nDonor Details:\n----------------------------------------\nName:      %1\$s\nAmount:    %2\$s %3\$s\nCauses:    %9\$s\nEmail:     %4\$s\nPhone:     %5\$s\nReceipt:   %6\$s\nOrder Ref: %7\$s\nDate/Time: %8\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
 				'lccl-de'
 			),
 			$name,
@@ -848,7 +846,8 @@ class LCCL_DE_Donation_Form {
 			$phone,
 			$ref,
 			$order_ref,
-			current_time( 'mysql' )
+			current_time( 'mysql' ),
+			$areas_supported
 		);
 
 		$headers = array(

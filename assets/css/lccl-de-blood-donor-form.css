@@ -863,8 +863,8 @@
 	margin: 0 0 16px;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__section-label,
-.lccl-bdf.lccl-bdf--donation label.lccl-df__section-label {
+.lccl-bdf .lccl-df__section-label,
+.lccl-bdf label.lccl-df__section-label {
 	display: block;
 	margin: 0 0 8px;
 	color: #555555;
@@ -918,7 +918,7 @@
 .lccl-bdf .lccl-df__currency-chip--lkr.is-active {
 	background-color: #c8960f;
 	border-color: #c8960f;
-	color: #000000;
+	color: #ffffff;
 }
 
 /* USD */
@@ -1051,7 +1051,7 @@
 	border-left: none;
 	border-radius: 0;
 	background-color: var(--lccl-bdf-gold-dark);
-	color: #000000;
+	color: #ffffff;
 	cursor: pointer;
 	font-family: var(--lccl-bdf-font);
 	font-size: 15px;
@@ -1144,7 +1144,7 @@
 	border-radius: 0;
 	background-color: var(--lccl-bdf-gold-light);
 	box-shadow: none;
-	color: #000000;
+	color: #ffffff;
 	cursor: pointer;
 	font-family: var(--lccl-bdf-font);
 	font-size: 17px;
@@ -1158,13 +1158,13 @@
 .lccl-bdf.lccl-bdf--donation .lccl-df__preset:focus,
 .lccl-bdf.lccl-bdf--donation .lccl-df__preset:focus-visible {
 	background-color: var(--lccl-bdf-gold-hover);
-	color: #000000;
+	color: #ffffff;
 	outline: none;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__preset.is-active {
 	background-color: var(--lccl-bdf-gold-dark);
-	color: #000000;
+	color: #ffffff;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__areas {
@@ -1201,7 +1201,7 @@
 	margin: 0;
 	padding: 8px 0 16px;
 	background-color: var(--lccl-bdf-gold-light);
-	color: #000000;
+	color: #ffffff;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__cause {
@@ -1214,7 +1214,7 @@
 	gap: 8px;
 	margin: 0;
 	padding: 6px 0 4px 3%;
-	color: #000000;
+	color: #ffffff;
 	cursor: pointer;
 	font-family: var(--lccl-bdf-font);
 	font-size: 14px;
@@ -1319,7 +1319,7 @@
 	height: 49px;
 	padding: 0 14px;
 	background-color: var(--lccl-bdf-gold-light);
-	color: #000000;
+	color: #ffffff;
 	font-family: var(--lccl-bdf-font);
 	font-size: 20px;
 	font-weight: 700;
@@ -1359,9 +1359,9 @@
 	border: none;
 	border-radius: 0;
 	background-color: var(--lccl-bdf-gold-light);
-	color: #000000;
-	font-size: 22px;
-	font-weight: 400;
+	color: #ffffff;
+	font-size: 24px;
+	font-weight: 600;
 	letter-spacing: 2px;
 	text-transform: uppercase;
 }
@@ -1370,7 +1370,7 @@
 .lccl-bdf.lccl-bdf--donation .lccl-df__submit:focus,
 .lccl-bdf.lccl-bdf--donation .lccl-df__submit:focus-visible {
 	background-color: var(--lccl-bdf-gold-hover);
-	color: #000000;
+	color: #ffffff;
 }
 
 @media (max-width: 600px) {
@@ -1689,8 +1689,8 @@
 	border-radius: 0;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
-	font-size: 22px;
-	font-weight: 400;
+	font-size: 24px;
+	font-weight: 600;
 	letter-spacing: 2px;
 	text-transform: uppercase;
 }
@@ -2014,7 +2014,7 @@
 	height: 49px;
 	padding: 0 14px;
 	background-color: var(--lccl-bdf-gold-light);
-	color: var(--lccl-bdf-heading);
+	color: #ffffff;
 	font-family: var(--lccl-bdf-font);
 	font-size: 20px;
 	font-weight: 700;
@@ -2056,8 +2056,8 @@
 	border-radius: 0;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
-	font-size: 22px;
-	font-weight: 400;
+	font-size: 24px;
+	font-weight: 600;
 	letter-spacing: 2px;
 	text-transform: uppercase;
 }
@@ -2658,6 +2658,6 @@ a.lccl-terms-link:focus {
 .lccl-bdf form.is-currency-lkr .lccl-df__submit:hover,
 .lccl-bdf form.is-currency-lkr .lccl-df__submit:focus,
 .lccl-bdf form.is-currency-lkr .lccl-df__custom-select-trigger {
-	color: #000000 !important;
+	color: #ffffff !important;
 }
 

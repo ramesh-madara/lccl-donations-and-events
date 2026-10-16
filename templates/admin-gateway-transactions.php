@@ -458,7 +458,16 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 										<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
 											<h4><?php esc_html_e( 'Donation Details', 'lccl-de' ); ?></h4>
 											<?php if ( ! empty( $gw_json['causes'] ) ) : ?>
-												<p><strong><?php esc_html_e( 'Selected Causes:', 'lccl-de' ); ?></strong> <?php echo esc_html( implode( ', ', (array) $gw_json['causes'] ) ); ?></p>
+												<?php
+												$all_c    = class_exists( 'LCCL_DE_Donation_Form' ) ? LCCL_DE_Donation_Form::causes() : array();
+												$c_labels = array_map(
+													static function( $k ) use ( $all_c ) {
+														return isset( $all_c[ $k ] ) ? $all_c[ $k ] : $k;
+													},
+													(array) $gw_json['causes']
+												);
+												?>
+												<p><strong><?php esc_html_e( 'Selected Causes:', 'lccl-de' ); ?></strong> <?php echo esc_html( implode( ', ', $c_labels ) ); ?></p>
 											<?php endif; ?>
 											<?php if ( ! empty( $gw_json['message'] ) ) : ?>
 												<p><strong><?php esc_html_e( 'Donor Message:', 'lccl-de' ); ?></strong> <em>"<?php echo esc_html( $gw_json['message'] ); ?>"</em></p>
