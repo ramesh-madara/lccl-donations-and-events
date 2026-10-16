@@ -547,6 +547,17 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 						<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
 					</p>
 				<?php endif; ?>
+
+				<div class="lccl-df__pay-icons">
+					<img
+						src="<?php echo esc_url( LCCL_DE_URL . 'assets/img/pay-icons.png' ); ?>"
+						alt="<?php esc_attr_e( 'Accepted Payment Methods: Visa, Mastercard, American Express, UnionPay, LankaPay', 'lccl-de' ); ?>"
+						class="lccl-df__pay-icons-img"
+						loading="lazy"
+						width="720"
+						height="120"
+					>
+				</div>
 			</div>
 		</form>
 

@@ -2383,6 +2383,7 @@
 
 /* Payment method icons at the bottom of the payment form */
 .lccl-bdf--donation .lccl-df__pay-icons,
+.lccl-bdf--sponsorship .lccl-df__pay-icons,
 .lccl-df__pay-icons {
 	display: flex;
 	align-items: center;
@@ -2392,6 +2393,7 @@
 }
 
 .lccl-bdf--donation .lccl-df__pay-icons-img,
+.lccl-bdf--sponsorship .lccl-df__pay-icons-img,
 .lccl-df__pay-icons-img {
 	display: block;
 	width: 100%;
