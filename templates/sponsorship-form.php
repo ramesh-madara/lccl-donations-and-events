@@ -564,7 +564,7 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 		<div class="lccl-ps__image-panel">
 			<img
 				class="lccl-ps__image"
-				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/donation_project.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/donation_project.jpg' ); ?>"
+				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/10/donation_projects.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/10/donation_projects.jpg' ); ?>"
 				alt="<?php esc_attr_e( 'Project Sponsorship - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
 				loading="lazy"
 			>

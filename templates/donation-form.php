@@ -345,7 +345,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-first-name">
-							<?php esc_html_e( 'First Name (Optional)', 'lccl-de' ); ?>
+							<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__optional"><?php esc_html_e( '(Optional)', 'lccl-de' ); ?></span>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -361,7 +361,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-last-name">
-							<?php esc_html_e( 'Last Name (Optional)', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__optional"><?php esc_html_e( '(Optional)', 'lccl-de' ); ?></span>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -380,7 +380,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-email">
-							<?php esc_html_e( 'Email (Optional)', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__optional"><?php esc_html_e( '(Optional)', 'lccl-de' ); ?></span>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -398,7 +398,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-phone">
-							<?php esc_html_e( 'Mobile / WhatsApp Number (Optional)', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?> <span class="lccl-bdf__optional"><?php esc_html_e( '(Optional)', 'lccl-de' ); ?></span>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -419,7 +419,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 
 				<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'message' ) ); ?>">
 					<label class="lccl-bdf__label" for="lccl-df-message">
-						<?php esc_html_e( 'Message (Optional)', 'lccl-de' ); ?>
+						<?php esc_html_e( 'Message', 'lccl-de' ); ?> <span class="lccl-bdf__optional"><?php esc_html_e( '(Optional)', 'lccl-de' ); ?></span>
 					</label>
 					<textarea
 						class="lccl-bdf__textarea lccl-df__message"
@@ -500,7 +500,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 		<div class="lccl-donation__image-panel">
 			<img
 				class="lccl-donation__image"
-				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/donation.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/donation.jpg' ); ?>"
+				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/10/donations-scaled.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/10/donations-scaled.jpg' ); ?>"
 				alt="<?php esc_attr_e( 'Donations - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
 				loading="lazy"
 			>
