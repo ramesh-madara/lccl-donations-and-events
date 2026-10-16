@@ -345,7 +345,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-first-name">
-							<?php esc_html_e( 'First Name', 'lccl-de' ); ?>
+							<?php esc_html_e( 'First Name (Optional)', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -361,7 +361,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-last-name">
-							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Last Name (Optional)', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -380,7 +380,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-email">
-							<?php esc_html_e( 'Email', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Email (Optional)', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -398,7 +398,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-phone">
-							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
+							<?php esc_html_e( 'Mobile / WhatsApp Number (Optional)', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
