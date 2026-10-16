@@ -258,7 +258,6 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 							</button>
 						<?php endforeach; ?>
 					</div>
-					<p class="lccl-df__currency-desc"><?php esc_html_e( 'Select a currency to preview the active state.', 'lccl-de' ); ?></p>
 				</div>
 
 				<label for="lccl-ps-amount" class="lccl-df__section-label"><?php esc_html_e( 'SPONSORSHIP AMOUNT', 'lccl-de' ); ?></label>

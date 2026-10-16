@@ -192,7 +192,6 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 							</button>
 						<?php endforeach; ?>
 					</div>
-					<p class="lccl-df__currency-desc"><?php esc_html_e( 'Select a currency to preview the active state.', 'lccl-de' ); ?></p>
 				</div>
 
 				<label for="lccl-df-amount" class="lccl-df__section-label"><?php esc_html_e( 'DONATION AMOUNT', 'lccl-de' ); ?></label>
@@ -488,6 +487,17 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 					<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
 				</p>
+
+				<div class="lccl-df__pay-icons">
+					<img
+						src="<?php echo esc_url( LCCL_DE_URL . 'assets/img/pay-icons.png' ); ?>"
+						alt="<?php esc_attr_e( 'Accepted Payment Methods: Visa, Mastercard, American Express, UnionPay, LankaPay', 'lccl-de' ); ?>"
+						class="lccl-df__pay-icons-img"
+						loading="lazy"
+						width="720"
+						height="120"
+					>
+				</div>
 			</div>
 		</form>
 

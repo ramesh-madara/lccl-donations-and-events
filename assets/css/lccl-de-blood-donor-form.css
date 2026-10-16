@@ -2381,6 +2381,25 @@
 	color: #888888;
 }
 
+/* Payment method icons at the bottom of the payment form */
+.lccl-bdf--donation .lccl-df__pay-icons,
+.lccl-df__pay-icons {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	margin: 16px 0 12px;
+}
+
+.lccl-bdf--donation .lccl-df__pay-icons-img,
+.lccl-df__pay-icons-img {
+	display: block;
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	object-fit: contain;
+}
+
 /* ==========================================================================
    Receipt / Loading Page
    ========================================================================== */
