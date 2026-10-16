@@ -281,20 +281,8 @@ class LCCL_DE_Donation_Form {
 
 		$errors = array();
 
-		if ( '' === $first_name ) {
-			$errors[] = __( 'First name is required.', 'lccl-de' );
-		}
-
-		if ( '' === $last_name ) {
-			$errors[] = __( 'Last name is required.', 'lccl-de' );
-		}
-
-		if ( '' === $email || ! is_email( $email ) ) {
-			$errors[] = __( 'A valid email address is required.', 'lccl-de' );
-		}
-
-		if ( '' === $phone ) {
-			$errors[] = __( 'Mobile / WhatsApp number is required.', 'lccl-de' );
+		if ( '' !== $email && ! is_email( $email ) ) {
+			$errors[] = __( 'Please enter a valid email address.', 'lccl-de' );
 		}
 
 		// Minimum donation: 1 LKR or 1 USD.
@@ -381,12 +369,14 @@ class LCCL_DE_Donation_Form {
 			$base_url
 		);
 
-		$comment = sprintf(
-			/* translators: 1: first name, 2: last name */
-			__( 'LCCL Donation - %1$s %2$s', 'lccl-de' ),
-			$first_name,
-			$last_name
-		);
+		$donor_display = trim( $first_name . ' ' . $last_name );
+		$comment       = '' !== $donor_display
+			? sprintf(
+				/* translators: %s: donor name */
+				__( 'LCCL Donation - %s', 'lccl-de' ),
+				$donor_display
+			)
+			: __( 'LCCL Donation', 'lccl-de' );
 
 		// Call PAYMENT_INIT with the correct profile (LKR = donations, USD = donations_usd).
 		$init_result = LCCL_DE_Paycenter_Client::payment_init(
@@ -505,6 +495,9 @@ class LCCL_DE_Donation_Form {
 		}
 
 		$donor_name = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
+		if ( '' === $donor_name ) {
+			$donor_name = __( 'Donor', 'lccl-de' );
+		}
 
 		$base_result = array(
 			'status'        => 'failed',
@@ -802,13 +795,14 @@ class LCCL_DE_Donation_Form {
 			return;
 		}
 
-		$name       = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
-		$amount     = number_format( (float) $row['amount_lkr'], 2 );
-		$currency   = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
-		$email      = (string) $row['member_email'];
-		$phone      = (string) $row['member_phone'];
-		$order_ref  = (string) $row['order_ref'];
-		$ref        = $receipt ?: $order_ref;
+		$name          = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
+		$donor_display = '' !== $name ? $name : __( 'Anonymous Donor', 'lccl-de' );
+		$email_display = '' !== $email ? $email : __( 'Not provided', 'lccl-de' );
+		$phone_display = '' !== $phone ? $phone : __( 'Not provided', 'lccl-de' );
+		$amount        = number_format( (float) $row['amount_lkr'], 2 );
+		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
+		$order_ref     = (string) $row['order_ref'];
+		$ref           = $receipt ?: $order_ref;
 
 		// Decode causes if present.
 		$meta          = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
@@ -830,7 +824,7 @@ class LCCL_DE_Donation_Form {
 			__( '[Donation Alert] Received %1$s %2$s from %3$s', 'lccl-de' ),
 			$currency,
 			$amount,
-			$name
+			$donor_display
 		);
 
 		$body = sprintf(
@@ -839,11 +833,11 @@ class LCCL_DE_Donation_Form {
 				"A new online donation has been received!\n\nDonor Details:\n----------------------------------------\nName:      %1\$s\nAmount:    %2\$s %3\$s\nCauses:    %9\$s\nEmail:     %4\$s\nPhone:     %5\$s\nReceipt:   %6\$s\nOrder Ref: %7\$s\nDate/Time: %8\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
 				'lccl-de'
 			),
-			$name,
+			$donor_display,
 			$currency,
 			$amount,
-			$email,
-			$phone,
+			$email_display,
+			$phone_display,
 			$ref,
 			$order_ref,
 			current_time( 'mysql' ),

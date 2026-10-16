@@ -270,7 +270,7 @@
 
 		if ( email ) {
 			email.addEventListener( 'input', function () {
-				if ( isValidEmail( email.value ) ) {
+				if ( ! isFilled( email ) || isValidEmail( email.value ) ) {
 					markField( email, false );
 					setNotice( form, 'email', '' );
 				}
@@ -278,6 +278,9 @@
 			email.addEventListener( 'blur', function () {
 				if ( isFilled( email ) ) {
 					validateEmail( form, email, false );
+				} else {
+					markField( email, false );
+					setNotice( form, 'email', '' );
 				}
 			} );
 		}
@@ -290,7 +293,7 @@
 					phone.value = next;
 				}
 				syncPhoneMax( phone );
-				if ( isFilled( phone ) && isValidPhone( phone.value ) ) {
+				if ( ! isFilled( phone ) || isValidPhone( phone.value ) ) {
 					markField( phone, false );
 					setNotice( form, 'phone', '' );
 				}
@@ -298,6 +301,9 @@
 			phone.addEventListener( 'blur', function () {
 				if ( isFilled( phone ) ) {
 					validatePhone( form, phone, false );
+				} else {
+					markField( phone, false );
+					setNotice( form, 'phone', '' );
 				}
 			} );
 		}
@@ -450,18 +456,22 @@
 				}
 			}
 
-			if ( ! validateEmail( form, email, true ) && email && ! firstInvalid ) {
-				firstInvalid = email;
-				if ( ! isFilled( email ) ) {
-					missingRequired = true;
+			if ( isFilled( email ) ) {
+				if ( ! validateEmail( form, email, false ) && email && ! firstInvalid ) {
+					firstInvalid = email;
 				}
+			} else {
+				markField( email, false );
+				setNotice( form, 'email', '' );
 			}
 
-			if ( ! validatePhone( form, phone, true ) && phone && ! firstInvalid ) {
-				firstInvalid = phone;
-				if ( ! isFilled( phone ) ) {
-					missingRequired = true;
+			if ( isFilled( phone ) ) {
+				if ( ! validatePhone( form, phone, false ) && phone && ! firstInvalid ) {
+					firstInvalid = phone;
 				}
+			} else {
+				markField( phone, false );
+				setNotice( form, 'phone', '' );
 			}
 
 			if ( firstInvalid ) {

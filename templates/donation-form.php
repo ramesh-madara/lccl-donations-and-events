@@ -345,7 +345,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-first-name">
-							<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'First Name', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -356,13 +356,12 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 							placeholder="<?php esc_attr_e( 'Saman', 'lccl-de' ); ?>"
 							autocomplete="given-name"
 							maxlength="100"
-							required
 						>
 						<?php $notice( 'first_name' ); ?>
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-last-name">
-							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -373,7 +372,6 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 							placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
 							autocomplete="family-name"
 							maxlength="100"
-							required
 						>
 						<?php $notice( 'last_name' ); ?>
 					</div>
@@ -382,7 +380,7 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-email">
-							<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'Email', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -395,13 +393,12 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 							maxlength="191"
 							data-lccl-validate="email"
 							data-invalid-message="<?php echo esc_attr( LCCL_DE_Donation_Form::email_error_message() ); ?>"
-							required
 						>
 						<?php $notice( 'email' ); ?>
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-df-phone">
-							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -415,7 +412,6 @@ $currency_form_class = ' is-currency-' . strtolower( $currency );
 							maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
 							data-lccl-validate="phone"
 							data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::phone_error_message() ); ?>"
-							required
 						>
 						<?php $notice( 'phone' ); ?>
 					</div>
