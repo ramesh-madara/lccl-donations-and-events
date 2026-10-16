@@ -121,7 +121,6 @@ class LCCL_DE_Donation_Form {
 	 */
 	public static function causes() {
 		return array(
-			'where-most-needed' => __( 'Where Most Needed', 'lccl-de' ),
 			'diabetes'          => __( 'Diabetes Awareness & Screening', 'lccl-de' ),
 			'vision'            => __( 'Vision & Eye Care', 'lccl-de' ),
 			'hunger'            => __( 'Hunger & Food Assistance', 'lccl-de' ),
@@ -130,6 +129,7 @@ class LCCL_DE_Donation_Form {
 			'youth'             => __( 'Youth & Education', 'lccl-de' ),
 			'disaster-relief'   => __( 'Disaster Relief', 'lccl-de' ),
 			'humanitarian'      => __( 'Humanitarian Assistance', 'lccl-de' ),
+			'where-most-needed' => __( 'Where Most Needed', 'lccl-de' ),
 		);
 	}
 
