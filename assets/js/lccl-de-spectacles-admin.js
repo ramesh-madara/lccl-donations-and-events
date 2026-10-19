@@ -2268,6 +2268,11 @@
 							commentDisplay = comment;
 						}
 
+						var isIssued = !!( parseInt( item.spectacles_issued, 10 ) === 1 || item.spectacles_issued === true || item.spectacles_issued === '1' || item.spectacles_issued === 'yes' );
+						if ( isIssued ) {
+							commentDisplay = commentDisplay ? ( commentDisplay + ' - SPECTACLES ISSUED' ) : 'SPECTACLES ISSUED';
+						}
+
 						return [
 							index + 1,
 							item.child_first_name + ' ' + item.child_last_name,
