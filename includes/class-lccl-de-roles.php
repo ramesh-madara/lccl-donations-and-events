@@ -279,6 +279,24 @@ class LCCL_DE_Roles {
 	}
 
 	/**
+	 * Whether the user is strictly a commenter (cannot view other programs).
+	 *
+	 * @param WP_User|int|null $user User or ID.
+	 * @return bool
+	 */
+	public static function is_only_commenter( $user = null ) {
+		$user = self::resolve_user( $user );
+
+		if ( ! $user || ! $user->ID ) {
+			return false;
+		}
+
+		return in_array( self::COMMENTER_ROLE, (array) $user->roles, true )
+			&& ! in_array( 'administrator', (array) $user->roles, true )
+			&& ! in_array( self::ROLE, (array) $user->roles, true );
+	}
+
+	/**
 	 * Whether a reviewer account is allowed to authenticate.
 	 *
 	 * Site admins are always treated as active.

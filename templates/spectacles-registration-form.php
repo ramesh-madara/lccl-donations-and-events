@@ -264,6 +264,23 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<p class="lccl-bdf__notice" data-lccl-notice="phone" role="alert"<?php echo $err( 'phone' ) ? '' : ' hidden'; ?>><?php echo $err( 'phone' ) ? esc_html( $err( 'phone' ) ) : ''; ?></p>
 			</div>
 
+			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
+				<label class="lccl-bdf__label" for="lccl-spf-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></label>
+				<input
+					class="lccl-bdf__input"
+					type="email"
+					id="lccl-spf-email"
+					name="email"
+					value="<?php echo esc_attr( $val( 'email' ) ); ?>"
+					placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
+					autocomplete="email"
+					maxlength="191"
+					data-lccl-validate="email"
+					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::email_error_message() ); ?>"
+				>
+				<p class="lccl-bdf__notice" data-lccl-notice="email" role="alert"<?php echo $err( 'email' ) ? '' : ' hidden'; ?>><?php echo $err( 'email' ) ? esc_html( $err( 'email' ) ) : ''; ?></p>
+			</div>
+
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'city' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-city">
 					<?php esc_html_e( 'City / Area', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
@@ -293,23 +310,6 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 				<?php $notice( 'relationship' ); ?>
 			</div>
 
-			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
-				<label class="lccl-bdf__label" for="lccl-spf-email"><?php esc_html_e( 'Email', 'lccl-de' ); ?></label>
-				<input
-					class="lccl-bdf__input"
-					type="email"
-					id="lccl-spf-email"
-					name="email"
-					value="<?php echo esc_attr( $val( 'email' ) ); ?>"
-					placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
-					autocomplete="email"
-					maxlength="191"
-					data-lccl-validate="email"
-					data-invalid-message="<?php echo esc_attr( LCCL_DE_Blood_Donor_Submissions::email_error_message() ); ?>"
-				>
-				<p class="lccl-bdf__notice" data-lccl-notice="email" role="alert"<?php echo $err( 'email' ) ? '' : ' hidden'; ?>><?php echo $err( 'email' ) ? esc_html( $err( 'email' ) ) : ''; ?></p>
-			</div>
-
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'eye_exam' ) ); ?>">
 				<label class="lccl-bdf__label" for="lccl-spf-eye-exam">
 					<?php esc_html_e( 'Has the child had an eye examination previously?', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
@@ -319,6 +319,14 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					<?php $form::render_options( $form::yes_no_unsure(), $val( 'eye_exam' ) ); ?>
 				</select>
 				<?php $notice( 'eye_exam' ); ?>
+			</div>
+
+			<div class="lccl-bdf__field">
+				<label class="lccl-bdf__label" for="lccl-spf-last-exam"><?php esc_html_e( 'When was the child\'s last eye examination?', 'lccl-de' ); ?></label>
+				<select class="lccl-bdf__select" id="lccl-spf-last-exam" name="last_eye_exam">
+					<option value=""><?php esc_html_e( 'Select an option', 'lccl-de' ); ?></option>
+					<?php $form::render_options( $form::last_eye_exams(), $val( 'last_eye_exam' ) ); ?>
+				</select>
 			</div>
 
 			<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'wear_spectacles' ) ); ?>">
@@ -341,14 +349,6 @@ $min_dob        = gmdate( 'Y-m-d', strtotime( $max_dob . ' -25 years' ) );
 					<?php $form::render_options( $form::yes_no_unsure(), $val( 'difficulty_seeing' ) ); ?>
 				</select>
 				<?php $notice( 'difficulty_seeing' ); ?>
-			</div>
-
-			<div class="lccl-bdf__field">
-				<label class="lccl-bdf__label" for="lccl-spf-last-exam"><?php esc_html_e( 'When was the child\'s last eye examination?', 'lccl-de' ); ?></label>
-				<select class="lccl-bdf__select" id="lccl-spf-last-exam" name="last_eye_exam">
-					<option value=""><?php esc_html_e( 'Select an option', 'lccl-de' ); ?></option>
-					<?php $form::render_options( $form::last_eye_exams(), $val( 'last_eye_exam' ) ); ?>
-				</select>
 			</div>
 
 			<div class="lccl-bdf__field lccl-bdf__field--full<?php echo esc_attr( $invalid( 'eye_condition' ) ); ?>">

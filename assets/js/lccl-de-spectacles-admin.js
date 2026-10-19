@@ -103,6 +103,11 @@
 		var tableWrap = root.querySelector( '.lccl-bda__table-wrap' );
 		var tableScroll = root.querySelector( '.lccl-bda__table-scroll' );
 
+		var nav = root.querySelector( '.lccl-bda__nav' );
+		if ( parseInt( cfg.isOnlyCommenter, 10 ) && nav ) {
+			nav.remove();
+		}
+
 		if ( districtSelect && cfg.districts ) {
 			cfg.districts.forEach( function ( name ) {
 				var opt = document.createElement( 'option' );
@@ -142,6 +147,23 @@
 			canManage = !!( data && data.can_manage );
 			cfg.canManage = canManage ? 1 : 0;
 			cfg.canComment = ( data && data.can_comment ) ? 1 : 0;
+			var isOnlyCommenter = ( data && undefined !== data.is_only_commenter )
+				? !! data.is_only_commenter
+				: !! parseInt( cfg.isOnlyCommenter, 10 );
+			cfg.isOnlyCommenter = isOnlyCommenter ? 1 : 0;
+
+			var nav = root.querySelector( '.lccl-bda__nav' );
+			if ( nav ) {
+				if ( isOnlyCommenter ) {
+					nav.hidden = true;
+					nav.style.display = 'none';
+					nav.remove();
+				} else if ( data && data.logged_in ) {
+					nav.hidden = false;
+					nav.style.display = '';
+				}
+			}
+
 			if ( data && data.genders ) {
 				cfg.genders = data.genders;
 			}
@@ -1967,6 +1989,12 @@
 
 				function enterDash( data ) {
 					applySession( data );
+					var nav = root.querySelector( '.lccl-bda__nav' );
+					if ( nav && data && data.is_only_commenter ) {
+						nav.hidden = true;
+						nav.style.display = 'none';
+						nav.remove();
+					}
 					if ( displayName ) {
 						displayName.textContent = data.display_name || '';
 					}
@@ -2042,6 +2070,7 @@
 				setBusy( dashLoader, true );
 				api( 'session', { method: 'DELETE' } ).then( function () {
 					canManage = false;
+					cfg.isOnlyCommenter = 0;
 					resetListState();
 					closeDetail();
 					if ( displayName ) {

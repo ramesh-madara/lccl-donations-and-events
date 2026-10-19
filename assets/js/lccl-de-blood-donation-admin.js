@@ -1587,6 +1587,10 @@
 				}
 
 				function enterDash( data ) {
+					if ( data && data.is_only_commenter ) {
+						window.location.replace( '/spectacles-registration-admin/' );
+						return;
+					}
 					applySession( data );
 					if ( displayName ) {
 						displayName.textContent = data.display_name || '';

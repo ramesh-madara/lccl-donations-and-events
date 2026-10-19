@@ -77,6 +77,7 @@ class LCCL_DE_Spectacles_Dashboard {
 			'loggedIn'           => $can_view ? 1 : 0,
 			'canManage'          => $can_manage ? 1 : 0,
 			'canComment'         => LCCL_DE_Roles::can_comment_submissions( $user ) ? 1 : 0,
+			'isOnlyCommenter'    => LCCL_DE_Roles::is_only_commenter( $user ) ? 1 : 0,
 			'displayName'        => $can_view ? self::display_name( $user ) : '',
 			'districts'          => array_keys( LCCL_DE_Spectacles_Form::districts() ),
 			'perPage'            => 20,
@@ -303,8 +304,7 @@ class LCCL_DE_Spectacles_Dashboard {
 
 		if ( '' !== $search ) {
 			$like     = '%' . $wpdb->esc_like( $search ) . '%';
-			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR guardian_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
-			$params[] = $like;
+			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
 			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;
@@ -423,8 +423,7 @@ class LCCL_DE_Spectacles_Dashboard {
 
 		if ( '' !== $search ) {
 			$like     = '%' . $wpdb->esc_like( $search ) . '%';
-			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR guardian_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
-			$params[] = $like;
+			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
 			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;

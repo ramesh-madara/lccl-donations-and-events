@@ -20,7 +20,7 @@ if ( $can_view && $user instanceof WP_User ) {
 	}
 }
 ?>
-<div class="lccl-bda" data-logged-in="<?php echo $can_view ? '1' : '0'; ?>">
+<div class="lccl-bda lccl-bda--spectacles" data-dash="spectacles" data-logged-in="<?php echo $can_view ? '1' : '0'; ?>">
 
 	<section class="lccl-bda__login" data-panel="login" <?php echo $can_view ? 'hidden' : ''; ?>>
 		<div class="lccl-bda__login-card">
@@ -125,7 +125,7 @@ if ( $can_view && $user instanceof WP_User ) {
 		<form class="lccl-bda__filters" data-form="filters">
 			<div class="lccl-bda__field lccl-bda__field--grow">
 				<label class="lccl-bda__label" for="lccl-bda-search"><?php esc_html_e( 'Search', 'lccl-de' ); ?></label>
-				<input class="lccl-bda__input" type="search" id="lccl-bda-search" name="search" placeholder="<?php esc_attr_e( 'Search by child, guardian, phone, email, school, or district.', 'lccl-de' ); ?>">
+				<input class="lccl-bda__input" type="search" id="lccl-bda-search" name="search" placeholder="<?php esc_attr_e( 'Search by child, phone, email, school, or district.', 'lccl-de' ); ?>">
 			</div>
 			<div class="lccl-bda__field">
 				<label class="lccl-bda__label" for="lccl-bda-district"><?php esc_html_e( 'District', 'lccl-de' ); ?></label>

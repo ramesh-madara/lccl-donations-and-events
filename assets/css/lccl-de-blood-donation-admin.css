@@ -145,6 +145,11 @@
 	background: linear-gradient(180deg, #fffbeb 0%, var(--lccl-bda-primary-soft) 28%, #ffffff 28%);
 }
 
+.lccl-bda--spectacles .lccl-bda__login-card,
+.lccl-bda[data-dash="spectacles"] .lccl-bda__login-card {
+	background: linear-gradient(180deg, #fffbeb 0%, var(--lccl-bda-primary-soft) 33%, #ffffff 33%);
+}
+
 .lccl-bda .lccl-bda__form {
 	margin: 0;
 }
@@ -614,19 +619,19 @@
 	margin-left: 8px;
 }
 
-.lccl-bda .lccl-bda__person-item > .lccl-bda__copy-wrap:first-child {
+.lccl-bda .lccl-bda__person-item>.lccl-bda__copy-wrap:first-child {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
 	max-width: 100%;
 }
 
-.lccl-bda .lccl-bda__person-item > .lccl-bda__copy-wrap:first-child .lccl-bda__person-label {
+.lccl-bda .lccl-bda__person-item>.lccl-bda__copy-wrap:first-child .lccl-bda__person-label {
 	display: inline;
 	margin: 0;
 }
 
-.lccl-bda .lccl-bda__person-item > .lccl-bda__copy-wrap:first-child .lccl-bda__copy {
+.lccl-bda .lccl-bda__person-item>.lccl-bda__copy-wrap:first-child .lccl-bda__copy {
 	margin-left: 0;
 }
 

@@ -10,15 +10,11 @@
 defined( 'ABSPATH' ) || exit;
 
 $current_dash = isset( $current_dash ) ? $current_dash : 'blood';
+$user         = wp_get_current_user();
+$is_only_comm = LCCL_DE_Roles::is_only_commenter( $user );
 ?>
-<?php
-$user = wp_get_current_user();
-$is_only_commenter = in_array( 'lccl_program_commenter', (array) $user->roles, true ) 
-	&& ! in_array( 'administrator', (array) $user->roles, true ) 
-	&& ! in_array( 'lccl_blood_donation_reviewer', (array) $user->roles, true );
-?>
-<?php if ( ! $is_only_commenter ) : ?>
-<nav class="lccl-bda__nav" aria-label="<?php esc_attr_e( 'Programs', 'lccl-de' ); ?>">
+<?php if ( ! $is_only_comm ) : ?>
+<nav class="lccl-bda__nav" aria-label="<?php esc_attr_e( 'Programs', 'lccl-de' ); ?>"<?php echo ! is_user_logged_in() ? ' hidden style="display:none;"' : ''; ?>>
 	<a
 		class="lccl-bda__nav-btn<?php echo 'blood' === $current_dash ? ' is-current' : ''; ?>"
 		href="<?php echo esc_url( LCCL_DE_Roles::dashboard_url() ); ?>"

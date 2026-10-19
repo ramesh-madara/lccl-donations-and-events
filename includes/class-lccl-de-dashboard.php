@@ -41,12 +41,7 @@ class LCCL_DE_Dashboard {
 	public static function render( $atts ) {
 		unset( $atts );
 
-		$user = wp_get_current_user();
-		$is_only_commenter = in_array( 'lccl_program_commenter', (array) $user->roles, true ) 
-			&& ! in_array( 'administrator', (array) $user->roles, true ) 
-			&& ! in_array( 'lccl_blood_donation_reviewer', (array) $user->roles, true );
-
-		if ( $user->ID && $is_only_commenter ) {
+		if ( LCCL_DE_Roles::is_only_commenter() ) {
 			return '<script>window.location.replace("' . esc_url_raw( LCCL_DE_Roles::spectacles_dashboard_url() ) . '");</script>';
 		}
 
@@ -769,12 +764,13 @@ class LCCL_DE_Dashboard {
 		$can_manage = LCCL_DE_Roles::can_manage_donors( $user );
 
 		$payload = array(
-			'logged_in'    => true,
-			'can_manage'   => $can_manage,
-			'can_comment'  => LCCL_DE_Roles::can_comment_submissions( $user ),
-			'nonce'        => wp_create_nonce( 'wp_rest' ),
-			'display_name' => self::display_name( $user ),
-			'user_login'   => $user->user_login,
+			'logged_in'         => true,
+			'can_manage'        => $can_manage,
+			'can_comment'       => LCCL_DE_Roles::can_comment_submissions( $user ),
+			'is_only_commenter' => LCCL_DE_Roles::is_only_commenter( $user ),
+			'nonce'             => wp_create_nonce( 'wp_rest' ),
+			'display_name'      => self::display_name( $user ),
+			'user_login'        => $user->user_login,
 		);
 
 		if ( $can_manage ) {
