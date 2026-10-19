@@ -2036,6 +2036,14 @@
 	margin-bottom: 18px;
 }
 
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__currency-section {
+	margin: 0 0 22px;
+}
+
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__currency-chips {
+	margin-bottom: 0;
+}
+
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__amount-row {
 	display: flex;
 	align-items: stretch;
