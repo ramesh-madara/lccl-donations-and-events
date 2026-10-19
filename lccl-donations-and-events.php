@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LCCL Donations and Events
  * Description:       Donation and event management for the Lions Club of Colombo Leads.
- * Version:           0.9.94
+ * Version:           0.9.97
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Ramesh Madara
