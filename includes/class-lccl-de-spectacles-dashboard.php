@@ -304,8 +304,7 @@ class LCCL_DE_Spectacles_Dashboard {
 
 		if ( '' !== $search ) {
 			$like     = '%' . $wpdb->esc_like( $search ) . '%';
-			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
-			$params[] = $like;
+			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR phone LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
 			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;
@@ -423,8 +422,7 @@ class LCCL_DE_Spectacles_Dashboard {
 
 		if ( '' !== $search ) {
 			$like     = '%' . $wpdb->esc_like( $search ) . '%';
-			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR phone LIKE %s OR email LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
-			$params[] = $like;
+			$where[]  = '(child_first_name LIKE %s OR child_last_name LIKE %s OR phone LIKE %s OR district LIKE %s OR school_name LIKE %s OR CONCAT(child_first_name, \' \', child_last_name) LIKE %s)';
 			$params[] = $like;
 			$params[] = $like;
 			$params[] = $like;
