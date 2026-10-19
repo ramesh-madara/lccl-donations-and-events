@@ -93,6 +93,7 @@
 		var gradeSelect = root.querySelector( '#lccl-sra-grade' );
 		var letterSelect = root.querySelector( '#lccl-sra-letter' );
 		var eligibilitySelect = root.querySelector( '#lccl-sra-eligibility' );
+		var spectaclesIssuedSelect = root.querySelector( '#lccl-sra-spectacles-issued' );
 		var commentSelect = root.querySelector( '#lccl-sra-comment-status' );
 		var displayName = root.querySelector( '[data-display-name]' );
 		var dashLoader = root.querySelector( '[data-dash-loader]' );
@@ -230,6 +231,9 @@
 			if ( eligibilitySelect && eligibilitySelect.value ) {
 				query.push( 'eligibility=' + encodeURIComponent( eligibilitySelect.value ) );
 			}
+			if ( spectaclesIssuedSelect && spectaclesIssuedSelect.value ) {
+				query.push( 'spectacles_issued=' + encodeURIComponent( spectaclesIssuedSelect.value ) );
+			}
 			if ( commentSelect && commentSelect.value ) {
 				query.push( 'comment_status=' + encodeURIComponent( commentSelect.value ) );
 			}
@@ -270,6 +274,9 @@
 			}
 			if ( eligibilitySelect ) {
 				eligibilitySelect.value = '';
+			}
+			if ( spectaclesIssuedSelect ) {
+				spectaclesIssuedSelect.value = '';
 			}
 			if ( commentSelect ) {
 				commentSelect.value = '';
@@ -1067,7 +1074,7 @@
 			grid.appendChild( wrap );
 		}
 
-		function saveComments( item, panel, textArea, eligibility, btn ) {
+		function saveComments( item, panel, textArea, eligibility, spectaclesIssued, btn ) {
 			var comments = textArea.value.replace( /^\s+|\s+$/g, '' );
 			var cfg = window.lcclSra || {};
 			
@@ -1075,7 +1082,8 @@
 				method: 'PUT',
 				body: JSON.stringify( {
 					comments: comments,
-					eligibility: eligibility
+					eligibility: eligibility,
+					spectacles_issued: spectaclesIssued ? 1 : 0
 				} )
 			} ).then( function ( saved ) {
 				state.details[ saved.id ] = saved;
@@ -1098,7 +1106,8 @@
 			var wrap = el( 'div', 'lccl-bda__person-comments' );
 			var label = el( 'h3', 'lccl-bda__person-comments-label', 'OPTICIAN COMMENT' );
 			var canComment = !! parseInt( cfg.canComment, 10 ) || !! parseInt( cfg.canManage, 10 );
-			var hasComment = !! ( ( item.comments && item.comments.replace( /^\s+|\s+$/g, '' ) ) || item.eligibility );
+			var isIssued = !!( parseInt( item.spectacles_issued, 10 ) === 1 || item.spectacles_issued === true || item.spectacles_issued === '1' );
+			var hasComment = !! ( ( item.comments && item.comments.replace( /^\s+|\s+$/g, '' ) ) || item.eligibility || isIssued );
 			
 			wrap.style.marginTop = '24px';
 			wrap.style.paddingTop = '16px';
@@ -1122,6 +1131,7 @@
 			eligRow.style.border = '1px solid #dcd7be';
 			eligRow.style.borderRadius = '6px';
 			eligRow.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.05)';
+			eligRow.style.flexWrap = 'wrap';
 
 			var eligLabel = el( 'span', '', 'Eligibility:' );
 			eligLabel.style.fontWeight = '600';
@@ -1152,6 +1162,38 @@
 				eligBadge.style.color = '#5f6368';
 			}
 			eligRow.appendChild( eligBadge );
+
+			var issuedSep = el( 'span', '', '•' );
+			issuedSep.style.color = '#8c8f94';
+			issuedSep.style.margin = '0 4px';
+			eligRow.appendChild( issuedSep );
+
+			var issuedLabel = el( 'span', '', 'Spectacles Issued:' );
+			issuedLabel.style.fontWeight = '600';
+			issuedLabel.style.color = '#1d2327';
+			issuedLabel.style.fontSize = '14px';
+			eligRow.appendChild( issuedLabel );
+
+			var issuedBadge = el( 'span', 'lccl-bda__badge' );
+			issuedBadge.style.display = 'inline-block';
+			issuedBadge.style.padding = '3px 10px';
+			issuedBadge.style.borderRadius = '4px';
+			issuedBadge.style.fontSize = '12px';
+			issuedBadge.style.fontWeight = '600';
+			issuedBadge.style.textTransform = 'uppercase';
+			issuedBadge.style.letterSpacing = '0.5px';
+
+			if ( isIssued ) {
+				issuedBadge.textContent = 'Issued';
+				issuedBadge.style.backgroundColor = '#e6f4ea';
+				issuedBadge.style.color = '#137333';
+			} else {
+				issuedBadge.textContent = 'Not issued';
+				issuedBadge.style.backgroundColor = '#f1f3f4';
+				issuedBadge.style.color = '#5f6368';
+			}
+			eligRow.appendChild( issuedBadge );
+
 			displayWrap.appendChild( eligRow );
 
 			var textP = el( 'p', 'lccl-bda__person-value', item.comments || 'No comments.' );
@@ -1239,6 +1281,34 @@
 				eligField.appendChild( eligRadios );
 				form.appendChild( eligField );
 
+				// Spectacles Issued row (on the next line)
+				var issuedField = el( 'div', 'lccl-bda__field' );
+				issuedField.style.marginBottom = '14px';
+
+				var optIssuedLabel = el( 'label', 'lccl-bda__issued-pill' );
+				var chkIssued = document.createElement( 'input' );
+				chkIssued.type = 'checkbox';
+				chkIssued.className = 'lccl-bda__checkbox-input';
+				chkIssued.name = 'spectacles_issued_' + item.id;
+				chkIssued.value = '1';
+				chkIssued.checked = isIssued;
+
+				function syncIssuedState() {
+					if ( chkIssued.checked ) {
+						optIssuedLabel.classList.add( 'is-checked' );
+					} else {
+						optIssuedLabel.classList.remove( 'is-checked' );
+					}
+				}
+
+				chkIssued.addEventListener( 'change', syncIssuedState );
+				syncIssuedState();
+
+				optIssuedLabel.appendChild( chkIssued );
+				optIssuedLabel.appendChild( document.createTextNode( 'Spectacles Issued' ) );
+				issuedField.appendChild( optIssuedLabel );
+				form.appendChild( issuedField );
+
 				// Comment textarea
 				var commentField = el( 'div', 'lccl-bda__field' );
 				commentField.style.marginBottom = '12px';
@@ -1266,6 +1336,8 @@
 					radElig.checked = ( item.eligibility === 'eligible' );
 					radNotElig.checked = ( item.eligibility === 'not_eligible' );
 					syncPillStates();
+					chkIssued.checked = !!( parseInt( item.spectacles_issued, 10 ) === 1 || item.spectacles_issued === true || item.spectacles_issued === '1' );
+					syncIssuedState();
 					textArea.value = item.comments || '';
 					textArea.focus();
 				} );
@@ -1276,6 +1348,8 @@
 					radElig.checked = ( item.eligibility === 'eligible' );
 					radNotElig.checked = ( item.eligibility === 'not_eligible' );
 					syncPillStates();
+					chkIssued.checked = !!( parseInt( item.spectacles_issued, 10 ) === 1 || item.spectacles_issued === true || item.spectacles_issued === '1' );
+					syncIssuedState();
 					textArea.value = item.comments || '';
 				} );
 				
@@ -1293,7 +1367,8 @@
 						selectedElig = 'not_eligible';
 					}
 
-					saveComments( item, panel, textArea, selectedElig, saveBtn );
+					var selectedIssued = chkIssued.checked ? 1 : 0;
+					saveComments( item, panel, textArea, selectedElig, selectedIssued, saveBtn );
 				} );
 				
 				formWrap.appendChild( form );
@@ -1305,6 +1380,7 @@
 		}
 
 		function fillPersonView( panel, item ) {
+			var isIssued = !!( parseInt( item.spectacles_issued, 10 ) === 1 || item.spectacles_issued === true || item.spectacles_issued === '1' );
 			var grid = el( 'div', 'lccl-bda__person-grid' );
 			addPersonField( grid, 'Date of birth', item.dob_label || item.dob );
 			addPersonField( grid, 'Age', item.age_label || item.age );
@@ -1332,6 +1408,7 @@
 			}
 			addPersonField( grid, 'School letter', item.school_letter_label );
 			addLetterField( grid, item );
+			addPersonField( grid, 'Spectacles issued', isIssued ? 'Yes' : 'No' );
 			addPersonField( grid, 'Registration date', item.created_label );
 			addPersonField( grid, 'Updated', item.updated_label );
 			addPersonField( grid, 'Updated by', item.updated_by_label );
@@ -2269,6 +2346,9 @@
 			}
 			if ( eligibilitySelect ) {
 				eligibilitySelect.value = '';
+			}
+			if ( spectaclesIssuedSelect ) {
+				spectaclesIssuedSelect.value = '';
 			}
 			if ( commentSelect ) {
 				commentSelect.value = '';

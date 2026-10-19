@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 19;
+	const VERSION = 20;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -337,6 +337,7 @@ class LCCL_DE_Schema {
 			ip_address varchar(45) DEFAULT NULL,
 			comments text,
 			eligibility varchar(32) DEFAULT NULL,
+			spectacles_issued tinyint(1) NOT NULL DEFAULT 0,
 			created_at datetime NOT NULL,
 			updated_at datetime DEFAULT NULL,
 			updated_by bigint(20) unsigned DEFAULT NULL,
@@ -349,6 +350,7 @@ class LCCL_DE_Schema {
 			KEY phone (phone),
 			KEY email (email),
 			KEY eligibility (eligibility),
+			KEY spectacles_issued (spectacles_issued),
 			UNIQUE KEY letter_token (letter_token)
 		) {$charset};";
 
@@ -357,6 +359,11 @@ class LCCL_DE_Schema {
 		$has_eligibility = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'eligibility' ) );
 		if ( empty( $has_eligibility ) ) {
 			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN eligibility varchar(32) DEFAULT NULL AFTER comments, ADD INDEX eligibility (eligibility)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
+
+		$has_spectacles_issued = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'spectacles_issued' ) );
+		if ( empty( $has_spectacles_issued ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN spectacles_issued tinyint(1) NOT NULL DEFAULT 0 AFTER eligibility, ADD INDEX spectacles_issued (spectacles_issued)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		}
 
 		$payments     = self::payments_table();

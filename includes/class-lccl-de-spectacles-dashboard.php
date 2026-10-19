@@ -141,6 +141,10 @@ class LCCL_DE_Spectacles_Dashboard {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
 					),
+					'spectacles_issued' => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
 					'comment_status' => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
@@ -188,6 +192,10 @@ class LCCL_DE_Spectacles_Dashboard {
 						'sanitize_callback' => 'sanitize_key',
 					),
 					'eligibility'    => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'spectacles_issued' => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
 					),
@@ -281,10 +289,11 @@ class LCCL_DE_Spectacles_Dashboard {
 		$gender         = (string) $request->get_param( 'gender' );
 		$grade          = (string) $request->get_param( 'grade' );
 		$school_letter  = (string) $request->get_param( 'school_letter' );
-		$eligibility    = (string) $request->get_param( 'eligibility' );
-		$comment_status = (string) $request->get_param( 'comment_status' );
-		$page           = max( 1, (int) $request->get_param( 'page' ) );
-		$per_page       = (int) $request->get_param( 'per_page' );
+		$eligibility       = (string) $request->get_param( 'eligibility' );
+		$spectacles_issued = (string) $request->get_param( 'spectacles_issued' );
+		$comment_status    = (string) $request->get_param( 'comment_status' );
+		$page              = max( 1, (int) $request->get_param( 'page' ) );
+		$per_page          = (int) $request->get_param( 'per_page' );
 		if ( ! in_array( $per_page, array( 10, 20, 50 ), true ) ) {
 			$per_page = 20;
 		}
@@ -334,6 +343,14 @@ class LCCL_DE_Spectacles_Dashboard {
 			}
 		}
 
+		if ( '' !== $spectacles_issued ) {
+			if ( 'yes' === $spectacles_issued || '1' === $spectacles_issued ) {
+				$where[] = 'spectacles_issued = 1';
+			} elseif ( 'no' === $spectacles_issued || '0' === $spectacles_issued ) {
+				$where[] = '(spectacles_issued = 0 OR spectacles_issued IS NULL)';
+			}
+		}
+
 		if ( '' !== $comment_status ) {
 			if ( 'has_comment' === $comment_status ) {
 				$where[] = '(comments IS NOT NULL AND TRIM(comments) != \'\')';
@@ -354,7 +371,7 @@ class LCCL_DE_Spectacles_Dashboard {
 		}
 
 		$offset = ( $page - 1 ) * $per_page;
-		$list_sql = "SELECT id, child_first_name, child_last_name, guardian_name, phone, email, district, school_name, grade, comments, eligibility, created_at
+		$list_sql = "SELECT id, child_first_name, child_last_name, guardian_name, phone, email, district, school_name, grade, comments, eligibility, spectacles_issued, created_at
 			FROM {$table}
 			WHERE {$where_sql}
 			ORDER BY created_at DESC, id DESC
@@ -397,8 +414,9 @@ class LCCL_DE_Spectacles_Dashboard {
 		$gender         = (string) $request->get_param( 'gender' );
 		$grade          = (string) $request->get_param( 'grade' );
 		$school_letter  = (string) $request->get_param( 'school_letter' );
-		$eligibility    = (string) $request->get_param( 'eligibility' );
-		$comment_status = (string) $request->get_param( 'comment_status' );
+		$eligibility       = (string) $request->get_param( 'eligibility' );
+		$spectacles_issued = (string) $request->get_param( 'spectacles_issued' );
+		$comment_status    = (string) $request->get_param( 'comment_status' );
 
 		$where  = array( '1=1' );
 		$params = array();
@@ -442,6 +460,14 @@ class LCCL_DE_Spectacles_Dashboard {
 			} elseif ( in_array( $eligibility, array( 'eligible', 'not_eligible' ), true ) ) {
 				$where[]  = 'eligibility = %s';
 				$params[] = $eligibility;
+			}
+		}
+
+		if ( '' !== $spectacles_issued ) {
+			if ( 'yes' === $spectacles_issued || '1' === $spectacles_issued ) {
+				$where[] = 'spectacles_issued = 1';
+			} elseif ( 'no' === $spectacles_issued || '0' === $spectacles_issued ) {
+				$where[] = '(spectacles_issued = 0 OR spectacles_issued IS NULL)';
 			}
 		}
 
@@ -608,9 +634,10 @@ class LCCL_DE_Spectacles_Dashboard {
 			return new WP_Error( 'lccl_de_missing', __( 'Registration not found.', 'lccl-de' ), array( 'status' => 404 ) );
 		}
 
-		$params      = $request->get_json_params();
-		$comments    = isset( $params['comments'] ) ? trim( (string) $params['comments'] ) : '';
-		$eligibility = isset( $params['eligibility'] ) ? sanitize_key( (string) $params['eligibility'] ) : null;
+		$params            = $request->get_json_params();
+		$comments          = isset( $params['comments'] ) ? trim( (string) $params['comments'] ) : '';
+		$eligibility       = isset( $params['eligibility'] ) ? sanitize_key( (string) $params['eligibility'] ) : null;
+		$spectacles_issued = ! empty( $params['spectacles_issued'] ) ? 1 : 0;
 
 		$allowed_eligibility = array( 'eligible', 'not_eligible' );
 		if ( ! in_array( $eligibility, $allowed_eligibility, true ) ) {
@@ -618,15 +645,17 @@ class LCCL_DE_Spectacles_Dashboard {
 		}
 
 		$data = array(
-			'comments'    => $comments,
-			'eligibility' => $eligibility,
-			'updated_at'  => current_time( 'mysql' ),
-			'updated_by'  => get_current_user_id(),
+			'comments'          => $comments,
+			'eligibility'       => $eligibility,
+			'spectacles_issued' => $spectacles_issued,
+			'updated_at'        => current_time( 'mysql' ),
+			'updated_by'        => get_current_user_id(),
 		);
 
 		$formats = array(
 			'%s',
 			null === $eligibility ? null : '%s',
+			'%d',
 			'%s',
 			'%d',
 		);
@@ -738,9 +767,10 @@ class LCCL_DE_Spectacles_Dashboard {
 			'school_name'      => $row['school_name'],
 			'grade'            => $row['grade'],
 			'grade_label'      => isset( $grades[ $row['grade'] ] ) ? $grades[ $row['grade'] ] : $row['grade'],
-			'comments'         => isset( $row['comments'] ) ? $row['comments'] : '',
-			'eligibility'      => isset( $row['eligibility'] ) ? $row['eligibility'] : null,
-			'created_at'       => $row['created_at'],
+			'comments'          => isset( $row['comments'] ) ? $row['comments'] : '',
+			'eligibility'       => isset( $row['eligibility'] ) ? $row['eligibility'] : null,
+			'spectacles_issued' => ! empty( $row['spectacles_issued'] ) ? 1 : 0,
+			'created_at'        => $row['created_at'],
 			'created_label'    => mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $row['created_at'] ),
 		);
 	}
@@ -800,6 +830,7 @@ class LCCL_DE_Spectacles_Dashboard {
 			'consent'                  => (int) $row['consent'],
 			'comments'                 => isset( $row['comments'] ) ? $row['comments'] : '',
 			'eligibility'              => isset( $row['eligibility'] ) ? $row['eligibility'] : null,
+			'spectacles_issued'        => ! empty( $row['spectacles_issued'] ) ? 1 : 0,
 			'updated_at'               => $updated,
 			'updated_label'            => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',
 			'updated_by'               => isset( $row['updated_by'] ) ? (int) $row['updated_by'] : 0,

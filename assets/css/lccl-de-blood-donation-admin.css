@@ -1878,6 +1878,80 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Spectacles issued checkbox button & pill */
+.lccl-bda .lccl-bda__issued-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 18px;
+	background: #ffffff !important;
+	border: 1.5px solid #d0d2d6;
+	border-radius: 8px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+	cursor: pointer;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1d2327;
+	user-select: none;
+	transition: all 0.15s ease-in-out;
+}
+
+.lccl-bda .lccl-bda__issued-pill:hover {
+	border-color: #8c8f94;
+	background: #ffffff !important;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.lccl-bda .lccl-bda__issued-pill input[type="checkbox"],
+.lccl-bda input[type="checkbox"].lccl-bda__checkbox-input {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 20px;
+	height: 20px;
+	min-width: 20px;
+	min-height: 20px;
+	margin: 0;
+	padding: 0;
+	background-color: #ffffff !important;
+	border: 2.5px solid #50575e;
+	border-radius: 4px;
+	outline: none;
+	cursor: pointer;
+	display: inline-grid;
+	place-content: center;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.lccl-bda .lccl-bda__issued-pill input[type="checkbox"]::before,
+.lccl-bda input[type="checkbox"].lccl-bda__checkbox-input::before {
+	content: "";
+	width: 10px;
+	height: 6px;
+	border-left: 2.5px solid #ffffff;
+	border-bottom: 2.5px solid #ffffff;
+	transform: rotate(-45deg) translate(1px, -1px) scale(0);
+	transition: transform 0.15s ease;
+}
+
+.lccl-bda .lccl-bda__issued-pill input[type="checkbox"]:checked,
+.lccl-bda input[type="checkbox"].lccl-bda__checkbox-input:checked {
+	border-color: #1a73e8;
+	background-color: #1a73e8 !important;
+}
+
+.lccl-bda .lccl-bda__issued-pill input[type="checkbox"]:checked::before,
+.lccl-bda input[type="checkbox"].lccl-bda__checkbox-input:checked::before {
+	transform: rotate(-45deg) translate(1px, -1px) scale(1);
+}
+
+.lccl-bda .lccl-bda__issued-pill.is-checked {
+	border-color: #1a73e8;
+	color: #1a73e8;
+	background: #ffffff !important;
+	box-shadow: 0 0 0 1px #1a73e8, 0 2px 5px rgba(26, 115, 232, 0.15);
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.lccl-bda * {
 		transition: none !important;

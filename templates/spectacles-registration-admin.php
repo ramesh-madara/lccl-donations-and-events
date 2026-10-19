@@ -161,6 +161,14 @@ if ( $can_view && $user instanceof WP_User ) {
 				</select>
 			</div>
 			<div class="lccl-bda__field">
+				<label class="lccl-bda__label" for="lccl-sra-spectacles-issued"><?php esc_html_e( 'Spectacles Issued', 'lccl-de' ); ?></label>
+				<select class="lccl-bda__select" id="lccl-sra-spectacles-issued" name="spectacles_issued">
+					<option value=""><?php esc_html_e( 'All', 'lccl-de' ); ?></option>
+					<option value="yes"><?php esc_html_e( 'Issued (Yes)', 'lccl-de' ); ?></option>
+					<option value="no"><?php esc_html_e( 'Not Issued (No)', 'lccl-de' ); ?></option>
+				</select>
+			</div>
+			<div class="lccl-bda__field">
 				<label class="lccl-bda__label" for="lccl-sra-comment-status"><?php esc_html_e( 'Comments', 'lccl-de' ); ?></label>
 				<select class="lccl-bda__select" id="lccl-sra-comment-status" name="comment_status">
 					<option value=""><?php esc_html_e( 'All comments', 'lccl-de' ); ?></option>
