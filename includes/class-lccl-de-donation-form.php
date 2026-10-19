@@ -258,11 +258,25 @@ class LCCL_DE_Donation_Form {
 	private static function handle_submit() {
 		$raw = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		$first_name = sanitize_text_field( isset( $raw['first_name'] ) ? $raw['first_name'] : '' );
-		$last_name  = sanitize_text_field( isset( $raw['last_name'] ) ? $raw['last_name'] : '' );
-		$email      = sanitize_email( isset( $raw['email'] ) ? $raw['email'] : '' );
-		$phone      = sanitize_text_field( isset( $raw['phone'] ) ? $raw['phone'] : '' );
-		$message    = sanitize_textarea_field( isset( $raw['message'] ) ? substr( $raw['message'], 0, 1000 ) : '' );
+		$is_anonymous = ! empty( $raw['is_anonymous'] );
+		$first_name   = sanitize_text_field( isset( $raw['first_name'] ) ? $raw['first_name'] : '' );
+		$last_name    = sanitize_text_field( isset( $raw['last_name'] ) ? $raw['last_name'] : '' );
+		$email        = sanitize_email( isset( $raw['email'] ) ? $raw['email'] : '' );
+		$phone_code   = sanitize_text_field( isset( $raw['phone_country_code'] ) ? $raw['phone_country_code'] : '' );
+		$raw_phone    = sanitize_text_field( isset( $raw['phone'] ) ? $raw['phone'] : '' );
+		$message      = sanitize_textarea_field( isset( $raw['message'] ) ? substr( $raw['message'], 0, 1000 ) : '' );
+
+		$phone = '';
+		if ( '' !== $raw_phone ) {
+			if ( 0 === strpos( $raw_phone, '+' ) ) {
+				$phone = $raw_phone;
+			} elseif ( '' !== $phone_code ) {
+				$clean_digits = ltrim( preg_replace( '/[^\d]/', '', $raw_phone ), '0' );
+				$phone        = $phone_code . ' ' . ( $clean_digits ?: $raw_phone );
+			} else {
+				$phone = $raw_phone;
+			}
+		}
 
 		$raw_amount = isset( $raw['amount'] ) ? preg_replace( '/[^\d.]/', '', (string) $raw['amount'] ) : '0';
 		$amount     = (float) $raw_amount;
@@ -281,8 +295,16 @@ class LCCL_DE_Donation_Form {
 
 		$errors = array();
 
-		if ( '' !== $email && ! is_email( $email ) ) {
-			$errors[] = __( 'Please enter a valid email address.', 'lccl-de' );
+		if ( ! $is_anonymous ) {
+			if ( '' === $email ) {
+				$errors[] = __( 'Please enter your email address.', 'lccl-de' );
+			} elseif ( ! is_email( $email ) ) {
+				$errors[] = __( 'Please enter a valid email address.', 'lccl-de' );
+			}
+		} else {
+			if ( '' !== $email && ! is_email( $email ) ) {
+				$errors[] = __( 'Please enter a valid email address.', 'lccl-de' );
+			}
 		}
 
 		// Minimum donation: 1 LKR or 1 USD.
@@ -313,9 +335,10 @@ class LCCL_DE_Donation_Form {
 		$table = LCCL_DE_Schema::payments_table();
 
 		$payload_meta = array(
-			'type'     => 'donation',
-			'causes'   => $selected_causes,
-			'message'  => $message,
+			'type'         => 'donation',
+			'causes'       => $selected_causes,
+			'message'      => $message,
+			'is_anonymous' => $is_anonymous,
 		);
 
 		// Use the active profile's currency, not the profile-configured default.
@@ -370,13 +393,17 @@ class LCCL_DE_Donation_Form {
 		);
 
 		$donor_display = trim( $first_name . ' ' . $last_name );
-		$comment       = '' !== $donor_display
-			? sprintf(
+		if ( $is_anonymous ) {
+			$comment = __( 'LCCL Anonymous Donation', 'lccl-de' );
+		} elseif ( '' !== $donor_display ) {
+			$comment = sprintf(
 				/* translators: %s: donor name */
 				__( 'LCCL Donation - %s', 'lccl-de' ),
 				$donor_display
-			)
-			: __( 'LCCL Donation', 'lccl-de' );
+			);
+		} else {
+			$comment = __( 'LCCL Donation', 'lccl-de' );
+		}
 
 		// Call PAYMENT_INIT with the correct profile (LKR = donations, USD = donations_usd).
 		$init_result = LCCL_DE_Paycenter_Client::payment_init(
@@ -795,8 +822,16 @@ class LCCL_DE_Donation_Form {
 			return;
 		}
 
+		$email         = ! empty( $row['member_email'] ) ? (string) $row['member_email'] : '';
+		$phone         = ! empty( $row['member_phone'] ) ? (string) $row['member_phone'] : '';
+		$meta          = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
+		$is_anonymous  = is_array( $meta ) && ! empty( $meta['is_anonymous'] );
 		$name          = trim( $row['member_first_name'] . ' ' . $row['member_last_name'] );
-		$donor_display = '' !== $name ? $name : __( 'Anonymous Donor', 'lccl-de' );
+		if ( $is_anonymous ) {
+			$donor_display = '' !== $name ? sprintf( __( '%s (Anonymous Donation)', 'lccl-de' ), $name ) : __( 'Anonymous Donor', 'lccl-de' );
+		} else {
+			$donor_display = '' !== $name ? $name : __( 'Donor', 'lccl-de' );
+		}
 		$email_display = '' !== $email ? $email : __( 'Not provided', 'lccl-de' );
 		$phone_display = '' !== $phone ? $phone : __( 'Not provided', 'lccl-de' );
 		$amount        = number_format( (float) $row['amount_lkr'], 2 );
@@ -805,7 +840,6 @@ class LCCL_DE_Donation_Form {
 		$ref           = $receipt ?: $order_ref;
 
 		// Decode causes if present.
-		$meta          = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
 		$causes_labels = array();
 
 		if ( is_array( $meta ) && ! empty( $meta['causes'] ) && is_array( $meta['causes'] ) ) {

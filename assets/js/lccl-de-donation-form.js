@@ -67,52 +67,78 @@
 
 	function constrainPhone( value ) {
 		value = String( value || '' );
-		var typed = value.replace( /[^\d+]/g, '' );
-		var digits = typed.replace( /\D/g, '' );
-		var international = 0 === typed.indexOf( '+' ) || 0 === digits.indexOf( '94' );
-
-		if ( ! international ) {
-			return digits.substring( 0, 10 );
+		var hasPlus = 0 === value.indexOf( '+' );
+		var cleaned = value.replace( /[^\d\s\-()]/g, '' );
+		if ( hasPlus && 0 !== cleaned.indexOf( '+' ) ) {
+			cleaned = '+' + cleaned;
 		}
-		if ( '+' === typed ) {
-			return '+';
-		}
-		if ( 0 === typed.indexOf( '+9' ) && 0 !== typed.indexOf( '+94' ) ) {
-			return '+9' === typed ? '+9' : '+94';
-		}
-		if ( 0 === typed.indexOf( '+' ) && 0 !== typed.indexOf( '+9' ) ) {
-			return '+';
-		}
-		if ( 0 === digits.indexOf( '94' ) ) {
-			digits = digits.substring( 2 );
-		}
-		if ( 0 === digits.indexOf( '0' ) ) {
-			digits = digits.substring( 1 );
-		}
-		return '+94' + digits.substring( 0, 9 );
+		return cleaned.substring( 0, 24 );
 	}
 
-	function isValidPhone( value ) {
+	function isValidPhone( value, countryCode ) {
 		var raw = String( value || '' ).replace( /^\s+|\s+$/g, '' );
 		if ( '' === raw ) {
-			return false;
+			return true;
 		}
 		var digits = raw.replace( /\D/g, '' );
-		var international = 0 === raw.indexOf( '+' ) || 0 === digits.indexOf( '94' );
-		if ( international ) {
-			if ( 0 === digits.indexOf( '94' ) ) {
-				digits = digits.substring( 2 );
-			}
-			if ( 0 === digits.indexOf( '0' ) ) {
-				digits = digits.substring( 1 );
-			}
-			return /^[1-9][0-9]{8}$/.test( digits );
+		if ( '' === digits ) {
+			return false;
 		}
-		return /^0[1-9][0-9]{8}$/.test( digits );
+
+		// User entered an international number starting with +
+		if ( 0 === raw.indexOf( '+' ) ) {
+			return digits.length >= 7 && digits.length <= 15;
+		}
+
+		// Strip leading zero (common in many countries).
+		var local = digits;
+		if ( 0 === local.indexOf( '0' ) ) {
+			local = local.substring( 1 );
+		}
+
+		// Country-specific subscriber digit lengths (after removing leading 0).
+		// Each entry: [ minDigits, maxDigits ]
+		var rules = {
+			'+94':  [ 9, 9 ],    // Sri Lanka: 9 digits (7xxxxxxxx)
+			'+1':   [ 10, 10 ],  // USA / Canada: 10 digits (NPA-NXX-XXXX)
+			'+44':  [ 10, 10 ],  // United Kingdom: 10 digits
+			'+61':  [ 9, 9 ],    // Australia: 9 digits
+			'+971': [ 8, 9 ],    // UAE: 8-9 digits
+			'+91':  [ 10, 10 ],  // India: 10 digits
+			'+65':  [ 8, 8 ],    // Singapore: 8 digits
+			'+60':  [ 9, 10 ],   // Malaysia: 9-10 digits
+			'+86':  [ 11, 11 ],  // China: 11 digits
+			'+64':  [ 8, 10 ],   // New Zealand: 8-10 digits
+			'+49':  [ 10, 11 ],  // Germany: 10-11 digits
+			'+33':  [ 9, 9 ],    // France: 9 digits
+			'+39':  [ 9, 10 ],   // Italy: 9-10 digits
+			'+81':  [ 10, 10 ],  // Japan: 10 digits
+			'+966': [ 9, 9 ],    // Saudi Arabia: 9 digits
+			'+974': [ 7, 8 ],    // Qatar: 7-8 digits
+			'+965': [ 8, 8 ],    // Kuwait: 8 digits
+			'+968': [ 8, 8 ],    // Oman: 8 digits
+			'+973': [ 8, 8 ],    // Bahrain: 8 digits
+			'+960': [ 7, 7 ],    // Maldives: 7 digits
+			'+41':  [ 9, 9 ],    // Switzerland: 9 digits
+			'+31':  [ 9, 9 ],    // Netherlands: 9 digits
+			'+46':  [ 9, 9 ],    // Sweden: 9 digits
+			'+47':  [ 8, 8 ],    // Norway: 8 digits
+			'+353': [ 9, 9 ],    // Ireland: 9 digits
+			'+27':  [ 9, 9 ],    // South Africa: 9 digits
+			'+852': [ 8, 8 ]     // Hong Kong: 8 digits
+		};
+
+		var rule = rules[ countryCode ];
+		if ( rule ) {
+			return local.length >= rule[0] && local.length <= rule[1];
+		}
+
+		// Fallback for "Other" or unrecognised codes.
+		return digits.length >= 6 && digits.length <= 15;
 	}
 
 	function syncPhoneMax( field ) {
-		field.setAttribute( 'maxlength', 0 === field.value.indexOf( '+' ) ? '12' : '10' );
+		field.setAttribute( 'maxlength', '24' );
 	}
 
 	function validateAmount( form, amount, requireIfEmpty ) {
@@ -137,20 +163,20 @@
 		return '' === message;
 	}
 
-	function validatePhone( form, phone, requireIfEmpty ) {
+	function validatePhone( form, phone, requireIfEmpty, countryCode ) {
 		if ( ! phone ) {
 			return true;
 		}
 
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || '';
-		var invalidMsg = phone.getAttribute( 'data-invalid-message' ) || form.getAttribute( 'data-phone-message' ) || '';
+		var invalidMsg = phone.getAttribute( 'data-invalid-message' ) || form.getAttribute( 'data-phone-message' ) || 'Please enter a valid phone number.';
 		var message = '';
 
 		if ( ! isFilled( phone ) ) {
 			if ( requireIfEmpty ) {
 				message = requiredMsg;
 			}
-		} else if ( ! isValidPhone( phone.value ) ) {
+		} else if ( ! isValidPhone( phone.value, countryCode ) ) {
 			message = invalidMsg;
 		}
 
@@ -190,6 +216,97 @@
 		var banner = form.querySelector( '[data-lccl-notice="required"]' );
 		var success = form.querySelector( '[data-lccl-notice="sample-success"]' );
 		var requiredMsg = form.getAttribute( 'data-required-message' ) || 'This field is required.';
+
+		var firstName    = form.querySelector( '#lccl-df-first-name' );
+		var lastName     = form.querySelector( '#lccl-df-last-name' );
+		var anonCheckbox = form.querySelector( '#lccl-df-anonymous' );
+		var anonBox      = form.querySelector( '.lccl-df__anon-box' );
+		var emailReq     = form.querySelector( '[data-lccl-email-req]' );
+		var phoneCountry     = form.querySelector( '#lccl-df-phone-code' );
+		var phoneCodeDisplay = form.querySelector( '#lccl-df-phone-code-display' );
+		var phoneCodeText    = phoneCodeDisplay ? phoneCodeDisplay.querySelector( '.lccl-df__phone-code-text' ) : null;
+
+		function syncPhoneCodeDisplay() {
+			if ( ! phoneCountry || ! phoneCodeText ) {
+				return;
+			}
+			var selIdx = phoneCountry.selectedIndex;
+			var opt = selIdx >= 0 ? phoneCountry.options[ selIdx ] : null;
+			var country = opt ? ( opt.getAttribute( 'data-country' ) || 'LK' ) : 'LK';
+			var dial = opt ? ( opt.value || '' ) : '';
+			phoneCodeText.textContent = dial ? country + ' (' + dial + ')' : country;
+			if ( phoneCodeDisplay && opt ) {
+				phoneCodeDisplay.setAttribute( 'title', opt.textContent.trim() );
+			}
+		}
+
+		function getSelectedCountryCode() {
+			return phoneCountry ? phoneCountry.value : '+94';
+		}
+
+		function updateAnonymousState() {
+			var isAnon = anonCheckbox && anonCheckbox.checked;
+
+			if ( anonBox ) {
+				anonBox.classList.toggle( 'is-checked', isAnon );
+			}
+			if ( emailReq ) {
+				emailReq.hidden = isAnon;
+			}
+			if ( email ) {
+				if ( isAnon ) {
+					email.removeAttribute( 'required' );
+					markField( email, false );
+					setNotice( form, 'email', '' );
+				} else {
+					email.setAttribute( 'required', 'required' );
+				}
+			}
+
+			// Switch placeholders for fields between default and 'Optional'
+			var fieldsWithPlaceholder = [ firstName, lastName, email, phone ];
+			for ( var i = 0; i < fieldsWithPlaceholder.length; i++ ) {
+				var f = fieldsWithPlaceholder[ i ];
+				if ( ! f ) {
+					continue;
+				}
+				var def = f.getAttribute( 'data-placeholder-default' ) || f.getAttribute( 'placeholder' ) || '';
+				if ( isAnon ) {
+					if ( ! f.getAttribute( 'data-placeholder-default' ) && '' !== def ) {
+						f.setAttribute( 'data-placeholder-default', def );
+					}
+					f.setAttribute( 'placeholder', 'Optional' );
+				} else {
+					var original = f.getAttribute( 'data-placeholder-default' );
+					if ( original ) {
+						f.setAttribute( 'placeholder', original );
+					}
+				}
+			}
+
+			if ( isAnon && banner ) {
+				if ( isFilled( amount ) && isValidAmount( amount.value ) ) {
+					banner.hidden = true;
+				}
+			}
+		}
+
+		if ( anonCheckbox ) {
+			anonCheckbox.addEventListener( 'change', updateAnonymousState );
+			updateAnonymousState();
+		}
+
+		if ( phoneCountry ) {
+			phoneCountry.addEventListener( 'change', function () {
+				phoneCountry.setAttribute( 'data-user-selected', '1' );
+				syncPhoneCodeDisplay();
+				if ( phone && isFilled( phone ) ) {
+					validatePhone( form, phone, false, getSelectedCountryCode() );
+				}
+			} );
+			phoneCountry.addEventListener( 'input', syncPhoneCodeDisplay );
+			syncPhoneCodeDisplay();
+		}
 
 		var btn = form.querySelector( '#lccl-df-submit-btn' );
 		var terms = form.querySelector( '.lccl-accept-terms' );
@@ -292,15 +409,29 @@
 				if ( next !== phone.value ) {
 					phone.value = next;
 				}
-				syncPhoneMax( phone );
-				if ( ! isFilled( phone ) || isValidPhone( phone.value ) ) {
+				// If user typed a plus prefix (e.g. +1, +44, +94), auto-select matching country code
+				if ( phoneCountry && 0 === phone.value.indexOf( '+' ) ) {
+					var rawPlus = phone.value.replace( /[^\d+]/g, '' );
+					var options = phoneCountry.options;
+					for ( var i = 0; i < options.length; i++ ) {
+						var optVal = options[i].value;
+						if ( optVal && optVal.length > 1 && 0 === rawPlus.indexOf( optVal ) ) {
+							if ( phoneCountry.value !== optVal ) {
+								phoneCountry.value = optVal;
+								syncPhoneCodeDisplay();
+							}
+							break;
+						}
+					}
+				}
+				if ( ! isFilled( phone ) || isValidPhone( phone.value, getSelectedCountryCode() ) ) {
 					markField( phone, false );
 					setNotice( form, 'phone', '' );
 				}
 			} );
 			phone.addEventListener( 'blur', function () {
 				if ( isFilled( phone ) ) {
-					validatePhone( form, phone, false );
+					validatePhone( form, phone, false, getSelectedCountryCode() );
 				} else {
 					markField( phone, false );
 					setNotice( form, 'phone', '' );
@@ -355,6 +486,29 @@
 				amount.value = def ? constrainAmount( def ) : '';
 			}
 			syncTotal();
+
+			// Sync default country code if user hasn't explicitly changed it
+			if ( phoneCountry && ! phoneCountry.getAttribute( 'data-user-selected' ) ) {
+				switch ( activeCurrency ) {
+					case 'USD':
+						phoneCountry.value = '+1';
+						break;
+					case 'GBP':
+						phoneCountry.value = '+44';
+						break;
+					case 'EUR':
+						phoneCountry.value = '+49';
+						break;
+					case 'CNY':
+						phoneCountry.value = '+86';
+						break;
+					case 'LKR':
+					default:
+						phoneCountry.value = '+94';
+						break;
+				}
+				syncPhoneCodeDisplay();
+			}
 
 			// Disable submit if selected currency gateway is not configured.
 			if ( btn && isGatewayConfigured ) {
@@ -456,17 +610,30 @@
 				}
 			}
 
-			if ( isFilled( email ) ) {
-				if ( ! validateEmail( form, email, false ) && email && ! firstInvalid ) {
+			var isAnon = anonCheckbox && anonCheckbox.checked;
+
+			// Email: required only if NOT anonymous
+			if ( ! isAnon ) {
+				if ( ! validateEmail( form, email, true ) && email && ! firstInvalid ) {
 					firstInvalid = email;
+					if ( ! isFilled( email ) ) {
+						missingRequired = true;
+					}
 				}
 			} else {
-				markField( email, false );
-				setNotice( form, 'email', '' );
+				if ( isFilled( email ) ) {
+					if ( ! validateEmail( form, email, false ) && email && ! firstInvalid ) {
+						firstInvalid = email;
+					}
+				} else {
+					markField( email, false );
+					setNotice( form, 'email', '' );
+				}
 			}
 
+			// Phone: optional, but if filled, must be valid international phone
 			if ( isFilled( phone ) ) {
-				if ( ! validatePhone( form, phone, false ) && phone && ! firstInvalid ) {
+				if ( ! validatePhone( form, phone, false, getSelectedCountryCode() ) && phone && ! firstInvalid ) {
 					firstInvalid = phone;
 				}
 			} else {

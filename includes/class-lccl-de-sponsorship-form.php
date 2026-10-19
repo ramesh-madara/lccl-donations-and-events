@@ -365,11 +365,25 @@ class LCCL_DE_Sponsorship_Form {
 	private static function handle_submit() {
 		$raw = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		$first_name = sanitize_text_field( isset( $raw['first_name'] ) ? $raw['first_name'] : '' );
-		$last_name  = sanitize_text_field( isset( $raw['last_name'] ) ? $raw['last_name'] : '' );
-		$email      = sanitize_email( isset( $raw['email'] ) ? $raw['email'] : '' );
-		$phone      = sanitize_text_field( isset( $raw['phone'] ) ? $raw['phone'] : '' );
-		$message    = sanitize_textarea_field( isset( $raw['message'] ) ? substr( $raw['message'], 0, 1000 ) : '' );
+		$is_anonymous = ! empty( $raw['is_anonymous'] );
+		$first_name   = sanitize_text_field( isset( $raw['first_name'] ) ? $raw['first_name'] : '' );
+		$last_name    = sanitize_text_field( isset( $raw['last_name'] ) ? $raw['last_name'] : '' );
+		$email        = sanitize_email( isset( $raw['email'] ) ? $raw['email'] : '' );
+		$phone_code   = sanitize_text_field( isset( $raw['phone_country_code'] ) ? $raw['phone_country_code'] : '' );
+		$raw_phone    = sanitize_text_field( isset( $raw['phone'] ) ? $raw['phone'] : '' );
+		$message      = sanitize_textarea_field( isset( $raw['message'] ) ? substr( $raw['message'], 0, 1000 ) : '' );
+
+		$phone = '';
+		if ( '' !== $raw_phone ) {
+			if ( 0 === strpos( $raw_phone, '+' ) ) {
+				$phone = $raw_phone;
+			} elseif ( '' !== $phone_code ) {
+				$clean_digits = ltrim( preg_replace( '/[^\d]/', '', $raw_phone ), '0' );
+				$phone        = $phone_code . ' ' . ( $clean_digits ?: $raw_phone );
+			} else {
+				$phone = $raw_phone;
+			}
+		}
 
 		$projects     = self::projects();
 		$raw_project  = isset( $raw['project'] ) ? sanitize_key( $raw['project'] ) : '';
@@ -389,18 +403,18 @@ class LCCL_DE_Sponsorship_Form {
 
 		$errors = array();
 
-		if ( '' === $first_name ) {
-			$errors[] = __( 'First name is required.', 'lccl-de' );
+		if ( ! $is_anonymous ) {
+			if ( '' === $email ) {
+				$errors[] = __( 'Please enter your email address.', 'lccl-de' );
+			} elseif ( ! is_email( $email ) ) {
+				$errors[] = __( 'Please enter a valid email address.', 'lccl-de' );
+			}
+		} else {
+			if ( '' !== $email && ! is_email( $email ) ) {
+				$errors[] = __( 'Please enter a valid email address.', 'lccl-de' );
+			}
 		}
-		if ( '' === $last_name ) {
-			$errors[] = __( 'Last name is required.', 'lccl-de' );
-		}
-		if ( '' === $email || ! is_email( $email ) ) {
-			$errors[] = __( 'A valid email address is required.', 'lccl-de' );
-		}
-		if ( '' === $phone ) {
-			$errors[] = __( 'Mobile / WhatsApp number is required.', 'lccl-de' );
-		}
+
 		if ( $amount < 1.00 ) {
 			$errors[] = sprintf(
 				/* translators: %s: currency code */
@@ -436,27 +450,35 @@ class LCCL_DE_Sponsorship_Form {
 		global $wpdb;
 		$table = LCCL_DE_Schema::sponsorships_table();
 
+		$payload_meta = array(
+			'type'         => 'sponsorship',
+			'project'      => $project,
+			'message'      => $message,
+			'is_anonymous' => $is_anonymous,
+		);
+
 		$profile_cfg = LCCL_DE_Settings::get_paycenter( $active_profile );
 		$currency    = $form_currency;
 
 		$inserted = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			$table,
 			array(
-				'order_ref'     => $order_ref,
-				'first_name'    => $first_name,
-				'last_name'     => $last_name,
-				'email'         => $email,
-				'phone'         => $phone,
-				'project'       => $project,
-				'project_label' => (string) $project_data['title'],
-				'amount_lkr'    => $amount,
-				'currency'      => $currency,
-				'message'       => $message,
-				'status'        => 'pending',
-				'ip_address'    => self::client_ip(),
-				'created_at'    => current_time( 'mysql' ),
+				'order_ref'        => $order_ref,
+				'first_name'       => $first_name,
+				'last_name'        => $last_name,
+				'email'            => $email,
+				'phone'            => $phone,
+				'project'          => $project,
+				'project_label'    => (string) $project_data['title'],
+				'amount_lkr'       => $amount,
+				'currency'         => $currency,
+				'message'          => $message,
+				'status'           => 'pending',
+				'gateway_response' => wp_json_encode( $payload_meta ),
+				'ip_address'       => self::client_ip(),
+				'created_at'       => current_time( 'mysql' ),
 			),
-			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s', '%s' )
+			array( '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( ! $inserted ) {
@@ -479,13 +501,27 @@ class LCCL_DE_Sponsorship_Form {
 			$base_url
 		);
 
-		$comment = sprintf(
-			/* translators: 1: project title, 2: first name, 3: last name */
-			__( 'LCCL Sponsorship - %1$s - %2$s %3$s', 'lccl-de' ),
-			$project_data['title'],
-			$first_name,
-			$last_name
-		);
+		$sponsor_display = trim( $first_name . ' ' . $last_name );
+		if ( $is_anonymous ) {
+			$comment = sprintf(
+				/* translators: %s: project title */
+				__( 'LCCL Anonymous Sponsorship - %s', 'lccl-de' ),
+				$project_data['title']
+			);
+		} elseif ( '' !== $sponsor_display ) {
+			$comment = sprintf(
+				/* translators: 1: project title, 2: sponsor name */
+				__( 'LCCL Sponsorship - %1$s - %2$s', 'lccl-de' ),
+				$project_data['title'],
+				$sponsor_display
+			);
+		} else {
+			$comment = sprintf(
+				/* translators: %s: project title */
+				__( 'LCCL Sponsorship - %s', 'lccl-de' ),
+				$project_data['title']
+			);
+		}
 
 		$init_result = LCCL_DE_Paycenter_Client::payment_init(
 			array(
@@ -582,7 +618,14 @@ class LCCL_DE_Sponsorship_Form {
 			return $error_result;
 		}
 
+		$meta          = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
+		$is_anonymous  = is_array( $meta ) && ! empty( $meta['is_anonymous'] );
 		$sponsor_name  = trim( $row['first_name'] . ' ' . $row['last_name'] );
+		if ( $is_anonymous ) {
+			$sponsor_display = '' !== $sponsor_name ? sprintf( __( '%s (Anonymous Sponsorship)', 'lccl-de' ), $sponsor_name ) : __( 'Anonymous Sponsor', 'lccl-de' );
+		} else {
+			$sponsor_display = '' !== $sponsor_name ? $sponsor_name : __( 'Generous Sponsor', 'lccl-de' );
+		}
 		$project_label = ! empty( $row['project_label'] ) ? $row['project_label'] : $row['project'];
 
 		$base_result = array(
@@ -590,7 +633,7 @@ class LCCL_DE_Sponsorship_Form {
 			'order_ref'     => $order_ref,
 			'receipt'       => '',
 			'amount'        => (float) $row['amount_lkr'],
-			'sponsor_name'  => $sponsor_name,
+			'sponsor_name'  => $sponsor_display,
 			'project_label' => $project_label,
 			'error_message' => '',
 		);
@@ -692,6 +735,10 @@ class LCCL_DE_Sponsorship_Form {
 
 		$receipt          = LCCL_DE_Paycenter_Client::extract_receipt( $response_data );
 		$gateway_currency = isset( $response_data['transactionAmount']['currency'] ) ? strtoupper( (string) $response_data['transactionAmount']['currency'] ) : $expected_currency;
+		$response_to_store = is_array( $response_data ) ? $response_data : array();
+		if ( is_array( $meta ) ) {
+			$response_to_store['_lccl_meta'] = $meta;
+		}
 
 		$updated = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 			$wpdb->prepare(
@@ -706,14 +753,16 @@ class LCCL_DE_Sponsorship_Form {
 				$gateway_currency,
 				$reqid,
 				$receipt,
-				wp_json_encode( $response_data ),
+				wp_json_encode( $response_to_store ),
 				current_time( 'mysql' ),
 				$order_ref
 			)
 		);
 
 		if ( $updated > 0 ) {
-			$row['currency'] = $gateway_currency;
+			$row['currency']         = $gateway_currency;
+			$row['gateway_response'] = wp_json_encode( $response_to_store );
+			$row['is_anonymous']     = $is_anonymous;
 			self::send_sponsorship_confirmation( $row, $receipt );
 		}
 
@@ -723,7 +772,7 @@ class LCCL_DE_Sponsorship_Form {
 			'receipt'       => $receipt,
 			'amount'        => (float) $row['amount_lkr'],
 			'currency'      => $gateway_currency,
-			'sponsor_name'  => $sponsor_name,
+			'sponsor_name'  => $sponsor_display,
 			'project_label' => $project_label,
 			'error_message' => '',
 		);
@@ -851,11 +900,23 @@ class LCCL_DE_Sponsorship_Form {
 			return;
 		}
 
-		$name          = trim( $row['first_name'] . ' ' . $row['last_name'] );
+		$meta         = ! empty( $row['gateway_response'] ) ? json_decode( (string) $row['gateway_response'], true ) : null;
+		$is_anonymous = ! empty( $row['is_anonymous'] )
+			|| ( is_array( $meta ) && ( ! empty( $meta['is_anonymous'] ) || ! empty( $meta['_lccl_meta']['is_anonymous'] ) ) );
+		$name         = trim( $row['first_name'] . ' ' . $row['last_name'] );
+		$email        = ! empty( $row['email'] ) ? (string) $row['email'] : '';
+		$phone        = ! empty( $row['phone'] ) ? (string) $row['phone'] : '';
+
+		if ( $is_anonymous ) {
+			$name_display = '' !== $name ? sprintf( __( '%s (Anonymous Sponsorship)', 'lccl-de' ), $name ) : __( 'Anonymous Sponsor', 'lccl-de' );
+		} else {
+			$name_display = '' !== $name ? $name : __( 'Generous Sponsor', 'lccl-de' );
+		}
+		$email_display = '' !== $email ? $email : __( 'Not provided', 'lccl-de' );
+		$phone_display = '' !== $phone ? $phone : __( 'Not provided', 'lccl-de' );
+
 		$amount        = number_format( (float) $row['amount_lkr'], 2 );
 		$currency      = ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR';
-		$email         = (string) $row['email'];
-		$phone         = (string) $row['phone'];
 		$order_ref     = (string) $row['order_ref'];
 		$project_label = ! empty( $row['project_label'] ) ? $row['project_label'] : $row['project'];
 		$ref           = $receipt ?: $order_ref;
@@ -865,7 +926,7 @@ class LCCL_DE_Sponsorship_Form {
 			__( '[Sponsorship Alert] Received %1$s %2$s from %3$s for "%4$s"', 'lccl-de' ),
 			$currency,
 			$amount,
-			$name,
+			$name_display,
 			$project_label
 		);
 
@@ -875,12 +936,12 @@ class LCCL_DE_Sponsorship_Form {
 				"A new project sponsorship payment has been received!\n\nSponsor Details:\n----------------------------------------\nName:      %1\$s\nProject:   %2\$s\nAmount:    %3\$s %4\$s\nEmail:     %5\$s\nPhone:     %6\$s\nReceipt:   %7\$s\nOrder Ref: %8\$s\nDate/Time: %9\$s\nGateway:   Commercial Bank of Ceylon (CBC) Paycenter\n----------------------------------------\n\nLog in to WP Admin -> LCCL Programs -> Payment Gateway -> Payment Transactions to view full records.",
 				'lccl-de'
 			),
-			$name,
+			$name_display,
 			$project_label,
 			$currency,
 			$amount,
-			$email,
-			$phone,
+			$email_display,
+			$phone_display,
 			$ref,
 			$order_ref,
 			current_time( 'mysql' )

@@ -303,12 +303,16 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 						// Determine bank response code & text
 						$resp_code = '';
 						$resp_text = '';
+						$is_anon   = false;
 						if ( is_array( $gw_json ) ) {
 							if ( isset( $gw_json['responseCode'] ) ) {
 								$resp_code = (string) $gw_json['responseCode'];
 							}
 							if ( isset( $gw_json['responseText'] ) ) {
 								$resp_text = (string) $gw_json['responseText'];
+							}
+							if ( ! empty( $gw_json['is_anonymous'] ) || ! empty( $gw_json['_lccl_meta']['is_anonymous'] ) ) {
+								$is_anon = true;
 							}
 						}
 
@@ -365,6 +369,9 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 							</td>
 							<td>
 								<strong><?php echo esc_html( $name ?: '—' ); ?></strong>
+								<?php if ( $is_anon ) : ?>
+									<span style="display: inline-block; margin-left: 4px; padding: 1px 6px; font-size: 10px; font-weight: 600; text-transform: uppercase; background: #e0e0e0; color: #50575e; border-radius: 3px; vertical-align: middle;"><?php esc_html_e( 'Anonymous', 'lccl-de' ); ?></span>
+								<?php endif; ?>
 								<?php if ( $email ) : ?>
 									<br><a href="mailto:<?php echo esc_attr( $email ); ?>" style="color: #2271b1; text-decoration: none; font-size: 12px;"><?php echo esc_html( $email ); ?></a>
 								<?php endif; ?>

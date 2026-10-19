@@ -402,10 +402,44 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 					</div>
 				</div>
 
+				<?php
+				$is_anon_checked       = ! empty( $val( 'is_anonymous' ) );
+				$selected_country_code = $val( 'phone_country_code' );
+				if ( '' === $selected_country_code ) {
+					$selected_country_code = '+94';
+				}
+
+				$country_options = LCCL_DE_Countries::get_all();
+
+				$initial_country_code = 'LK';
+				$initial_country_name = __( 'Sri Lanka (+94)', 'lccl-de' );
+				foreach ( $country_options as $c ) {
+					if ( $c['dial'] === $selected_country_code ) {
+						$initial_country_code = $c['code'];
+						$initial_country_name = $c['name'];
+						break;
+					}
+				}
+				?>
+				<div class="lccl-df__anon-box<?php echo $is_anon_checked ? ' is-checked' : ''; ?>">
+					<label class="lccl-bdf__checkbox lccl-df__anon-label" for="lccl-ps-anonymous">
+						<input
+							type="checkbox"
+							name="is_anonymous"
+							id="lccl-ps-anonymous"
+							value="1"
+							<?php checked( $is_anon_checked ); ?>
+						>
+						<span class="lccl-bdf__check" aria-hidden="true"></span>
+						<span class="lccl-df__anon-text"><?php esc_html_e( 'I wish to donate anonymously.', 'lccl-de' ); ?></span>
+					</label>
+					<p class="lccl-df__anon-hint"><?php esc_html_e( 'Your name will not be displayed publicly in connection with this donation.', 'lccl-de' ); ?></p>
+				</div>
+
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'first_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-first-name">
-							<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'First Name', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -413,16 +447,16 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 							id="lccl-ps-first-name"
 							name="first_name"
 							value="<?php echo esc_attr( $val( 'first_name' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
+							placeholder="<?php echo $is_anon_checked ? esc_attr__( 'Optional', 'lccl-de' ) : esc_attr__( 'John', 'lccl-de' ); ?>"
+							data-placeholder-default="<?php esc_attr_e( 'John', 'lccl-de' ); ?>"
 							autocomplete="given-name"
 							maxlength="100"
-							required
 						>
 						<?php $notice( 'first_name' ); ?>
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'last_name' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-last-name">
-							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -430,10 +464,10 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 							id="lccl-ps-last-name"
 							name="last_name"
 							value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
+							placeholder="<?php echo $is_anon_checked ? esc_attr__( 'Optional', 'lccl-de' ) : esc_attr__( 'Perera', 'lccl-de' ); ?>"
+							data-placeholder-default="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
 							autocomplete="family-name"
 							maxlength="100"
-							required
 						>
 						<?php $notice( 'last_name' ); ?>
 					</div>
@@ -442,7 +476,8 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'email' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-email">
-							<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<span class="lccl-df__label-text"><?php esc_html_e( 'Email', 'lccl-de' ); ?></span>
+							<span class="lccl-bdf__req" data-lccl-email-req<?php echo $is_anon_checked ? ' hidden' : ''; ?>>*</span>
 						</label>
 						<input
 							class="lccl-bdf__input"
@@ -450,33 +485,63 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 							id="lccl-ps-email"
 							name="email"
 							value="<?php echo esc_attr( $val( 'email' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
+							placeholder="<?php echo $is_anon_checked ? esc_attr__( 'Optional', 'lccl-de' ) : esc_attr__( 'name@example.com', 'lccl-de' ); ?>"
+							data-placeholder-default="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
 							autocomplete="email"
 							maxlength="191"
 							data-lccl-validate="email"
 							data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::email_error_message() ); ?>"
-							required
+							<?php echo $is_anon_checked ? '' : 'required'; ?>
 						>
 						<?php $notice( 'email' ); ?>
 					</div>
 					<div class="lccl-bdf__field<?php echo esc_attr( $invalid( 'phone' ) ); ?>">
 						<label class="lccl-bdf__label" for="lccl-ps-phone">
-							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
 						</label>
-						<input
-							class="lccl-bdf__input"
-							type="tel"
-							id="lccl-ps-phone"
-							name="phone"
-							value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
-							placeholder="<?php esc_attr_e( '+94712345678', 'lccl-de' ); ?>"
-							inputmode="tel"
-							autocomplete="tel"
-							maxlength="<?php echo 0 === strpos( (string) $val( 'phone' ), '+' ) ? 12 : 10; ?>"
-							data-lccl-validate="phone"
-							data-invalid-message="<?php echo esc_attr( LCCL_DE_Sponsorship_Form::phone_error_message() ); ?>"
-							required
-						>
+						<div class="lccl-df__phone-row">
+							<div class="lccl-df__phone-code-wrap">
+								<div class="lccl-df__phone-code-display" id="lccl-ps-phone-code-display" aria-hidden="true" title="<?php echo esc_attr( $initial_country_name ); ?>">
+									<span class="lccl-df__phone-code-text"><?php
+									$display_text = '' !== $selected_country_code
+										? $initial_country_code . ' (' . $selected_country_code . ')'
+										: $initial_country_code;
+									echo esc_html( $display_text );
+								?></span>
+									<svg class="lccl-df__phone-code-arrow" viewBox="0 0 20 20" fill="currentColor" width="12" height="12" aria-hidden="true" focusable="false">
+										<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+									</svg>
+								</div>
+								<select
+									name="phone_country_code"
+									id="lccl-ps-phone-code"
+									class="lccl-df__phone-code-select"
+									aria-label="<?php esc_attr_e( 'Country calling code', 'lccl-de' ); ?>"
+								>
+									<?php foreach ( $country_options as $c ) : ?>
+										<option
+											value="<?php echo esc_attr( $c['dial'] ); ?>"
+											data-country="<?php echo esc_attr( $c['code'] ); ?>"
+											<?php selected( $selected_country_code, $c['dial'] ); ?>
+										><?php echo esc_html( $c['name'] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+							<input
+								class="lccl-bdf__input lccl-df__phone-number"
+								type="tel"
+								id="lccl-ps-phone"
+								name="phone"
+								value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
+								placeholder="<?php echo $is_anon_checked ? esc_attr__( 'Optional', 'lccl-de' ) : esc_attr__( '712345678', 'lccl-de' ); ?>"
+								data-placeholder-default="<?php esc_attr_e( '712345678', 'lccl-de' ); ?>"
+								inputmode="tel"
+								autocomplete="tel-national"
+								maxlength="20"
+								data-lccl-validate="phone"
+								data-invalid-message="<?php echo esc_attr( __( 'Please enter a valid phone number.', 'lccl-de' ) ); ?>"
+							>
+						</div>
 						<?php $notice( 'phone' ); ?>
 					</div>
 				</div>

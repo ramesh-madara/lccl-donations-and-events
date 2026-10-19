@@ -805,7 +805,7 @@
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	gap: 24px;
-	align-items: start;
+	align-items: stretch;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel {
@@ -818,17 +818,19 @@
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
 	background: #ffffff;
-	align-self: start !important;
+	align-self: stretch !important;
+	height: 100% !important;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-donation__image {
 	display: block !important;
 	width: 100% !important;
-	height: auto !important;
+	height: 100% !important;
+	min-height: 100% !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	border: none !important;
-	object-fit: cover;
+	object-fit: cover !important;
 	vertical-align: top;
 }
 
@@ -1250,6 +1252,159 @@
 .lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"]:focus + .lccl-bdf__check,
 .lccl-bdf.lccl-bdf--donation .lccl-df__cause input[type="checkbox"]:focus-visible + .lccl-bdf__check {
 	border-color: var(--lccl-bdf-heading);
+}
+
+/* Anonymous Donation Option Box */
+.lccl-bdf.lccl-bdf--donation .lccl-df__anon-box,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__anon-box {
+	margin: 20px 0 10px;
+	padding: 14px 18px;
+	background-color: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 6px;
+	transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__anon-box.is-checked,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__anon-box.is-checked {
+	background-color: #f0f7ff;
+	border-color: #93c5fd;
+	box-shadow: 0 1px 3px rgba(59, 130, 246, 0.08);
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__anon-label,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__anon-label {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	cursor: pointer;
+	font-family: var(--lccl-bdf-font);
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--lccl-bdf-heading);
+	line-height: 1.4;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__anon-text,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__anon-text {
+	margin-left: 8px;
+	user-select: none;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__anon-hint,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__anon-hint {
+	margin: 5px 0 0 28px;
+	font-family: var(--lccl-bdf-font);
+	font-size: 13px;
+	line-height: 1.45;
+	color: #64748b;
+}
+
+/* International Phone Row with Country Code Selector */
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-row,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-row {
+	display: flex;
+	align-items: stretch;
+	gap: 8px;
+	width: 100%;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-wrap,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap {
+	position: relative;
+	flex: 0 0 110px;
+	width: 110px;
+	min-width: 110px;
+	max-width: 110px;
+	height: 49px;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-display {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 0 6px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-radius: 0;
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-field-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+	pointer-events: none;
+	box-sizing: border-box;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-arrow,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-arrow {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	color: #64748b;
+	flex-shrink: 0;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-select,
+.lccl-bdf.lccl-bdf--donation select.lccl-df__phone-code-select,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-select,
+.lccl-bdf.lccl-bdf--sponsorship select.lccl-df__phone-code-select {
+	position: absolute !important;
+	top: 0 !important;
+	left: 0 !important;
+	width: 100% !important;
+	height: 100% !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	opacity: 0 !important;
+	cursor: pointer !important;
+	z-index: 2 !important;
+	-webkit-appearance: menulist !important;
+	appearance: menulist !important;
+}
+
+/* Force black text for dropdown options so they are readable on all themes */
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-select option,
+.lccl-bdf.lccl-bdf--donation select.lccl-df__phone-code-select option,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-select option,
+.lccl-bdf.lccl-bdf--sponsorship select.lccl-df__phone-code-select option {
+	color: #333333 !important;
+	background-color: #ffffff !important;
+	font-size: 14px !important;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-wrap:focus-within .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-select:focus + .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap:focus-within .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-select:focus + .lccl-df__phone-code-display {
+	border-color: var(--lccl-bdf-border-focus) !important;
+	background-color: #ffffff !important;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-wrap:hover .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap:hover .lccl-df__phone-code-display {
+	border-color: #94a3b8;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__field--invalid .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__field--invalid .lccl-df__phone-code-display {
+	border-color: #ef4444;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-number,
+.lccl-bdf.lccl-bdf--donation input.lccl-df__phone-number,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-number,
+.lccl-bdf.lccl-bdf--sponsorship input.lccl-df__phone-number {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: 100%;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__pair {
@@ -1811,7 +1966,7 @@
 	display: grid;
 	grid-template-columns: minmax(0, 1fr);
 	gap: 24px;
-	align-items: start;
+	align-items: stretch;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__projects {
@@ -1828,17 +1983,19 @@
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
 	background: #ffffff;
-	align-self: start !important;
+	align-self: stretch !important;
+	height: 100% !important;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image {
 	display: block !important;
 	width: 100% !important;
-	height: auto !important;
+	height: 100% !important;
+	min-height: 100% !important;
 	margin: 0 !important;
 	padding: 0 !important;
 	border: none !important;
-	object-fit: cover;
+	object-fit: cover !important;
 	vertical-align: top;
 }
 
@@ -2225,7 +2382,7 @@
 		display: grid !important;
 		grid-template-columns: minmax(0, 55fr) minmax(0, 45fr) !important;
 		gap: 28px !important;
-		align-items: start !important;
+		align-items: stretch !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form,
@@ -2235,20 +2392,37 @@
 		width: 100% !important;
 		order: 1 !important;
 		margin-top: 0 !important;
-		align-self: start !important;
+		align-self: stretch !important;
 	}
 
 	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel,
 	.lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel,
 	.lccl-bdf.lccl-bdf--membership .lccl-membership__image-panel {
-		display: block !important;
+		display: flex !important;
+		flex-direction: column !important;
 		grid-column: 2 !important;
 		width: 100% !important;
+		height: 100% !important;
+		min-height: 100% !important;
 		order: 2 !important;
+		margin: 0 !important;
 		margin-top: 0 !important;
-		align-self: start !important;
+		padding: 0 !important;
+		align-self: stretch !important;
 		position: static !important;
 		top: auto !important;
+		box-sizing: border-box !important;
+	}
+
+	.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image,
+	.lccl-bdf.lccl-bdf--donation .lccl-donation__image,
+	.lccl-bdf.lccl-bdf--membership .lccl-membership__image {
+		display: block !important;
+		width: 100% !important;
+		height: 100% !important;
+		min-height: 100% !important;
+		flex: 1 1 auto !important;
+		object-fit: cover !important;
 	}
 }
 
