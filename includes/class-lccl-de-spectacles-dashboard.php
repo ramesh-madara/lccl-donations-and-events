@@ -142,6 +142,22 @@ class LCCL_DE_Spectacles_Dashboard {
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
 					),
+					'status'        => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'payment_pending'   => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'payment_processed' => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'spectacles_ready'  => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
 					'spectacles_issued' => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
@@ -193,6 +209,22 @@ class LCCL_DE_Spectacles_Dashboard {
 						'sanitize_callback' => 'sanitize_key',
 					),
 					'eligibility'    => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'status'         => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'payment_pending'   => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'payment_processed' => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'spectacles_ready'  => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
 					),
@@ -291,6 +323,10 @@ class LCCL_DE_Spectacles_Dashboard {
 		$grade          = (string) $request->get_param( 'grade' );
 		$school_letter  = (string) $request->get_param( 'school_letter' );
 		$eligibility       = (string) $request->get_param( 'eligibility' );
+		$status            = (string) $request->get_param( 'status' );
+		$payment_pending   = (string) $request->get_param( 'payment_pending' );
+		$payment_processed = (string) $request->get_param( 'payment_processed' );
+		$spectacles_ready  = (string) $request->get_param( 'spectacles_ready' );
 		$spectacles_issued = (string) $request->get_param( 'spectacles_issued' );
 		$comment_status    = (string) $request->get_param( 'comment_status' );
 		$page              = max( 1, (int) $request->get_param( 'page' ) );
@@ -342,6 +378,39 @@ class LCCL_DE_Spectacles_Dashboard {
 			}
 		}
 
+		if ( '' !== $status ) {
+			if ( in_array( $status, array( 'payment_processed', 'payment_pending', 'spectacles_ready', 'spectacles_issued' ), true ) ) {
+				$where[]  = '(status = %s OR ' . $status . ' = 1)';
+				$params[] = $status;
+			} elseif ( 'none' === $status ) {
+				$where[] = '((status IS NULL OR status = \'\') AND payment_pending = 0 AND payment_processed = 0 AND spectacles_ready = 0 AND spectacles_issued = 0)';
+			}
+		}
+
+		if ( '' !== $payment_pending ) {
+			if ( 'yes' === $payment_pending || '1' === $payment_pending ) {
+				$where[] = 'payment_pending = 1';
+			} elseif ( 'no' === $payment_pending || '0' === $payment_pending ) {
+				$where[] = '(payment_pending = 0 OR payment_pending IS NULL)';
+			}
+		}
+
+		if ( '' !== $payment_processed ) {
+			if ( 'yes' === $payment_processed || '1' === $payment_processed ) {
+				$where[] = 'payment_processed = 1';
+			} elseif ( 'no' === $payment_processed || '0' === $payment_processed ) {
+				$where[] = '(payment_processed = 0 OR payment_processed IS NULL)';
+			}
+		}
+
+		if ( '' !== $spectacles_ready ) {
+			if ( 'yes' === $spectacles_ready || '1' === $spectacles_ready ) {
+				$where[] = 'spectacles_ready = 1';
+			} elseif ( 'no' === $spectacles_ready || '0' === $spectacles_ready ) {
+				$where[] = '(spectacles_ready = 0 OR spectacles_ready IS NULL)';
+			}
+		}
+
 		if ( '' !== $spectacles_issued ) {
 			if ( 'yes' === $spectacles_issued || '1' === $spectacles_issued ) {
 				$where[] = 'spectacles_issued = 1';
@@ -370,7 +439,7 @@ class LCCL_DE_Spectacles_Dashboard {
 		}
 
 		$offset = ( $page - 1 ) * $per_page;
-		$list_sql = "SELECT id, child_first_name, child_last_name, guardian_name, phone, email, district, school_name, grade, comments, eligibility, spectacles_issued, created_at
+		$list_sql = "SELECT id, child_first_name, child_last_name, guardian_name, phone, email, district, school_name, grade, comments, eligibility, status, payment_pending, payment_processed, spectacles_ready, spectacles_issued, created_at
 			FROM {$table}
 			WHERE {$where_sql}
 			ORDER BY created_at DESC, id DESC
@@ -414,6 +483,10 @@ class LCCL_DE_Spectacles_Dashboard {
 		$grade          = (string) $request->get_param( 'grade' );
 		$school_letter  = (string) $request->get_param( 'school_letter' );
 		$eligibility       = (string) $request->get_param( 'eligibility' );
+		$status            = (string) $request->get_param( 'status' );
+		$payment_pending   = (string) $request->get_param( 'payment_pending' );
+		$payment_processed = (string) $request->get_param( 'payment_processed' );
+		$spectacles_ready  = (string) $request->get_param( 'spectacles_ready' );
 		$spectacles_issued = (string) $request->get_param( 'spectacles_issued' );
 		$comment_status    = (string) $request->get_param( 'comment_status' );
 
@@ -457,6 +530,39 @@ class LCCL_DE_Spectacles_Dashboard {
 			} elseif ( in_array( $eligibility, array( 'eligible', 'not_eligible' ), true ) ) {
 				$where[]  = 'eligibility = %s';
 				$params[] = $eligibility;
+			}
+		}
+
+		if ( '' !== $status ) {
+			if ( in_array( $status, array( 'payment_processed', 'payment_pending', 'spectacles_ready', 'spectacles_issued' ), true ) ) {
+				$where[]  = '(status = %s OR ' . $status . ' = 1)';
+				$params[] = $status;
+			} elseif ( 'none' === $status ) {
+				$where[] = '((status IS NULL OR status = \'\') AND payment_pending = 0 AND payment_processed = 0 AND spectacles_ready = 0 AND spectacles_issued = 0)';
+			}
+		}
+
+		if ( '' !== $payment_pending ) {
+			if ( 'yes' === $payment_pending || '1' === $payment_pending ) {
+				$where[] = 'payment_pending = 1';
+			} elseif ( 'no' === $payment_pending || '0' === $payment_pending ) {
+				$where[] = '(payment_pending = 0 OR payment_pending IS NULL)';
+			}
+		}
+
+		if ( '' !== $payment_processed ) {
+			if ( 'yes' === $payment_processed || '1' === $payment_processed ) {
+				$where[] = 'payment_processed = 1';
+			} elseif ( 'no' === $payment_processed || '0' === $payment_processed ) {
+				$where[] = '(payment_processed = 0 OR payment_processed IS NULL)';
+			}
+		}
+
+		if ( '' !== $spectacles_ready ) {
+			if ( 'yes' === $spectacles_ready || '1' === $spectacles_ready ) {
+				$where[] = 'spectacles_ready = 1';
+			} elseif ( 'no' === $spectacles_ready || '0' === $spectacles_ready ) {
+				$where[] = '(spectacles_ready = 0 OR spectacles_ready IS NULL)';
 			}
 		}
 
@@ -634,7 +740,42 @@ class LCCL_DE_Spectacles_Dashboard {
 		$params            = $request->get_json_params();
 		$comments          = isset( $params['comments'] ) ? trim( (string) $params['comments'] ) : '';
 		$eligibility       = isset( $params['eligibility'] ) ? sanitize_key( (string) $params['eligibility'] ) : null;
-		$spectacles_issued = ! empty( $params['spectacles_issued'] ) ? 1 : 0;
+		$status            = isset( $params['status'] ) ? sanitize_key( (string) $params['status'] ) : '';
+
+		$allowed_status = array( 'payment_processed', 'payment_pending', 'spectacles_ready', 'spectacles_issued' );
+		if ( in_array( $status, $allowed_status, true ) ) {
+			$payment_processed = 'payment_processed' === $status ? 1 : 0;
+			$payment_pending   = 'payment_pending' === $status ? 1 : 0;
+			$spectacles_ready  = 'spectacles_ready' === $status ? 1 : 0;
+			$spectacles_issued = 'spectacles_issued' === $status ? 1 : 0;
+		} else {
+			$status            = null;
+			$payment_pending   = ! empty( $params['payment_pending'] ) ? 1 : 0;
+			$payment_processed = ! empty( $params['payment_processed'] ) ? 1 : 0;
+			$spectacles_ready  = ! empty( $params['spectacles_ready'] ) ? 1 : 0;
+			$spectacles_issued = ! empty( $params['spectacles_issued'] ) ? 1 : 0;
+			if ( $payment_processed ) {
+				$status = 'payment_processed';
+				$payment_pending = 0;
+				$spectacles_ready = 0;
+				$spectacles_issued = 0;
+			} elseif ( $payment_pending ) {
+				$status = 'payment_pending';
+				$payment_processed = 0;
+				$spectacles_ready = 0;
+				$spectacles_issued = 0;
+			} elseif ( $spectacles_ready ) {
+				$status = 'spectacles_ready';
+				$payment_processed = 0;
+				$payment_pending = 0;
+				$spectacles_issued = 0;
+			} elseif ( $spectacles_issued ) {
+				$status = 'spectacles_issued';
+				$payment_processed = 0;
+				$payment_pending = 0;
+				$spectacles_ready = 0;
+			}
+		}
 
 		$allowed_eligibility = array( 'eligible', 'not_eligible' );
 		if ( ! in_array( $eligibility, $allowed_eligibility, true ) ) {
@@ -644,6 +785,10 @@ class LCCL_DE_Spectacles_Dashboard {
 		$data = array(
 			'comments'          => $comments,
 			'eligibility'       => $eligibility,
+			'status'            => $status,
+			'payment_pending'   => $payment_pending,
+			'payment_processed' => $payment_processed,
+			'spectacles_ready'  => $spectacles_ready,
 			'spectacles_issued' => $spectacles_issued,
 			'updated_at'        => current_time( 'mysql' ),
 			'updated_by'        => get_current_user_id(),
@@ -652,6 +797,10 @@ class LCCL_DE_Spectacles_Dashboard {
 		$formats = array(
 			'%s',
 			null === $eligibility ? null : '%s',
+			null === $status ? null : '%s',
+			'%d',
+			'%d',
+			'%d',
 			'%d',
 			'%s',
 			'%d',
@@ -752,6 +901,26 @@ class LCCL_DE_Spectacles_Dashboard {
 	private static function present_list_row( array $row ) {
 		$grades = LCCL_DE_Spectacles_Form::grades();
 
+		$status = ! empty( $row['status'] ) ? $row['status'] : '';
+		if ( '' === $status ) {
+			if ( ! empty( $row['payment_processed'] ) ) {
+				$status = 'payment_processed';
+			} elseif ( ! empty( $row['payment_pending'] ) ) {
+				$status = 'payment_pending';
+			} elseif ( ! empty( $row['spectacles_ready'] ) ) {
+				$status = 'spectacles_ready';
+			} elseif ( ! empty( $row['spectacles_issued'] ) ) {
+				$status = 'spectacles_issued';
+			}
+		}
+
+		$status_labels = array(
+			'payment_processed' => __( 'Payment Processed', 'lccl-de' ),
+			'payment_pending'   => __( 'Payment Pending', 'lccl-de' ),
+			'spectacles_ready'  => __( 'Spectacles Ready', 'lccl-de' ),
+			'spectacles_issued' => __( 'Spectacles Issued', 'lccl-de' ),
+		);
+
 		return array(
 			'id'               => (int) $row['id'],
 			'child_first_name' => $row['child_first_name'],
@@ -766,6 +935,11 @@ class LCCL_DE_Spectacles_Dashboard {
 			'grade_label'      => isset( $grades[ $row['grade'] ] ) ? $grades[ $row['grade'] ] : $row['grade'],
 			'comments'          => isset( $row['comments'] ) ? $row['comments'] : '',
 			'eligibility'       => isset( $row['eligibility'] ) ? $row['eligibility'] : null,
+			'status'            => $status ? $status : null,
+			'status_label'      => isset( $status_labels[ $status ] ) ? $status_labels[ $status ] : '',
+			'payment_pending'   => ! empty( $row['payment_pending'] ) ? 1 : 0,
+			'payment_processed' => ! empty( $row['payment_processed'] ) ? 1 : 0,
+			'spectacles_ready'  => ! empty( $row['spectacles_ready'] ) ? 1 : 0,
 			'spectacles_issued' => ! empty( $row['spectacles_issued'] ) ? 1 : 0,
 			'created_at'        => $row['created_at'],
 			'created_label'    => mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $row['created_at'] ),
@@ -827,6 +1001,9 @@ class LCCL_DE_Spectacles_Dashboard {
 			'consent'                  => (int) $row['consent'],
 			'comments'                 => isset( $row['comments'] ) ? $row['comments'] : '',
 			'eligibility'              => isset( $row['eligibility'] ) ? $row['eligibility'] : null,
+			'payment_pending'          => ! empty( $row['payment_pending'] ) ? 1 : 0,
+			'payment_processed'        => ! empty( $row['payment_processed'] ) ? 1 : 0,
+			'spectacles_ready'         => ! empty( $row['spectacles_ready'] ) ? 1 : 0,
 			'spectacles_issued'        => ! empty( $row['spectacles_issued'] ) ? 1 : 0,
 			'updated_at'               => $updated,
 			'updated_label'            => $updated ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $updated ) : '',

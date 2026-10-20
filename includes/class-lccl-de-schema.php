@@ -15,7 +15,7 @@ class LCCL_DE_Schema {
 	/**
 	 * Current schema version. Bump this when the table definition changes.
 	 */
-	const VERSION = 20;
+	const VERSION = 23;
 
 	/**
 	 * Option that stores the installed schema version.
@@ -337,6 +337,10 @@ class LCCL_DE_Schema {
 			ip_address varchar(45) DEFAULT NULL,
 			comments text,
 			eligibility varchar(32) DEFAULT NULL,
+			status varchar(32) DEFAULT NULL,
+			payment_pending tinyint(1) NOT NULL DEFAULT 0,
+			payment_processed tinyint(1) NOT NULL DEFAULT 0,
+			spectacles_ready tinyint(1) NOT NULL DEFAULT 0,
 			spectacles_issued tinyint(1) NOT NULL DEFAULT 0,
 			created_at datetime NOT NULL,
 			updated_at datetime DEFAULT NULL,
@@ -350,6 +354,10 @@ class LCCL_DE_Schema {
 			KEY phone (phone),
 			KEY email (email),
 			KEY eligibility (eligibility),
+			KEY status (status),
+			KEY payment_pending (payment_pending),
+			KEY payment_processed (payment_processed),
+			KEY spectacles_ready (spectacles_ready),
 			KEY spectacles_issued (spectacles_issued),
 			UNIQUE KEY letter_token (letter_token)
 		) {$charset};";
@@ -361,9 +369,38 @@ class LCCL_DE_Schema {
 			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN eligibility varchar(32) DEFAULT NULL AFTER comments, ADD INDEX eligibility (eligibility)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		}
 
+		$has_status = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'status' ) );
+		if ( empty( $has_status ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN status varchar(32) DEFAULT NULL AFTER eligibility, ADD INDEX status (status)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( "UPDATE {$spectacles} SET status = 'payment_processed' WHERE payment_processed = 1 AND (status IS NULL OR status = '')" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( "UPDATE {$spectacles} SET status = 'payment_pending' WHERE payment_pending = 1 AND (status IS NULL OR status = '')" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( "UPDATE {$spectacles} SET status = 'spectacles_ready' WHERE spectacles_ready = 1 AND (status IS NULL OR status = '')" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( "UPDATE {$spectacles} SET status = 'spectacles_issued' WHERE spectacles_issued = 1 AND (status IS NULL OR status = '')" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
+
+		$has_payment_pending   = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'payment_pending' ) );
+		$has_payment_processed = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'payment_processed' ) );
+		$has_spectacles_ready  = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'spectacles_ready' ) );
 		$has_spectacles_issued = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'spectacles_issued' ) );
-		if ( empty( $has_spectacles_issued ) ) {
-			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN spectacles_issued tinyint(1) NOT NULL DEFAULT 0 AFTER eligibility, ADD INDEX spectacles_issued (spectacles_issued)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+
+		if ( empty( $has_payment_pending ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN payment_pending tinyint(1) NOT NULL DEFAULT 0 AFTER eligibility, ADD INDEX payment_pending (payment_pending)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
+
+		if ( empty( $has_payment_processed ) && ! empty( $has_spectacles_issued ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} CHANGE COLUMN spectacles_issued payment_processed tinyint(1) NOT NULL DEFAULT 0" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD INDEX payment_processed (payment_processed)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		} elseif ( empty( $has_payment_processed ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN payment_processed tinyint(1) NOT NULL DEFAULT 0 AFTER payment_pending, ADD INDEX payment_processed (payment_processed)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
+
+		if ( empty( $has_spectacles_ready ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN spectacles_ready tinyint(1) NOT NULL DEFAULT 0 AFTER payment_processed, ADD INDEX spectacles_ready (spectacles_ready)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+		}
+
+		$has_new_spectacles_issued = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM {$spectacles} LIKE %s", 'spectacles_issued' ) );
+		if ( empty( $has_new_spectacles_issued ) ) {
+			$wpdb->query( "ALTER TABLE {$spectacles} ADD COLUMN spectacles_issued tinyint(1) NOT NULL DEFAULT 0 AFTER spectacles_ready, ADD INDEX spectacles_issued (spectacles_issued)" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 		}
 
 		$payments     = self::payments_table();

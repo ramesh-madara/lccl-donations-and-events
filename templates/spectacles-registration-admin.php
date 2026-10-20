@@ -161,11 +161,13 @@ if ( $can_view && $user instanceof WP_User ) {
 				</select>
 			</div>
 			<div class="lccl-bda__field">
-				<label class="lccl-bda__label" for="lccl-sra-spectacles-issued"><?php esc_html_e( 'Spectacles Issued', 'lccl-de' ); ?></label>
-				<select class="lccl-bda__select" id="lccl-sra-spectacles-issued" name="spectacles_issued">
-					<option value=""><?php esc_html_e( 'All', 'lccl-de' ); ?></option>
-					<option value="yes"><?php esc_html_e( 'Issued (Yes)', 'lccl-de' ); ?></option>
-					<option value="no"><?php esc_html_e( 'Not Issued (No)', 'lccl-de' ); ?></option>
+				<label class="lccl-bda__label" for="lccl-sra-status"><?php esc_html_e( 'Status', 'lccl-de' ); ?></label>
+				<select class="lccl-bda__select" id="lccl-sra-status" name="status">
+					<option value=""><?php esc_html_e( 'All statuses', 'lccl-de' ); ?></option>
+					<option value="payment_processed"><?php esc_html_e( 'Payment Processed', 'lccl-de' ); ?></option>
+					<option value="payment_pending"><?php esc_html_e( 'Payment Pending', 'lccl-de' ); ?></option>
+					<option value="spectacles_ready"><?php esc_html_e( 'Spectacles Ready', 'lccl-de' ); ?></option>
+					<option value="spectacles_issued"><?php esc_html_e( 'Spectacles Issued', 'lccl-de' ); ?></option>
 				</select>
 			</div>
 			<div class="lccl-bda__field">
@@ -176,20 +178,14 @@ if ( $can_view && $user instanceof WP_User ) {
 					<option value="no_comment"><?php esc_html_e( 'Without comments (Pending)', 'lccl-de' ); ?></option>
 				</select>
 			</div>
-			<div class="lccl-bda__field lccl-bda__field--clear" style="flex-direction:row; align-items:flex-end; gap:16px;">
-				<div style="display:flex; flex-direction:column; margin-top:auto;">
-					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
-					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="clear-filters" style="height: 48px; font-size: 16px;">
-						<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'CLEAR FILTERS', 'lccl-de' ); ?></span>
-					</button>
-				</div>
-				<div style="display:flex; flex-direction:column; margin-top:auto;">
-					<span class="lccl-bda__label" aria-hidden="true">&nbsp;</span>
-					<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="export-pdf" style="height: 48px; font-size: 16px;">
-						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px; vertical-align:middle; display:inline-block;"><path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-						<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'EXPORT PDF', 'lccl-de' ); ?></span>
-					</button>
-				</div>
+			<div class="lccl-bda__field lccl-bda__field--clear" style="grid-column: 1 / -1; display: flex; flex-direction: row; justify-content: flex-end; align-items: center; gap: 16px; margin-top: 8px;">
+				<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="clear-filters" style="height: 48px; font-size: 16px; padding: 0 24px;">
+					<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'CLEAR FILTERS', 'lccl-de' ); ?></span>
+				</button>
+				<button class="lccl-bda__action lccl-bda__action--save" type="button" data-action="export-pdf" style="height: 48px; font-size: 16px; padding: 0 24px;">
+					<svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style="margin-right:6px; vertical-align:middle; display:inline-block;"><path d="M12 3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7 11l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 21h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+					<span style="vertical-align:middle; display:inline-block;"><?php esc_html_e( 'EXPORT PDF', 'lccl-de' ); ?></span>
+				</button>
 			</div>
 		</form>
 
