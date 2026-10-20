@@ -238,7 +238,19 @@ class LCCL_DE_Membership_Form {
 		$first_name       = sanitize_text_field( isset( $raw['first_name'] ) ? $raw['first_name'] : '' );
 		$last_name        = sanitize_text_field( isset( $raw['last_name'] ) ? $raw['last_name'] : '' );
 		$email            = sanitize_email( isset( $raw['email'] ) ? $raw['email'] : '' );
-		$phone            = sanitize_text_field( isset( $raw['phone'] ) ? $raw['phone'] : '' );
+		$phone_code       = sanitize_text_field( isset( $raw['phone_country_code'] ) ? $raw['phone_country_code'] : '' );
+		$raw_phone        = sanitize_text_field( isset( $raw['phone'] ) ? $raw['phone'] : '' );
+		$phone            = '';
+		if ( '' !== $raw_phone ) {
+			if ( 0 === strpos( $raw_phone, '+' ) ) {
+				$phone = $raw_phone;
+			} elseif ( '' !== $phone_code ) {
+				$clean_digits = ltrim( preg_replace( '/[^\d]/', '', $raw_phone ), '0' );
+				$phone        = $phone_code . ' ' . ( $clean_digits ?: $raw_phone );
+			} else {
+				$phone = $raw_phone;
+			}
+		}
 		$membership_type  = sanitize_key( isset( $raw['membership_type'] ) ? $raw['membership_type'] : '' );
 		$family_count_raw = sanitize_text_field( isset( $raw['family_count'] ) ? $raw['family_count'] : '2' );
 		$family_count     = max( 2, min( 5, (int) $family_count_raw ) );

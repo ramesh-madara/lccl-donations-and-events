@@ -185,6 +185,24 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 					</div>
 				</div>
 
+				<?php
+				$selected_country_code = $val( 'phone_country_code' );
+				if ( '' === $selected_country_code ) {
+					$selected_country_code = '+94';
+				}
+
+				$country_options = LCCL_DE_Countries::get_all();
+
+				$initial_country_code = 'LK';
+				$initial_country_name = __( 'Sri Lanka (+94)', 'lccl-de' );
+				foreach ( $country_options as $c ) {
+					if ( $c['dial'] === $selected_country_code ) {
+						$initial_country_code = $c['code'];
+						$initial_country_name = $c['name'];
+						break;
+					}
+				}
+				?>
 				<div class="lccl-df__pair">
 					<div class="lccl-bdf__field">
 						<label class="lccl-bdf__label" for="lccl-mf-email">
@@ -206,17 +224,46 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 						<label class="lccl-bdf__label" for="lccl-mf-phone">
 							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
 						</label>
-						<input
-							class="lccl-bdf__input"
-							type="tel"
-							id="lccl-mf-phone"
-							name="phone"
-							value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
-							placeholder="<?php esc_attr_e( '+94714822283', 'lccl-de' ); ?>"
-							inputmode="tel"
-							autocomplete="tel"
-							maxlength="12"
-						>
+						<div class="lccl-df__phone-row">
+							<div class="lccl-df__phone-code-wrap">
+								<div class="lccl-df__phone-code-display" id="lccl-mf-phone-code-display" aria-hidden="true" title="<?php echo esc_attr( $initial_country_name ); ?>">
+									<span class="lccl-df__phone-code-text"><?php
+									$display_text = '' !== $selected_country_code
+										? $initial_country_code . ' (' . $selected_country_code . ')'
+										: $initial_country_code;
+									echo esc_html( $display_text );
+								?></span>
+									<svg class="lccl-df__phone-code-arrow" viewBox="0 0 20 20" fill="currentColor" width="12" height="12" aria-hidden="true" focusable="false">
+										<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+									</svg>
+								</div>
+								<select
+									name="phone_country_code"
+									id="lccl-mf-phone-code"
+									class="lccl-df__phone-code-select"
+									aria-label="<?php esc_attr_e( 'Country calling code', 'lccl-de' ); ?>"
+								>
+									<?php foreach ( $country_options as $c ) : ?>
+										<option
+											value="<?php echo esc_attr( $c['dial'] ); ?>"
+											data-country="<?php echo esc_attr( $c['code'] ); ?>"
+											<?php selected( $selected_country_code, $c['dial'] ); ?>
+										><?php echo esc_html( $c['name'] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+							<input
+								class="lccl-bdf__input lccl-df__phone-number"
+								type="tel"
+								id="lccl-mf-phone"
+								name="phone"
+								value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
+								placeholder="<?php esc_attr_e( '712345678', 'lccl-de' ); ?>"
+								inputmode="tel"
+								autocomplete="tel-national"
+								maxlength="20"
+							>
+						</div>
 					</div>
 				</div>
 			</div>
