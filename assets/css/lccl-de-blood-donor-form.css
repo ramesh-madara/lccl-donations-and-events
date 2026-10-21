@@ -1776,6 +1776,12 @@ input#lccl-mf-phone::placeholder {
 		height: 36px;
 		min-height: 36px;
 	}
+
+	.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-wrap,
+	.lccl-bdf.lccl-bdf--donation button.lccl-df__phone-code-display {
+		height: 36px !important;
+		min-height: 36px !important;
+	}
 }
 
 .lccl-bdf.lccl-bdf--membership {
@@ -2083,6 +2089,12 @@ input#lccl-mf-phone::placeholder {
 	.lccl-bdf.lccl-bdf--membership select.lccl-bdf__select {
 		height: 36px;
 		min-height: 36px;
+	}
+
+	.lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-wrap,
+	.lccl-bdf.lccl-bdf--membership button.lccl-df__phone-code-display {
+		height: 36px !important;
+		min-height: 36px !important;
 	}
 }
 
@@ -2673,6 +2685,12 @@ input#lccl-mf-phone::placeholder {
 	.lccl-bdf.lccl-bdf--sponsorship input.lccl-bdf__input {
 		height: 36px;
 		min-height: 36px;
+	}
+
+	.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap,
+	.lccl-bdf.lccl-bdf--sponsorship button.lccl-df__phone-code-display {
+		height: 36px !important;
+		min-height: 36px !important;
 	}
 }
 
