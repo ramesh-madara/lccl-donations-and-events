@@ -12,46 +12,43 @@
  * @var string|null $payment_notice  Payment notice/error string.
  */
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-$val = static function ( $key ) use ( $values ) {
-	return isset( $values[ $key ] ) ? $values[ $key ] : '';
+$val = static function ($key) use ($values) {
+	return isset($values[$key]) ? $values[$key] : '';
 };
 
-$type  = $val( 'membership_type' );
-$count = $val( 'family_count' );
+$type = $val('membership_type');
+$count = $val('family_count');
 $count = '' !== $count ? $count : '2';
 
 $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 ?>
 <div class="lccl-bdf lccl-bdf--membership">
 	<div class="lccl-membership-layout">
-		<form
-			class="lccl-bdf__form lccl-membership__form"
-			method="post"
-			action="<?php echo esc_url( get_permalink() ); ?>"
-			data-rate="<?php echo esc_attr( (string) $fees['rate'] ); ?>"
-			data-principal-usd="<?php echo esc_attr( (string) $fees['principal_usd'] ); ?>"
-			data-family-usd="<?php echo esc_attr( (string) $fees['family_usd'] ); ?>"
-			data-district="<?php echo esc_attr( (string) $fees['district_unit_lkr'] ); ?>"
-			data-club="<?php echo esc_attr( (string) $fees['club_lkr'] ); ?>"
-			novalidate
-		>
-			<?php wp_nonce_field( LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD ); ?>
+		<form class="lccl-bdf__form lccl-membership__form" method="post"
+			action="<?php echo esc_url(get_permalink()); ?>"
+			data-rate="<?php echo esc_attr((string) $fees['rate']); ?>"
+			data-principal-usd="<?php echo esc_attr((string) $fees['principal_usd']); ?>"
+			data-family-usd="<?php echo esc_attr((string) $fees['family_usd']); ?>"
+			data-district="<?php echo esc_attr((string) $fees['district_unit_lkr']); ?>"
+			data-club="<?php echo esc_attr((string) $fees['club_lkr']); ?>" novalidate>
+			<?php wp_nonce_field(LCCL_DE_Membership_Form::NONCE_ACTION, LCCL_DE_Membership_Form::NONCE_FIELD); ?>
 
-			<?php if ( ! empty( $payment_success ) ) : ?>
+			<?php if (!empty($payment_success)): ?>
 				<p class="lccl-bdf__banner lccl-bdf__banner--success" role="status">
 					<span class="lccl-bdf__banner-mark" aria-hidden="true"></span>
 					<span class="lccl-bdf__banner-copy">
-						<strong class="lccl-bdf__banner-title"><?php esc_html_e( 'Membership Payment Received Successfully', 'lccl-de' ); ?></strong>
+						<strong
+							class="lccl-bdf__banner-title"><?php esc_html_e('Membership Payment Received Successfully', 'lccl-de'); ?></strong>
 						<span class="lccl-bdf__banner-text">
 							<?php
 							printf(
 								/* translators: 1: member name, 2: amount formatted, 3: reference number */
-								esc_html__( 'Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Reference Number: %3$s', 'lccl-de' ),
-								'<strong>' . esc_html( $payment_success['member_name'] ) . '</strong>',
-								'<strong>' . esc_html( ( ! empty( $payment_success['currency'] ) ? $payment_success['currency'] : 'LKR' ) . ' ' . number_format( (float) $payment_success['amount'], 2 ) ) . '</strong>',
-								'<code>' . esc_html( ! empty( $payment_success['order_ref'] ) ? $payment_success['order_ref'] : $payment_success['receipt'] ) . '</code>'
+								esc_html__('Thank you, %1$s. Your annual membership fee payment of %2$s has been received successfully. Reference Number: %3$s', 'lccl-de'),
+								'<strong>' . esc_html($payment_success['member_name']) . '</strong>',
+								'<strong>' . esc_html((!empty($payment_success['currency']) ? $payment_success['currency'] : 'LKR') . ' ' . number_format((float) $payment_success['amount'], 2)) . '</strong>',
+								'<code>' . esc_html(!empty($payment_success['order_ref']) ? $payment_success['order_ref'] : $payment_success['receipt']) . '</code>'
 							);
 							?>
 						</span>
@@ -59,371 +56,361 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 				</p>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $payment_notice ) ) : ?>
+			<?php if (!empty($payment_notice)): ?>
 				<p class="lccl-bdf__banner lccl-bdf__banner--error" role="alert">
-					<?php echo esc_html( $payment_notice ); ?>
+					<?php echo esc_html($payment_notice); ?>
 				</p>
 			<?php endif; ?>
 
-			<?php if ( ! empty( $errors ) ) : ?>
+			<?php if (!empty($errors)): ?>
 				<div class="lccl-mf__notice lccl-mf__notice--error" role="alert">
-					<?php foreach ( $errors as $err ) : ?>
-						<p><?php echo esc_html( $err ); ?></p>
+					<?php foreach ($errors as $err): ?>
+						<p><?php echo esc_html($err); ?></p>
 					<?php endforeach; ?>
 				</div>
 			<?php endif; ?>
 
 			<header class="lccl-bdf__header">
-				<?php if ( '' !== $atts['title'] ) : ?>
-					<h2 class="lccl-bdf__title"><?php echo esc_html( $atts['title'] ); ?></h2>
+				<?php if ('' !== $atts['title']): ?>
+					<h2 class="lccl-bdf__title"><?php echo esc_html($atts['title']); ?></h2>
 				<?php endif; ?>
-				<?php if ( '' !== $atts['intro'] ) : ?>
-					<p class="lccl-bdf__intro"><?php echo esc_html( $atts['intro'] ); ?></p>
+				<?php if ('' !== $atts['intro']): ?>
+					<p class="lccl-bdf__intro"><?php echo esc_html($atts['intro']); ?></p>
 				<?php endif; ?>
 				<p class="lccl-bdf__required-note">
 					<?php
 					printf(
 						/* translators: %s: required field asterisk. */
-						esc_html__( 'Fields marked with an %s are required', 'lccl-de' ),
+						esc_html__('Fields marked with an %s are required', 'lccl-de'),
 						'<span class="lccl-bdf__req">*</span>'
 					);
 					?>
 				</p>
 			</header>
 
-		<div class="lccl-mf">
-			<div class="lccl-mf__section">
-				<h3 class="lccl-mf__section-title"><?php esc_html_e( 'Membership Type', 'lccl-de' ); ?></h3>
-				<div class="lccl-bdf__field lccl-mf__field--first">
-					<label class="lccl-bdf__label" for="lccl-mf-type">
-						<?php esc_html_e( 'Select Membership Type', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-					</label>
-					<select class="lccl-bdf__select" id="lccl-mf-type" name="membership_type" required>
-						<option value=""><?php esc_html_e( 'Select membership type', 'lccl-de' ); ?></option>
-						<?php foreach ( LCCL_DE_Membership_Form::types() as $key => $label ) : ?>
-							<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $type, $key ); ?>>
-								<?php echo esc_html( $label ); ?>
-							</option>
-						<?php endforeach; ?>
-					</select>
-				</div>
-
-				<div class="lccl-mf__family" data-lccl-family<?php echo 'family' === $type ? '' : ' hidden'; ?>>
+			<div class="lccl-mf">
+				<div class="lccl-mf__section">
+					<h3 class="lccl-mf__section-title"><?php esc_html_e('Membership Type', 'lccl-de'); ?></h3>
 					<div class="lccl-bdf__field lccl-mf__field--first">
-						<label class="lccl-bdf__label" for="lccl-mf-count">
-							<?php esc_html_e( 'Number of Family Members (Including Main Member)', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
+						<label class="lccl-bdf__label" for="lccl-mf-type">
+							<?php esc_html_e('Select Membership Type', 'lccl-de'); ?> <span
+								class="lccl-bdf__req">*</span>
 						</label>
-						<select class="lccl-bdf__select" id="lccl-mf-count" name="family_count">
-							<?php foreach ( LCCL_DE_Membership_Form::family_counts() as $key => $label ) : ?>
-								<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $count, $key ); ?>>
-									<?php echo esc_html( $label ); ?>
+						<select class="lccl-bdf__select" id="lccl-mf-type" name="membership_type" required>
+							<option value=""><?php esc_html_e('Select membership type', 'lccl-de'); ?></option>
+							<?php foreach (LCCL_DE_Membership_Form::types() as $key => $label): ?>
+								<option value="<?php echo esc_attr($key); ?>" <?php selected($type, $key); ?>>
+									<?php echo esc_html($label); ?>
 								</option>
 							<?php endforeach; ?>
 						</select>
 					</div>
-					<p class="lccl-mf__note">
-						<?php esc_html_e( 'The main member is responsible for the payment of the annual membership fees for all family members included in the membership.', 'lccl-de' ); ?>
-					</p>
-				</div>
 
-				<div class="lccl-mf__outstanding" style="margin-top: 8px;" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-mf-outstanding-amount">
-							<?php esc_html_e( 'Outstanding Payment Amount (LKR)', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-						</label>
-						<input
-							class="lccl-bdf__input"
-							type="number"
-							step="0.01"
-							min="1"
-							id="lccl-mf-outstanding-amount"
-							name="outstanding_amount"
-							value="<?php echo esc_attr( $val( 'outstanding_amount' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'e.g. 5000.00', 'lccl-de' ); ?>"
-						>
+					<div class="lccl-mf__family" data-lccl-family<?php echo 'family' === $type ? '' : ' hidden'; ?>>
+						<div class="lccl-bdf__field lccl-mf__field--first">
+							<label class="lccl-bdf__label" for="lccl-mf-count">
+								<?php esc_html_e('Number of Family Members (Including Main Member)', 'lccl-de'); ?>
+								<span class="lccl-bdf__req">*</span>
+							</label>
+							<select class="lccl-bdf__select" id="lccl-mf-count" name="family_count">
+								<?php foreach (LCCL_DE_Membership_Form::family_counts() as $key => $label): ?>
+									<option value="<?php echo esc_attr($key); ?>" <?php selected($count, $key); ?>>
+										<?php echo esc_html($label); ?>
+									</option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+						<p class="lccl-mf__note">
+							<?php esc_html_e('The main member is responsible for the payment of the annual membership fees for all family members included in the membership.', 'lccl-de'); ?>
+						</p>
 					</div>
-					<p class="lccl-mf__note">
-						<?php esc_html_e( 'Please enter the outstanding payment amount as communicated by the club.', 'lccl-de' ); ?>
-					</p>
-				</div>
-			</div>
 
-			<div class="lccl-mf__section">
-				<h3 class="lccl-mf__section-title"><?php esc_html_e( 'Member Information', 'lccl-de' ); ?></h3>
-				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field lccl-mf__field--first">
-						<label class="lccl-bdf__label" for="lccl-mf-first-name">
-							<?php esc_html_e( 'First Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-						</label>
-						<input
-							class="lccl-bdf__input"
-							type="text"
-							id="lccl-mf-first-name"
-							name="first_name"
-							value="<?php echo esc_attr( $val( 'first_name' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'Saman', 'lccl-de' ); ?>"
-							autocomplete="given-name"
-							maxlength="100"
-							required
-						>
-					</div>
-					<div class="lccl-bdf__field lccl-mf__field--first">
-						<label class="lccl-bdf__label" for="lccl-mf-last-name">
-							<?php esc_html_e( 'Last Name', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-						</label>
-						<input
-							class="lccl-bdf__input"
-							type="text"
-							id="lccl-mf-last-name"
-							name="last_name"
-							value="<?php echo esc_attr( $val( 'last_name' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'Perera', 'lccl-de' ); ?>"
-							autocomplete="family-name"
-							maxlength="100"
-							required
-						>
+					<div class="lccl-mf__outstanding" style="margin-top: 8px;" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
+						<div class="lccl-bdf__field">
+							<label class="lccl-bdf__label" for="lccl-mf-outstanding-amount">
+								<?php esc_html_e('Outstanding Payment Amount (LKR)', 'lccl-de'); ?> <span
+									class="lccl-bdf__req">*</span>
+							</label>
+							<input class="lccl-bdf__input" type="number" step="0.01" min="1"
+								id="lccl-mf-outstanding-amount" name="outstanding_amount"
+								value="<?php echo esc_attr($val('outstanding_amount')); ?>"
+								placeholder="<?php esc_attr_e('e.g. 5000.00', 'lccl-de'); ?>">
+						</div>
+						<p class="lccl-mf__note">
+							<?php esc_html_e('Please enter the outstanding payment amount as communicated by the club.', 'lccl-de'); ?>
+						</p>
 					</div>
 				</div>
 
-				<?php
-				$selected_country_code = $val( 'phone_country_code' );
-				if ( '' === $selected_country_code ) {
-					$selected_country_code = '+94';
-				}
+				<div class="lccl-mf__section">
+					<h3 class="lccl-mf__section-title"><?php esc_html_e('Member Information', 'lccl-de'); ?></h3>
+					<div class="lccl-df__pair">
+						<div class="lccl-bdf__field lccl-mf__field--first">
+							<label class="lccl-bdf__label" for="lccl-mf-first-name">
+								<?php esc_html_e('First Name', 'lccl-de'); ?> <span class="lccl-bdf__req">*</span>
+							</label>
+							<input class="lccl-bdf__input" type="text" id="lccl-mf-first-name" name="first_name"
+								value="<?php echo esc_attr($val('first_name')); ?>"
+								placeholder="<?php esc_attr_e('Saman', 'lccl-de'); ?>" autocomplete="given-name"
+								maxlength="100" required>
+						</div>
+						<div class="lccl-bdf__field lccl-mf__field--first">
+							<label class="lccl-bdf__label" for="lccl-mf-last-name">
+								<?php esc_html_e('Last Name', 'lccl-de'); ?> <span class="lccl-bdf__req">*</span>
+							</label>
+							<input class="lccl-bdf__input" type="text" id="lccl-mf-last-name" name="last_name"
+								value="<?php echo esc_attr($val('last_name')); ?>"
+								placeholder="<?php esc_attr_e('Perera', 'lccl-de'); ?>" autocomplete="family-name"
+								maxlength="100" required>
+						</div>
+					</div>
 
-				$country_options = LCCL_DE_Countries::get_all();
-
-				$initial_country_code = 'LK';
-				$initial_country_name = __( 'Sri Lanka (+94)', 'lccl-de' );
-				$initial_flag         = LCCL_DE_Countries::flag_emoji( 'LK' );
-				foreach ( $country_options as $c ) {
-					if ( $c['dial'] === $selected_country_code ) {
-						$initial_country_code = $c['code'];
-						$initial_country_name = $c['name'];
-						$initial_flag         = isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c['code'] );
-						break;
+					<?php
+					$selected_country_code = $val('phone_country_code');
+					if ('' === $selected_country_code) {
+						$selected_country_code = '+94';
 					}
-				}
-				?>
-				<div class="lccl-df__pair">
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-mf-email">
-							<?php esc_html_e( 'Email', 'lccl-de' ); ?> <span class="lccl-bdf__req">*</span>
-						</label>
-						<input
-							class="lccl-bdf__input"
-							type="email"
-							id="lccl-mf-email"
-							name="email"
-							value="<?php echo esc_attr( $val( 'email' ) ); ?>"
-							placeholder="<?php esc_attr_e( 'name@example.com', 'lccl-de' ); ?>"
-							autocomplete="email"
-							maxlength="191"
-							required
-						>
-					</div>
-					<div class="lccl-bdf__field">
-						<label class="lccl-bdf__label" for="lccl-mf-phone">
-							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
-						</label>
-						<div class="lccl-df__phone-row">
-							<div class="lccl-df__phone-code-wrap" id="lccl-mf-phone-code-wrap" data-flags-url="<?php echo esc_url( LCCL_DE_URL . 'assets/img/w40/' ); ?>">
-								<button
-									type="button"
-									class="lccl-df__phone-code-display"
-									id="lccl-mf-phone-code-display"
-									aria-haspopup="listbox"
-									aria-expanded="false"
-									aria-controls="lccl-mf-phone-dropdown"
-									aria-label="<?php esc_attr_e( 'Select country calling code', 'lccl-de' ); ?>"
-									title="<?php echo esc_attr( $initial_country_name ); ?>"
-								>
-									<span class="lccl-df__phone-flag" id="lccl-mf-phone-flag">
-										<?php if ( 2 === strlen( $initial_country_code ) && '+' !== $initial_country_code ) : ?>
-											<img class="lccl-df__flag-img" src="<?php echo esc_url( LCCL_DE_Countries::flag_url( $initial_country_code ) ); ?>" width="20" height="14" alt="<?php echo esc_attr( $initial_country_code ); ?>" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
-											<span class="lccl-df__flag-emoji" style="display:none;"><?php echo esc_html( $initial_flag ); ?></span>
-										<?php else : ?>
-											<span class="lccl-df__flag-emoji"><?php echo esc_html( $initial_flag ); ?></span>
-										<?php endif; ?>
-									</span>
-									<span class="lccl-df__phone-code-text"><?php echo esc_html( '' !== $selected_country_code ? $selected_country_code : '+94' ); ?></span>
-									<svg class="lccl-df__phone-code-arrow" viewBox="0 0 20 20" fill="currentColor" width="10" height="10" aria-hidden="true" focusable="false">
-										<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-									</svg>
-								</button>
-								<div class="lccl-df__phone-dropdown" id="lccl-mf-phone-dropdown" role="listbox" aria-label="<?php esc_attr_e( 'Country calling codes', 'lccl-de' ); ?>" hidden>
-									<div class="lccl-df__phone-dropdown-search">
-										<input type="text" class="lccl-df__phone-search-input" id="lccl-mf-phone-search" placeholder="<?php esc_attr_e( 'Search country or code...', 'lccl-de' ); ?>" autocomplete="off">
+
+					$country_options = LCCL_DE_Countries::get_all();
+
+					$initial_country_code = 'LK';
+					$initial_country_name = __('Sri Lanka (+94)', 'lccl-de');
+					$initial_flag = LCCL_DE_Countries::flag_emoji('LK');
+					foreach ($country_options as $c) {
+						if ($c['dial'] === $selected_country_code) {
+							$initial_country_code = $c['code'];
+							$initial_country_name = $c['name'];
+							$initial_flag = isset($c['flag']) ? $c['flag'] : LCCL_DE_Countries::flag_emoji($c['code']);
+							break;
+						}
+					}
+					?>
+					<div class="lccl-df__pair">
+						<div class="lccl-bdf__field">
+							<label class="lccl-bdf__label" for="lccl-mf-email">
+								<?php esc_html_e('Email', 'lccl-de'); ?> <span class="lccl-bdf__req">*</span>
+							</label>
+							<input class="lccl-bdf__input" type="email" id="lccl-mf-email" name="email"
+								value="<?php echo esc_attr($val('email')); ?>"
+								placeholder="<?php esc_attr_e('name@example.com', 'lccl-de'); ?>" autocomplete="email"
+								maxlength="191" required>
+						</div>
+						<div class="lccl-bdf__field">
+							<label class="lccl-bdf__label" for="lccl-mf-phone">
+								<?php esc_html_e('Mobile / WhatsApp Number', 'lccl-de'); ?>
+							</label>
+							<div class="lccl-df__phone-row">
+								<div class="lccl-df__phone-code-wrap" id="lccl-mf-phone-code-wrap"
+									data-flags-url="<?php echo esc_url(LCCL_DE_URL . 'assets/img/w20/'); ?>">
+									<button type="button" class="lccl-df__phone-code-display"
+										id="lccl-mf-phone-code-display" aria-haspopup="listbox" aria-expanded="false"
+										aria-controls="lccl-mf-phone-dropdown"
+										aria-label="<?php esc_attr_e('Select country calling code', 'lccl-de'); ?>"
+										title="<?php echo esc_attr($initial_country_name); ?>">
+										<span class="lccl-df__phone-flag" id="lccl-mf-phone-flag">
+											<?php if (2 === strlen($initial_country_code) && '+' !== $initial_country_code): ?>
+												<img class="lccl-df__flag-img"
+													src="<?php echo esc_url(LCCL_DE_Countries::flag_url($initial_country_code)); ?>"
+													width="20" height="14"
+													alt="<?php echo esc_attr($initial_country_code); ?>"
+													onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
+												<span class="lccl-df__flag-emoji"
+													style="display:none;"><?php echo esc_html($initial_flag); ?></span>
+											<?php else: ?>
+												<span
+													class="lccl-df__flag-emoji"><?php echo esc_html($initial_flag); ?></span>
+											<?php endif; ?>
+										</span>
+										<span
+											class="lccl-df__phone-code-text"><?php echo esc_html('' !== $selected_country_code ? $selected_country_code : '+94'); ?></span>
+										<svg class="lccl-df__phone-code-arrow" viewBox="0 0 20 20" fill="currentColor"
+											width="10" height="10" aria-hidden="true" focusable="false">
+											<path fill-rule="evenodd"
+												d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+												clip-rule="evenodd" />
+										</svg>
+									</button>
+									<div class="lccl-df__phone-dropdown" id="lccl-mf-phone-dropdown" role="listbox"
+										aria-label="<?php esc_attr_e('Country calling codes', 'lccl-de'); ?>" hidden>
+										<div class="lccl-df__phone-dropdown-search">
+											<input type="text" class="lccl-df__phone-search-input"
+												id="lccl-mf-phone-search"
+												placeholder="<?php esc_attr_e('Search country or code...', 'lccl-de'); ?>"
+												autocomplete="off">
+										</div>
+										<ul class="lccl-df__phone-dropdown-list" id="lccl-mf-phone-list">
+											<?php foreach ($country_options as $c):
+												$c_code = $c['code'];
+												$c_dial = $c['dial'];
+												$c_flag_url = isset($c['flag_url']) ? $c['flag_url'] : LCCL_DE_Countries::flag_url($c_code);
+												$c_emoji = isset($c['flag']) ? $c['flag'] : LCCL_DE_Countries::flag_emoji($c_code);
+												$c_clean = isset($c['clean_name']) ? $c['clean_name'] : trim((string) preg_replace('/\s*\(\+[^)]*\)$/', '', $c['name']));
+												$is_selected = $c_dial === $selected_country_code;
+												?>
+												<li role="option"
+													class="lccl-df__phone-option<?php echo $is_selected ? ' is-selected' : ''; ?>"
+													data-value="<?php echo esc_attr($c_dial); ?>"
+													data-country="<?php echo esc_attr($c_code); ?>"
+													data-name="<?php echo esc_attr($c_clean); ?>"
+													data-flag-url="<?php echo esc_url($c_flag_url); ?>"
+													data-flag-emoji="<?php echo esc_attr($c_emoji); ?>"
+													aria-selected="<?php echo $is_selected ? 'true' : 'false'; ?>">
+													<?php if ($c_flag_url): ?>
+														<img class="lccl-df__flag-img"
+															src="<?php echo esc_url($c_flag_url); ?>" width="20" height="14"
+															alt="<?php echo esc_attr($c_code); ?>" loading="lazy"
+															onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
+														<span class="lccl-df__flag-emoji"
+															style="display:none;"><?php echo esc_html($c_emoji); ?></span>
+													<?php else: ?>
+														<span
+															class="lccl-df__flag-emoji"><?php echo esc_html($c_emoji); ?></span>
+													<?php endif; ?>
+													<?php if ('' !== $c_dial): ?>
+														<span
+															class="lccl-df__phone-option-code">(<?php echo esc_html($c_dial); ?>)</span>
+													<?php endif; ?>
+													<span
+														class="lccl-df__phone-option-name"><?php echo esc_html($c_clean); ?></span>
+												</li>
+											<?php endforeach; ?>
+										</ul>
 									</div>
-									<ul class="lccl-df__phone-dropdown-list" id="lccl-mf-phone-list">
-										<?php foreach ( $country_options as $c ) :
-											$c_code      = $c['code'];
-											$c_dial      = $c['dial'];
-											$c_flag_url  = isset( $c['flag_url'] ) ? $c['flag_url'] : LCCL_DE_Countries::flag_url( $c_code );
-											$c_emoji     = isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c_code );
-											$c_clean     = isset( $c['clean_name'] ) ? $c['clean_name'] : trim( (string) preg_replace( '/\s*\(\+[^)]*\)$/', '', $c['name'] ) );
-											$is_selected = $c_dial === $selected_country_code;
-										?>
-											<li
-												role="option"
-												class="lccl-df__phone-option<?php echo $is_selected ? ' is-selected' : ''; ?>"
-												data-value="<?php echo esc_attr( $c_dial ); ?>"
-												data-country="<?php echo esc_attr( $c_code ); ?>"
-												data-name="<?php echo esc_attr( $c_clean ); ?>"
-												data-flag-url="<?php echo esc_url( $c_flag_url ); ?>"
-												data-flag-emoji="<?php echo esc_attr( $c_emoji ); ?>"
-												aria-selected="<?php echo $is_selected ? 'true' : 'false'; ?>"
-											>
-												<?php if ( $c_flag_url ) : ?>
-													<img class="lccl-df__flag-img" src="<?php echo esc_url( $c_flag_url ); ?>" width="20" height="14" alt="<?php echo esc_attr( $c_code ); ?>" loading="lazy" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
-													<span class="lccl-df__flag-emoji" style="display:none;"><?php echo esc_html( $c_emoji ); ?></span>
-												<?php else : ?>
-													<span class="lccl-df__flag-emoji"><?php echo esc_html( $c_emoji ); ?></span>
-												<?php endif; ?>
-												<?php if ( '' !== $c_dial ) : ?>
-													<span class="lccl-df__phone-option-code">(<?php echo esc_html( $c_dial ); ?>)</span>
-												<?php endif; ?>
-												<span class="lccl-df__phone-option-name"><?php echo esc_html( $c_clean ); ?></span>
-											</li>
+									<select name="phone_country_code" id="lccl-mf-phone-code"
+										class="lccl-df__phone-code-select"
+										aria-label="<?php esc_attr_e('Country calling code', 'lccl-de'); ?>"
+										style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"
+										tabindex="-1">
+										<?php foreach ($country_options as $c): ?>
+											<option value="<?php echo esc_attr($c['dial']); ?>"
+												data-country="<?php echo esc_attr($c['code']); ?>"
+												data-clean-name="<?php echo esc_attr(isset($c['clean_name']) ? $c['clean_name'] : $c['name']); ?>"
+												data-flag="<?php echo esc_attr(isset($c['flag']) ? $c['flag'] : LCCL_DE_Countries::flag_emoji($c['code'])); ?>"
+												<?php selected($selected_country_code, $c['dial']); ?>>
+												<?php echo esc_html(isset($c['option_label']) ? $c['option_label'] : $c['name']); ?>
+											</option>
 										<?php endforeach; ?>
-									</ul>
+									</select>
 								</div>
-								<select
-									name="phone_country_code"
-									id="lccl-mf-phone-code"
-									class="lccl-df__phone-code-select"
-									aria-label="<?php esc_attr_e( 'Country calling code', 'lccl-de' ); ?>"
-									style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"
-									tabindex="-1"
-								>
-									<?php foreach ( $country_options as $c ) : ?>
-										<option
-											value="<?php echo esc_attr( $c['dial'] ); ?>"
-											data-country="<?php echo esc_attr( $c['code'] ); ?>"
-											data-clean-name="<?php echo esc_attr( isset( $c['clean_name'] ) ? $c['clean_name'] : $c['name'] ); ?>"
-											data-flag="<?php echo esc_attr( isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c['code'] ) ); ?>"
-											<?php selected( $selected_country_code, $c['dial'] ); ?>
-										><?php echo esc_html( isset( $c['option_label'] ) ? $c['option_label'] : $c['name'] ); ?></option>
-									<?php endforeach; ?>
-								</select>
+								<input class="lccl-bdf__input lccl-df__phone-number" type="tel" id="lccl-mf-phone"
+									name="phone" value="<?php echo esc_attr($val('phone')); ?>"
+									placeholder="<?php esc_attr_e('712345678', 'lccl-de'); ?>" inputmode="tel"
+									autocomplete="tel-national" maxlength="20">
 							</div>
-							<input
-								class="lccl-bdf__input lccl-df__phone-number"
-								type="tel"
-								id="lccl-mf-phone"
-								name="phone"
-								value="<?php echo esc_attr( $val( 'phone' ) ); ?>"
-								placeholder="<?php esc_attr_e( '712345678', 'lccl-de' ); ?>"
-								inputmode="tel"
-								autocomplete="tel-national"
-								maxlength="20"
-							>
 						</div>
 					</div>
 				</div>
-			</div>
 
-			<div class="lccl-mf__section">
-				<h3 class="lccl-mf__section-title"><?php esc_html_e( 'Fee Calculation', 'lccl-de' ); ?></h3>
-				<div class="lccl-mf__info">
-					<p>
-						<strong><?php esc_html_e( 'Exchange Rate:', 'lccl-de' ); ?></strong>
-						<?php
-						printf(
-							/* translators: %s: formatted LKR rate */
-							esc_html__( '1 USD = LKR %s', 'lccl-de' ),
-							'<span data-lccl-rate>' . esc_html( LCCL_DE_Membership_Form::format_rate( $fees['rate'] ) ) . '</span>'
-						);
-						?>
-					</p>
-					<p>
-						<strong><?php esc_html_e( 'Household Membership Fee:', 'lccl-de' ); ?></strong>
-						<?php echo esc_html( 'USD ' . number_format( (float) $fees['principal_usd'], 2 ) ); ?>
-					</p>
-					<p>
-						<strong><?php esc_html_e( 'Family Membership Fee:', 'lccl-de' ); ?></strong>
-						<?php printf( esc_html__( 'USD %s per additional family member', 'lccl-de' ), esc_html( number_format( (float) $fees['family_usd'], 2 ) ) ); ?>
-					</p>
-				</div>
-
-				<table class="lccl-mf__table" data-lccl-breakdown<?php echo empty( $type ) ? ' hidden' : ''; ?>>
-					<tbody>
-						<tr>
-							<td><?php esc_html_e( 'Household Membership Payment', 'lccl-de' ); ?></td>
-							<td data-lccl-intl><?php echo esc_html( LCCL_DE_Membership_Form::format_lkr( $fees['international_main'] ) ); ?></td>
-						</tr>
-						<tr data-lccl-family-line<?php echo ! empty( $fees['is_family'] ) ? '' : ' hidden'; ?>>
-							<td><?php esc_html_e( 'Family Membership Payment', 'lccl-de' ); ?></td>
-							<td data-lccl-family-fee><?php echo esc_html( LCCL_DE_Membership_Form::format_lkr( $fees['family_fee'] ) ); ?></td>
-						</tr>
-						<tr>
-							<td><?php esc_html_e( 'District Payment', 'lccl-de' ); ?></td>
-							<td data-lccl-district><?php echo esc_html( LCCL_DE_Membership_Form::format_lkr( $fees['district'] ) ); ?></td>
-						</tr>
-						<tr>
-							<td><?php esc_html_e( 'Club Payment', 'lccl-de' ); ?></td>
-							<td data-lccl-club><?php echo esc_html( LCCL_DE_Membership_Form::format_lkr( $fees['club'] ) ); ?></td>
-						</tr>
-					</tbody>
-				</table>
-
-				<div class="lccl-df__total">
-					<div class="lccl-df__total-label">
-						<span><?php esc_html_e( 'Total Amount', 'lccl-de' ); ?></span>
-					</div>
-					<div class="lccl-mf__total-value" aria-live="polite">
-						<span><?php esc_html_e( 'LKR', 'lccl-de' ); ?></span>
-						<span data-lccl-total><?php echo esc_html( empty( $type ) ? '0.00' : number_format( (float) $fees['total'], 2, '.', ',' ) ); ?></span>
-					</div>
-				</div>
-				<?php if ( ! $gateway_configured ) : ?>
-					<div class="lccl-mf__notice lccl-mf__notice--warning" style="margin-top: 24px;">
-						<p><?php esc_html_e( 'Online payment is currently being configured. Please check back shortly or contact the club administrator.', 'lccl-de' ); ?></p>
-					</div>
-				<?php endif; ?>
-
-				<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 24px;">
-					<label class="lccl-bdf__checkbox" style="align-items: flex-start;">
-						<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required>
-						<span class="lccl-bdf__check" aria-hidden="true"></span>
-						<span style="font-size: 14px; color: #475569;">
+				<div class="lccl-mf__section">
+					<h3 class="lccl-mf__section-title"><?php esc_html_e('Fee Calculation', 'lccl-de'); ?></h3>
+					<div class="lccl-mf__info">
+						<p>
+							<strong><?php esc_html_e('Exchange Rate:', 'lccl-de'); ?></strong>
 							<?php
 							printf(
-								/* translators: %s is the link to terms */
-								__( 'I have read and agree to the <a href="%s" target="_blank" class="lccl-terms-link">Terms & Conditions</a>.', 'lccl-de' ),
-								'https://www.colomboleads.org/online-payment-terms-conditions/'
+								/* translators: %s: formatted LKR rate */
+								esc_html__('1 USD = LKR %s', 'lccl-de'),
+								'<span data-lccl-rate>' . esc_html(LCCL_DE_Membership_Form::format_rate($fees['rate'])) . '</span>'
 							);
 							?>
-						</span>
-					</label>
+						</p>
+						<p>
+							<strong><?php esc_html_e('Household Membership Fee:', 'lccl-de'); ?></strong>
+							<?php echo esc_html('USD ' . number_format((float) $fees['principal_usd'], 2)); ?>
+						</p>
+						<p>
+							<strong><?php esc_html_e('Family Membership Fee:', 'lccl-de'); ?></strong>
+							<?php printf(esc_html__('USD %s per additional family member', 'lccl-de'), esc_html(number_format((float) $fees['family_usd'], 2))); ?>
+						</p>
+					</div>
+
+					<table class="lccl-mf__table" data-lccl-breakdown<?php echo empty($type) ? ' hidden' : ''; ?>>
+						<tbody>
+							<tr>
+								<td><?php esc_html_e('Household Membership Payment', 'lccl-de'); ?></td>
+								<td data-lccl-intl>
+									<?php echo esc_html(LCCL_DE_Membership_Form::format_lkr($fees['international_main'])); ?>
+								</td>
+							</tr>
+							<tr data-lccl-family-line<?php echo !empty($fees['is_family']) ? '' : ' hidden'; ?>>
+								<td><?php esc_html_e('Family Membership Payment', 'lccl-de'); ?></td>
+								<td data-lccl-family-fee>
+									<?php echo esc_html(LCCL_DE_Membership_Form::format_lkr($fees['family_fee'])); ?>
+								</td>
+							</tr>
+							<tr>
+								<td><?php esc_html_e('District Payment', 'lccl-de'); ?></td>
+								<td data-lccl-district>
+									<?php echo esc_html(LCCL_DE_Membership_Form::format_lkr($fees['district'])); ?>
+								</td>
+							</tr>
+							<tr>
+								<td><?php esc_html_e('Club Payment', 'lccl-de'); ?></td>
+								<td data-lccl-club>
+									<?php echo esc_html(LCCL_DE_Membership_Form::format_lkr($fees['club'])); ?></td>
+							</tr>
+						</tbody>
+					</table>
+
+					<div class="lccl-df__total">
+						<div class="lccl-df__total-label">
+							<span><?php esc_html_e('Total Amount', 'lccl-de'); ?></span>
+						</div>
+						<div class="lccl-mf__total-value" aria-live="polite">
+							<span><?php esc_html_e('LKR', 'lccl-de'); ?></span>
+							<span
+								data-lccl-total><?php echo esc_html(empty($type) ? '0.00' : number_format((float) $fees['total'], 2, '.', ',')); ?></span>
+						</div>
+					</div>
+					<?php if (!$gateway_configured): ?>
+						<div class="lccl-mf__notice lccl-mf__notice--warning" style="margin-top: 24px;">
+							<p><?php esc_html_e('Online payment is currently being configured. Please check back shortly or contact the club administrator.', 'lccl-de'); ?>
+							</p>
+						</div>
+					<?php endif; ?>
+
+					<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 24px;">
+						<label class="lccl-bdf__checkbox" style="align-items: flex-start;">
+							<input type="checkbox" name="accept_terms" class="lccl-accept-terms" required>
+							<span class="lccl-bdf__check" aria-hidden="true"></span>
+							<span style="font-size: 14px; color: #475569;">
+								<?php
+								printf(
+									/* translators: %s is the link to terms */
+									__('I have read and agree to the <a href="%s" target="_blank" class="lccl-terms-link">Terms & Conditions</a>.', 'lccl-de'),
+									'https://www.colomboleads.org/online-payment-terms-conditions/'
+								);
+								?>
+							</span>
+						</label>
+					</div>
 				</div>
+
+				<button class="lccl-bdf__submit lccl-df__submit lccl-mf__pay-btn" type="submit" id="lccl-mf-submit-btn"
+					disabled aria-disabled="true"
+					data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>">
+					<span class="lccl-mf__pay-label"
+						data-loading-text="<?php esc_attr_e('Redirecting to payment...', 'lccl-de'); ?>"><?php esc_html_e('Pay Membership Fee', 'lccl-de'); ?></span>
+					<span class="lccl-mf__pay-spinner" aria-hidden="true" hidden></span>
+				</button>
+
+				<p class="lccl-mf__secure-note">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+						aria-hidden="true">
+						<rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+						<path d="M7 11V7a5 5 0 0 1 10 0v4" />
+					</svg>
+					<?php esc_html_e('Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de'); ?>
+				</p>
 			</div>
-
-			<button
-				class="lccl-bdf__submit lccl-df__submit lccl-mf__pay-btn"
-				type="submit"
-				id="lccl-mf-submit-btn"
-				disabled aria-disabled="true"
-				data-gateway-configured="<?php echo $gateway_configured ? '1' : '0'; ?>"
-			>
-				<span class="lccl-mf__pay-label" data-loading-text="<?php esc_attr_e( 'Redirecting to payment...', 'lccl-de' ); ?>"><?php esc_html_e( 'Pay Membership Fee', 'lccl-de' ); ?></span>
-				<span class="lccl-mf__pay-spinner" aria-hidden="true" hidden></span>
-			</button>
-
-			<p class="lccl-mf__secure-note">
-				<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-				<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
-			</p>
-		</div>
 		</form>
 
 		<div class="lccl-membership__image-panel">
-			<img
-				class="lccl-membership__image"
-				src="<?php echo esc_url( function_exists( 'content_url' ) ? content_url( '/uploads/2026/09/membership-1.jpg' ) : 'https://www.colomboleads.org/wp-content/uploads/2026/09/membership-1.jpg' ); ?>"
-				alt="<?php esc_attr_e( 'Annual Membership Fee - Lions Club of Colombo LEADS', 'lccl-de' ); ?>"
-				loading="lazy"
-			>
+			<img class="lccl-membership__image"
+				src="<?php echo esc_url(function_exists('content_url') ? content_url('/uploads/2026/09/membership-1.jpg') : 'https://www.colomboleads.org/wp-content/uploads/2026/09/membership-1.jpg'); ?>"
+				alt="<?php esc_attr_e('Annual Membership Fee - Lions Club of Colombo LEADS', 'lccl-de'); ?>"
+				loading="lazy">
 		</div>
 	</div>
 </div>
