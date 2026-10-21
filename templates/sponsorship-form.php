@@ -413,10 +413,12 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 
 				$initial_country_code = 'LK';
 				$initial_country_name = __( 'Sri Lanka (+94)', 'lccl-de' );
+				$initial_flag         = LCCL_DE_Countries::flag_emoji( 'LK' );
 				foreach ( $country_options as $c ) {
 					if ( $c['dial'] === $selected_country_code ) {
 						$initial_country_code = $c['code'];
 						$initial_country_name = $c['name'];
+						$initial_flag         = isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c['code'] );
 						break;
 					}
 				}
@@ -500,30 +502,95 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
 						</label>
 						<div class="lccl-df__phone-row">
-							<div class="lccl-df__phone-code-wrap">
-								<div class="lccl-df__phone-code-display" id="lccl-ps-phone-code-display" aria-hidden="true" title="<?php echo esc_attr( $initial_country_name ); ?>">
-									<span class="lccl-df__phone-code-text"><?php
-									$display_text = '' !== $selected_country_code
-										? $initial_country_code . ' (' . $selected_country_code . ')'
-										: $initial_country_code;
-									echo esc_html( $display_text );
-								?></span>
-									<svg class="lccl-df__phone-code-arrow" viewBox="0 0 20 20" fill="currentColor" width="12" height="12" aria-hidden="true" focusable="false">
-										<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+							<div class="lccl-df__phone-code-wrap" id="lccl-ps-phone-code-wrap"
+								data-flags-url="<?php echo esc_url( LCCL_DE_URL . 'assets/img/w20/' ); ?>">
+								<button type="button" class="lccl-df__phone-code-display"
+									id="lccl-ps-phone-code-display" aria-haspopup="listbox" aria-expanded="false"
+									aria-controls="lccl-ps-phone-dropdown"
+									aria-label="<?php esc_attr_e( 'Select country calling code', 'lccl-de' ); ?>"
+									title="<?php echo esc_attr( $initial_country_name ); ?>">
+									<span class="lccl-df__phone-flag" id="lccl-ps-phone-flag">
+										<?php if ( 2 === strlen( $initial_country_code ) && '+' !== $initial_country_code ) : ?>
+											<img class="lccl-df__flag-img"
+												src="<?php echo esc_url( LCCL_DE_Countries::flag_url( $initial_country_code ) ); ?>"
+												width="20" height="14"
+												alt="<?php echo esc_attr( $initial_country_code ); ?>"
+												onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
+											<span class="lccl-df__flag-emoji"
+												style="display:none;"><?php echo esc_html( $initial_flag ); ?></span>
+										<?php else : ?>
+											<span
+												class="lccl-df__flag-emoji"><?php echo esc_html( $initial_flag ); ?></span>
+										<?php endif; ?>
+									</span>
+									<span
+										class="lccl-df__phone-code-text"><?php echo esc_html( '' !== $selected_country_code ? $selected_country_code : '+94' ); ?></span>
+									<svg class="lccl-df__phone-code-arrow" viewBox="0 0 20 20" fill="currentColor"
+										width="10" height="10" aria-hidden="true" focusable="false">
+										<path fill-rule="evenodd"
+											d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+											clip-rule="evenodd" />
 									</svg>
+								</button>
+								<div class="lccl-df__phone-dropdown" id="lccl-ps-phone-dropdown" role="listbox"
+									aria-label="<?php esc_attr_e( 'Country calling codes', 'lccl-de' ); ?>" hidden>
+									<div class="lccl-df__phone-dropdown-search">
+										<input type="text" class="lccl-df__phone-search-input"
+											id="lccl-ps-phone-search"
+											placeholder="<?php esc_attr_e( 'Search country or code...', 'lccl-de' ); ?>"
+											autocomplete="off">
+									</div>
+									<ul class="lccl-df__phone-dropdown-list" id="lccl-ps-phone-list">
+										<?php foreach ( $country_options as $c ) :
+											$c_code     = $c['code'];
+											$c_dial     = $c['dial'];
+											$c_flag_url = isset( $c['flag_url'] ) ? $c['flag_url'] : LCCL_DE_Countries::flag_url( $c_code );
+											$c_emoji    = isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c_code );
+											$c_clean    = isset( $c['clean_name'] ) ? $c['clean_name'] : trim( (string) preg_replace( '/\s*\(\+[^)]*\)$/', '', $c['name'] ) );
+											$is_selected = $c_dial === $selected_country_code;
+										?>
+											<li role="option"
+												class="lccl-df__phone-option<?php echo $is_selected ? ' is-selected' : ''; ?>"
+												data-value="<?php echo esc_attr( $c_dial ); ?>"
+												data-country="<?php echo esc_attr( $c_code ); ?>"
+												data-name="<?php echo esc_attr( $c_clean ); ?>"
+												data-flag-url="<?php echo esc_url( $c_flag_url ); ?>"
+												data-flag-emoji="<?php echo esc_attr( $c_emoji ); ?>"
+												aria-selected="<?php echo $is_selected ? 'true' : 'false'; ?>">
+												<?php if ( $c_flag_url ) : ?>
+													<img class="lccl-df__flag-img"
+														src="<?php echo esc_url( $c_flag_url ); ?>" width="20" height="14"
+														alt="<?php echo esc_attr( $c_code ); ?>" loading="lazy"
+														onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
+													<span class="lccl-df__flag-emoji"
+														style="display:none;"><?php echo esc_html( $c_emoji ); ?></span>
+												<?php else : ?>
+													<span
+														class="lccl-df__flag-emoji"><?php echo esc_html( $c_emoji ); ?></span>
+												<?php endif; ?>
+												<?php if ( '' !== $c_dial ) : ?>
+													<span
+														class="lccl-df__phone-option-code">(<?php echo esc_html( $c_dial ); ?>)</span>
+												<?php endif; ?>
+												<span
+													class="lccl-df__phone-option-name"><?php echo esc_html( $c_clean ); ?></span>
+											</li>
+										<?php endforeach; ?>
+									</ul>
 								</div>
-								<select
-									name="phone_country_code"
-									id="lccl-ps-phone-code"
+								<select name="phone_country_code" id="lccl-ps-phone-code"
 									class="lccl-df__phone-code-select"
 									aria-label="<?php esc_attr_e( 'Country calling code', 'lccl-de' ); ?>"
-								>
+									style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none;"
+									tabindex="-1">
 									<?php foreach ( $country_options as $c ) : ?>
-										<option
-											value="<?php echo esc_attr( $c['dial'] ); ?>"
+										<option value="<?php echo esc_attr( $c['dial'] ); ?>"
 											data-country="<?php echo esc_attr( $c['code'] ); ?>"
-											<?php selected( $selected_country_code, $c['dial'] ); ?>
-										><?php echo esc_html( $c['name'] ); ?></option>
+											data-clean-name="<?php echo esc_attr( isset( $c['clean_name'] ) ? $c['clean_name'] : $c['name'] ); ?>"
+											data-flag="<?php echo esc_attr( isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c['code'] ) ); ?>"
+											<?php selected( $selected_country_code, $c['dial'] ); ?>>
+											<?php echo esc_html( isset( $c['option_label'] ) ? $c['option_label'] : $c['name'] ); ?>
+										</option>
 									<?php endforeach; ?>
 								</select>
 							</div>
