@@ -13,13 +13,37 @@ if ( ! isset( $design ) ) {
 if ( ! isset( $scroll ) ) {
 	$scroll = get_option('lccl_de_testimonial_scroll', 'scroll-snap');
 }
+if ( ! isset( $title ) ) {
+	$title = __( 'TESTIMONIALS', 'lccl-de' );
+}
+if ( ! isset( $subtitle ) ) {
+	$subtitle = __( 'Words of Appreciation and Recognition', 'lccl-de' );
+}
 ?>
 
 <div class="lccl-testimonials-wrapper lccl-<?php echo esc_attr( $design ); ?> lccl-<?php echo esc_attr( $scroll ); ?>">
+	<?php if ( ! empty( $title ) || ! empty( $subtitle ) ) : ?>
+		<div class="lccl-testimonials-header">
+			<?php if ( ! empty( $title ) ) : ?>
+				<h2 class="lccl-t-section-title"><?php echo esc_html( $title ); ?></h2>
+			<?php endif; ?>
+			<?php if ( ! empty( $subtitle ) ) : ?>
+				<p class="lccl-t-section-subtitle"><?php echo esc_html( $subtitle ); ?></p>
+			<?php endif; ?>
+		</div>
+	<?php endif; ?>
+
 	<div class="lccl-testimonials-carousel" data-lccl-testimonials>
 		<div class="lccl-testimonials-track">
-			<?php foreach ( $active_testimonials as $t ) : ?>
-				<div class="lccl-testimonial-slide">
+			<?php foreach ( $active_testimonials as $index => $t ) : ?>
+				<?php
+				$formatted_date = '';
+				if ( ! empty( $t['date'] ) ) {
+					$time = strtotime( $t['date'] );
+					$formatted_date = $time ? ( function_exists( 'wp_date' ) ? wp_date( 'jS F Y', $time ) : date( 'jS F Y', $time ) ) : $t['date'];
+				}
+				?>
+				<div class="lccl-testimonial-slide" data-index="<?php echo esc_attr( $index ); ?>">
 					<div class="lccl-testimonial-card-inner">
 						<?php if ( $design === 'design-1' ) : ?>
 							<!-- Design 1: Gold Header & Centered -->
@@ -46,7 +70,10 @@ if ( ! isset( $scroll ) ) {
 							</div>
 
 							<div class="lccl-t-content">
-								<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>">
+								<?php if ( ! empty( $formatted_date ) ) : ?>
+									<div class="lccl-t-date"><?php echo esc_html( $formatted_date ); ?></div>
+								<?php endif; ?>
+								<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>" data-author-date="<?php echo esc_attr( $formatted_date ); ?>">
 									<p class="lccl-t-quote-text" data-full-quote="<?php echo esc_attr( $t['quote'] ); ?>">
 										<?php echo nl2br( esc_html( $t['quote'] ) ); ?>
 									</p>
@@ -59,7 +86,10 @@ if ( ! isset( $scroll ) ) {
 							<div class="lccl-t-quote-icon">“</div>
 							
 							<div class="lccl-t-content">
-								<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>">
+								<?php if ( ! empty( $formatted_date ) ) : ?>
+									<div class="lccl-t-date"><?php echo esc_html( $formatted_date ); ?></div>
+								<?php endif; ?>
+								<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>" data-author-date="<?php echo esc_attr( $formatted_date ); ?>">
 									<p class="lccl-t-quote-text" data-full-quote="<?php echo esc_attr( $t['quote'] ); ?>">
 										<?php echo nl2br( esc_html( $t['quote'] ) ); ?>
 									</p>
@@ -101,6 +131,14 @@ if ( ! isset( $scroll ) ) {
 			<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
 		</button>
 	</div>
+
+	<?php if ( ! empty( $active_testimonials ) && count( $active_testimonials ) > 1 ) : ?>
+		<div class="lccl-testimonials-dots" role="tablist" aria-label="<?php esc_attr_e( 'Testimonials pagination', 'lccl-de' ); ?>">
+			<?php foreach ( $active_testimonials as $index => $t ) : ?>
+				<button type="button" class="lccl-t-dot<?php echo $index === 0 ? ' is-active' : ''; ?>" data-slide-index="<?php echo esc_attr( $index ); ?>" role="tab" aria-label="<?php echo esc_attr( sprintf( __( 'Testimonial %d', 'lccl-de' ), $index + 1 ) ); ?>"></button>
+			<?php endforeach; ?>
+		</div>
+	<?php endif; ?>
 </div>
 
 <!-- Testimonial Modal -->

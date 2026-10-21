@@ -8,14 +8,16 @@
 		const $target = $context ? $context.find('.lccl-testimonials-carousel') : $('.lccl-testimonials-carousel');
 		$target.each(function() {
 			const $carousel = $(this);
+			const $wrapper = $carousel.closest('.lccl-testimonials-wrapper');
 			const $track = $carousel.find('.lccl-testimonials-track');
 			let $slides = $track.find('.lccl-testimonial-slide');
+			const $dots = $wrapper.find('.lccl-t-dot');
 			
 			// Don't initialize if empty or already initialized
 			if ($slides.length === 0 || $carousel.hasClass('is-initialized')) return;
 			$carousel.addClass('is-initialized');
 
-			const scrollMode = $carousel.closest('.lccl-testimonials-wrapper').attr('class').match(/lccl-scroll-([a-z-]+)/);
+			const scrollMode = $wrapper.attr('class') ? $wrapper.attr('class').match(/lccl-scroll-([a-z-]+)/) : null;
 			const mode = scrollMode ? scrollMode[1] : 'snap';
 			
 			// If constant or manual, we don't resize cards via JS classes.
@@ -27,7 +29,6 @@
 
 			// If manual, just setup buttons and native scroll
 			if (mode === 'manual') {
-				// Add drag to scroll script using vanilla JS
 				let isDown = false;
 				let startX;
 				let scrollLeft;
@@ -53,30 +54,66 @@
 				$carousel.find('.lccl-t-nav-prev').on('click', function() {
 					$track.animate({ scrollLeft: '-=' + $slides.first().outerWidth() }, 300);
 				});
-				return; // No auto-scroll
+
+				$dots.on('click', function(e) {
+					e.preventDefault();
+					const targetIdx = parseInt($(this).attr('data-slide-index'), 10);
+					const $targetSlide = $track.find('.lccl-testimonial-slide[data-index="' + targetIdx + '"]').first();
+					if ($targetSlide.length) {
+						const offset = $targetSlide.position().left + $track.scrollLeft() - ($track.width() - $targetSlide.outerWidth()) / 2;
+						$track.animate({ scrollLeft: Math.max(0, offset) }, 300);
+						$dots.removeClass('is-active');
+						$(this).addClass('is-active');
+					}
+				});
+				return; // No auto-scroll in manual
 			}
 
-			// If we have 3 or fewer slides, duplicate them so the infinite loop works seamlessly on desktop
-			if ($slides.length <= 3) {
+			// Auto-scroll (snap mode):
+			// Ensure we have enough slides for smooth looping and jumps (at least 8 slides in track)
+			const originalTotal = $dots.length || $slides.length;
+			while ($track.children('.lccl-testimonial-slide').length < 8) {
 				$track.append($slides.clone());
+			}
+			$slides = $track.find('.lccl-testimonial-slide');
+
+			// On desktop (3 items visible), prepend the last slide so testimonial 0 starts in the prominent center
+			if ($(window).width() >= 1024) {
+				$track.prepend($track.children('.lccl-testimonial-slide').last());
 				$slides = $track.find('.lccl-testimonial-slide');
 			}
 
 			let interval;
-			const delay = 3000;
+			let isTransitioning = false;
+			const delay = 3500;
 			const transitionSpeed = 600;
 
-			function updateCenterClass(isTransitioning = false) {
-				$slides.removeClass('is-center');
+			function updateCenterClass(isTransitioningNext = false, forcedActiveIndex = null) {
+				$slides.removeClass('is-center is-left is-right');
 				// During transition, the 'next' slides will become the visible ones.
-				const offset = isTransitioning ? 1 : 0;
+				const offset = isTransitioningNext ? 1 : 0;
 				if ($(window).width() >= 1024) {
+					$slides.eq(0 + offset).addClass('is-left');
 					$slides.eq(1 + offset).addClass('is-center');
+					$slides.eq(2 + offset).addClass('is-right');
 				} else if ($(window).width() >= 768) {
 					$slides.eq(offset).addClass('is-center');
 					$slides.eq(1 + offset).addClass('is-center');
 				} else {
 					$slides.eq(offset).addClass('is-center');
+				}
+
+				// Update active pagination dot
+				let activeIndex = forcedActiveIndex;
+				if (activeIndex === null || activeIndex === undefined) {
+					const centerIdx = $(window).width() >= 1024 ? (1 + offset) : offset;
+					const $centerSlide = $slides.eq(centerIdx);
+					activeIndex = $centerSlide.attr('data-index');
+				}
+
+				if (activeIndex !== undefined && activeIndex !== null) {
+					$dots.removeClass('is-active');
+					$dots.filter('[data-slide-index="' + activeIndex + '"]').addClass('is-active');
 				}
 			}
 
@@ -84,7 +121,9 @@
 			updateCenterClass();
 
 			function nextSlide() {
-				// Calculate width dynamically in case of resize
+				if (isTransitioning) return;
+				isTransitioning = true;
+
 				const slideWidth = $slides.first().outerWidth();
 				
 				// Pre-apply center class for the incoming center slide to trigger CSS transition
@@ -107,11 +146,97 @@
 					
 					// Re-cache slides
 					$slides = $track.find('.lccl-testimonial-slide');
+					isTransitioning = false;
 					
 					// Re-apply center class immediately without transition offset
 					updateCenterClass();
 				}, transitionSpeed);
 			}
+
+			function goToSlide(targetIdx) {
+				if (isTransitioning) return;
+
+				const centerPos = $(window).width() >= 1024 ? 1 : 0;
+				const currentIdx = parseInt($slides.eq(centerPos).attr('data-index'), 10);
+
+				if (isNaN(currentIdx) || targetIdx === currentIdx) return;
+
+				const totalUnique = originalTotal || 1;
+				const forwardDist = (targetIdx - currentIdx + totalUnique) % totalUnique;
+				const backwardDist = (currentIdx - targetIdx + totalUnique) % totalUnique;
+
+				stopCarousel();
+				const slideWidth = $slides.first().outerWidth();
+				isTransitioning = true;
+
+				if (forwardDist <= backwardDist) {
+					// Forward transition
+					updateCenterClass(false, targetIdx);
+					$slides.removeClass('is-center is-left is-right');
+					if ($(window).width() >= 1024) {
+						$slides.eq(0 + forwardDist).addClass('is-left');
+						$slides.eq(1 + forwardDist).addClass('is-center');
+						$slides.eq(2 + forwardDist).addClass('is-right');
+					} else {
+						$slides.eq(forwardDist).addClass('is-center');
+					}
+
+					$track.css({
+						'transition': 'transform ' + transitionSpeed + 'ms ease-in-out',
+						'transform': 'translateX(-' + (forwardDist * slideWidth) + 'px)'
+					});
+
+					setTimeout(function() {
+						$track.css({
+							'transition': 'none',
+							'transform': 'translateX(0)'
+						});
+						for (let i = 0; i < forwardDist; i++) {
+							$track.append($track.children('.lccl-testimonial-slide').first());
+						}
+						$slides = $track.find('.lccl-testimonial-slide');
+						isTransitioning = false;
+						updateCenterClass();
+						startCarousel();
+					}, transitionSpeed);
+				} else {
+					// Backward transition
+					for (let i = 0; i < backwardDist; i++) {
+						$track.prepend($track.children('.lccl-testimonial-slide').last());
+					}
+					$slides = $track.find('.lccl-testimonial-slide');
+
+					$track.css({
+						'transition': 'none',
+						'transform': 'translateX(-' + (backwardDist * slideWidth) + 'px)'
+					});
+					// Force reflow
+					$track[0].offsetHeight;
+
+					updateCenterClass(false, targetIdx);
+
+					$track.css({
+						'transition': 'transform ' + transitionSpeed + 'ms ease-in-out',
+						'transform': 'translateX(0)'
+					});
+
+					setTimeout(function() {
+						$track.css({
+							'transition': 'none'
+						});
+						isTransitioning = false;
+						updateCenterClass();
+						startCarousel();
+					}, transitionSpeed);
+				}
+			}
+
+			// Dot click handler
+			$dots.on('click', function(e) {
+				e.preventDefault();
+				const targetIdx = parseInt($(this).attr('data-slide-index'), 10);
+				goToSlide(targetIdx);
+			});
 
 			let isModalOpen = false;
 
@@ -128,9 +253,11 @@
 			// Start the auto-scroll
 			startCarousel();
 
-			// Pause on hover for better UX
+			// Pause on hover for better UX (both carousel and dots)
 			$carousel.on('mouseenter', stopCarousel);
 			$carousel.on('mouseleave', startCarousel);
+			$dots.on('mouseenter', stopCarousel);
+			$dots.on('mouseleave', startCarousel);
 			
 			// Custom events for modal
 			$carousel.on('pauseCarousel', function() {
@@ -175,6 +302,7 @@
 			const $container = $(this).closest('.lccl-t-quote-container');
 			const name = $container.data('author-name') || '';
 			const role = $container.data('author-role') || '';
+			const date = $container.data('author-date') || '';
 			const fullQuote = $(this).siblings('.lccl-t-quote-text').data('full-quote');
 			const formattedQuote = fullQuote.replace(/\n/g, '<br>');
 			const avatarHtml = $cardInner.find('.lccl-t-avatar-wrapper').html();
@@ -182,7 +310,10 @@
 			let modalHtml = '<div style="width: 88px; height: 88px; margin: 0 auto 15px auto;">' + avatarHtml + '</div>';
 			modalHtml += '<h4 class="lccl-t-name" style="margin-top:0; text-align:center;">' + name + '</h4>';
 			if (role) {
-				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:13px; font-weight:normal; margin-bottom:20px; color:#666; text-align:center;">' + role + '</h5>';
+				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:12.35px; font-weight:normal; margin-bottom:4px; color:#666; text-align:center;">' + role + '</h5>';
+			}
+			if (date) {
+				modalHtml += '<div class="lccl-t-date" style="font-size:12.35px; color:#666; margin-bottom:18px; text-align:center;">' + date + '</div>';
 			}
 			modalHtml += '<div class="lccl-t-modal-quote" style="margin-top: 15px; text-align:center;">' + formattedQuote + '</div>';
 			

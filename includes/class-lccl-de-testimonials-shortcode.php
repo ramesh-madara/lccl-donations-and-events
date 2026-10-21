@@ -24,6 +24,18 @@ class LCCL_DE_Testimonials_Shortcode {
 			return '';
 		}
 
+		$atts = shortcode_atts(
+			array(
+				'title'    => __( 'TESTIMONIALS', 'lccl-de' ),
+				'subtitle' => __( 'Words of Appreciation and Recognition', 'lccl-de' ),
+			),
+			$atts,
+			self::TAG
+		);
+
+		$title    = $atts['title'];
+		$subtitle = $atts['subtitle'];
+
 		wp_enqueue_style(
 			'lccl-de-testimonials',
 			LCCL_DE_URL . 'assets/css/lccl-de-testimonials.css',
@@ -56,7 +68,21 @@ class LCCL_DE_Testimonials_Shortcode {
 				'category'    => __( 'LCCL', 'lccl-de' ),
 				'description' => __( 'Displays an auto-scrolling carousel of active testimonials.', 'lccl-de' ),
 				'icon'        => 'icon-wpb-ui-separator',
-				'params'      => array(),
+				'params'      => array(
+					array(
+						'type'        => 'textfield',
+						'heading'     => __( 'Title', 'lccl-de' ),
+						'param_name'  => 'title',
+						'value'       => __( 'TESTIMONIALS', 'lccl-de' ),
+						'admin_label' => true,
+					),
+					array(
+						'type'       => 'textfield',
+						'heading'    => __( 'Subtitle', 'lccl-de' ),
+						'param_name' => 'subtitle',
+						'value'      => __( 'Words of Appreciation and Recognition', 'lccl-de' ),
+					),
+				),
 			)
 		);
 	}

@@ -19,7 +19,7 @@ Complete reference for all shortcodes provided by the **LCCL Donations and Event
 | `[lccl_our_projects_admin]` | Dashboard | Join Our Projects reviewer login & dashboard | *None* |
 | `[lccl_spectacles_admin]` | Dashboard | Free Spectacles reviewer login & dashboard | *None* |
 | `[lccl_payment_dashboard]` | Dashboard | Unified payments monitor dashboard (wp-admin accounts only) | *None* |
-| `[lccl_testimonials]` | UI Component | Auto-scrolling carousel of active testimonials | *None* |
+| `[lccl_testimonials]` | UI Component | Auto-scrolling carousel of active testimonials | `title`, `subtitle` |
 | `[lccl_hello]` | Utility | Scaffolding card to test plugin rendering | `title`, `message` |
 
 All shortcodes are also mapped as **WPBakery Page Builder** elements under the **LCCL** category.
@@ -209,14 +209,18 @@ Renders a dynamic, auto-scrolling carousel of active testimonials managed from t
 
 ```text
 [lccl_testimonials]
+[lccl_testimonials title="TESTIMONIALS" subtitle="Words of Appreciation and Recognition"]
 ```
 
-- **Attributes**: None.
+- **Attributes**:
+  - `title` *(string)*: Top section heading. Default: `"TESTIMONIALS"`. Pass `title=""` to hide.
+  - `subtitle` *(string)*: Explanatory subtitle below the title. Default: `"Words of Appreciation and Recognition"`. Pass `subtitle=""` to hide.
 - **Key Features**:
   - Automatically fetches and displays only "Active" testimonials.
+  - Aligned section header on top-left matching the site's typography.
   - Infinite auto-scrolling loop (pauses when hovering or when the read-more popup is open).
   - Truncates long testimonials and automatically adds a "Read more" popup modal.
-  - Card design (Gold Header vs Minimal Left) is globally controlled via **WP Admin → LCCL Programs → Testimonials**.
+  - Card design (Gold Top Banner vs Minimal Bordered) and scroll behavior (Snap Scroll vs Marquee) are globally configurable via **WP Admin → LCCL Programs → Testimonials**.
 
 ---
 

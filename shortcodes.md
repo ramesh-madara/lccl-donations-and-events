@@ -14,9 +14,12 @@ Complete reference for all shortcodes provided by the **LCCL Donations and Event
 | `[lccl_donation_form]` | Donation / Payment | General donation form with cause selection | `title`, `intro` |
 | `[lccl_membership_fee]` | Donation / Payment | Annual membership fee calculator & payment | `title`, `intro` |
 | `[lccl_project_sponsorship]` | Donation / Payment | Specific project sponsorship with cards & progress | `banner_title`, `banner_intro`, `title`, `intro` |
+| `[lccl_fundraiser_form]` | Donation / Payment | Fundraiser seat & table booking | `title`, `intro` |
 | `[lccl_blood_donation_admin]` | Dashboard | Blood donor reviewer login & data dashboard | *None* |
 | `[lccl_our_projects_admin]` | Dashboard | Join Our Projects reviewer login & dashboard | *None* |
 | `[lccl_spectacles_admin]` | Dashboard | Free Spectacles reviewer login & dashboard | *None* |
+| `[lccl_payment_dashboard]` | Dashboard | Unified payments monitor dashboard (wp-admin accounts only) | *None* |
+| `[lccl_testimonials]` | UI Component | Auto-scrolling carousel of active testimonials | `title`, `subtitle` |
 | `[lccl_hello]` | Utility | Scaffolding card to test plugin rendering | `title`, `message` |
 
 All shortcodes are also mapped as **WPBakery Page Builder** elements under the **LCCL** category.
@@ -82,7 +85,7 @@ Renders the community partnership and volunteer signup form. Submissions are sto
 ## 2. Public Contribution & Payment Forms
 
 ### `[lccl_donation_form]`
-Renders the public general donation form. Donors can select causes and contribution amounts.
+Renders the public general donation form with online card payment processed securely via Commercial Bank of Ceylon (CBC) Paycenter Web 4.0 (Bancstac).
 
 ```text
 [lccl_donation_form]
@@ -94,8 +97,10 @@ Renders the public general donation form. Donors can select causes and contribut
   - `intro` *(string)*: Subheading description. Default: Appreciation and guidance copy.
 - **Key Features**:
   - Quick-preset amount buttons: **1,000**, **5,000**, **10,000**, **25,000**, **50,000 LKR**, and **CUSTOM VALUE**.
-  - Cause checkboxes: Diabetes Awareness, Vision & Eye Care, Hunger Relief, Environment, Childhood Cancer, Youth, Disaster Relief, Humanitarian.
+  - Cause checkboxes: Where Most Needed, Diabetes Awareness, Vision & Eye Care, Hunger Relief, Environment, Childhood Cancer, Youth, Disaster Relief, Humanitarian.
   - Real-time client-side calculation and summary display.
+  - **Payment Gateway Integration**: Routes payments directly through the **Donations** credentials configured under **WP Admin → LCCL Programs → Payment Gateway → Donations**.
+  - **Return & Confirmation**: On successful payment, redirects back to the donation page with a top confirmation banner (showing donor name, formatted amount, and transaction receipt), updates the payment record in the database, and sends an automated donor email receipt.
 
 ---
 
@@ -141,6 +146,24 @@ Renders an interactive split-layout page with ongoing/upcoming project progress 
 
 ---
 
+### `[lccl_fundraiser_form]`
+Renders a fundraiser seat booking and table reservation form. 
+
+```text
+[lccl_fundraiser_form]
+[lccl_fundraiser_form title="Fundraiser Booking" intro="Reserve your seat today."]
+```
+
+- **Attributes**:
+  - `title` *(string)*: Form heading. Default: `"Fundraiser Seat Booking"`.
+  - `intro` *(string)*: Intro text. Default: Instructions.
+- **Key Features**:
+  - Dynamic Table and Ticket pricing calculations based on user selection.
+  - Calculates live total before checkout.
+  - (Currently a Concept UI implementation).
+
+---
+
 ## 3. Reviewer & Admin Dashboards
 
 These shortcodes render single-page frontend application (SPA) portals. They handle reviewer login, session management, searching, filtering, and record management via WordPress REST API (`lccl-de/v1/*`).
@@ -165,9 +188,43 @@ Reviewer portal for reviewing child spectacles applications.
 - **Default Page**: `/spectacles-admin/`
 - **Features**: Application list, school and district filters, school recommendation letter preview and secure download directly in the modal.
 
+### `[lccl_payment_dashboard]`
+Frontend payment monitoring dashboard for reviewing all payment routes (Donations, Sponsorships, and Memberships).
+- **Attributes**: None.
+- **Default Page**: `/payment-dashboard/`
+- **Access Control**: Strictly restricted to users who can access `wp-admin` (Administrators, Editors, etc.). Reviewer-only accounts are blocked.
+- **Features**:
+  - Independent frontend login card matching the reviewer portal design.
+  - Tabbed interface separating payment routes: *All Payments*, *Online Donations*, *Project Sponsorships*, and *Membership Fees*.
+  - Live KPI metric cards: Total Transactions, Total Collected (LKR), Paid / Approved, Declined / Failed, and Pending Checkout.
+  - Universal search and status filters with debounced AJAX/REST querying.
+  - Expandable technical drawer per transaction showing full metadata, bank receipts, response codes, custom donor/sponsor messages, and color-coded gateway JSON response.
+
 ---
 
-## 4. Developer / Test Utility
+## 4. UI Components
+
+### `[lccl_testimonials]`
+Renders a dynamic, auto-scrolling carousel of active testimonials managed from the WP Admin dashboard.
+
+```text
+[lccl_testimonials]
+[lccl_testimonials title="TESTIMONIALS" subtitle="Words of Appreciation and Recognition"]
+```
+
+- **Attributes**:
+  - `title` *(string)*: Top section heading. Default: `"TESTIMONIALS"`. Pass `title=""` to hide.
+  - `subtitle` *(string)*: Explanatory subtitle below the title. Default: `"Words of Appreciation and Recognition"`. Pass `subtitle=""` to hide.
+- **Key Features**:
+  - Automatically fetches and displays only "Active" testimonials.
+  - Aligned section header on top-left matching the site's typography.
+  - Infinite auto-scrolling loop (pauses when hovering or when the read-more popup is open).
+  - Truncates long testimonials and automatically adds a "Read more" popup modal.
+  - Card design (Gold Top Banner vs Minimal Bordered) and scroll behavior (Snap Scroll vs Marquee) are globally configurable via **WP Admin → LCCL Programs → Testimonials**.
+
+---
+
+## 5. Developer / Test Utility
 
 ### `[lccl_hello]`
 A lightweight scaffolding card used to verify that the plugin is active, styles are loading, and shortcodes render correctly.
