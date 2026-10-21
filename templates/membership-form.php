@@ -227,7 +227,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 							<?php esc_html_e( 'Mobile / WhatsApp Number', 'lccl-de' ); ?>
 						</label>
 						<div class="lccl-df__phone-row">
-							<div class="lccl-df__phone-code-wrap" id="lccl-mf-phone-code-wrap">
+							<div class="lccl-df__phone-code-wrap" id="lccl-mf-phone-code-wrap" data-flags-url="<?php echo esc_url( LCCL_DE_URL . 'assets/img/w40/' ); ?>">
 								<button
 									type="button"
 									class="lccl-df__phone-code-display"
@@ -240,7 +240,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 								>
 									<span class="lccl-df__phone-flag" id="lccl-mf-phone-flag">
 										<?php if ( 2 === strlen( $initial_country_code ) && '+' !== $initial_country_code ) : ?>
-											<img class="lccl-df__flag-img" src="https://flagcdn.com/w40/<?php echo esc_attr( strtolower( $initial_country_code ) ); ?>.png" width="20" height="14" alt="<?php echo esc_attr( $initial_country_code ); ?>" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
+											<img class="lccl-df__flag-img" src="<?php echo esc_url( LCCL_DE_Countries::flag_url( $initial_country_code ) ); ?>" width="20" height="14" alt="<?php echo esc_attr( $initial_country_code ); ?>" onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
 											<span class="lccl-df__flag-emoji" style="display:none;"><?php echo esc_html( $initial_flag ); ?></span>
 										<?php else : ?>
 											<span class="lccl-df__flag-emoji"><?php echo esc_html( $initial_flag ); ?></span>
@@ -259,7 +259,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 										<?php foreach ( $country_options as $c ) :
 											$c_code      = $c['code'];
 											$c_dial      = $c['dial'];
-											$c_flag_url  = ( 2 === strlen( $c_code ) && '+' !== $c_code ) ? 'https://flagcdn.com/w40/' . strtolower( $c_code ) . '.png' : '';
+											$c_flag_url  = isset( $c['flag_url'] ) ? $c['flag_url'] : LCCL_DE_Countries::flag_url( $c_code );
 											$c_emoji     = isset( $c['flag'] ) ? $c['flag'] : LCCL_DE_Countries::flag_emoji( $c_code );
 											$c_clean     = isset( $c['clean_name'] ) ? $c['clean_name'] : trim( (string) preg_replace( '/\s*\(\+[^)]*\)$/', '', $c['name'] ) );
 											$is_selected = $c_dial === $selected_country_code;
@@ -270,7 +270,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 												data-value="<?php echo esc_attr( $c_dial ); ?>"
 												data-country="<?php echo esc_attr( $c_code ); ?>"
 												data-name="<?php echo esc_attr( $c_clean ); ?>"
-												data-flag-url="<?php echo esc_attr( $c_flag_url ); ?>"
+												data-flag-url="<?php echo esc_url( $c_flag_url ); ?>"
 												data-flag-emoji="<?php echo esc_attr( $c_emoji ); ?>"
 												aria-selected="<?php echo $is_selected ? 'true' : 'false'; ?>"
 											>

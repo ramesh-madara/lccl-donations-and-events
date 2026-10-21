@@ -514,8 +514,8 @@
 								var opt = options[i];
 								var cCode = opt.getAttribute( 'data-country' ) || '';
 								var cFlag = opt.getAttribute( 'data-flag' ) || '';
-								var cName = opt.getAttribute( 'data-clean-name' ) || opt.textContent;
-								var cFlagUrl = ( 2 === cCode.length && '+' !== cCode ) ? 'https://flagcdn.com/w40/' + cCode.toLowerCase() + '.png' : '';
+								var flagsBase = ( phoneWrap && phoneWrap.getAttribute( 'data-flags-url' ) ) ? phoneWrap.getAttribute( 'data-flags-url' ) : '';
+								var cFlagUrl = ( 2 === cCode.length && '+' !== cCode && flagsBase ) ? flagsBase + cCode.toLowerCase() + '.png' : '';
 								selectCountry( optVal, cCode, cFlagUrl, cFlag, cName );
 							}
 							break;

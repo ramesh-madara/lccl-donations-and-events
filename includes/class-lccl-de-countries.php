@@ -260,6 +260,7 @@ class LCCL_DE_Countries {
 		foreach ( $list as &$item ) {
 			$flag               = self::flag_emoji( $item['code'] );
 			$item['flag']       = $flag;
+			$item['flag_url']   = self::flag_url( $item['code'] );
 			$clean              = trim( (string) preg_replace( '/\s*\(\+[^)]*\)$/', '', $item['name'] ) );
 			$item['clean_name'] = $clean;
 			if ( '' !== $item['dial'] ) {
@@ -273,6 +274,20 @@ class LCCL_DE_Countries {
 		self::$countries = $list;
 
 		return self::$countries;
+	}
+
+	/**
+	 * Get local flag PNG image URL by ISO-2 country code.
+	 *
+	 * @param string $code ISO 3166-1 alpha-2 code (e.g. 'LK', 'US').
+	 * @return string Full local URL to the flag PNG or empty string if invalid.
+	 */
+	public static function flag_url( $code ) {
+		$code = strtolower( trim( (string) $code ) );
+		if ( 2 !== strlen( $code ) || ! ctype_alpha( $code ) ) {
+			return '';
+		}
+		return LCCL_DE_URL . 'assets/img/w40/' . $code . '.png';
 	}
 
 	/**
