@@ -1322,16 +1322,156 @@
 
 .lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-wrap {
 	position: relative;
-	flex: 0 0 110px;
-	width: 110px;
-	min-width: 110px;
-	max-width: 110px;
+	flex: 0 0 86px;
+	width: 86px;
+	min-width: 86px;
+	max-width: 86px;
 	height: 40px;
 }
 
-.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-display,
-.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-display,
 .lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-display {
+	padding: 0 6px;
+	gap: 4px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.lccl-df__phone-flag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	line-height: 1;
+}
+
+.lccl-df__flag-img {
+	width: 20px;
+	height: 14px;
+	object-fit: cover;
+	border-radius: 2px;
+	box-shadow: 0 0 1px rgba(0, 0, 0, 0.4);
+	display: inline-block;
+	vertical-align: middle;
+	flex-shrink: 0;
+}
+
+.lccl-df__flag-emoji {
+	font-size: 16px;
+	line-height: 1;
+	display: inline-block;
+}
+
+.lccl-bdf.lccl-bdf--membership button.lccl-df__phone-code-display {
+	cursor: pointer;
+	pointer-events: auto;
+	user-select: none;
+	width: 100%;
+	height: 100%;
+}
+
+.lccl-bdf.lccl-bdf--membership button.lccl-df__phone-code-display:hover,
+.lccl-bdf.lccl-bdf--membership button.lccl-df__phone-code-display:focus,
+.lccl-bdf.lccl-bdf--membership button.lccl-df__phone-code-display.is-active {
+	border-color: #94a3b8;
+	background-color: #ffffff;
+	outline: none;
+}
+
+/* Custom searchable dropdown popup */
+.lccl-bdf.lccl-bdf--membership .lccl-df__phone-dropdown {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	width: 290px;
+	max-width: 90vw;
+	background: #ffffff;
+	border: 1px solid #cbd5e1;
+	border-radius: 6px;
+	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+	z-index: 9999;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.lccl-bdf.lccl-bdf--membership .lccl-df__phone-dropdown[hidden],
+.lccl-df__phone-dropdown [hidden],
+.lccl-df__phone-option[hidden] {
+	display: none !important;
+}
+
+.lccl-df__phone-dropdown-search {
+	padding: 8px;
+	background: #f8fafc;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.lccl-df__phone-search-input {
+	width: 100%;
+	height: 32px;
+	padding: 0 10px;
+	font-size: 13px;
+	border: 1px solid #cbd5e1;
+	border-radius: 4px;
+	outline: none;
+	background: #ffffff;
+	color: #1e293b;
+	box-sizing: border-box;
+}
+
+.lccl-df__phone-search-input:focus {
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+}
+
+.lccl-df__phone-dropdown-list {
+	list-style: none;
+	margin: 0;
+	padding: 4px 0;
+	max-height: 240px;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+}
+
+.lccl-df__phone-option {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 12px;
+	font-size: 13px;
+	color: #1e293b;
+	cursor: pointer;
+	user-select: none;
+	transition: background-color 0.1s ease;
+}
+
+.lccl-df__phone-option:hover,
+.lccl-df__phone-option.is-highlighted {
+	background-color: #f1f5f9;
+}
+
+.lccl-df__phone-option.is-selected {
+	background-color: #eff6ff;
+	font-weight: 600;
+	color: #1d4ed8;
+}
+
+.lccl-df__phone-option-code {
+	font-weight: 600;
+	color: #475569;
+	font-size: 12px;
+	white-space: nowrap;
+}
+
+.lccl-df__phone-option-name {
+	flex: 1 1 auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-display {
 	position: absolute;
 	inset: 0;
 	display: flex;
@@ -1353,6 +1493,29 @@
 	transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 
+.lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-display {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+	padding: 0 6px;
+	border: 1px solid var(--lccl-bdf-border);
+	border-radius: 0;
+	background-color: var(--lccl-bdf-field-bg);
+	color: var(--lccl-bdf-field-text);
+	font-family: var(--lccl-bdf-font);
+	font-size: 13px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+	pointer-events: auto !important;
+	cursor: pointer !important;
+	box-sizing: border-box;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
 .lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-arrow,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-arrow,
 .lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-arrow {
@@ -1366,9 +1529,7 @@
 .lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-select,
 .lccl-bdf.lccl-bdf--donation select.lccl-df__phone-code-select,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-select,
-.lccl-bdf.lccl-bdf--sponsorship select.lccl-df__phone-code-select,
-.lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-select,
-.lccl-bdf.lccl-bdf--membership select.lccl-df__phone-code-select {
+.lccl-bdf.lccl-bdf--sponsorship select.lccl-df__phone-code-select {
 	position: absolute !important;
 	top: 0 !important;
 	left: 0 !important;
@@ -1382,6 +1543,21 @@
 	z-index: 2 !important;
 	-webkit-appearance: menulist !important;
 	appearance: menulist !important;
+}
+
+.lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-select,
+.lccl-bdf.lccl-bdf--membership select.lccl-df__phone-code-select {
+	position: absolute !important;
+	top: 0 !important;
+	left: -9999px !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	opacity: 0 !important;
+	pointer-events: none !important;
+	z-index: -1 !important;
 }
 
 /* Force black text for dropdown options so they are readable on all themes */
@@ -1423,10 +1599,19 @@
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-number,
 .lccl-bdf.lccl-bdf--sponsorship input.lccl-df__phone-number,
 .lccl-bdf.lccl-bdf--membership .lccl-df__phone-number,
-.lccl-bdf.lccl-bdf--membership input.lccl-df__phone-number {
+.lccl-bdf.lccl-bdf--membership input.lccl-df__phone-number,
+input#lccl-mf-phone {
 	flex: 1 1 auto;
 	min-width: 0;
 	width: 100%;
+	letter-spacing: 0.05em;
+}
+
+.lccl-bdf.lccl-bdf--donation input.lccl-df__phone-number::placeholder,
+.lccl-bdf.lccl-bdf--sponsorship input.lccl-df__phone-number::placeholder,
+.lccl-bdf.lccl-bdf--membership input.lccl-df__phone-number::placeholder,
+input#lccl-mf-phone::placeholder {
+	letter-spacing: 0.05em;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__pair {
@@ -1832,13 +2017,17 @@
 	height: 49px;
 	padding: 0 14px;
 	background-color: var(--lccl-bdf-gold-light);
-	color: var(--lccl-bdf-heading);
+	color: #ffffff !important;
 	font-family: var(--lccl-bdf-font);
 	font-size: 20px;
 	font-weight: 700;
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	white-space: nowrap;
+}
+
+.lccl-bdf.lccl-bdf--membership .lccl-df__total-label span {
+	color: #ffffff !important;
 }
 
 .lccl-bdf.lccl-bdf--membership .lccl-mf__total-value {

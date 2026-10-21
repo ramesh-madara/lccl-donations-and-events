@@ -215,6 +215,7 @@ class LCCL_DE_Countries {
 			array( 'code' => 'KR', 'dial' => '+82',   'name' => __( 'South Korea (+82)', 'lccl-de' ) ),
 			array( 'code' => 'SS', 'dial' => '+211',  'name' => __( 'South Sudan (+211)', 'lccl-de' ) ),
 			array( 'code' => 'ES', 'dial' => '+34',   'name' => __( 'Spain (+34)', 'lccl-de' ) ),
+			array( 'code' => 'LK', 'dial' => '+94',   'name' => __( 'Sri Lanka (+94)', 'lccl-de' ) ),
 			array( 'code' => 'SD', 'dial' => '+249',  'name' => __( 'Sudan (+249)', 'lccl-de' ) ),
 			array( 'code' => 'SR', 'dial' => '+597',  'name' => __( 'Suriname (+597)', 'lccl-de' ) ),
 			array( 'code' => 'SE', 'dial' => '+46',   'name' => __( 'Sweden (+46)', 'lccl-de' ) ),
@@ -251,21 +252,46 @@ class LCCL_DE_Countries {
 			array( 'code' => 'ZW', 'dial' => '+263',  'name' => __( 'Zimbabwe (+263)', 'lccl-de' ) ),
 		);
 
-		// Pin Sri Lanka at the very top as the default.
-		$list = array(
-			array( 'code' => 'LK', 'dial' => '+94', 'name' => __( 'Sri Lanka (+94)', 'lccl-de' ) ),
-		);
-
-		foreach ( $raw as $item ) {
-			$list[] = $item;
-		}
+		$list = $raw;
 
 		// Catch-all Other option at the bottom.
 		$list[] = array( 'code' => '+', 'dial' => '', 'name' => __( 'Other (+...)', 'lccl-de' ) );
 
+		foreach ( $list as &$item ) {
+			$flag               = self::flag_emoji( $item['code'] );
+			$item['flag']       = $flag;
+			$clean              = trim( (string) preg_replace( '/\s*\(\+[^)]*\)$/', '', $item['name'] ) );
+			$item['clean_name'] = $clean;
+			if ( '' !== $item['dial'] ) {
+				$item['option_label'] = $flag . ' (' . $item['dial'] . ') ' . $clean;
+			} else {
+				$item['option_label'] = $flag . ' ' . $clean;
+			}
+		}
+		unset( $item );
+
 		self::$countries = $list;
 
 		return self::$countries;
+	}
+
+	/**
+	 * Convert 2-letter ISO country code to Unicode Flag Emoji.
+	 *
+	 * @param string $code ISO 3166-1 alpha-2 code (e.g. 'LK', 'US').
+	 * @return string Unicode flag emoji or globe emoji for invalid/other.
+	 */
+	public static function flag_emoji( $code ) {
+		$code = strtoupper( trim( (string) $code ) );
+		if ( 2 !== strlen( $code ) || ! ctype_alpha( $code ) ) {
+			return '🌐';
+		}
+		$first  = 0x1F1E6 + ( ord( $code[0] ) - ord( 'A' ) );
+		$second = 0x1F1E6 + ( ord( $code[1] ) - ord( 'A' ) );
+		if ( function_exists( 'mb_chr' ) ) {
+			return mb_chr( $first, 'UTF-8' ) . mb_chr( $second, 'UTF-8' );
+		}
+		return '🌐';
 	}
 
 	/**
@@ -275,12 +301,17 @@ class LCCL_DE_Countries {
 	 * @return array Country info array.
 	 */
 	public static function get_by_dial( $dial_code ) {
-		$all = self::get_all();
+		$all     = self::get_all();
+		$default = null;
 		foreach ( $all as $c ) {
+			if ( 'LK' === $c['code'] ) {
+				$default = $c;
+			}
 			if ( $c['dial'] === $dial_code ) {
 				return $c;
 			}
 		}
-		return $all[0];
+		return $default ? $default : $all[0];
 	}
 }
+
