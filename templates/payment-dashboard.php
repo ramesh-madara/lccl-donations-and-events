@@ -211,6 +211,32 @@ if ( $can_view && $user instanceof WP_User ) {
 			</button>
 		</nav>
 
+		<!-- Fundraiser Capacity & Inventory Section (active for Fundraiser tab) -->
+		<section class="lccl-paydash__inventory-section" data-inventory-section hidden style="display: none;">
+			<div class="lccl-paydash__inventory-header">
+				<div class="lccl-paydash__inventory-title-group">
+					<span class="lccl-paydash__inventory-icon" aria-hidden="true">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+							<line x1="16" y1="2" x2="16" y2="6"></line>
+							<line x1="8" y1="2" x2="8" y2="6"></line>
+							<line x1="3" y1="10" x2="21" y2="10"></line>
+						</svg>
+					</span>
+					<div>
+						<h3 class="lccl-paydash__inventory-heading"><?php esc_html_e( 'Event Capacity & Inventory', 'lccl-de' ); ?></h3>
+						<p class="lccl-paydash__inventory-subheading"><?php esc_html_e( 'Live table and seat counts: what is booked vs what is left available.', 'lccl-de' ); ?></p>
+					</div>
+				</div>
+				<div class="lccl-paydash__inventory-badge-wrap">
+					<span class="lccl-paydash__inventory-badge" data-inventory-badge><?php esc_html_e( 'All Events Overview', 'lccl-de' ); ?></span>
+				</div>
+			</div>
+			<div class="lccl-paydash__inventory-grid" data-inventory-grid>
+				<!-- Populated dynamically via JS -->
+			</div>
+		</section>
+
 		<!-- Filters and Search Bar -->
 		<form class="lccl-paydash__filter-bar" data-form="filters" onsubmit="return false;">
 			<div class="lccl-paydash__search-wrap">
@@ -240,6 +266,15 @@ if ( $can_view && $user instanceof WP_User ) {
 							</option>
 						<?php endforeach; ?>
 					<?php endif; ?>
+				</select>
+			</div>
+
+			<div class="lccl-paydash__filter-item" data-filter-item="booking-type" style="display: none;">
+				<label class="screen-reader-text" for="lccl-paydash-booking-type"><?php esc_html_e( 'Filter by booking type', 'lccl-de' ); ?></label>
+				<select class="lccl-bda__select" id="lccl-paydash-booking-type" name="booking_type">
+					<option value=""><?php esc_html_e( 'All Bookings (Seats & Tables)', 'lccl-de' ); ?></option>
+					<option value="seat"><?php esc_html_e( 'Individual Seats Only', 'lccl-de' ); ?></option>
+					<option value="table"><?php esc_html_e( 'Full Tables Only', 'lccl-de' ); ?></option>
 				</select>
 			</div>
 

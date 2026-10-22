@@ -36,7 +36,7 @@
 					$track.css('animation-play-state', 'paused');
 				});
 				$carousel.on('resumeCarousel', function() {
-					$track.css('animation-play-state', 'running');
+					$track.css('animation-play-state', '');
 				});
 
 				return; // Handled completely by CSS keyframes
@@ -311,7 +311,7 @@
 		$(window).on('resize', checkTruncation);
 
 		// Modal logic
-		$(document).on('click', '.lccl-t-read-more', function(e) {
+		$(document).off('click.lcclTestimonials', '.lccl-t-read-more').on('click.lcclTestimonials', '.lccl-t-read-more', function(e) {
 			e.preventDefault();
 			const $cardInner = $(this).closest('.lccl-testimonial-card-inner');
 			const $container = $(this).closest('.lccl-t-quote-container');
@@ -339,11 +339,20 @@
 			$('.lccl-testimonials-carousel').trigger('pauseCarousel');
 		});
 
-		$(document).on('click', '.lccl-t-modal-close, .lccl-t-modal-overlay', function(e) {
+		function closeTestimonialsModal() {
+			$('.lccl-t-modal-overlay').fadeOut(200);
+			$('.lccl-testimonials-carousel').trigger('resumeCarousel');
+		}
+
+		$(document).off('click.lcclTestimonials', '.lccl-t-modal-close, .lccl-t-modal-overlay').on('click.lcclTestimonials', '.lccl-t-modal-close, .lccl-t-modal-overlay', function(e) {
 			if (e.target === this) {
-				$('.lccl-t-modal-overlay').fadeOut(200);
-				// Resume all carousels
-				$('.lccl-testimonials-carousel').trigger('resumeCarousel');
+				closeTestimonialsModal();
+			}
+		});
+
+		$(document).off('keydown.lcclTestimonials').on('keydown.lcclTestimonials', function(e) {
+			if (e.key === 'Escape' && $('.lccl-t-modal-overlay:visible').length) {
+				closeTestimonialsModal();
 			}
 		});
 

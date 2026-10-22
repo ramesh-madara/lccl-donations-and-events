@@ -33,11 +33,13 @@
 			status: 'paid',
 			search: '',
 			eventId: '',
+			bookingType: '',
 			page: 1,
 			perPage: parseInt( cfg.perPage, 10 ) || 20,
 			total: 0,
 			totalPages: 1,
 			items: [],
+			inventory: null,
 			busy: false,
 			searchTimer: null
 		};
@@ -71,16 +73,23 @@
 		var kpiOther       = root.querySelector( '[data-kpi="other_count"]' );
 		var countIndicator = root.querySelector( '[data-count-label]' );
 
+		// Fundraiser Capacity & Inventory Section
+		var inventorySection = root.querySelector( '[data-inventory-section]' );
+		var inventoryGrid    = root.querySelector( '[data-inventory-grid]' );
+		var inventoryBadge   = root.querySelector( '[data-inventory-badge]' );
+
 		// Tabs
 		var tabs = root.querySelectorAll( '.lccl-paydash__tab' );
 
 		// Filters
-		var searchInput     = root.querySelector( '#lccl-paydash-search' );
-		var statusSelect    = root.querySelector( '#lccl-paydash-status' );
-		var eventSelect     = root.querySelector( '#lccl-paydash-event' );
-		var eventFilterWrap = root.querySelector( '[data-filter-item="event"]' );
-		var perPageSelect   = root.querySelector( '#lccl-paydash-per-page' );
-		var clearBtn        = root.querySelector( '[data-action="clear-filters"]' );
+		var searchInput           = root.querySelector( '#lccl-paydash-search' );
+		var statusSelect          = root.querySelector( '#lccl-paydash-status' );
+		var eventSelect           = root.querySelector( '#lccl-paydash-event' );
+		var eventFilterWrap       = root.querySelector( '[data-filter-item="event"]' );
+		var bookingTypeSelect     = root.querySelector( '#lccl-paydash-booking-type' );
+		var bookingTypeFilterWrap = root.querySelector( '[data-filter-item="booking-type"]' );
+		var perPageSelect         = root.querySelector( '#lccl-paydash-per-page' );
+		var clearBtn              = root.querySelector( '[data-action="clear-filters"]' );
 
 		// Table & Pager
 		var txRows     = root.querySelector( '[data-tx-rows]' );
@@ -283,18 +292,40 @@
 				state.tab  = tab;
 				state.page = 1;
 
-				if ( eventFilterWrap ) {
-					if ( 'fundraiser' === tab ) {
+				if ( 'fundraiser' === tab ) {
+					if ( eventFilterWrap ) {
 						eventFilterWrap.hidden = false;
 						eventFilterWrap.style.display = '';
-					} else {
+					}
+					if ( bookingTypeFilterWrap ) {
+						bookingTypeFilterWrap.hidden = false;
+						bookingTypeFilterWrap.style.display = '';
+					}
+					if ( inventorySection ) {
+						inventorySection.hidden = false;
+						inventorySection.style.display = '';
+					}
+				} else {
+					if ( eventFilterWrap ) {
 						eventFilterWrap.hidden = true;
 						eventFilterWrap.style.display = 'none';
-						if ( eventSelect ) {
-							eventSelect.value = '';
-						}
-						state.eventId = '';
 					}
+					if ( bookingTypeFilterWrap ) {
+						bookingTypeFilterWrap.hidden = true;
+						bookingTypeFilterWrap.style.display = 'none';
+					}
+					if ( inventorySection ) {
+						inventorySection.hidden = true;
+						inventorySection.style.display = 'none';
+					}
+					if ( eventSelect ) {
+						eventSelect.value = '';
+					}
+					if ( bookingTypeSelect ) {
+						bookingTypeSelect.value = '';
+					}
+					state.eventId     = '';
+					state.bookingType = '';
 				}
 
 				loadTransactions();
@@ -331,6 +362,14 @@
 			} );
 		}
 
+		if ( bookingTypeSelect ) {
+			bookingTypeSelect.addEventListener( 'change', function () {
+				state.bookingType = bookingTypeSelect.value;
+				state.page        = 1;
+				loadTransactions();
+			} );
+		}
+
 		if ( perPageSelect ) {
 			perPageSelect.addEventListener( 'change', function () {
 				state.perPage = parseInt( perPageSelect.value, 10 ) || 20;
@@ -350,10 +389,14 @@
 				if ( eventSelect ) {
 					eventSelect.value = '';
 				}
-				state.search  = '';
-				state.status  = '';
-				state.eventId = '';
-				state.page    = 1;
+				if ( bookingTypeSelect ) {
+					bookingTypeSelect.value = '';
+				}
+				state.search      = '';
+				state.status      = '';
+				state.eventId     = '';
+				state.bookingType = '';
+				state.page        = 1;
 				loadTransactions();
 			} );
 		}
@@ -380,6 +423,10 @@
 				query += '&event_id=' + encodeURIComponent( state.eventId );
 			}
 
+			if ( state.bookingType ) {
+				query += '&booking_type=' + encodeURIComponent( state.bookingType );
+			}
+
 			api( 'transactions' + query, { method: 'GET' } )
 				.then( function ( data ) {
 					setBusy( tableModal, false );
@@ -389,8 +436,10 @@
 					state.total      = data.total || 0;
 					state.totalPages = data.total_pages || 1;
 					state.page       = data.page || 1;
+					state.inventory  = data.inventory || null;
 
 					renderKpiStats( data.stats );
+					renderInventory( data.inventory, state.eventId, state.bookingType );
 					renderTable( state.items );
 					renderPager();
 				} )
@@ -406,6 +455,219 @@
 						showBanner( dashError, err.message || 'Failed to load payments.' );
 					}
 				} );
+		}
+
+		function renderInventory( inventory, selectedEventId, selectedBookingType ) {
+			if ( ! inventorySection || ! inventoryGrid ) {
+				return;
+			}
+
+			if ( 'fundraiser' !== state.tab || ! inventory || ! inventory.events || ! inventory.events.length ) {
+				inventorySection.hidden = true;
+				inventorySection.style.display = 'none';
+				return;
+			}
+
+			inventorySection.hidden = false;
+			inventorySection.style.display = '';
+
+			var events = inventory.events;
+			var selId = selectedEventId ? String( selectedEventId ) : '';
+			var selEv = null;
+
+			if ( selId ) {
+				for ( var i = 0; i < events.length; i++ ) {
+					if ( String( events[ i ].id ) === selId ) {
+						selEv = events[ i ];
+						break;
+					}
+				}
+			}
+
+			if ( inventoryBadge ) {
+				if ( selEv ) {
+					inventoryBadge.textContent = 'Event: ' + selEv.name;
+				} else {
+					inventoryBadge.textContent = 'All Events Overview (' + events.length + ( events.length === 1 ? ' Event' : ' Events' ) + ')';
+				}
+			}
+
+			var tableSvg = '<svg class="lccl-paydash__inv-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+			var seatSvg  = '<svg class="lccl-paydash__inv-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
+
+			function buildCapacityBlock( type, title, iconSvg, booked, free, total, isHighlighted ) {
+				var pct = total > 0 ? Math.min( 100, Math.round( ( booked / total ) * 100 ) ) : 0;
+				var blockClass = 'lccl-paydash__inv-block lccl-paydash__inv-block--' + type + ( isHighlighted ? ' is-active-filter' : '' );
+				var filterVal = ( 'tables' === type ) ? 'table' : 'seat';
+
+				var bHtml = '<div class="' + blockClass + '" data-inv-filter="' + filterVal + '">';
+				bHtml += '<div class="lccl-paydash__inv-block-head">';
+				bHtml += '<span class="lccl-paydash__inv-block-title">' + iconSvg + ' ' + escapeHtml( title ) + '</span>';
+				bHtml += '<span class="lccl-paydash__inv-pct-badge">' + pct + '% Booked</span>';
+				bHtml += '</div>';
+
+				bHtml += '<div class="lccl-paydash__inv-metrics">';
+
+				// Booked
+				bHtml += '<div class="lccl-paydash__inv-metric">';
+				bHtml += '<span class="lccl-paydash__inv-val lccl-paydash__inv-val--booked">' + booked.toLocaleString() + '</span>';
+				bHtml += '<span class="lccl-paydash__inv-lbl">Booked</span>';
+				bHtml += '</div>';
+
+				// Left (Available)
+				bHtml += '<div class="lccl-paydash__inv-metric lccl-paydash__inv-metric--left">';
+				bHtml += '<span class="lccl-paydash__inv-val lccl-paydash__inv-val--left">' + free.toLocaleString() + '</span>';
+				bHtml += '<span class="lccl-paydash__inv-lbl">Left Available</span>';
+				bHtml += '</div>';
+
+				// Total Capacity
+				bHtml += '<div class="lccl-paydash__inv-metric">';
+				bHtml += '<span class="lccl-paydash__inv-val lccl-paydash__inv-val--total">' + total.toLocaleString() + '</span>';
+				bHtml += '<span class="lccl-paydash__inv-lbl">Total Capacity</span>';
+				bHtml += '</div>';
+
+				bHtml += '</div>'; // .lccl-paydash__inv-metrics
+
+				// Progress Bar
+				bHtml += '<div class="lccl-paydash__inv-bar-wrap">';
+				bHtml += '<div class="lccl-paydash__inv-bar-track">';
+				bHtml += '<div class="lccl-paydash__inv-bar-fill lccl-paydash__inv-bar-fill--' + type + '" style="width:' + pct + '%;"></div>';
+				bHtml += '</div>';
+				bHtml += '<div class="lccl-paydash__inv-bar-legend">';
+				bHtml += '<span><strong>' + booked.toLocaleString() + '</strong> Booked</span>';
+				bHtml += '<span class="lccl-paydash__inv-legend-free"><strong>' + free.toLocaleString() + '</strong> Left to Book</span>';
+				bHtml += '</div>';
+				bHtml += '</div>'; // .lccl-paydash__inv-bar-wrap
+
+				bHtml += '</div>'; // .lccl-paydash__inv-block
+				return bHtml;
+			}
+
+			var html = '';
+
+			if ( selEv ) {
+				var isTActive = ( 'table' === selectedBookingType );
+				var isSActive = ( 'seat' === selectedBookingType );
+
+				html += '<div class="lccl-paydash__inv-card lccl-paydash__inv-card--selected">';
+				html += '<div class="lccl-paydash__inv-card-header">';
+				html += '<div class="lccl-paydash__inv-card-info">';
+				html += '<h4 class="lccl-paydash__inv-card-title">' + escapeHtml( selEv.name ) + '</h4>';
+				html += '<div class="lccl-paydash__inv-card-meta">';
+				if ( selEv.event_date_fmt ) {
+					html += '<span class="lccl-paydash__inv-date">' + escapeHtml( selEv.event_date_fmt ) + '</span>';
+				}
+				html += '<span class="lccl-paydash__inv-status lccl-paydash__inv-status--' + escapeHtml( selEv.status ) + '">' + escapeHtml( selEv.status ) + '</span>';
+				html += '</div>';
+				html += '</div>';
+				html += '<button type="button" class="lccl-bda__text-button lccl-paydash__inv-action-btn" data-action="reset-event-filter">Show All Events</button>';
+				html += '</div>';
+
+				html += '<div class="lccl-paydash__inv-card-body">';
+				html += buildCapacityBlock( 'tables', 'Full Tables', tableSvg, selEv.tables_booked, selEv.tables_free, selEv.tables_total, isTActive );
+				html += buildCapacityBlock( 'seats', 'Individual Seats', seatSvg, selEv.seats_booked, selEv.seats_free, selEv.seats_total, isSActive );
+				html += '</div>';
+				html += '</div>';
+			} else {
+				// Multiple events: show aggregate card first if > 1 event
+				if ( events.length > 1 && inventory.aggregate ) {
+					var agg = inventory.aggregate;
+					var isAggTActive = ( 'table' === selectedBookingType );
+					var isAggSActive = ( 'seat' === selectedBookingType );
+
+					html += '<div class="lccl-paydash__inv-card lccl-paydash__inv-card--aggregate">';
+					html += '<div class="lccl-paydash__inv-card-header">';
+					html += '<div class="lccl-paydash__inv-card-info">';
+					html += '<h4 class="lccl-paydash__inv-card-title">All Fundraiser Events (Total Combined Inventory)</h4>';
+					html += '<div class="lccl-paydash__inv-card-meta">Combined counts across all ' + events.length + ' active fundraiser events</div>';
+					html += '</div>';
+					html += '<span class="lccl-paydash__inv-agg-pill">All Events Combined</span>';
+					html += '</div>';
+
+					html += '<div class="lccl-paydash__inv-card-body">';
+					html += buildCapacityBlock( 'tables', 'All Full Tables', tableSvg, agg.tables_booked, agg.tables_free, agg.tables_total, isAggTActive );
+					html += buildCapacityBlock( 'seats', 'All Individual Seats', seatSvg, agg.seats_booked, agg.seats_free, agg.seats_total, isAggSActive );
+					html += '</div>';
+					html += '</div>';
+				}
+
+				// Render each event card
+				for ( var j = 0; j < events.length; j++ ) {
+					var evItem = events[ j ];
+					var isTActiveEv = ( 'table' === selectedBookingType );
+					var isSActiveEv = ( 'seat' === selectedBookingType );
+
+					html += '<div class="lccl-paydash__inv-card" data-event-id="' + evItem.id + '">';
+					html += '<div class="lccl-paydash__inv-card-header">';
+					html += '<div class="lccl-paydash__inv-card-info">';
+					html += '<h4 class="lccl-paydash__inv-card-title">' + escapeHtml( evItem.name ) + '</h4>';
+					html += '<div class="lccl-paydash__inv-card-meta">';
+					if ( evItem.event_date_fmt ) {
+						html += '<span class="lccl-paydash__inv-date">' + escapeHtml( evItem.event_date_fmt ) + '</span>';
+					}
+					html += '<span class="lccl-paydash__inv-status lccl-paydash__inv-status--' + escapeHtml( evItem.status ) + '">' + escapeHtml( evItem.status ) + '</span>';
+					html += '</div>';
+					html += '</div>';
+					html += '<button type="button" class="lccl-bda__text-button lccl-paydash__inv-action-btn" data-filter-ev="' + evItem.id + '">Filter This Event</button>';
+					html += '</div>';
+
+					html += '<div class="lccl-paydash__inv-card-body">';
+					html += buildCapacityBlock( 'tables', 'Full Tables', tableSvg, evItem.tables_booked, evItem.tables_free, evItem.tables_total, isTActiveEv );
+					html += buildCapacityBlock( 'seats', 'Individual Seats', seatSvg, evItem.seats_booked, evItem.seats_free, evItem.seats_total, isSActiveEv );
+					html += '</div>';
+					html += '</div>';
+				}
+			}
+
+			inventoryGrid.innerHTML = html;
+
+			// Quick filter by clicking an event's button
+			var filterEvBtns = inventoryGrid.querySelectorAll( '[data-filter-ev]' );
+			Array.prototype.forEach.call( filterEvBtns, function ( btn ) {
+				btn.addEventListener( 'click', function () {
+					var evId = btn.getAttribute( 'data-filter-ev' );
+					if ( eventSelect ) {
+						eventSelect.value = evId;
+					}
+					state.eventId = evId;
+					state.page    = 1;
+					loadTransactions();
+				} );
+			} );
+
+			var resetEvBtn = inventoryGrid.querySelector( '[data-action="reset-event-filter"]' );
+			if ( resetEvBtn ) {
+				resetEvBtn.addEventListener( 'click', function () {
+					if ( eventSelect ) {
+						eventSelect.value = '';
+					}
+					state.eventId = '';
+					state.page    = 1;
+					loadTransactions();
+				} );
+			}
+
+			// Quick filter by clicking a capacity block
+			var blockEls = inventoryGrid.querySelectorAll( '[data-inv-filter]' );
+			Array.prototype.forEach.call( blockEls, function ( blk ) {
+				blk.style.cursor = 'pointer';
+				blk.title = 'Click to filter transactions by ' + ( 'table' === blk.getAttribute( 'data-inv-filter' ) ? 'Full Tables' : 'Individual Seats' );
+				blk.addEventListener( 'click', function ( e ) {
+					if ( e.target.closest( 'button' ) ) {
+						return;
+					}
+					var fVal = blk.getAttribute( 'data-inv-filter' );
+					if ( state.bookingType === fVal ) {
+						fVal = '';
+					}
+					if ( bookingTypeSelect ) {
+						bookingTypeSelect.value = fVal;
+					}
+					state.bookingType = fVal;
+					state.page        = 1;
+					loadTransactions();
+				} );
+			} );
 		}
 
 		function renderKpiStats( stats ) {

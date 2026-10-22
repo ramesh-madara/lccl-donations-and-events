@@ -596,6 +596,308 @@
 	cursor: not-allowed;
 }
 
+/* ==========================================================================
+   Fundraiser Event Capacity & Inventory Section
+   ========================================================================== */
+.lccl-paydash__inventory-section {
+	background: var(--lccl-pd-card-bg);
+	border: 1px solid var(--lccl-pd-border);
+	border-radius: 10px;
+	padding: 20px 24px;
+	margin-bottom: 24px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.lccl-paydash__inventory-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 16px;
+	flex-wrap: wrap;
+	padding-bottom: 14px;
+	margin-bottom: 18px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.lccl-paydash__inventory-title-group {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.lccl-paydash__inventory-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 8px;
+	background: var(--lccl-pd-navy);
+	color: var(--lccl-pd-gold);
+	flex-shrink: 0;
+	margin-top: 1px;
+}
+
+.lccl-paydash__inventory-heading {
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--lccl-pd-navy);
+	margin: 0 0 2px;
+	letter-spacing: -0.01em;
+}
+
+.lccl-paydash__inventory-subheading {
+	font-size: 12px;
+	color: var(--lccl-pd-muted);
+	margin: 0;
+}
+
+.lccl-paydash__inventory-badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 5px 12px;
+	background: var(--lccl-pd-navy-soft);
+	color: var(--lccl-pd-navy);
+	border: 1px solid var(--lccl-pd-border);
+	border-radius: 20px;
+	font-size: 11px;
+	font-weight: 700;
+}
+
+.lccl-paydash__inventory-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.lccl-paydash__inv-card {
+	background: #f8fafc;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 16px 18px;
+	transition: all 0.2s ease;
+}
+
+.lccl-paydash__inv-card:hover {
+	border-color: #cbd5e1;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.lccl-paydash__inv-card--selected {
+	border-color: var(--lccl-pd-gold);
+	background: #fffdf5;
+	box-shadow: 0 2px 8px rgba(247, 192, 22, 0.15);
+}
+
+.lccl-paydash__inv-card--aggregate {
+	background: #f0f4f8;
+	border-color: #cbd5e1;
+}
+
+.lccl-paydash__inv-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-bottom: 14px;
+}
+
+.lccl-paydash__inv-card-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.lccl-paydash__inv-card-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--lccl-pd-heading);
+	margin: 0;
+}
+
+.lccl-paydash__inv-card-meta {
+	font-size: 12px;
+	color: var(--lccl-pd-muted);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.lccl-paydash__inv-status {
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	padding: 1px 6px;
+	border-radius: 4px;
+	background: #e2e8f0;
+	color: #475569;
+}
+
+.lccl-paydash__inv-status--upcoming {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+.lccl-paydash__inv-status--active {
+	background: #dcfce7;
+	color: #166534;
+}
+
+.lccl-paydash__inv-action-btn {
+	font-size: 12px !important;
+	font-weight: 600 !important;
+	color: var(--lccl-pd-navy) !important;
+	text-decoration: underline;
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 4px;
+	transition: background 0.15s ease;
+}
+
+.lccl-paydash__inv-action-btn:hover {
+	background: rgba(0, 43, 73, 0.06);
+}
+
+.lccl-paydash__inv-agg-pill {
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--lccl-pd-navy);
+	background: #e2e8f0;
+	padding: 3px 10px;
+	border-radius: 12px;
+}
+
+.lccl-paydash__inv-card-body {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 14px;
+}
+
+.lccl-paydash__inv-block {
+	background: #ffffff;
+	border: 1px solid #e2e8f0;
+	border-radius: 8px;
+	padding: 14px 16px;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.lccl-paydash__inv-block:hover {
+	border-color: #cbd5e1;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.lccl-paydash__inv-block.is-active-filter {
+	border-color: var(--lccl-pd-navy);
+	box-shadow: 0 0 0 2px var(--lccl-pd-navy);
+	background: #fafcfe;
+}
+
+.lccl-paydash__inv-block-head {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.lccl-paydash__inv-block-title {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--lccl-pd-navy);
+}
+
+.lccl-paydash__inv-pct-badge {
+	font-size: 11px;
+	font-weight: 700;
+	background: var(--lccl-pd-navy-soft);
+	color: var(--lccl-pd-navy);
+	padding: 2px 8px;
+	border-radius: 12px;
+}
+
+.lccl-paydash__inv-metrics {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+	margin-bottom: 12px;
+}
+
+.lccl-paydash__inv-metric {
+	display: flex;
+	flex-direction: column;
+}
+
+.lccl-paydash__inv-val {
+	font-size: 20px;
+	font-weight: 800;
+	line-height: 1.1;
+	color: var(--lccl-pd-heading);
+}
+
+.lccl-paydash__inv-val--booked {
+	color: var(--lccl-pd-navy);
+}
+
+.lccl-paydash__inv-val--left {
+	color: #059669;
+}
+
+.lccl-paydash__inv-val--total {
+	color: #64748b;
+}
+
+.lccl-paydash__inv-lbl {
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	color: var(--lccl-pd-muted);
+	margin-top: 3px;
+}
+
+.lccl-paydash__inv-bar-wrap {
+	margin-top: 6px;
+}
+
+.lccl-paydash__inv-bar-track {
+	height: 7px;
+	background: #e2e8f0;
+	border-radius: 4px;
+	overflow: hidden;
+}
+
+.lccl-paydash__inv-bar-fill {
+	height: 100%;
+	border-radius: 4px;
+	transition: width 0.3s ease;
+}
+
+.lccl-paydash__inv-bar-fill--tables {
+	background: var(--lccl-pd-navy);
+}
+
+.lccl-paydash__inv-bar-fill--seats {
+	background: var(--lccl-pd-gold);
+}
+
+.lccl-paydash__inv-bar-legend {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--lccl-pd-muted);
+	margin-top: 5px;
+}
+
+.lccl-paydash__inv-legend-free {
+	color: #059669;
+	font-weight: 600;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
 	.lccl-paydash {

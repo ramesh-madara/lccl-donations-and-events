@@ -535,15 +535,16 @@ class LCCL_DE_Payment_Dashboard {
 			";
 		}
 
-		$tab      = sanitize_key( (string) $request->get_param( 'tab' ) );
-		$status   = sanitize_key( (string) $request->get_param( 'status' ) );
-		$search   = sanitize_text_field( (string) $request->get_param( 'search' ) );
-		$event_id = absint( $request->get_param( 'event_id' ) );
-		$page     = max( 1, absint( $request->get_param( 'page' ) ) );
-		$per_page = max( 1, min( 100, absint( $request->get_param( 'per_page' ) ?: 20 ) ) );
-		$offset   = ( $page - 1 ) * $per_page;
+		$tab          = sanitize_key( (string) $request->get_param( 'tab' ) );
+		$status       = sanitize_key( (string) $request->get_param( 'status' ) );
+		$search       = sanitize_text_field( (string) $request->get_param( 'search' ) );
+		$event_id     = absint( $request->get_param( 'event_id' ) );
+		$booking_type = sanitize_key( (string) $request->get_param( 'booking_type' ) );
+		$page         = max( 1, absint( $request->get_param( 'page' ) ) );
+		$per_page     = max( 1, min( 100, absint( $request->get_param( 'per_page' ) ?: 20 ) ) );
+		$offset       = ( $page - 1 ) * $per_page;
 
-		// Overall Stats (unfiltered by status/search, or filtered by tab/event).
+		// Overall Stats (unfiltered by status/search, or filtered by tab/event/booking_type).
 		$tab_stat_clause = '';
 		if ( 'donation' === $tab ) {
 			$tab_stat_clause = "WHERE tx_type = 'donation'";
@@ -552,7 +553,13 @@ class LCCL_DE_Payment_Dashboard {
 		} elseif ( 'membership' === $tab ) {
 			$tab_stat_clause = "WHERE tx_type IN ('member', 'family')";
 		} elseif ( 'fundraiser' === $tab ) {
-			$tab_stat_clause = "WHERE tx_type IN ('fundraiser_seat', 'fundraiser_table')";
+			if ( 'seat' === $booking_type ) {
+				$tab_stat_clause = "WHERE tx_type = 'fundraiser_seat'";
+			} elseif ( 'table' === $booking_type ) {
+				$tab_stat_clause = "WHERE tx_type = 'fundraiser_table'";
+			} else {
+				$tab_stat_clause = "WHERE tx_type IN ('fundraiser_seat', 'fundraiser_table')";
+			}
 			if ( $event_id > 0 ) {
 				$tab_stat_clause .= $wpdb->prepare( " AND project = %s", (string) $event_id );
 			}
@@ -582,7 +589,13 @@ class LCCL_DE_Payment_Dashboard {
 		} elseif ( 'membership' === $tab ) {
 			$where_clauses[] = "tx_type IN ('member', 'family')";
 		} elseif ( 'fundraiser' === $tab ) {
-			$where_clauses[] = "tx_type IN ('fundraiser_seat', 'fundraiser_table')";
+			if ( 'seat' === $booking_type ) {
+				$where_clauses[] = "tx_type = 'fundraiser_seat'";
+			} elseif ( 'table' === $booking_type ) {
+				$where_clauses[] = "tx_type = 'fundraiser_table'";
+			} else {
+				$where_clauses[] = "tx_type IN ('fundraiser_seat', 'fundraiser_table')";
+			}
 			if ( $event_id > 0 ) {
 				$where_clauses[] = "project = %s";
 				$params[]        = (string) $event_id;
@@ -727,6 +740,56 @@ class LCCL_DE_Payment_Dashboard {
 			);
 		}
 
+		// Fundraiser Capacity & Inventory Stats (per event and aggregated).
+		$inventory = array(
+			'events'    => array(),
+			'aggregate' => array(
+				'tables_total'   => 0,
+				'tables_booked'  => 0,
+				'tables_free'    => 0,
+				'tables_blocked' => 0,
+				'seats_total'    => 0,
+				'seats_booked'   => 0,
+				'seats_free'     => 0,
+				'seats_blocked'  => 0,
+			),
+		);
+
+		if ( class_exists( 'LCCL_DE_Fundraiser' ) ) {
+			$raw_events = LCCL_DE_Fundraiser::get_all_events();
+			foreach ( $raw_events as $ev ) {
+				$eid        = (int) $ev['id'];
+				$pool_stats = LCCL_DE_Fundraiser::get_pool_stats( $eid );
+
+				$ev_data = array(
+					'id'             => $eid,
+					'name'           => (string) $ev['name'],
+					'event_date'     => (string) $ev['event_date'],
+					'event_date_fmt' => ! empty( $ev['event_date'] ) ? mysql2date( 'M j, Y', $ev['event_date'] ) : '',
+					'status'         => (string) $ev['status'],
+					'tables_total'   => isset( $pool_stats['tables_total'] ) ? (int) $pool_stats['tables_total'] : 0,
+					'tables_booked'  => isset( $pool_stats['tables_booked'] ) ? (int) $pool_stats['tables_booked'] : 0,
+					'tables_free'    => isset( $pool_stats['tables_free'] ) ? (int) $pool_stats['tables_free'] : 0,
+					'tables_blocked' => isset( $pool_stats['table_pool_blocked'] ) ? (int) $pool_stats['table_pool_blocked'] : 0,
+					'seats_total'    => isset( $pool_stats['seats_total'] ) ? (int) $pool_stats['seats_total'] : 0,
+					'seats_booked'   => isset( $pool_stats['seats_booked'] ) ? (int) $pool_stats['seats_booked'] : 0,
+					'seats_free'     => isset( $pool_stats['seats_free'] ) ? (int) $pool_stats['seats_free'] : 0,
+					'seats_blocked'  => isset( $pool_stats['seat_pool_blocked'] ) ? (int) $pool_stats['seat_pool_blocked'] : 0,
+				);
+
+				$inventory['events'][] = $ev_data;
+
+				$inventory['aggregate']['tables_total']   += $ev_data['tables_total'];
+				$inventory['aggregate']['tables_booked']  += $ev_data['tables_booked'];
+				$inventory['aggregate']['tables_free']    += $ev_data['tables_free'];
+				$inventory['aggregate']['tables_blocked'] += $ev_data['tables_blocked'];
+				$inventory['aggregate']['seats_total']    += $ev_data['seats_total'];
+				$inventory['aggregate']['seats_booked']   += $ev_data['seats_booked'];
+				$inventory['aggregate']['seats_free']     += $ev_data['seats_free'];
+				$inventory['aggregate']['seats_blocked']  += $ev_data['seats_blocked'];
+			}
+		}
+
 		return new WP_REST_Response(
 			array(
 				'items'       => $formatted,
@@ -742,6 +805,7 @@ class LCCL_DE_Payment_Dashboard {
 					'failed_count'   => isset( $stats_row['failed_count'] ) ? (int) $stats_row['failed_count'] : 0,
 					'other_count'    => isset( $stats_row['other_count'] ) ? (int) $stats_row['other_count'] : 0,
 				),
+				'inventory'   => $inventory,
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 			),
 			200
