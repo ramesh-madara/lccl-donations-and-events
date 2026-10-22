@@ -27,8 +27,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 <div class="lccl-bdf lccl-bdf--membership">
 	<div class="lccl-membership-layout">
 		<form class="lccl-bdf__form lccl-membership__form" method="post"
-			action="<?php echo esc_url(get_permalink()); ?>"
-			data-rate="<?php echo esc_attr((string) $fees['rate']); ?>"
+			action="<?php echo esc_url(get_permalink()); ?>" data-rate="<?php echo esc_attr((string) $fees['rate']); ?>"
 			data-principal-usd="<?php echo esc_attr((string) $fees['principal_usd']); ?>"
 			data-family-usd="<?php echo esc_attr((string) $fees['family_usd']); ?>"
 			data-district="<?php echo esc_attr((string) $fees['district_unit_lkr']); ?>"
@@ -109,7 +108,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 					<div class="lccl-mf__family" data-lccl-family<?php echo 'family' === $type ? '' : ' hidden'; ?>>
 						<div class="lccl-bdf__field lccl-mf__field--first">
 							<label class="lccl-bdf__label" for="lccl-mf-count">
-								<?php esc_html_e('Number of Family Members (Including Household Members)', 'lccl-de'); ?>
+								<?php esc_html_e('Number of Family Members (Including Household Member)', 'lccl-de'); ?>
 								<span class="lccl-bdf__req">*</span>
 							</label>
 							<select class="lccl-bdf__select" id="lccl-mf-count" name="family_count">
@@ -261,9 +260,9 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 													data-flag-emoji="<?php echo esc_attr($c_emoji); ?>"
 													aria-selected="<?php echo $is_selected ? 'true' : 'false'; ?>">
 													<?php if ($c_flag_url): ?>
-														<img class="lccl-df__flag-img"
-															src="<?php echo esc_url($c_flag_url); ?>" width="20" height="14"
-															alt="<?php echo esc_attr($c_code); ?>" loading="lazy"
+														<img class="lccl-df__flag-img" src="<?php echo esc_url($c_flag_url); ?>"
+															width="20" height="14" alt="<?php echo esc_attr($c_code); ?>"
+															loading="lazy"
 															onerror="this.style.display='none';if(this.nextElementSibling)this.nextElementSibling.style.display='inline';">
 														<span class="lccl-df__flag-emoji"
 															style="display:none;"><?php echo esc_html($c_emoji); ?></span>
@@ -352,7 +351,8 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 							<tr>
 								<td><?php esc_html_e('Club Payment', 'lccl-de'); ?></td>
 								<td data-lccl-club>
-									<?php echo esc_html(LCCL_DE_Membership_Form::format_lkr($fees['club'])); ?></td>
+									<?php echo esc_html(LCCL_DE_Membership_Form::format_lkr($fees['club'])); ?>
+								</td>
 							</tr>
 						</tbody>
 					</table>
