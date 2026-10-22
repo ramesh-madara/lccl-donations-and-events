@@ -109,7 +109,7 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 					<div class="lccl-mf__family" data-lccl-family<?php echo 'family' === $type ? '' : ' hidden'; ?>>
 						<div class="lccl-bdf__field lccl-mf__field--first">
 							<label class="lccl-bdf__label" for="lccl-mf-count">
-								<?php esc_html_e('Number of Family Members (Including Main Member)', 'lccl-de'); ?>
+								<?php esc_html_e('Number of Family Members (Including Household Members)', 'lccl-de'); ?>
 								<span class="lccl-bdf__req">*</span>
 							</label>
 							<select class="lccl-bdf__select" id="lccl-mf-count" name="family_count">
@@ -121,23 +121,28 @@ $gateway_configured = LCCL_DE_Paycenter_Client::is_configured();
 							</select>
 						</div>
 						<p class="lccl-mf__note">
-							<?php esc_html_e('The main member is responsible for the payment of the annual membership fees for all family members included in the membership.', 'lccl-de'); ?>
+							<?php esc_html_e('The household member is responsible for the payment of the annual membership fees for all family members included in the membership.', 'lccl-de'); ?>
 						</p>
 					</div>
 
 					<div class="lccl-mf__outstanding" style="margin-top: 8px;" data-lccl-outstanding<?php echo 'outstanding' === $type ? '' : ' hidden'; ?>>
 						<div class="lccl-bdf__field">
 							<label class="lccl-bdf__label" for="lccl-mf-outstanding-amount">
-								<?php esc_html_e('Outstanding Payment Amount (LKR)', 'lccl-de'); ?> <span
+								<?php esc_html_e('Outstanding Payment Amount', 'lccl-de'); ?> <span
 									class="lccl-bdf__req">*</span>
 							</label>
-							<input class="lccl-bdf__input" type="number" step="0.01" min="1"
-								id="lccl-mf-outstanding-amount" name="outstanding_amount"
-								value="<?php echo esc_attr($val('outstanding_amount')); ?>"
-								placeholder="<?php esc_attr_e('e.g. 5000.00', 'lccl-de'); ?>">
+							<div class="lccl-df__amount-row">
+								<input class="lccl-bdf__input lccl-df__amount-input" type="number" step="0.01" min="1"
+									id="lccl-mf-outstanding-amount" name="outstanding_amount"
+									value="<?php echo esc_attr($val('outstanding_amount')); ?>"
+									placeholder="<?php esc_attr_e('0.00', 'lccl-de'); ?>">
+								<div class="lccl-df__currency" aria-hidden="true">
+									<span><?php echo esc_html('LKR'); ?></span>
+								</div>
+							</div>
 						</div>
 						<p class="lccl-mf__note">
-							<?php esc_html_e('Please enter the outstanding payment amount as communicated by the club.', 'lccl-de'); ?>
+							<?php esc_html_e('Please enter the outstanding amount communicated by the club.', 'lccl-de'); ?>
 						</p>
 					</div>
 				</div>

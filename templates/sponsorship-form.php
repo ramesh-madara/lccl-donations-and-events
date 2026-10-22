@@ -281,7 +281,7 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 						data-default-cny="<?php echo esc_attr( (string) $default_cny ); ?>"
 						required
 					>
-					<div class="lccl-df__custom-select" data-lccl-custom-select>
+					<div class="lccl-df__custom-select">
 						<select
 							class="lccl-df__currency-select"
 							id="lccl-ps-currency"
@@ -294,17 +294,9 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 							<option value="EUR"<?php selected( $currency, 'EUR' ); ?>>EUR</option>
 							<option value="CNY"<?php selected( $currency, 'CNY' ); ?>>CNY</option>
 						</select>
-						<button type="button" class="lccl-df__custom-select-trigger" aria-haspopup="listbox" aria-expanded="false" data-lccl-select-trigger>
+						<div class="lccl-df__custom-select-trigger" aria-hidden="true">
 							<span data-lccl-select-value><?php echo esc_html( $currency ); ?></span>
-							<svg xmlns="http://www.w3.org/2000/svg" width="12" height="8" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-						</button>
-						<ul class="lccl-df__custom-select-options" role="listbox" data-lccl-select-options hidden>
-							<li role="option" tabindex="0" data-value="LKR" <?php echo 'LKR' === $currency ? 'aria-selected="true"' : ''; ?>>LKR</li>
-							<li role="option" tabindex="0" data-value="USD" <?php echo 'USD' === $currency ? 'aria-selected="true"' : ''; ?>>USD</li>
-							<li role="option" tabindex="0" data-value="GBP" <?php echo 'GBP' === $currency ? 'aria-selected="true"' : ''; ?>>GBP</li>
-							<li role="option" tabindex="0" data-value="EUR" <?php echo 'EUR' === $currency ? 'aria-selected="true"' : ''; ?>>EUR</li>
-							<li role="option" tabindex="0" data-value="CNY" <?php echo 'CNY' === $currency ? 'aria-selected="true"' : ''; ?>>CNY</li>
-						</ul>
+						</div>
 					</div>
 					<input type="hidden" name="currency" id="lccl-ps-currency-hidden" value="<?php echo esc_attr( $currency ); ?>">
 				</div>
