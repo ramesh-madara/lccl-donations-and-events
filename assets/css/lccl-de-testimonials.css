@@ -133,8 +133,8 @@
 	will-change: transform;
 	-webkit-transform: translate3d(0, 0, 0);
 	transform: translate3d(0, 0, 0);
-	-webkit-animation: lccl-marquee 40s linear infinite;
-	animation: lccl-marquee 40s linear infinite;
+	-webkit-animation: lccl-marquee 53.33s linear infinite;
+	animation: lccl-marquee 53.33s linear infinite;
 	-webkit-backface-visibility: hidden;
 	backface-visibility: hidden;
 }
@@ -359,7 +359,7 @@
 .lccl-t-name {
 	margin: 0;
 	font-size: 18px;
-	font-weight: 600;
+	font-weight: 500;
 	color: #222222;
 }
 
@@ -370,6 +370,15 @@
 	color: #666;
 	margin: 14px 0 10px 0;
 	letter-spacing: 0.02em;
+}
+
+.lccl-t-modal-date {
+	margin: 14px 0 2px;
+}
+
+.lccl-t-modal-quote {
+	margin-top: 0;
+	text-align: center;
 }
 
 .lccl-t-content {
@@ -554,7 +563,7 @@
 .lccl-design-2 .lccl-t-name {
 	font-size: 16px;
 	margin: 0 0 2px;
-	font-weight: 600;
+	font-weight: 500;
 }
 
 .lccl-design-2 .lccl-t-role-title {

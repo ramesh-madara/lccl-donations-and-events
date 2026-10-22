@@ -328,9 +328,9 @@
 				modalHtml += '<h5 class="lccl-t-role-title" style="font-size:12.35px; font-weight:normal; margin-bottom:4px; color:#666; text-align:center;">' + role + '</h5>';
 			}
 			if (date) {
-				modalHtml += '<div class="lccl-t-date" style="font-size:12.35px; color:#666; margin-bottom:18px; text-align:center;">' + date + '</div>';
+				modalHtml += '<div class="lccl-t-date lccl-t-modal-date" style="font-size:12.35px; color:#666; text-align:center;">' + date + '</div>';
 			}
-			modalHtml += '<div class="lccl-t-modal-quote" style="margin-top: 15px; text-align:center;">' + formattedQuote + '</div>';
+			modalHtml += '<div class="lccl-t-modal-quote">' + formattedQuote + '</div>';
 			
 			$('.lccl-t-modal-content').html(modalHtml);
 			$('.lccl-t-modal-overlay').fadeIn(200);
