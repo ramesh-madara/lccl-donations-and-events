@@ -359,7 +359,7 @@
 .lccl-t-name {
 	margin: 0;
 	font-size: 18px;
-	font-weight: 700;
+	font-weight: 600;
 	color: #222222;
 }
 
@@ -389,6 +389,15 @@
 	/* 5% smaller than 13px */
 	font-weight: 400;
 	color: #666;
+}
+
+.lccl-design-1 .lccl-t-content {
+	padding-top: 15px;
+}
+
+.lccl-design-1 .lccl-t-date {
+	margin-top: 12px;
+	margin-bottom: 25px;
 }
 
 .lccl-t-quote-container {
@@ -545,7 +554,7 @@
 .lccl-design-2 .lccl-t-name {
 	font-size: 16px;
 	margin: 0 0 2px;
-	font-weight: bold;
+	font-weight: 600;
 }
 
 .lccl-design-2 .lccl-t-role-title {

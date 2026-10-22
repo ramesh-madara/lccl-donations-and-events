@@ -17,41 +17,36 @@ if ( $can_view && $user instanceof WP_User ) {
 	$display = LCCL_DE_Payment_Dashboard::display_name( $user );
 }
 ?>
-<div class="lccl-paydash" data-logged-in="<?php echo $can_view ? '1' : '0'; ?>">
+<div class="lccl-paydash lccl-bda" data-logged-in="<?php echo $can_view ? '1' : '0'; ?>">
 
 	<!-- 1. Dedicated Login Section -->
-	<section class="lccl-paydash__login lccl-bda__login" data-panel="login" <?php echo $can_view ? 'hidden' : ''; ?>>
+	<section class="lccl-bda__login" data-panel="login" <?php echo $can_view ? 'hidden' : ''; ?>>
 		<div class="lccl-bda__login-card">
-			<div class="lccl-bda__modal" data-login-modal hidden style="display:none;">
+			<div class="lccl-bda__modal" data-login-modal hidden>
 				<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
 				<span class="lccl-bda__modal-label"><?php esc_html_e( 'Signing in…', 'lccl-de' ); ?></span>
 			</div>
 
-			<div class="lccl-paydash__login-badge">
-				<span class="lccl-paydash__shield-icon" aria-hidden="true">🔒</span>
-				<span><?php esc_html_e( 'Authorized Staff Only', 'lccl-de' ); ?></span>
-			</div>
-
 			<h2 class="lccl-bda__title"><?php esc_html_e( 'Payment Dashboard', 'lccl-de' ); ?></h2>
-			<p class="lccl-bda__lede"><?php esc_html_e( 'Sign in with your administrative account to monitor and review online payments.', 'lccl-de' ); ?></p>
+			<p class="lccl-bda__lede"><?php esc_html_e( 'Sign in to monitor and review online payments.', 'lccl-de' ); ?></p>
 
 			<p class="lccl-bda__banner lccl-bda__banner--error" data-login-error hidden></p>
 			<p class="lccl-bda__banner lccl-bda__banner--success" data-login-notice hidden></p>
 
 			<form class="lccl-bda__form" data-form="login" novalidate>
 				<div class="lccl-bda__field">
-					<label class="lccl-bda__label" id="lccl-paydash-username-label" for="lccl-paydash-username"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
-					<input class="lccl-bda__input" type="text" id="lccl-paydash-username" name="username" autocomplete="username" required>
+					<label class="lccl-bda__label" id="lccl-bda-username-label" for="lccl-bda-username"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
+					<input class="lccl-bda__input" type="text" id="lccl-bda-username" name="username" autocomplete="username" required>
 				</div>
 				<div class="lccl-bda__field">
-					<label class="lccl-bda__label" for="lccl-paydash-password"><?php esc_html_e( 'Password', 'lccl-de' ); ?></label>
-					<input class="lccl-bda__input" type="password" id="lccl-paydash-password" name="password" autocomplete="current-password" required>
+					<label class="lccl-bda__label" for="lccl-bda-password"><?php esc_html_e( 'Password', 'lccl-de' ); ?></label>
+					<input class="lccl-bda__input" type="password" id="lccl-bda-password" name="password" autocomplete="current-password" required>
 				</div>
-				<div class="lccl-bda__hp" aria-hidden="true" style="display:none;">
-					<label for="lccl-paydash-hp"><?php esc_html_e( 'Website', 'lccl-de' ); ?></label>
-					<input type="text" id="lccl-paydash-hp" name="lccl_de_hp" value="" tabindex="-1" autocomplete="off">
+				<div class="lccl-bda__hp" aria-hidden="true">
+					<label for="lccl-bda-hp"><?php esc_html_e( 'Website', 'lccl-de' ); ?></label>
+					<input type="text" id="lccl-bda-hp" name="lccl_de_hp" value="" tabindex="-1" autocomplete="off">
 				</div>
-				<button class="lccl-bda__button" type="submit"><?php esc_html_e( 'Sign in to Dashboard', 'lccl-de' ); ?></button>
+				<button class="lccl-bda__button" type="submit"><?php esc_html_e( 'Sign in', 'lccl-de' ); ?></button>
 			</form>
 
 			<p class="lccl-bda__switch">
@@ -63,27 +58,27 @@ if ( $can_view && $user instanceof WP_User ) {
 	</section>
 
 	<!-- 2. Forgot Password Section -->
-	<section class="lccl-paydash__login lccl-bda__login" data-panel="forgot" hidden>
+	<section class="lccl-bda__login" data-panel="forgot" hidden>
 		<div class="lccl-bda__login-card">
-			<div class="lccl-bda__modal" data-forgot-modal hidden style="display:none;">
+			<div class="lccl-bda__modal" data-forgot-modal hidden>
 				<span class="lccl-bda__loader lccl-bda__loader--lg" aria-hidden="true"></span>
 				<span class="lccl-bda__modal-label"><?php esc_html_e( 'Sending reset link…', 'lccl-de' ); ?></span>
 			</div>
 			<p class="lccl-bda__brand">LCCL</p>
 			<h2 class="lccl-bda__title"><?php esc_html_e( 'Reset password', 'lccl-de' ); ?></h2>
-			<p class="lccl-bda__lede"><?php esc_html_e( 'Enter your username or email. We will send a reset link if the account exists.', 'lccl-de' ); ?></p>
+			<p class="lccl-bda__lede" data-lccl-forgot-lede><?php esc_html_e( 'Enter your username or email. We will send a reset link if the account exists.', 'lccl-de' ); ?></p>
 
 			<p class="lccl-bda__banner lccl-bda__banner--error" data-forgot-error hidden></p>
 			<p class="lccl-bda__banner lccl-bda__banner--success" data-forgot-notice hidden></p>
 
 			<form class="lccl-bda__form" data-form="forgot" novalidate>
 				<div class="lccl-bda__field">
-					<label class="lccl-bda__label" id="lccl-paydash-forgot-user-label" for="lccl-paydash-forgot-user"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
-					<input class="lccl-bda__input" type="text" id="lccl-paydash-forgot-user" name="username" autocomplete="username" required>
+					<label class="lccl-bda__label" id="lccl-bda-forgot-user-label" for="lccl-bda-forgot-user"><?php esc_html_e( 'Username or email', 'lccl-de' ); ?></label>
+					<input class="lccl-bda__input" type="text" id="lccl-bda-forgot-user" name="username" autocomplete="username" required>
 				</div>
-				<div class="lccl-bda__hp" aria-hidden="true" style="display:none;">
-					<label for="lccl-paydash-forgot-hp"><?php esc_html_e( 'Website', 'lccl-de' ); ?></label>
-					<input type="text" id="lccl-paydash-forgot-hp" name="lccl_de_hp" value="" tabindex="-1" autocomplete="off">
+				<div class="lccl-bda__hp" aria-hidden="true">
+					<label for="lccl-bda-forgot-hp"><?php esc_html_e( 'Website', 'lccl-de' ); ?></label>
+					<input type="text" id="lccl-bda-forgot-hp" name="lccl_de_hp" value="" tabindex="-1" autocomplete="off">
 				</div>
 				<button class="lccl-bda__button" type="submit"><?php esc_html_e( 'Send reset link', 'lccl-de' ); ?></button>
 			</form>
@@ -181,7 +176,7 @@ if ( $can_view && $user instanceof WP_User ) {
 						<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
 					</svg>
 				</span>
-				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Online Donations', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Donations', 'lccl-de' ); ?></span>
 			</button>
 			<button class="lccl-paydash__tab" type="button" role="tab" data-tab="sponsorship" aria-selected="false">
 				<span class="lccl-paydash__tab-icon" aria-hidden="true">
@@ -191,7 +186,7 @@ if ( $can_view && $user instanceof WP_User ) {
 						<path d="M2 12l10 5 10-5"></path>
 					</svg>
 				</span>
-				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Project Sponsorships', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Sponsorships', 'lccl-de' ); ?></span>
 			</button>
 			<button class="lccl-paydash__tab" type="button" role="tab" data-tab="membership" aria-selected="false">
 				<span class="lccl-paydash__tab-icon" aria-hidden="true">
@@ -204,13 +199,23 @@ if ( $can_view && $user instanceof WP_User ) {
 				</span>
 				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Membership Fees', 'lccl-de' ); ?></span>
 			</button>
+			<button class="lccl-paydash__tab" type="button" role="tab" data-tab="fundraiser" aria-selected="false">
+				<span class="lccl-paydash__tab-icon" aria-hidden="true">
+					<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M2 9a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9z"></path>
+						<path d="M13 21V9"></path>
+						<path d="M2 9h20"></path>
+					</svg>
+				</span>
+				<span class="lccl-paydash__tab-text"><?php esc_html_e( 'Fundraiser Bookings', 'lccl-de' ); ?></span>
+			</button>
 		</nav>
 
 		<!-- Filters and Search Bar -->
 		<form class="lccl-paydash__filter-bar" data-form="filters" onsubmit="return false;">
 			<div class="lccl-paydash__search-wrap">
 				<label class="screen-reader-text" for="lccl-paydash-search"><?php esc_html_e( 'Search Transactions', 'lccl-de' ); ?></label>
-				<input class="lccl-bda__input lccl-paydash__search" type="search" id="lccl-paydash-search" name="search" placeholder="<?php esc_attr_e( 'Search by Ref, Name, Email, Phone, Project, Receipt…', 'lccl-de' ); ?>">
+				<input class="lccl-bda__input lccl-paydash__search" type="search" id="lccl-paydash-search" name="search" placeholder="<?php esc_attr_e( 'Search by Ref, Name, Email, Phone, Event, Seats, Tables, Receipt…', 'lccl-de' ); ?>">
 			</div>
 
 			<div class="lccl-paydash__filter-item">
@@ -221,6 +226,20 @@ if ( $can_view && $user instanceof WP_User ) {
 					<option value="failed"><?php esc_html_e( 'Declined / Failed', 'lccl-de' ); ?></option>
 					<option value="pending"><?php esc_html_e( 'Pending Checkout', 'lccl-de' ); ?></option>
 					<option value="cancelled"><?php esc_html_e( 'Cancelled', 'lccl-de' ); ?></option>
+				</select>
+			</div>
+
+			<div class="lccl-paydash__filter-item" data-filter-item="event" style="display: none;">
+				<label class="screen-reader-text" for="lccl-paydash-event"><?php esc_html_e( 'Filter by event', 'lccl-de' ); ?></label>
+				<select class="lccl-bda__select" id="lccl-paydash-event" name="event_id">
+					<option value=""><?php esc_html_e( 'All Fundraiser Events', 'lccl-de' ); ?></option>
+					<?php if ( ! empty( $fundraiser_events ) ) : ?>
+						<?php foreach ( $fundraiser_events as $fe ) : ?>
+							<option value="<?php echo esc_attr( $fe['id'] ); ?>">
+								<?php echo esc_html( $fe['name'] ); ?><?php echo ! empty( $fe['event_date'] ) ? ' (' . esc_html( date( 'M j, Y', strtotime( $fe['event_date'] ) ) ) . ')' : ''; ?>
+							</option>
+						<?php endforeach; ?>
+					<?php endif; ?>
 				</select>
 			</div>
 

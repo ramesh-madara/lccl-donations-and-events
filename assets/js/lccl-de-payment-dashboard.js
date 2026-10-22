@@ -32,6 +32,7 @@
 			tab: 'all',
 			status: 'paid',
 			search: '',
+			eventId: '',
 			page: 1,
 			perPage: parseInt( cfg.perPage, 10 ) || 20,
 			total: 0,
@@ -74,10 +75,12 @@
 		var tabs = root.querySelectorAll( '.lccl-paydash__tab' );
 
 		// Filters
-		var searchInput  = root.querySelector( '#lccl-paydash-search' );
-		var statusSelect = root.querySelector( '#lccl-paydash-status' );
-		var perPageSelect = root.querySelector( '#lccl-paydash-per-page' );
-		var clearBtn     = root.querySelector( '[data-action="clear-filters"]' );
+		var searchInput     = root.querySelector( '#lccl-paydash-search' );
+		var statusSelect    = root.querySelector( '#lccl-paydash-status' );
+		var eventSelect     = root.querySelector( '#lccl-paydash-event' );
+		var eventFilterWrap = root.querySelector( '[data-filter-item="event"]' );
+		var perPageSelect   = root.querySelector( '#lccl-paydash-per-page' );
+		var clearBtn        = root.querySelector( '[data-action="clear-filters"]' );
 
 		// Table & Pager
 		var txRows     = root.querySelector( '[data-tx-rows]' );
@@ -113,6 +116,7 @@
 		}
 
 		function showPanel( name ) {
+			root.setAttribute( 'data-logged-in', 'dash' === name ? '1' : '0' );
 			if ( loginPanel ) {
 				loginPanel.hidden = ( 'login' !== name );
 			}
@@ -278,6 +282,21 @@
 
 				state.tab  = tab;
 				state.page = 1;
+
+				if ( eventFilterWrap ) {
+					if ( 'fundraiser' === tab ) {
+						eventFilterWrap.hidden = false;
+						eventFilterWrap.style.display = '';
+					} else {
+						eventFilterWrap.hidden = true;
+						eventFilterWrap.style.display = 'none';
+						if ( eventSelect ) {
+							eventSelect.value = '';
+						}
+						state.eventId = '';
+					}
+				}
+
 				loadTransactions();
 			} );
 		} );
@@ -304,6 +323,14 @@
 			} );
 		}
 
+		if ( eventSelect ) {
+			eventSelect.addEventListener( 'change', function () {
+				state.eventId = eventSelect.value;
+				state.page    = 1;
+				loadTransactions();
+			} );
+		}
+
 		if ( perPageSelect ) {
 			perPageSelect.addEventListener( 'change', function () {
 				state.perPage = parseInt( perPageSelect.value, 10 ) || 20;
@@ -320,9 +347,13 @@
 				if ( statusSelect ) {
 					statusSelect.value = '';
 				}
-				state.search = '';
-				state.status = '';
-				state.page   = 1;
+				if ( eventSelect ) {
+					eventSelect.value = '';
+				}
+				state.search  = '';
+				state.status  = '';
+				state.eventId = '';
+				state.page    = 1;
 				loadTransactions();
 			} );
 		}
@@ -344,6 +375,10 @@
 				'&search=' + encodeURIComponent( state.search ) +
 				'&page=' + encodeURIComponent( state.page ) +
 				'&per_page=' + encodeURIComponent( state.perPage );
+
+			if ( state.eventId ) {
+				query += '&event_id=' + encodeURIComponent( state.eventId );
+			}
 
 			api( 'transactions' + query, { method: 'GET' } )
 				.then( function ( data ) {
@@ -457,6 +492,15 @@
 				} else if ( 'family' === item.tx_type ) {
 					badgeClass = 'lccl-paydash__badge--family';
 					badgeText  = 'Family (' + ( item.family_count || 1 ) + ')';
+				} else if ( 'fundraiser_seat' === item.tx_type ) {
+					badgeClass = 'lccl-paydash__badge--fundraiser-seat';
+					badgeText  = 'Seats (' + ( item.family_count || 1 ) + ')';
+					subText    = ( item.project_label || 'Fundraiser' ) + ( item.seat_numbers ? ' • Seat #' + item.seat_numbers : '' );
+				} else if ( 'fundraiser_table' === item.tx_type ) {
+					badgeClass = 'lccl-paydash__badge--fundraiser-table';
+					badgeText  = 'Table (' + ( item.family_count || 1 ) + ')';
+					var tblLabelStr = ( item.table_labels && item.table_labels.length ) ? item.table_labels.join( ', ' ) : ( item.message || '' );
+					subText    = ( item.project_label || 'Fundraiser' ) + ( tblLabelStr ? ' • ' + tblLabelStr : '' );
 				}
 
 				// Bank response code & text
@@ -615,6 +659,22 @@
 					html += '<div style="margin-top:14px; padding-top:14px; border-top:1px solid #e2e8f0;">';
 					html += '<h4>Family Membership</h4>';
 					html += '<p style="margin:4px 0;"><strong>Registered Family Members:</strong> ' + escapeHtml( item.family_count ) + '</p>';
+					html += '</div>';
+				} else if ( 'fundraiser_seat' === item.tx_type || 'fundraiser_table' === item.tx_type ) {
+					html += '<div style="margin-top:14px; padding-top:14px; border-top:1px solid #e2e8f0;">';
+					html += '<h4>Fundraiser Booking Reservation Details</h4>';
+					html += '<div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; padding:12px 14px; margin-top:6px; font-size:13px; max-width:620px;">';
+					html += '<p style="margin:2px 0 6px;"><strong>Event:</strong> ' + escapeHtml( item.project_label || 'Fundraiser Event' ) + '</p>';
+					html += '<p style="margin:2px 0 6px;"><strong>Booking Type:</strong> ' + ( 'fundraiser_table' === item.tx_type ? 'Whole Table Reservation' : 'Individual Seat Booking' ) + '</p>';
+					html += '<p style="margin:2px 0 6px;"><strong>Reserved Quantity:</strong> ' + escapeHtml( item.family_count || 1 ) + ' ' + ( 'fundraiser_table' === item.tx_type ? 'table(s)' : 'seat(s)' ) + '</p>';
+					if ( item.seat_numbers ) {
+						html += '<p style="margin:2px 0 6px;"><strong>Assigned Seat(s):</strong> <code style="font-size:12px; font-weight:700; color:#1d4ed8; background:#eff6ff; padding:2px 6px; border-radius:4px; border:1px solid #bfdbfe;">Seat #' + escapeHtml( item.seat_numbers.split(',').join(', Seat #') ) + '</code></p>';
+					}
+					if ( item.table_labels && item.table_labels.length ) {
+						html += '<p style="margin:2px 0 6px;"><strong>Reserved Table(s):</strong> <code style="font-size:12px; font-weight:700; color:#854d0e; background:#fefce8; padding:2px 6px; border-radius:4px; border:1px solid #fef08a;">' + escapeHtml( item.table_labels.join(', ') ) + '</code></p>';
+					}
+					html += '<p style="margin:6px 0 0; color:#64748b; font-size:12px; border-top:1px dashed #e2e8f0; padding-top:6px;">Attendee Contact: <strong>' + escapeHtml( item.full_name || '—' ) + '</strong> &bull; ' + escapeHtml( item.email || '' ) + ( item.phone ? ' &bull; ' + escapeHtml( item.phone ) : '' ) + '</p>';
+					html += '</div>';
 					html += '</div>';
 				}
 

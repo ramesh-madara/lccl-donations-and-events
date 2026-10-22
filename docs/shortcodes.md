@@ -195,7 +195,8 @@ Frontend payment monitoring dashboard for reviewing all payment routes (Donation
 - **Access Control**: Strictly restricted to users who can access `wp-admin` (Administrators, Editors, etc.). Reviewer-only accounts are blocked.
 - **Features**:
   - Independent frontend login card matching the reviewer portal design.
-  - Tabbed interface separating payment routes: *All Payments*, *Online Donations*, *Project Sponsorships*, and *Membership Fees*.
+  - Tabbed interface separating payment routes: *All Payments*, *Donations*, *Sponsorships*, *Membership Fees*, and *Fundraiser Bookings*.
+  - Event-specific filtering for Fundraiser Bookings to isolate seat and table reservations per fundraiser event.
   - Live KPI metric cards: Total Transactions, Total Collected (LKR), Paid / Approved, Declined / Failed, and Pending Checkout.
   - Universal search and status filters with debounced AJAX/REST querying.
   - Expandable technical drawer per transaction showing full metadata, bank receipts, response codes, custom donor/sponsor messages, and color-coded gateway JSON response.

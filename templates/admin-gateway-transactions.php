@@ -18,6 +18,10 @@ $payments_table     = LCCL_DE_Schema::payments_table();
 $sponsorships_table = LCCL_DE_Schema::sponsorships_table();
 $sponsorships_exist = LCCL_DE_Schema::sponsorships_exist();
 
+$bookings_table   = class_exists( 'LCCL_DE_Fundraiser' ) ? LCCL_DE_Fundraiser::bookings_table() : $wpdb->prefix . 'lccl_de_fr_bookings';
+$events_table     = class_exists( 'LCCL_DE_Fundraiser' ) ? LCCL_DE_Fundraiser::events_table() : $wpdb->prefix . 'lccl_de_fr_events';
+$bookings_exist   = ! empty( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $bookings_table ) ) );
+
 // ------------------------------------------------------------------
 // Build Unified SQL Query across all payments
 // ------------------------------------------------------------------
@@ -46,6 +50,7 @@ $union_sql = "
 			paid_at,
 			'payments' AS source_table
 		FROM `{$payments_table}`
+		WHERE membership_type != 'fundraiser' AND order_ref NOT LIKE 'FND-%'
 	)
 ";
 
@@ -76,6 +81,41 @@ if ( $sponsorships_exist ) {
 				paid_at,
 				'sponsorships' AS source_table
 			FROM `{$sponsorships_table}`
+		)
+	";
+}
+
+if ( $bookings_exist ) {
+	$union_sql .= "
+		UNION ALL
+		(
+			SELECT
+				bk.id,
+				bk.order_ref,
+				bk.attendee_name AS first_name,
+				'' AS last_name,
+				bk.attendee_email AS email,
+				bk.attendee_phone AS phone,
+				CASE WHEN bk.booking_type = 'table' THEN 'fundraiser_table' ELSE 'fundraiser_seat' END AS tx_type,
+				bk.qty AS family_count,
+				CAST(bk.event_id AS CHAR) AS project,
+				COALESCE(ev.name, 'Fundraiser Event') AS project_label,
+				CASE 
+					WHEN bk.booking_type = 'table' THEN CONCAT('table_ids:', COALESCE(bk.table_ids, ''))
+					ELSE CONCAT('seat_numbers:', COALESCE(bk.seat_numbers, ''))
+				END AS extra_message,
+				bk.amount_lkr,
+				bk.currency,
+				bk.status,
+				bk.session_id,
+				bk.gateway_receipt,
+				bk.gateway_response,
+				bk.ip_address,
+				bk.created_at,
+				bk.paid_at,
+				'fundraiser_bookings' AS source_table
+			FROM `{$bookings_table}` bk
+			LEFT JOIN `{$events_table}` ev ON bk.event_id = ev.id
 		)
 	";
 }
@@ -240,9 +280,11 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 			<select name="tx_type" id="lccl-tx-type" aria-label="<?php esc_attr_e( 'Filter by payment type', 'lccl-de' ); ?>">
 				<option value=""><?php esc_html_e( 'All Payment Types', 'lccl-de' ); ?></option>
 				<option value="donation" <?php selected( $type_filter, 'donation' ); ?>><?php esc_html_e( 'Donations', 'lccl-de' ); ?></option>
-				<option value="sponsorship" <?php selected( $type_filter, 'sponsorship' ); ?>><?php esc_html_e( 'Project Sponsorships', 'lccl-de' ); ?></option>
+				<option value="sponsorship" <?php selected( $type_filter, 'sponsorship' ); ?>><?php esc_html_e( 'Sponsorships', 'lccl-de' ); ?></option>
 				<option value="member" <?php selected( $type_filter, 'member' ); ?>><?php esc_html_e( 'Annual Membership (Single)', 'lccl-de' ); ?></option>
 				<option value="family" <?php selected( $type_filter, 'family' ); ?>><?php esc_html_e( 'Annual Membership (Family)', 'lccl-de' ); ?></option>
+				<option value="fundraiser_seat" <?php selected( $type_filter, 'fundraiser_seat' ); ?>><?php esc_html_e( 'Fundraiser Seats', 'lccl-de' ); ?></option>
+				<option value="fundraiser_table" <?php selected( $type_filter, 'fundraiser_table' ); ?>><?php esc_html_e( 'Fundraiser Tables', 'lccl-de' ); ?></option>
 			</select>
 
 			<button type="submit" class="button button-secondary"><?php esc_html_e( 'Filter', 'lccl-de' ); ?></button>
@@ -345,6 +387,12 @@ $items = $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.Di
 						} elseif ( 'family' === $type ) {
 							$type_class = 'lccl-type--family';
 							$type_label = sprintf( __( 'Family (%d)', 'lccl-de' ), (int) $row['family_count'] );
+						} elseif ( 'fundraiser_seat' === $type ) {
+							$type_class = 'lccl-type--fundraiser-seat';
+							$type_label = sprintf( __( 'Seats (%d)', 'lccl-de' ), (int) $row['family_count'] );
+						} elseif ( 'fundraiser_table' === $type ) {
+							$type_class = 'lccl-type--fundraiser-table';
+							$type_label = sprintf( __( 'Table (%d)', 'lccl-de' ), (int) $row['family_count'] );
 						}
 						?>
 						<tr id="tx-row-<?php echo esc_attr( $row_key ); ?>">

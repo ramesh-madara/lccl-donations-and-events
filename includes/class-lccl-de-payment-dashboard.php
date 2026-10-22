@@ -3,9 +3,10 @@
  * Frontend Payment Dashboard and REST API.
  *
  * Dedicated dashboard at /payment-dashboard to monitor all payments:
- *  - Online Donations
- *  - Project Sponsorships
+ *  - Donations
+ *  - Sponsorships
  *  - Membership Fee Payments (Single & Family)
+ *  - Fundraiser Seat & Table Bookings (Separated by Event)
  *
  * Only users who can access wp-admin are permitted to access this dashboard.
  *
@@ -108,14 +109,28 @@ class LCCL_DE_Payment_Dashboard {
 		$user     = wp_get_current_user();
 		$can_view = is_user_logged_in() && self::can_access( $user );
 
+		$fundraiser_events = array();
+		if ( class_exists( 'LCCL_DE_Fundraiser' ) ) {
+			$raw_events = LCCL_DE_Fundraiser::get_all_events();
+			foreach ( $raw_events as $ev ) {
+				$fundraiser_events[] = array(
+					'id'         => (int) $ev['id'],
+					'name'       => (string) $ev['name'],
+					'event_date' => (string) $ev['event_date'],
+					'status'     => (string) $ev['status'],
+				);
+			}
+		}
+
 		$script_data = array(
-			'restUrl'     => esc_url_raw( rest_url( self::REST_NS . '/payment-dashboard/' ) ),
-			'nonce'       => wp_create_nonce( 'wp_rest' ),
-			'loggedIn'    => $can_view ? 1 : 0,
-			'displayName' => $can_view ? self::display_name( $user ) : '',
-			'adminUrl'    => esc_url( admin_url( 'admin.php?page=lccl-de-programs&tab=gateway&subtab=transactions' ) ),
-			'perPage'     => 20,
-			'perPages'    => array( 10, 20, 50 ),
+			'restUrl'          => esc_url_raw( rest_url( self::REST_NS . '/payment-dashboard/' ) ),
+			'nonce'            => wp_create_nonce( 'wp_rest' ),
+			'loggedIn'         => $can_view ? 1 : 0,
+			'displayName'      => $can_view ? self::display_name( $user ) : '',
+			'adminUrl'         => esc_url( admin_url( 'admin.php?page=lccl-de-programs&tab=gateway&subtab=transactions' ) ),
+			'perPage'          => 20,
+			'perPages'         => array( 10, 20, 50 ),
+			'fundraiserEvents' => $fundraiser_events,
 		);
 
 		wp_localize_script(
@@ -421,6 +436,10 @@ class LCCL_DE_Payment_Dashboard {
 		$sponsorships_table = LCCL_DE_Schema::sponsorships_table();
 		$sponsorships_exist = LCCL_DE_Schema::sponsorships_exist();
 
+		$bookings_table   = class_exists( 'LCCL_DE_Fundraiser' ) ? LCCL_DE_Fundraiser::bookings_table() : $wpdb->prefix . 'lccl_de_fr_bookings';
+		$events_table     = class_exists( 'LCCL_DE_Fundraiser' ) ? LCCL_DE_Fundraiser::events_table() : $wpdb->prefix . 'lccl_de_fr_events';
+		$bookings_exist   = ! empty( $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $bookings_table ) ) );
+
 		$union_sql = "
 			(
 				SELECT
@@ -446,6 +465,7 @@ class LCCL_DE_Payment_Dashboard {
 					paid_at,
 					'payments' AS source_table
 				FROM `{$payments_table}`
+				WHERE membership_type != 'fundraiser' AND order_ref NOT LIKE 'FND-%'
 			)
 		";
 
@@ -480,14 +500,50 @@ class LCCL_DE_Payment_Dashboard {
 			";
 		}
 
+		if ( $bookings_exist ) {
+			$union_sql .= "
+				UNION ALL
+				(
+					SELECT
+						bk.id,
+						bk.order_ref,
+						bk.attendee_name AS first_name,
+						'' AS last_name,
+						bk.attendee_email AS email,
+						bk.attendee_phone AS phone,
+						CASE WHEN bk.booking_type = 'table' THEN 'fundraiser_table' ELSE 'fundraiser_seat' END AS tx_type,
+						bk.qty AS family_count,
+						CAST(bk.event_id AS CHAR) AS project,
+						COALESCE(ev.name, 'Fundraiser Event') AS project_label,
+						CASE 
+							WHEN bk.booking_type = 'table' THEN CONCAT('table_ids:', COALESCE(bk.table_ids, ''))
+							ELSE CONCAT('seat_numbers:', COALESCE(bk.seat_numbers, ''))
+						END AS extra_message,
+						bk.amount_lkr,
+						bk.currency,
+						bk.status,
+						bk.session_id,
+						bk.gateway_receipt,
+						bk.gateway_response,
+						bk.ip_address,
+						bk.created_at,
+						bk.paid_at,
+						'fundraiser_bookings' AS source_table
+					FROM `{$bookings_table}` bk
+					LEFT JOIN `{$events_table}` ev ON bk.event_id = ev.id
+				)
+			";
+		}
+
 		$tab      = sanitize_key( (string) $request->get_param( 'tab' ) );
 		$status   = sanitize_key( (string) $request->get_param( 'status' ) );
 		$search   = sanitize_text_field( (string) $request->get_param( 'search' ) );
+		$event_id = absint( $request->get_param( 'event_id' ) );
 		$page     = max( 1, absint( $request->get_param( 'page' ) ) );
 		$per_page = max( 1, min( 100, absint( $request->get_param( 'per_page' ) ?: 20 ) ) );
 		$offset   = ( $page - 1 ) * $per_page;
 
-		// Overall Stats (unfiltered by status/search, or filtered by tab).
+		// Overall Stats (unfiltered by status/search, or filtered by tab/event).
 		$tab_stat_clause = '';
 		if ( 'donation' === $tab ) {
 			$tab_stat_clause = "WHERE tx_type = 'donation'";
@@ -495,6 +551,11 @@ class LCCL_DE_Payment_Dashboard {
 			$tab_stat_clause = "WHERE tx_type = 'sponsorship'";
 		} elseif ( 'membership' === $tab ) {
 			$tab_stat_clause = "WHERE tx_type IN ('member', 'family')";
+		} elseif ( 'fundraiser' === $tab ) {
+			$tab_stat_clause = "WHERE tx_type IN ('fundraiser_seat', 'fundraiser_table')";
+			if ( $event_id > 0 ) {
+				$tab_stat_clause .= $wpdb->prepare( " AND project = %s", (string) $event_id );
+			}
 		}
 
 		$stats_row = $wpdb->get_row( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -520,6 +581,12 @@ class LCCL_DE_Payment_Dashboard {
 			$where_clauses[] = "tx_type = 'sponsorship'";
 		} elseif ( 'membership' === $tab ) {
 			$where_clauses[] = "tx_type IN ('member', 'family')";
+		} elseif ( 'fundraiser' === $tab ) {
+			$where_clauses[] = "tx_type IN ('fundraiser_seat', 'fundraiser_table')";
+			if ( $event_id > 0 ) {
+				$where_clauses[] = "project = %s";
+				$params[]        = (string) $event_id;
+			}
 		}
 
 		// Filter by Status.
@@ -531,7 +598,8 @@ class LCCL_DE_Payment_Dashboard {
 		// Universal search.
 		if ( '' !== $search ) {
 			$like            = '%' . $wpdb->esc_like( $search ) . '%';
-			$where_clauses[] = '(order_ref LIKE %s OR first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s OR gateway_receipt LIKE %s OR project_label LIKE %s)';
+			$where_clauses[] = '(order_ref LIKE %s OR first_name LIKE %s OR last_name LIKE %s OR email LIKE %s OR phone LIKE %s OR gateway_receipt LIKE %s OR project_label LIKE %s OR extra_message LIKE %s)';
+			$params[]        = $like;
 			$params[]        = $like;
 			$params[]        = $like;
 			$params[]        = $like;
@@ -584,8 +652,28 @@ class LCCL_DE_Payment_Dashboard {
 				}
 			}
 
-			$causes  = array();
-			$message = (string) $row['extra_message'];
+			$causes       = array();
+			$seat_numbers = '';
+			$table_labels = array();
+			$message      = (string) $row['extra_message'];
+
+			if ( 'fundraiser_bookings' === $row['source_table'] ) {
+				if ( 'fundraiser_seat' === $row['tx_type'] ) {
+					if ( 0 === strpos( $message, 'seat_numbers:' ) ) {
+						$seat_numbers = substr( $message, strlen( 'seat_numbers:' ) );
+						$message      = $seat_numbers ? sprintf( __( 'Seats: #%s', 'lccl-de' ), $seat_numbers ) : '';
+					}
+				} elseif ( 'fundraiser_table' === $row['tx_type'] ) {
+					if ( 0 === strpos( $message, 'table_ids:' ) ) {
+						$raw_ids = substr( $message, strlen( 'table_ids:' ) );
+						if ( class_exists( 'LCCL_DE_Fundraiser' ) ) {
+							$table_labels = LCCL_DE_Fundraiser::get_table_labels( $raw_ids );
+						}
+						$message = ! empty( $table_labels ) ? sprintf( __( 'Tables: %s', 'lccl-de' ), implode( ', ', $table_labels ) ) : '';
+					}
+				}
+			}
+
 			if ( is_array( $gw_json ) ) {
 				if ( ! empty( $gw_json['causes'] ) ) {
 					$all_c  = class_exists( 'LCCL_DE_Donation_Form' ) ? LCCL_DE_Donation_Form::causes() : array();
@@ -614,6 +702,10 @@ class LCCL_DE_Payment_Dashboard {
 				'family_count'     => (int) $row['family_count'],
 				'project'          => (string) $row['project'],
 				'project_label'    => (string) $row['project_label'],
+				'event_id'         => (int) $row['project'],
+				'event_name'       => (string) $row['project_label'],
+				'seat_numbers'     => $seat_numbers,
+				'table_labels'     => $table_labels,
 				'amount_lkr'       => (float) $row['amount_lkr'],
 				'currency'         => ! empty( $row['currency'] ) ? strtoupper( (string) $row['currency'] ) : 'LKR',
 				'amount_formatted' => number_format( (float) $row['amount_lkr'], 2 ),

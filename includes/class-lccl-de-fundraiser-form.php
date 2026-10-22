@@ -218,6 +218,7 @@ class LCCL_DE_Fundraiser_Form {
 			'member_last_name'   => '',
 			'member_email'       => $attendee_email,
 			'member_phone'       => $attendee_phone,
+			'membership_type'    => 'fundraiser',
 			'amount_lkr'         => $total_amount,
 			'currency'           => $currency,
 			'status'             => 'pending',
@@ -553,23 +554,8 @@ class LCCL_DE_Fundraiser_Form {
 	/**
 	 * Helper to get table labels from comma-separated table IDs.
 	 */
-	private static function get_table_labels( $table_ids_csv ) {
-		if ( '' === trim( (string) $table_ids_csv ) ) {
-			return array();
-		}
-		global $wpdb;
-		$tbl = LCCL_DE_Fundraiser::tables_table();
-		$ids = array_filter( array_map( 'intval', explode( ',', $table_ids_csv ) ) );
-		if ( empty( $ids ) ) {
-			return array();
-		}
-		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = (array) $wpdb->get_results( $wpdb->prepare(
-			"SELECT table_label FROM `{$tbl}` WHERE id IN ($placeholders) ORDER BY sort_order ASC",
-			...$ids
-		), ARRAY_A );
-		return array_column( $rows, 'table_label' );
+	public static function get_table_labels( $table_ids_csv ) {
+		return LCCL_DE_Fundraiser::get_table_labels( $table_ids_csv );
 	}
 
 	private static function client_ip() {

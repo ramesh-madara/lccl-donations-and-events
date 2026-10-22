@@ -404,6 +404,35 @@ class LCCL_DE_Fundraiser {
 		);
 	}
 
+	/**
+	 * Helper to get table labels from comma-separated table IDs or array.
+	 *
+	 * @param string|array $table_ids_csv CSV string or array of IDs.
+	 * @return string[]
+	 */
+	public static function get_table_labels( $table_ids_csv ) {
+		if ( is_array( $table_ids_csv ) ) {
+			$ids = array_filter( array_map( 'intval', $table_ids_csv ) );
+		} else {
+			if ( '' === trim( (string) $table_ids_csv ) ) {
+				return array();
+			}
+			$ids = array_filter( array_map( 'intval', explode( ',', (string) $table_ids_csv ) ) );
+		}
+		if ( empty( $ids ) ) {
+			return array();
+		}
+		global $wpdb;
+		$tbl = self::tables_table();
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = (array) $wpdb->get_results( $wpdb->prepare(
+			"SELECT table_label FROM `{$tbl}` WHERE id IN ($placeholders) ORDER BY sort_order ASC",
+			...$ids
+		), ARRAY_A );
+		return array_column( $rows, 'table_label' );
+	}
+
 	/* -----------------------------------------------------------------------
 	 * AJAX - Events
 	 * --------------------------------------------------------------------- */
