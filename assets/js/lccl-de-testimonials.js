@@ -22,8 +22,23 @@
 			
 			// If constant or manual, we don't resize cards via JS classes.
 			if (mode === 'constant') {
-				// Double the track exactly once for a perfect 50% marquee loop
-				$track.append($slides.clone());
+				// If not already pre-doubled by the server, double it now as a fallback
+				if ($track.children('.lccl-testimonial-slide').length === $slides.length && $slides.length > 0) {
+					while ($track.children('.lccl-testimonial-slide').length < 5) {
+						$track.append($slides.clone());
+					}
+					const $all = $track.find('.lccl-testimonial-slide');
+					$track.append($all.clone());
+				}
+
+				// Pause marquee when reading testimonial modal, resume when closed
+				$carousel.on('pauseCarousel', function() {
+					$track.css('animation-play-state', 'paused');
+				});
+				$carousel.on('resumeCarousel', function() {
+					$track.css('animation-play-state', 'running');
+				});
+
 				return; // Handled completely by CSS keyframes
 			}
 

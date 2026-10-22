@@ -89,20 +89,54 @@
    ============================================================== */
 
 /* 1. Constant Scroll */
-@keyframes lccl-marquee {
+@-webkit-keyframes lccl-marquee {
 	0% {
-		transform: translateX(0);
+		-webkit-transform: translate3d(0, 0, 0);
+		transform: translate3d(0, 0, 0);
 	}
 
 	100% {
-		transform: translateX(-50%);
+		-webkit-transform: translate3d(-50%, 0, 0);
+		transform: translate3d(-50%, 0, 0);
 	}
 }
 
+@keyframes lccl-marquee {
+	0% {
+		-webkit-transform: translate3d(0, 0, 0);
+		transform: translate3d(0, 0, 0);
+	}
+
+	100% {
+		-webkit-transform: translate3d(-50%, 0, 0);
+		transform: translate3d(-50%, 0, 0);
+	}
+}
+
+.lccl-scroll-constant .lccl-testimonials-carousel {
+	overflow: hidden;
+	position: relative;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-perspective: 1000px;
+	perspective: 1000px;
+	-webkit-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+	contain: layout paint;
+}
+
 .lccl-scroll-constant .lccl-testimonials-track {
+	display: flex;
+	align-items: stretch;
 	width: max-content;
-	animation: lccl-marquee 40s linear infinite;
 	margin: 0;
+	will-change: transform;
+	-webkit-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
+	-webkit-animation: lccl-marquee 40s linear infinite;
+	animation: lccl-marquee 40s linear infinite;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
 }
 
 .lccl-scroll-constant .lccl-testimonials-carousel:hover .lccl-testimonials-track {
@@ -113,11 +147,18 @@
 	/* Override the flexing width for constant scrolling */
 	flex: 0 0 350px;
 	min-width: 350px;
+	max-width: 350px;
+	flex-shrink: 0;
+	-webkit-backface-visibility: hidden;
+	backface-visibility: hidden;
+	-webkit-transform: translate3d(0, 0, 0);
+	transform: translate3d(0, 0, 0);
 }
 
 .lccl-scroll-constant .lccl-testimonial-card-inner {
-	transform: scale(1) !important;
+	transform: none !important;
 	opacity: 1 !important;
+	transition: none !important;
 }
 
 /* 2. Manual Scroll */
@@ -566,10 +607,6 @@
 .lccl-t-dot.is-active {
 	background-color: #f7c016;
 	/* Site identity golden color */
-	width: 26px;
-	border-radius: 6px;
-	transform: scale(1);
-	box-shadow: 0 2px 6px rgba(247, 192, 22, 0.35);
 }
 
 .lccl-t-dot:focus-visible {

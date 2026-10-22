@@ -19,6 +19,20 @@ if ( ! isset( $title ) ) {
 if ( ! isset( $subtitle ) ) {
 	$subtitle = __( 'Words of Appreciation and Recognition', 'lccl-de' );
 }
+
+$slides_to_render = $active_testimonials;
+if ( $scroll === 'scroll-constant' && ! empty( $active_testimonials ) ) {
+	// For continuous smooth scroll, ensure the single block has at least 5 cards
+	// so the track half is wider than the carousel container (1200px / 350px ≈ 3.4 cards).
+	$min_cards     = 5;
+	$base_sequence = $active_testimonials;
+	while ( count( $base_sequence ) < $min_cards ) {
+		$base_sequence = array_merge( $base_sequence, $active_testimonials );
+	}
+	// Pre-double the sequence on the server so the 50% marquee loop is pre-built in HTML.
+	// This eliminates the JS-append race condition that causes Safari to desync layers.
+	$slides_to_render = array_merge( $base_sequence, $base_sequence );
+}
 ?>
 
 <div class="lccl-testimonials-wrapper lccl-<?php echo esc_attr( $design ); ?> lccl-<?php echo esc_attr( $scroll ); ?>">
@@ -35,15 +49,16 @@ if ( ! isset( $subtitle ) ) {
 
 	<div class="lccl-testimonials-carousel" data-lccl-testimonials>
 		<div class="lccl-testimonials-track">
-			<?php foreach ( $active_testimonials as $index => $t ) : ?>
+			<?php foreach ( $slides_to_render as $render_index => $t ) : ?>
 				<?php
+				$original_index = ! empty( $active_testimonials ) ? ( $render_index % count( $active_testimonials ) ) : $render_index;
 				$formatted_date = '';
 				if ( ! empty( $t['date'] ) ) {
 					$time = strtotime( $t['date'] );
 					$formatted_date = $time ? ( function_exists( 'wp_date' ) ? wp_date( 'jS F Y', $time ) : date( 'jS F Y', $time ) ) : $t['date'];
 				}
 				?>
-				<div class="lccl-testimonial-slide" data-index="<?php echo esc_attr( $index ); ?>">
+				<div class="lccl-testimonial-slide" data-index="<?php echo esc_attr( $original_index ); ?>">
 					<div class="lccl-testimonial-card-inner">
 						<?php if ( $design === 'design-1' ) : ?>
 							<!-- Design 1: Gold Header & Centered -->
