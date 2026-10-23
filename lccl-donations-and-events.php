@@ -50,11 +50,14 @@ require_once LCCL_DE_PATH . 'includes/class-lccl-de-dashboard.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-payment-dashboard.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-testimonials.php';
 require_once LCCL_DE_PATH . 'includes/class-lccl-de-testimonials-shortcode.php';
+// Temporary Fundraiser Gala Seeder (can be deleted later).
+require_once LCCL_DE_PATH . 'includes/class-lccl-de-gala-seeder.php';
 
 register_activation_hook(__FILE__, array('LCCL_DE_Schema', 'install'));
 register_activation_hook(__FILE__, array('LCCL_DE_Roles', 'activate'));
 
 add_action('plugins_loaded', array('LCCL_DE_Schema', 'maybe_install'));
+add_action('plugins_loaded', array('LCCL_DE_Gala_Seeder', 'init'), 25);
 add_action('init', array('LCCL_DE_Roles', 'maybe_install'), 5);
 add_action('init', array('LCCL_DE_Access', 'init'));
 add_action('init', array('LCCL_DE_Admin_Users', 'init'));
