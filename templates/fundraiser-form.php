@@ -359,9 +359,38 @@ $js_data = array(
 						<span class="legend-table"><?php esc_html_e( 'Table Pool', 'lccl-de' ); ?> (<?php echo esc_html( $total_table_pool_free ); ?>)</span>
 					</div>
 				</div>
+
+				<!-- Grand Ballroom Gala Seating Plan Image -->
+				<div class="seating-plan-image-wrap">
+					<h4><?php esc_html_e( 'Grand Ballroom Gala Seating Plan', 'lccl-de' ); ?></h4>
+					<div class="seating-plan-trigger" id="openSeatingPlanTrigger" role="button" tabindex="0" title="<?php esc_attr_e( 'Click to view full size seating plan layout', 'lccl-de' ); ?>" aria-label="<?php esc_attr_e( 'Click to view full size seating plan layout', 'lccl-de' ); ?>">
+						<img src="<?php echo esc_url( LCCL_DE_URL . 'assets/img/Grand_Ballroom_Gala_Seating_Plan.png' ); ?>" alt="<?php esc_attr_e( 'Grand Ballroom Gala Seating Plan', 'lccl-de' ); ?>" loading="lazy">
+						<span class="seating-plan-hover-badge">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<circle cx="11" cy="11" r="8"></circle>
+								<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+								<line x1="11" y1="8" x2="11" y2="14"></line>
+								<line x1="8" y1="11" x2="14" y2="11"></line>
+							</svg>
+							<span><?php esc_html_e( 'Click to Enlarge Full Plan', 'lccl-de' ); ?></span>
+						</span>
+					</div>
+					<span class="seating-plan-hint"><?php esc_html_e( '🔍 Click seating plan to open in full size modal (Esc to close)', 'lccl-de' ); ?></span>
+				</div>
 			</div>
 		</aside>
 
+	</div>
+</div>
+
+<!-- Full Size Seating Plan Lightbox Modal -->
+<div id="lcclSeatingPlanModal" class="lccl-sp-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Grand Ballroom Seating Plan', 'lccl-de' ); ?>" style="display: none;">
+	<div class="lccl-sp-modal__overlay" data-close-sp-modal></div>
+	<button type="button" class="lccl-sp-modal__close-btn" data-close-sp-modal aria-label="<?php esc_attr_e( 'Close seating plan (Esc)', 'lccl-de' ); ?>" title="<?php esc_attr_e( 'Close (Esc)', 'lccl-de' ); ?>">
+		&times;
+	</button>
+	<div class="lccl-sp-modal__content" data-close-sp-modal>
+		<img src="<?php echo esc_url( LCCL_DE_URL . 'assets/img/Grand_Ballroom_Gala_Seating_Plan.png' ); ?>" alt="<?php esc_attr_e( 'Grand Ballroom Gala Seating Plan', 'lccl-de' ); ?>" class="lccl-sp-modal__img" onclick="event.stopPropagation();">
 	</div>
 </div>
 
@@ -695,5 +724,64 @@ document.addEventListener('DOMContentLoaded', function() {
 		switchMode('table');
 	}
 	updateTotal();
+
+	// Full-Size Grand Ballroom Seating Plan Modal Handlers
+	var spModal   = document.getElementById('lcclSeatingPlanModal');
+	var spTrigger = document.getElementById('openSeatingPlanTrigger');
+
+	function openSeatingPlanModal() {
+		if (!spModal) return;
+		spModal.style.display = 'flex';
+		spModal.setAttribute('aria-hidden', 'false');
+		document.body.classList.add('lccl-modal-prevent-scroll');
+		setTimeout(function() {
+			spModal.classList.add('is-open');
+			var closeBtn = spModal.querySelector('.lccl-sp-modal__close-btn');
+			if (closeBtn) closeBtn.focus();
+		}, 15);
+	}
+
+	function closeSeatingPlanModal() {
+		if (!spModal) return;
+		spModal.classList.remove('is-open');
+		spModal.setAttribute('aria-hidden', 'true');
+		document.body.classList.remove('lccl-modal-prevent-scroll');
+		setTimeout(function() {
+			if (!spModal.classList.contains('is-open')) {
+				spModal.style.display = 'none';
+			}
+		}, 260);
+	}
+
+	if (spTrigger) {
+		spTrigger.addEventListener('click', function(e) {
+			e.preventDefault();
+			openSeatingPlanModal();
+		});
+		spTrigger.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				openSeatingPlanModal();
+			}
+		});
+	}
+
+	if (spModal) {
+		var closeElements = spModal.querySelectorAll('[data-close-sp-modal]');
+		for (var c = 0; c < closeElements.length; c++) {
+			closeElements[c].addEventListener('click', function(e) {
+				e.preventDefault();
+				closeSeatingPlanModal();
+			});
+		}
+	}
+
+	// Close on Escape key
+	document.addEventListener('keydown', function(e) {
+		if ((e.key === 'Escape' || e.key === 'Esc') && spModal && spModal.classList.contains('is-open')) {
+			e.preventDefault();
+			closeSeatingPlanModal();
+		}
+	});
 });
 </script>
