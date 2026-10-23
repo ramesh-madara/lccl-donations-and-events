@@ -84,6 +84,7 @@ class LCCL_DE_Fundraiser_Form {
 		$attendee_name   = sanitize_text_field( $raw['attendee_name'] ?? '' );
 		$attendee_email  = sanitize_email( $raw['attendee_email'] ?? '' );
 		$attendee_phone  = sanitize_text_field( $raw['attendee_phone'] ?? '' );
+		$attendee_notes  = sanitize_textarea_field( $raw['notes'] ?? '' );
 		$qty             = (int) ( $raw['qty'] ?? 1 );
 		$selected_tables = isset( $raw['selectedTables'] ) && is_array( $raw['selectedTables'] )
 			? array_map( 'intval', $raw['selectedTables'] )
@@ -197,13 +198,14 @@ class LCCL_DE_Fundraiser_Form {
 				'qty'            => $qty,
 				'seat_numbers'   => $seat_numbers,
 				'table_ids'      => implode( ',', $selected_tables ),
+				'notes'          => $attendee_notes,
 				'amount_lkr'     => $total_amount,
 				'currency'       => $currency,
 				'status'         => 'pending',
 				'ip_address'     => self::client_ip(),
 				'created_at'     => current_time( 'mysql' ),
 			),
-			array( '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%f', '%s', '%s', '%s', '%s' )
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( ! $inserted ) {
@@ -415,6 +417,12 @@ class LCCL_DE_Fundraiser_Form {
 					<span style="color:#1d4ed8; font-weight:600;"><?php echo esc_html( $is_individual ? __( 'Assigned Seat Numbers', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
 					<strong style="color:#1d4ed8; font-size:16px; font-weight:700;"><?php echo esc_html( $seat_display ); ?></strong>
 				</div>
+				<?php if ( ! empty( $booking['notes'] ) ) : ?>
+					<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
+						<span style="color:#6b7280;"><?php esc_html_e( 'Notes / Requests', 'lccl-de' ); ?></span>
+						<span style="color:#1a1d23; max-width:60%; text-align:right;"><?php echo esc_html( $booking['notes'] ); ?></span>
+					</div>
+				<?php endif; ?>
 				<div style="display:flex; justify-content:space-between; padding:8px 0;">
 					<span style="color:#6b7280;"><?php esc_html_e( 'Amount Paid', 'lccl-de' ); ?></span>
 					<strong style="font-size:16px; color:#16a34a;">LKR <?php echo esc_html( number_format( (float) $booking['amount_lkr'], 2 ) ); ?></strong>
@@ -491,6 +499,7 @@ class LCCL_DE_Fundraiser_Form {
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Booking Type:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $is_individual ? 'Individual Seats' : 'Whole Table' ) . '</td></tr>' .
 			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Quantity:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $booking['qty'] ) . ( $is_individual ? ' seat(s)' : ' table(s)' ) . '</td></tr>' .
 			'<tr style="background:#eff6ff;"><td style="color:#1d4ed8; font-weight:bold; border-bottom:1px solid #e5e7eb;">' . ( $is_individual ? 'Assigned Seat Numbers:' : 'Reserved Tables:' ) . '</td><td style="color:#1d4ed8; font-weight:bold; font-size:15px; border-bottom:1px solid #e5e7eb;">' . esc_html( $seat_display ) . '</td></tr>' .
+			( ! empty( $booking['notes'] ) ? '<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Notes / Requests:</td><td style="border-bottom:1px solid #e5e7eb; color:#333;">' . esc_html( $booking['notes'] ) . '</td></tr>' : '' ) .
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280;">Amount Paid:</td><td style="color:#16a34a; font-weight:bold; font-size:15px;">LKR ' . number_format( (float) $booking['amount_lkr'], 2 ) . '</td></tr>' .
 			'</table>' .
 			'<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#92400e;">' .
@@ -521,6 +530,7 @@ class LCCL_DE_Fundraiser_Form {
 				"Attendee: %s (%s, %s)\n" .
 				"Type: %s (Qty: %d)\n" .
 				"Allocation: %s\n" .
+				( ! empty( $booking['notes'] ) ? "Notes: " . $booking['notes'] . "\n" : "" ) .
 				"Amount: LKR %s\n" .
 				"Receipt: %s\n",
 				$event_name,

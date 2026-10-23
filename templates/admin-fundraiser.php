@@ -144,8 +144,8 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 					<button type="button" class="lccl-frx-subnav__btn" data-sub="tables">
 						<span class="lccl-frx-subnav__icon">🪑</span> <?php esc_html_e( 'Tables & Pools', 'lccl-de' ); ?>
 					</button>
-					<button type="button" class="lccl-frx-subnav__btn" data-sub="seatgrid">
-						<span class="lccl-frx-subnav__icon">🔲</span> <?php esc_html_e( 'Seat Block Manager', 'lccl-de' ); ?>
+					<button type="button" class="lccl-frx-subnav__btn" data-sub="blocked">
+						<span class="lccl-frx-subnav__icon">🚫</span> <?php esc_html_e( 'Blocked Seats & Tables', 'lccl-de' ); ?>
 					</button>
 					<button type="button" class="lccl-frx-subnav__btn" data-sub="evbookings">
 						<span class="lccl-frx-subnav__icon">🎟️</span> <?php esc_html_e( 'Event Bookings', 'lccl-de' ); ?>
@@ -330,64 +330,200 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 					</div>
 				</div><!-- /sub-tables -->
 
-				<!-- ── Sub-panel: Seat Block Manager ── -->
-				<div class="lccl-frx-subpanel" id="lccl-frx-sub-seatgrid">
+				<!-- ── Sub-panel: Blocked Seats & Tables ── -->
+				<div class="lccl-frx-subpanel" id="lccl-frx-sub-blocked">
+
+					<!-- KPI Summary Row -->
+					<div class="lccl-frx-blocked-summary">
+						<div class="lccl-frx-blocked-kpi">
+							<span class="lccl-frx-blocked-kpi__icon">🚫</span>
+							<div>
+								<span class="lccl-frx-blocked-kpi__val" id="frx-blk-kpi-tables">0</span>
+								<span class="lccl-frx-blocked-kpi__lbl"><?php esc_html_e( 'Blocked Tables', 'lccl-de' ); ?></span>
+							</div>
+						</div>
+						<div class="lccl-frx-blocked-kpi">
+							<span class="lccl-frx-blocked-kpi__icon">👥</span>
+							<div>
+								<span class="lccl-frx-blocked-kpi__val" id="frx-blk-kpi-groups">0</span>
+								<span class="lccl-frx-blocked-kpi__lbl"><?php esc_html_e( 'Seat Block Groups', 'lccl-de' ); ?></span>
+							</div>
+						</div>
+						<div class="lccl-frx-blocked-kpi">
+							<span class="lccl-frx-blocked-kpi__icon">💺</span>
+							<div>
+								<span class="lccl-frx-blocked-kpi__val" id="frx-blk-kpi-seats">0</span>
+								<span class="lccl-frx-blocked-kpi__lbl"><?php esc_html_e( 'Total Blocked Seats', 'lccl-de' ); ?></span>
+							</div>
+						</div>
+						<div class="lccl-frx-blocked-kpi">
+							<span class="lccl-frx-blocked-kpi__icon">🟢</span>
+							<div>
+								<span class="lccl-frx-blocked-kpi__val" id="frx-blk-kpi-avail">0</span>
+								<span class="lccl-frx-blocked-kpi__lbl"><?php esc_html_e( 'Available Seat Pool', 'lccl-de' ); ?></span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Blocked Tables Section (Grouped for Group Blocks) -->
 					<div class="lccl-frx-card">
 						<div class="lccl-frx-card__head">
-							<span class="lccl-frx-card__title"><?php esc_html_e( 'Seat Pool — Seat Block Manager', 'lccl-de' ); ?></span>
-							<p class="lccl-frx-card__subtitle"><?php esc_html_e( 'Combined sequence across all seat-pool tables. Click a seat to block or unblock it.', 'lccl-de' ); ?></p>
+							<div>
+								<span class="lccl-frx-card__title"><?php esc_html_e( 'Blocked Tables & Connected Sets', 'lccl-de' ); ?></span>
+								<p class="lccl-frx-card__subtitle"><?php esc_html_e( 'Browse tables held out of public booking. Tables blocked together are grouped with their shared notes. Inspect details, click chips to locate in floor plan, or re-send them back to their designated pool.', 'lccl-de' ); ?></p>
+							</div>
+							<span class="lccl-frx-badge lccl-frx-badge--failed" id="frx-blocked-tables-badge">0</span>
+						</div>
+						<div class="lccl-frx-card__body">
+							<div class="lccl-frx-seat-groups-list lccl-frx-table-groups-list" id="lccl-frx-table-groups-list">
+								<!-- Populated by JS renderBlockedTableGroupsList() -->
+							</div>
+							<p class="lccl-frx-empty" id="lccl-frx-no-blocked-tables" style="display:none;">
+								<?php esc_html_e( 'No tables are currently blocked for this event.', 'lccl-de' ); ?>
+							</p>
+							<!-- Pagination for Blocked Table Groups -->
+							<div class="lccl-frx-pagination" id="lccl-frx-blocked-tables-pagination" style="display:none;">
+								<div class="lccl-frx-pagination__info" id="frx-tbl-pagination-info"></div>
+								<div class="lccl-frx-pagination__controls">
+									<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--xs" id="frx-tbl-page-prev" disabled>← Previous</button>
+									<div class="lccl-frx-pagination__pages" id="frx-tbl-page-numbers"></div>
+									<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--xs" id="frx-tbl-page-next">Next →</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Blocked Seat Groups Section -->
+					<div class="lccl-frx-card">
+						<div class="lccl-frx-card__head">
+							<div>
+								<span class="lccl-frx-card__title"><?php esc_html_e( 'Blocked Seat Groups & Connected Sets', 'lccl-de' ); ?></span>
+								<p class="lccl-frx-card__subtitle"><?php esc_html_e( 'Seats blocked together with attached notes. View details, inspect common notes, or re-send the whole group back to the seat pool.', 'lccl-de' ); ?></p>
+							</div>
+							<span class="lccl-frx-badge lccl-frx-badge--failed" id="frx-blocked-groups-badge">0</span>
+						</div>
+						<div class="lccl-frx-card__body">
+							<div class="lccl-frx-seat-groups-list" id="lccl-frx-seat-groups-list">
+								<!-- Populated by JS -->
+							</div>
+							<p class="lccl-frx-empty" id="lccl-frx-no-blocked-groups" style="display:none;">
+								<?php esc_html_e( 'No individual seats or seat groups are currently blocked for this event.', 'lccl-de' ); ?>
+							</p>
+							<!-- Pagination for Blocked Seat Groups -->
+							<div class="lccl-frx-pagination" id="lccl-frx-seat-groups-pagination" style="display:none;">
+								<div class="lccl-frx-pagination__info" id="frx-seat-pagination-info"></div>
+								<div class="lccl-frx-pagination__controls">
+									<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--xs" id="frx-seat-page-prev" disabled>← Previous</button>
+									<div class="lccl-frx-pagination__pages" id="frx-seat-page-numbers"></div>
+									<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--xs" id="frx-seat-page-next">Next →</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- ── 1. Table Map Grid & Table Block Tool (Table Pool) ── -->
+					<div class="lccl-frx-card">
+						<div class="lccl-frx-card__head">
+							<div>
+								<span class="lccl-frx-card__title"><?php esc_html_e( 'Table Map Grid & Table Block Tool (Table Pool)', 'lccl-de' ); ?></span>
+								<p class="lccl-frx-card__subtitle"><?php esc_html_e( 'Interactive floor plan for tables sold as complete units. Click available tables to select and block as a group with a common note, or click a blocked table to inspect and re-send to pool.', 'lccl-de' ); ?></p>
+							</div>
+							<span class="lccl-frx-badge lccl-frx-badge--private" id="frx-tbl-pool-badge">0 tables</span>
 						</div>
 						<div class="lccl-frx-card__body">
 
-							<!-- Stats row -->
-							<div class="lccl-frx-seat-stats" id="lccl-frx-seat-stats">
-								<div class="lccl-frx-seat-stat lccl-frx-seat-stat--avail">
-									<span class="lccl-frx-seat-stat__dot">●</span>
-									<span id="frx-ss-avail">—</span>
-									<span class="lccl-frx-seat-stat__lbl"><?php esc_html_e( 'Available', 'lccl-de' ); ?></span>
+							<!-- Multi-Table Floating / Action Bar -->
+							<div class="lccl-frx-selection-bar lccl-frx-selection-bar--table" id="lccl-frx-tbl-selection-bar" style="display:none;">
+								<div class="lccl-frx-selection-bar__info">
+									<span class="lccl-frx-selection-bar__badge" id="frx-tbl-sel-count">0 tables selected</span>
+									<span class="lccl-frx-selection-bar__preview" id="frx-tbl-sel-preview"></span>
 								</div>
-								<div class="lccl-frx-seat-stat lccl-frx-seat-stat--booked">
-									<span class="lccl-frx-seat-stat__dot">■</span>
-									<span id="frx-ss-booked">—</span>
-									<span class="lccl-frx-seat-stat__lbl"><?php esc_html_e( 'Booked', 'lccl-de' ); ?></span>
-								</div>
-								<div class="lccl-frx-seat-stat lccl-frx-seat-stat--blocked">
-									<span class="lccl-frx-seat-stat__dot">✖</span>
-									<span id="frx-ss-blocked">—</span>
-									<span class="lccl-frx-seat-stat__lbl"><?php esc_html_e( 'Admin Blocked', 'lccl-de' ); ?></span>
-								</div>
-								<div class="lccl-frx-seat-stat lccl-frx-seat-stat--total">
-									<span id="frx-ss-total">—</span>
-									<span class="lccl-frx-seat-stat__lbl"><?php esc_html_e( 'Total Capacity', 'lccl-de' ); ?></span>
+								<div class="lccl-frx-selection-bar__form">
+									<input type="text" id="frx-tbl-group-note-input" class="lccl-frx-selection-bar__input" placeholder="<?php esc_attr_e( 'Attach note for selected tables (e.g. Reserved for Chief Guest, VIP Sponsor Hold)...', 'lccl-de' ); ?>">
+									<button type="button" id="frx-btn-block-tables-group" class="lccl-frx-btn lccl-frx-btn--danger lccl-frx-btn--sm">
+										<span>🔒</span> <?php esc_html_e( 'Block Selected Tables', 'lccl-de' ); ?>
+									</button>
+									<button type="button" id="frx-btn-cancel-tbl-selection" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm">
+										<?php esc_html_e( '✕ Deselect', 'lccl-de' ); ?>
+									</button>
 								</div>
 							</div>
 
-							<!-- Controls -->
+							<!-- Table Pool Legend -->
+							<div class="lccl-frx-seat-legend">
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--avail">✓ <?php esc_html_e( 'Available Whole Table (click to select)', 'lccl-de' ); ?></span>
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--selected">🔘 <?php esc_html_e( 'Selected (pending block)', 'lccl-de' ); ?></span>
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--blocked">✖ <?php esc_html_e( 'Blocked (click to inspect / re-send to pool)', 'lccl-de' ); ?></span>
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--booked">★ <?php esc_html_e( 'Full Table Booked (paid)', 'lccl-de' ); ?></span>
+							</div>
+
+							<!-- Top-down circular table grid for Table Pool -->
+							<div class="lccl-map-grid" id="lccl-frx-table-pool-grid">
+								<!-- Populated by JS renderTablePoolGrid() -->
+							</div>
+
+							<p class="lccl-frx-empty" id="lccl-frx-table-pool-empty" style="display:none;">
+								<?php esc_html_e( 'No tables currently assigned to the Table Pool for this event. Switch a table from the Seat Pool in "Tables & Pools".', 'lccl-de' ); ?>
+							</p>
+						</div>
+					</div>
+
+					<!-- ── 2. Seat Map Grid & Multi-Seat Block Tool (Seat Pool) ── -->
+					<div class="lccl-frx-card">
+						<div class="lccl-frx-card__head">
+							<div>
+								<span class="lccl-frx-card__title"><?php esc_html_e( 'Seat Map Grid & Multi-Seat Block Tool (Seat Pool)', 'lccl-de' ); ?></span>
+								<p class="lccl-frx-card__subtitle"><?php esc_html_e( 'Interactive floor plan showing table separation for the Seat Pool. Individual seats are numbered sequentially across tables. Click multiple seats (or shift-click for a range) to group them, attach a common note, and block them together.', 'lccl-de' ); ?></p>
+							</div>
+							<span class="lccl-frx-badge lccl-frx-badge--upcoming" id="frx-seat-pool-badge">0 seats</span>
+						</div>
+						<div class="lccl-frx-card__body">
+
+							<!-- Multi-Select Floating / Action Bar -->
+							<div class="lccl-frx-selection-bar" id="lccl-frx-selection-bar" style="display:none;">
+								<div class="lccl-frx-selection-bar__info">
+									<span class="lccl-frx-selection-bar__badge" id="frx-sel-count">0 seats selected</span>
+									<span class="lccl-frx-selection-bar__preview" id="frx-sel-seats-preview"></span>
+								</div>
+								<div class="lccl-frx-selection-bar__form">
+									<input type="text" id="frx-group-note-input" class="lccl-frx-selection-bar__input" placeholder="<?php esc_attr_e( 'Attach note for this group (e.g. VIP Sponsor Guests, Chief Guest Hold)...', 'lccl-de' ); ?>">
+									<button type="button" id="frx-btn-block-group" class="lccl-frx-btn lccl-frx-btn--danger lccl-frx-btn--sm">
+										<span>🔒</span> <?php esc_html_e( 'Block as Group', 'lccl-de' ); ?>
+									</button>
+									<button type="button" id="frx-btn-cancel-selection" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm">
+										<?php esc_html_e( '✕ Deselect', 'lccl-de' ); ?>
+									</button>
+								</div>
+							</div>
+
+							<!-- Controls & Jump -->
 							<div class="lccl-frx-seat-controls">
 								<label class="lccl-frx-seat-controls__label" for="frx-seat-jump"><?php esc_html_e( 'Jump to seat:', 'lccl-de' ); ?></label>
 								<input type="number" id="frx-seat-jump" class="lccl-frx-seat-controls__input" min="1" placeholder="#">
 								<button type="button" id="frx-seat-jump-btn" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--outline"><?php esc_html_e( 'Go', 'lccl-de' ); ?></button>
-								<button type="button" id="frx-seat-clear-blocks" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--danger-outline"><?php esc_html_e( '✕ Clear All Blocks', 'lccl-de' ); ?></button>
+								<button type="button" id="frx-seat-clear-blocks" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--danger-outline"><?php esc_html_e( '✕ Clear All Seat Blocks', 'lccl-de' ); ?></button>
 							</div>
 
-							<!-- Dot Grid Legend -->
+							<!-- Seat Pool Legend -->
 							<div class="lccl-frx-seat-legend">
-								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--avail">● <?php esc_html_e( 'Available (click to block)', 'lccl-de' ); ?></span>
-								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--blocked">✖ <?php esc_html_e( 'Blocked (click to unblock)', 'lccl-de' ); ?></span>
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--avail">● <?php esc_html_e( 'Available (click to select)', 'lccl-de' ); ?></span>
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--selected">🔘 <?php esc_html_e( 'Selected (pending group block)', 'lccl-de' ); ?></span>
+								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--blocked">✖ <?php esc_html_e( 'Blocked (click to inspect / re-send)', 'lccl-de' ); ?></span>
 								<span class="lccl-frx-seat-legend__item lccl-frx-seat-legend__item--booked">■ <?php esc_html_e( 'Booked (locked)', 'lccl-de' ); ?></span>
 							</div>
 
-							<!-- The dot grid itself -->
-							<div class="lccl-frx-seat-grid" id="lccl-frx-seat-grid">
-								<!-- Populated by JS renderSeatGrid() -->
+							<!-- Top-down circular table grid for Seat Pool -->
+							<div class="lccl-map-grid" id="lccl-frx-seat-grid">
+								<!-- Populated by JS renderSeatGrid() with separated table cards -->
 							</div>
 
 							<p class="lccl-frx-empty" id="lccl-frx-seat-empty" style="display:none;">
-								<?php esc_html_e( 'No seats in the Seat Pool for this event. Generate tables and assign them to the Seat Pool first.', 'lccl-de' ); ?>
+								<?php esc_html_e( 'No tables currently assigned to the Seat Pool for this event. Generate tables and assign them to the Seat Pool in "Tables & Pools".', 'lccl-de' ); ?>
 							</p>
 						</div>
 					</div>
-				</div><!-- /sub-seatgrid -->
+
+				</div><!-- /sub-blocked -->
 
 				<!-- ── Sub-panel: Event Bookings ── -->
 				<div class="lccl-frx-subpanel" id="lccl-frx-sub-evbookings">
@@ -404,6 +540,7 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 										<th><?php esc_html_e( 'Attendee', 'lccl-de' ); ?></th>
 										<th><?php esc_html_e( 'Type', 'lccl-de' ); ?></th>
 										<th><?php esc_html_e( 'Seats / Tables', 'lccl-de' ); ?></th>
+										<th><?php esc_html_e( 'Notes', 'lccl-de' ); ?></th>
 										<th><?php esc_html_e( 'Amount', 'lccl-de' ); ?></th>
 										<th><?php esc_html_e( 'Status', 'lccl-de' ); ?></th>
 										<th><?php esc_html_e( 'Date', 'lccl-de' ); ?></th>
@@ -439,6 +576,7 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 							<th><?php esc_html_e( 'Attendee', 'lccl-de' ); ?></th>
 							<th><?php esc_html_e( 'Type', 'lccl-de' ); ?></th>
 							<th><?php esc_html_e( 'Qty', 'lccl-de' ); ?></th>
+							<th><?php esc_html_e( 'Notes', 'lccl-de' ); ?></th>
 							<th><?php esc_html_e( 'Amount', 'lccl-de' ); ?></th>
 							<th><?php esc_html_e( 'Status', 'lccl-de' ); ?></th>
 							<th><?php esc_html_e( 'Date', 'lccl-de' ); ?></th>
@@ -446,7 +584,7 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 					</thead>
 					<tbody>
 						<?php if ( empty( $fr_bookings ) ) : ?>
-							<tr><td colspan="8" class="lccl-frx-empty"><?php esc_html_e( 'No bookings yet.', 'lccl-de' ); ?></td></tr>
+							<tr><td colspan="9" class="lccl-frx-empty"><?php esc_html_e( 'No bookings yet.', 'lccl-de' ); ?></td></tr>
 						<?php else : ?>
 							<?php foreach ( $fr_bookings as $bk ) : ?>
 								<tr>
@@ -458,6 +596,15 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 									</td>
 									<td><?php echo esc_html( ucfirst( $bk['booking_type'] ) ); ?></td>
 									<td><?php echo esc_html( $bk['qty'] ); ?></td>
+									<td>
+										<?php if ( ! empty( $bk['notes'] ) ) : ?>
+											<span class="lccl-frx-note-chip" title="<?php echo esc_attr( $bk['notes'] ); ?>">
+												📝 <?php echo esc_html( wp_trim_words( $bk['notes'], 6, '…' ) ); ?>
+											</span>
+										<?php else : ?>
+											<span style="color:#ccc;">—</span>
+										<?php endif; ?>
+									</td>
 									<td>LKR <?php echo esc_html( number_format( $bk['amount_lkr'], 2 ) ); ?></td>
 									<td>
 										<span class="lccl-frx-badge lccl-frx-badge--<?php echo 'paid' === $bk['status'] ? 'paid' : 'pending'; ?>">
@@ -473,6 +620,24 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 			</div>
 		</div>
 	</div><!-- /panel-allbookings -->
+
+	<!-- ============================================================
+	     UNIVERSAL MODAL (Block Note / Inspection & Re-send)
+	============================================================ -->
+	<div class="lccl-frx-modal-backdrop" id="lccl-frx-modal-backdrop" style="display:none;">
+		<div class="lccl-frx-modal" id="lccl-frx-modal">
+			<div class="lccl-frx-modal__head">
+				<h3 class="lccl-frx-modal__title" id="frx-modal-title"><?php esc_html_e( 'Details', 'lccl-de' ); ?></h3>
+				<button type="button" class="lccl-frx-modal__close" id="frx-modal-close">&times;</button>
+			</div>
+			<div class="lccl-frx-modal__body" id="frx-modal-body">
+				<!-- Injected by JS -->
+			</div>
+			<div class="lccl-frx-modal__foot" id="frx-modal-foot">
+				<!-- Injected by JS -->
+			</div>
+		</div>
+	</div>
 
 	<!-- ============================================================
 	     PANEL: CREATE EVENT
@@ -518,6 +683,18 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 			</div>
 		</div>
 	</div><!-- /panel-create -->
+
+	<!-- Universal Admin Modal for Details & Actions -->
+	<div class="lccl-frx-modal-backdrop" id="lccl-frx-modal-backdrop" style="display:none;" aria-hidden="true">
+		<div class="lccl-frx-modal" id="lccl-frx-modal" role="dialog" aria-modal="true" aria-labelledby="lccl-frx-modal-title">
+			<div class="lccl-frx-modal__head">
+				<h3 class="lccl-frx-modal__title" id="lccl-frx-modal-title">Modal Title</h3>
+				<button type="button" class="lccl-frx-modal__close" id="lccl-frx-modal-close" aria-label="<?php esc_attr_e( 'Close', 'lccl-de' ); ?>">&times;</button>
+			</div>
+			<div class="lccl-frx-modal__body" id="lccl-frx-modal-body"></div>
+			<div class="lccl-frx-modal__foot" id="lccl-frx-modal-foot"></div>
+		</div>
+	</div>
 
 </div><!-- /lccl-frx -->
 

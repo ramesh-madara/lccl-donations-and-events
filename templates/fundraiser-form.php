@@ -250,6 +250,12 @@ $js_data = array(
 					<input type="tel" id="attendee_phone" name="attendee_phone" required placeholder="07X XXXXXXX">
 				</div>
 			</div>
+			<div class="lccl-fr-row" style="margin-top: 10px;">
+				<div style="grid-column: span 2;">
+					<label for="booking_notes"><?php esc_html_e( 'Booking Notes / Special Requests (Optional)', 'lccl-de' ); ?></label>
+					<textarea id="booking_notes" name="notes" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ccc; font-size: 14px; min-height: 60px; box-sizing: border-box;" placeholder="<?php esc_attr_e( 'e.g. Dietary requirements, guest names for badges, table placement preferences...', 'lccl-de' ); ?>"></textarea>
+				</div>
+			</div>
 
 			<!-- SUMMARY -->
 			<div class="summary" style="margin-top: 25px;">
