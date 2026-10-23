@@ -182,6 +182,24 @@ class LCCL_DE_Payment_Dashboard {
 			)
 		);
 
+		// Event Table & Seating Layout route.
+		register_rest_route(
+			self::REST_NS,
+			'/payment-dashboard/event-layout',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( __CLASS__, 'rest_event_layout' ),
+				'permission_callback' => array( __CLASS__, 'rest_can_view' ),
+				'args'                => array(
+					'event_id' => array(
+						'type'              => 'integer',
+						'required'          => true,
+						'sanitize_callback' => 'absint',
+					),
+				),
+			)
+		);
+
 		// Transactions query route.
 		register_rest_route(
 			self::REST_NS,
@@ -191,25 +209,34 @@ class LCCL_DE_Payment_Dashboard {
 				'callback'            => array( __CLASS__, 'rest_transactions' ),
 				'permission_callback' => array( __CLASS__, 'rest_can_view' ),
 				'args'                => array(
-					'tab'      => array(
+					'tab'          => array(
 						'type'              => 'string',
 						'default'           => 'all',
 						'sanitize_callback' => 'sanitize_key',
 					),
-					'status'   => array(
+					'status'       => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_key',
 					),
-					'search'   => array(
+					'search'       => array(
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					),
-					'page'     => array(
+					'event_id'     => array(
+						'type'              => 'integer',
+						'default'           => 0,
+						'sanitize_callback' => 'absint',
+					),
+					'booking_type' => array(
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_key',
+					),
+					'page'         => array(
 						'type'              => 'integer',
 						'default'           => 1,
 						'sanitize_callback' => 'absint',
 					),
-					'per_page' => array(
+					'per_page'     => array(
 						'type'              => 'integer',
 						'default'           => 20,
 						'sanitize_callback' => 'absint',
@@ -775,6 +802,7 @@ class LCCL_DE_Payment_Dashboard {
 					'seats_booked'   => isset( $pool_stats['seats_booked'] ) ? (int) $pool_stats['seats_booked'] : 0,
 					'seats_free'     => isset( $pool_stats['seats_free'] ) ? (int) $pool_stats['seats_free'] : 0,
 					'seats_blocked'  => isset( $pool_stats['seat_pool_blocked'] ) ? (int) $pool_stats['seat_pool_blocked'] : 0,
+					'layout'         => self::get_event_layout( $eid ),
 				);
 
 				$inventory['events'][] = $ev_data;
@@ -809,6 +837,263 @@ class LCCL_DE_Payment_Dashboard {
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
 			),
 			200
+		);
+	}
+
+	/**
+	 * REST route callback for /payment-dashboard/event-layout.
+	 *
+	 * @param WP_REST_Request $request Request.
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function rest_event_layout( WP_REST_Request $request ) {
+		$event_id = absint( $request->get_param( 'event_id' ) );
+		$layout   = self::get_event_layout( $event_id );
+
+		if ( ! $layout ) {
+			return new WP_Error(
+				'lccl_layout_not_found',
+				__( 'Event layout not found.', 'lccl-de' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		return new WP_REST_Response(
+			array(
+				'layout' => $layout,
+				'nonce'  => wp_create_nonce( 'wp_rest' ),
+			),
+			200
+		);
+	}
+
+	/**
+	 * Retrieve comprehensive top-down table and seating layout for a fundraiser event.
+	 *
+	 * @param int $event_id Event ID.
+	 * @return array|null
+	 */
+	public static function get_event_layout( $event_id ) {
+		global $wpdb;
+
+		$event_id = absint( $event_id );
+		if ( ! $event_id || ! class_exists( 'LCCL_DE_Fundraiser' ) ) {
+			return null;
+		}
+
+		$event = LCCL_DE_Fundraiser::get_event( $event_id );
+		if ( ! $event ) {
+			return null;
+		}
+
+		$raw_tiers  = LCCL_DE_Fundraiser::get_table_types( $event_id );
+		$t_tbl      = LCCL_DE_Fundraiser::tables_table();
+		$tt_tbl     = LCCL_DE_Fundraiser::table_types_table();
+		$bookings_t = LCCL_DE_Fundraiser::bookings_table();
+
+		// Fetch all tables with tier metadata (LEFT JOIN to safeguard any untiered tables).
+		$raw_tables = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT ta.*, ty.name AS type_name, COALESCE(ty.capacity, 10) AS capacity, COALESCE(ty.price, 0.00) AS price
+				 FROM `{$t_tbl}` ta
+				 LEFT JOIN `{$tt_tbl}` ty ON ta.type_id = ty.id
+				 WHERE ta.event_id = %d
+				 ORDER BY ta.type_id ASC, ta.sort_order ASC, ta.id ASC",
+				$event_id
+			),
+			ARRAY_A
+		);
+
+		// Fetch paid bookings for this event.
+		$paid_bookings = (array) $wpdb->get_results( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+			$wpdb->prepare( // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT id, order_ref, booking_type, attendee_name, attendee_email, attendee_phone, qty, seat_numbers, table_ids, amount_lkr, currency, paid_at, created_at
+				 FROM `{$bookings_t}`
+				 WHERE event_id = %d AND status = 'paid'
+				 ORDER BY id ASC",
+				$event_id
+			),
+			ARRAY_A
+		);
+
+		// Blocked seats from seat_blocks table.
+		$blocked_seat_nums = LCCL_DE_Fundraiser::get_blocked_seat_numbers( $event_id );
+		$blocked_seat_set  = array_fill_keys( $blocked_seat_nums, true );
+
+		// Map table-level bookings (Full Table bookings).
+		$table_bookings = array();
+		// Map seat-level bookings (Individual Seat bookings).
+		$seat_bookings  = array();
+
+		foreach ( $paid_bookings as $bk ) {
+			$bk_info = array(
+				'order_ref'      => (string) $bk['order_ref'],
+				'attendee_name'  => (string) $bk['attendee_name'],
+				'attendee_email' => (string) $bk['attendee_email'],
+				'attendee_phone' => (string) $bk['attendee_phone'],
+				'amount_lkr'     => (float) $bk['amount_lkr'],
+				'currency'       => ! empty( $bk['currency'] ) ? (string) $bk['currency'] : 'LKR',
+				'paid_fmt'       => ! empty( $bk['paid_at'] ) ? mysql2date( 'd M Y, H:i', $bk['paid_at'] ) : '',
+			);
+
+			if ( 'table' === $bk['booking_type'] && ! empty( $bk['table_ids'] ) ) {
+				$tids = explode( ',', (string) $bk['table_ids'] );
+				foreach ( $tids as $tid_str ) {
+					$tid = (int) trim( $tid_str );
+					if ( $tid > 0 ) {
+						$table_bookings[ $tid ] = $bk_info;
+					}
+				}
+			} elseif ( ( 'individual' === $bk['booking_type'] || 'seat' === $bk['booking_type'] ) && ! empty( $bk['seat_numbers'] ) ) {
+				$snums = explode( ',', (string) $bk['seat_numbers'] );
+				foreach ( $snums as $s_str ) {
+					$snum = (int) trim( $s_str );
+					if ( $snum > 0 ) {
+						$seat_bookings[ $snum ] = $bk_info;
+					}
+				}
+			}
+		}
+
+		$seat_counter     = 1;
+		$processed_tables = array();
+
+		$stats = array(
+			'total_tables'            => count( $raw_tables ),
+			'table_pool_total'        => 0,
+			'table_pool_booked'       => 0,
+			'table_pool_free'         => 0,
+			'table_pool_blocked'      => 0,
+			'seat_pool_tables_count'  => 0,
+			'seat_pool_total_seats'   => 0,
+			'seat_pool_booked_seats'  => 0,
+			'seat_pool_free_seats'    => 0,
+			'seat_pool_blocked_seats' => 0,
+		);
+
+		foreach ( $raw_tables as $t_row ) {
+			$tid         = (int) $t_row['id'];
+			$capacity    = max( 1, (int) $t_row['capacity'] );
+			$mode        = ( ! empty( $t_row['booking_mode'] ) && 'table' === $t_row['booking_mode'] ) ? 'table' : 'seat';
+			$is_blocked  = ! empty( $t_row['is_blocked'] );
+			$tier_name   = ! empty( $t_row['type_name'] ) ? (string) $t_row['type_name'] : 'Table';
+			$tier_price  = (float) $t_row['price'];
+			$table_label = (string) $t_row['table_label'];
+
+			$table_item = array(
+				'id'            => $tid,
+				'table_label'   => $table_label,
+				'type_id'       => (int) $t_row['type_id'],
+				'type_name'     => $tier_name,
+				'capacity'      => $capacity,
+				'price'         => $tier_price,
+				'booking_mode'  => $mode,
+				'is_blocked'    => $is_blocked,
+				'is_booked'     => false,
+				'seats'         => array(),
+				'booking'       => null,
+				'seats_booked'  => 0,
+				'seats_free'    => 0,
+				'seats_blocked' => 0,
+				'seat_range'    => '',
+			);
+
+			if ( 'table' === $mode ) {
+				$stats['table_pool_total']++;
+				$is_booked = ! empty( $t_row['is_booked'] ) || isset( $table_bookings[ $tid ] );
+				$table_item['is_booked'] = $is_booked;
+
+				if ( $is_blocked ) {
+					$stats['table_pool_blocked']++;
+					$table_item['seats_blocked'] = $capacity;
+				} elseif ( $is_booked ) {
+					$stats['table_pool_booked']++;
+					$table_item['seats_booked'] = $capacity;
+					$table_item['booking']      = isset( $table_bookings[ $tid ] ) ? $table_bookings[ $tid ] : null;
+				} else {
+					$stats['table_pool_free']++;
+					$table_item['seats_free'] = $capacity;
+				}
+
+				// Virtual seats for uniform visual top-down representation.
+				for ( $s = 1; $s <= $capacity; $s++ ) {
+					$table_item['seats'][] = array(
+						'seat_number' => $s,
+						'seat_index'  => $s,
+						'is_booked'   => $is_booked,
+						'is_blocked'  => $is_blocked,
+						'is_free'     => ! $is_booked && ! $is_blocked,
+						'booking'     => $table_item['booking'],
+					);
+				}
+			} else {
+				// Seat Pool Table (Individual Seats).
+				$stats['seat_pool_tables_count']++;
+				$start_seat = $seat_counter;
+				$end_seat   = $seat_counter + $capacity - 1;
+				$table_item['seat_range'] = "#{$start_seat} – #{$end_seat}";
+
+				if ( ! $is_blocked ) {
+					$stats['seat_pool_total_seats'] += $capacity;
+				}
+
+				$tbl_booked_cnt = 0;
+				$tbl_block_cnt  = 0;
+				$tbl_free_cnt   = 0;
+
+				for ( $s = 0; $s < $capacity; $s++ ) {
+					$s_num        = $seat_counter + $s;
+					$seat_booked  = isset( $seat_bookings[ $s_num ] );
+					$seat_blocked = isset( $blocked_seat_set[ $s_num ] ) || $is_blocked;
+					$seat_free    = ! $seat_booked && ! $seat_blocked;
+					$s_booking    = $seat_booked ? $seat_bookings[ $s_num ] : null;
+
+					if ( $seat_booked ) {
+						$tbl_booked_cnt++;
+						$stats['seat_pool_booked_seats']++;
+					} elseif ( $seat_blocked ) {
+						$tbl_block_cnt++;
+						if ( ! $is_blocked ) {
+							$stats['seat_pool_blocked_seats']++;
+						}
+					} else {
+						$tbl_free_cnt++;
+						$stats['seat_pool_free_seats']++;
+					}
+
+					$table_item['seats'][] = array(
+						'seat_number' => $s_num,
+						'seat_index'  => $s + 1,
+						'is_booked'   => $seat_booked,
+						'is_blocked'  => $seat_blocked,
+						'is_free'     => $seat_free,
+						'booking'     => $s_booking,
+					);
+				}
+
+				$table_item['seats_booked']  = $tbl_booked_cnt;
+				$table_item['seats_blocked'] = $tbl_block_cnt;
+				$table_item['seats_free']    = $tbl_free_cnt;
+				$table_item['is_booked']     = ( $tbl_booked_cnt === $capacity && $capacity > 0 );
+
+				if ( ! $is_blocked ) {
+					$seat_counter += $capacity;
+				}
+			}
+
+			$processed_tables[] = $table_item;
+		}
+
+		return array(
+			'event_id'       => $event_id,
+			'event_name'     => (string) $event['name'],
+			'event_date'     => (string) $event['event_date'],
+			'event_date_fmt' => ! empty( $event['event_date'] ) ? mysql2date( 'M j, Y', $event['event_date'] ) : '',
+			'venue'          => (string) $event['venue'],
+			'currency'       => ! empty( $event['currency'] ) ? (string) $event['currency'] : 'LKR',
+			'stats'          => $stats,
+			'tiers'          => $raw_tiers,
+			'tables'         => $processed_tables,
 		);
 	}
 

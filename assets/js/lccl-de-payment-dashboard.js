@@ -41,7 +41,12 @@
 			items: [],
 			inventory: null,
 			busy: false,
-			searchTimer: null
+			searchTimer: null,
+			activeEventLayout: null,
+			activeMapTab: 'all',
+			activeMapTier: '',
+			activeMapSearch: '',
+			mapSearchTimer: null
 		};
 
 		// Panels
@@ -77,6 +82,17 @@
 		var inventorySection = root.querySelector( '[data-inventory-section]' );
 		var inventoryGrid    = root.querySelector( '[data-inventory-grid]' );
 		var inventoryBadge   = root.querySelector( '[data-inventory-badge]' );
+
+		// Fundraiser Visual Table & Seating Map Modal
+		var mapModal       = root.querySelector( '[data-map-modal]' );
+		var mapEventName   = root.querySelector( '[data-map-event-name]' );
+		var mapStatsBar    = root.querySelector( '[data-map-stats-bar]' );
+		var mapScrollBody  = root.querySelector( '[data-map-scroll-body]' );
+		var mapGrid        = root.querySelector( '[data-map-grid]' );
+		var mapEmpty       = root.querySelector( '[data-map-empty]' );
+		var mapTierSelect  = root.querySelector( '[data-map-tier-select]' );
+		var mapSearchInput = root.querySelector( '[data-map-search-input]' );
+		var mapTabs        = root.querySelectorAll( '[data-map-tab]' );
 
 		// Tabs
 		var tabs = root.querySelectorAll( '.lccl-paydash__tab' );
@@ -484,12 +500,30 @@
 				}
 			}
 
-			if ( inventoryBadge ) {
-				if ( selEv ) {
-					inventoryBadge.textContent = 'Event: ' + selEv.name;
-				} else {
-					inventoryBadge.textContent = 'All Events Overview (' + events.length + ( events.length === 1 ? ' Event' : ' Events' ) + ')';
+			// Requirement: Event Capacity & Inventory should update according to the event selector below; by default it must be empty.
+			if ( ! selEv ) {
+				if ( inventoryBadge ) {
+					inventoryBadge.textContent = 'Select an Event';
 				}
+
+				inventoryGrid.innerHTML = '<div class="lccl-paydash__inv-empty-state">' +
+					'<span class="lccl-paydash__inv-empty-icon" aria-hidden="true">' +
+						'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' +
+							'<circle cx="12" cy="12" r="10"></circle>' +
+							'<line x1="12" y1="8" x2="12" y2="12"></line>' +
+							'<line x1="12" y1="16" x2="12.01" y2="16"></line>' +
+						'</svg>' +
+					'</span>' +
+					'<div class="lccl-paydash__inv-empty-text">' +
+						'<h4 class="lccl-paydash__inv-empty-title">No Fundraiser Event Selected</h4>' +
+						'<p class="lccl-paydash__inv-empty-desc">Choose a fundraiser event from the filter dropdown below to display live table and seat capacity, inventory meters, and the top-down floor layout map.</p>' +
+					'</div>' +
+				'</div>';
+				return;
+			}
+
+			if ( inventoryBadge ) {
+				inventoryBadge.textContent = 'Event: ' + selEv.name;
 			}
 
 			var tableSvg = '<svg class="lccl-paydash__inv-svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
@@ -503,8 +537,20 @@
 				var bHtml = '<div class="' + blockClass + '" data-inv-filter="' + filterVal + '">';
 				bHtml += '<div class="lccl-paydash__inv-block-head">';
 				bHtml += '<span class="lccl-paydash__inv-block-title">' + iconSvg + ' ' + escapeHtml( title ) + '</span>';
+				bHtml += '<div class="lccl-paydash__inv-block-actions">';
 				bHtml += '<span class="lccl-paydash__inv-pct-badge">' + pct + '% Booked</span>';
-				bHtml += '</div>';
+
+				// (+) Button to open visual map modal
+				if ( 'tables' === type ) {
+					bHtml += '<button type="button" class="lccl-paydash__inv-open-modal-btn" data-action="open-map-modal" data-focus="table" title="View Whole Tables Layout & Availability">' +
+						'<span class="lccl-paydash__plus-icon" aria-hidden="true">+</span> View Table Map</button>';
+				} else {
+					bHtml += '<button type="button" class="lccl-paydash__inv-open-modal-btn" data-action="open-map-modal" data-focus="seat" title="View Individual Seats Layout & Availability">' +
+						'<span class="lccl-paydash__plus-icon" aria-hidden="true">+</span> View Seat Layout</button>';
+				}
+
+				bHtml += '</div>'; // .lccl-paydash__inv-block-actions
+				bHtml += '</div>'; // .lccl-paydash__inv-block-head
 
 				bHtml += '<div class="lccl-paydash__inv-metrics">';
 
@@ -543,95 +589,43 @@
 				return bHtml;
 			}
 
-			var html = '';
+			var isTActive = ( 'table' === selectedBookingType );
+			var isSActive = ( 'seat' === selectedBookingType );
 
-			if ( selEv ) {
-				var isTActive = ( 'table' === selectedBookingType );
-				var isSActive = ( 'seat' === selectedBookingType );
-
-				html += '<div class="lccl-paydash__inv-card lccl-paydash__inv-card--selected">';
-				html += '<div class="lccl-paydash__inv-card-header">';
-				html += '<div class="lccl-paydash__inv-card-info">';
-				html += '<h4 class="lccl-paydash__inv-card-title">' + escapeHtml( selEv.name ) + '</h4>';
-				html += '<div class="lccl-paydash__inv-card-meta">';
-				if ( selEv.event_date_fmt ) {
-					html += '<span class="lccl-paydash__inv-date">' + escapeHtml( selEv.event_date_fmt ) + '</span>';
-				}
-				html += '<span class="lccl-paydash__inv-status lccl-paydash__inv-status--' + escapeHtml( selEv.status ) + '">' + escapeHtml( selEv.status ) + '</span>';
-				html += '</div>';
-				html += '</div>';
-				html += '<button type="button" class="lccl-bda__text-button lccl-paydash__inv-action-btn" data-action="reset-event-filter">Show All Events</button>';
-				html += '</div>';
-
-				html += '<div class="lccl-paydash__inv-card-body">';
-				html += buildCapacityBlock( 'tables', 'Full Tables', tableSvg, selEv.tables_booked, selEv.tables_free, selEv.tables_total, isTActive );
-				html += buildCapacityBlock( 'seats', 'Individual Seats', seatSvg, selEv.seats_booked, selEv.seats_free, selEv.seats_total, isSActive );
-				html += '</div>';
-				html += '</div>';
-			} else {
-				// Multiple events: show aggregate card first if > 1 event
-				if ( events.length > 1 && inventory.aggregate ) {
-					var agg = inventory.aggregate;
-					var isAggTActive = ( 'table' === selectedBookingType );
-					var isAggSActive = ( 'seat' === selectedBookingType );
-
-					html += '<div class="lccl-paydash__inv-card lccl-paydash__inv-card--aggregate">';
-					html += '<div class="lccl-paydash__inv-card-header">';
-					html += '<div class="lccl-paydash__inv-card-info">';
-					html += '<h4 class="lccl-paydash__inv-card-title">All Fundraiser Events (Total Combined Inventory)</h4>';
-					html += '<div class="lccl-paydash__inv-card-meta">Combined counts across all ' + events.length + ' active fundraiser events</div>';
-					html += '</div>';
-					html += '<span class="lccl-paydash__inv-agg-pill">All Events Combined</span>';
-					html += '</div>';
-
-					html += '<div class="lccl-paydash__inv-card-body">';
-					html += buildCapacityBlock( 'tables', 'All Full Tables', tableSvg, agg.tables_booked, agg.tables_free, agg.tables_total, isAggTActive );
-					html += buildCapacityBlock( 'seats', 'All Individual Seats', seatSvg, agg.seats_booked, agg.seats_free, agg.seats_total, isAggSActive );
-					html += '</div>';
-					html += '</div>';
-				}
-
-				// Render each event card
-				for ( var j = 0; j < events.length; j++ ) {
-					var evItem = events[ j ];
-					var isTActiveEv = ( 'table' === selectedBookingType );
-					var isSActiveEv = ( 'seat' === selectedBookingType );
-
-					html += '<div class="lccl-paydash__inv-card" data-event-id="' + evItem.id + '">';
-					html += '<div class="lccl-paydash__inv-card-header">';
-					html += '<div class="lccl-paydash__inv-card-info">';
-					html += '<h4 class="lccl-paydash__inv-card-title">' + escapeHtml( evItem.name ) + '</h4>';
-					html += '<div class="lccl-paydash__inv-card-meta">';
-					if ( evItem.event_date_fmt ) {
-						html += '<span class="lccl-paydash__inv-date">' + escapeHtml( evItem.event_date_fmt ) + '</span>';
-					}
-					html += '<span class="lccl-paydash__inv-status lccl-paydash__inv-status--' + escapeHtml( evItem.status ) + '">' + escapeHtml( evItem.status ) + '</span>';
-					html += '</div>';
-					html += '</div>';
-					html += '<button type="button" class="lccl-bda__text-button lccl-paydash__inv-action-btn" data-filter-ev="' + evItem.id + '">Filter This Event</button>';
-					html += '</div>';
-
-					html += '<div class="lccl-paydash__inv-card-body">';
-					html += buildCapacityBlock( 'tables', 'Full Tables', tableSvg, evItem.tables_booked, evItem.tables_free, evItem.tables_total, isTActiveEv );
-					html += buildCapacityBlock( 'seats', 'Individual Seats', seatSvg, evItem.seats_booked, evItem.seats_free, evItem.seats_total, isSActiveEv );
-					html += '</div>';
-					html += '</div>';
-				}
+			var html = '<div class="lccl-paydash__inv-card lccl-paydash__inv-card--selected">';
+			html += '<div class="lccl-paydash__inv-card-header">';
+			html += '<div class="lccl-paydash__inv-card-info">';
+			html += '<h4 class="lccl-paydash__inv-card-title">' + escapeHtml( selEv.name ) + '</h4>';
+			html += '<div class="lccl-paydash__inv-card-meta">';
+			if ( selEv.event_date_fmt ) {
+				html += '<span class="lccl-paydash__inv-date">' + escapeHtml( selEv.event_date_fmt ) + '</span>';
 			}
+			html += '<span class="lccl-paydash__inv-status lccl-paydash__inv-status--' + escapeHtml( selEv.status ) + '">' + escapeHtml( selEv.status ) + '</span>';
+			html += '</div>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__inv-header-actions">';
+			html += '<button type="button" class="lccl-paydash__inv-open-modal-btn lccl-paydash__inv-open-modal-btn--header" data-action="open-map-modal" data-focus="all" title="Open Visual Floor Map">' +
+				'<span class="lccl-paydash__plus-icon" aria-hidden="true">+</span> Visual Floor Map</button>';
+			html += '<button type="button" class="lccl-bda__text-button lccl-paydash__inv-action-btn" data-action="reset-event-filter">Show All Events</button>';
+			html += '</div>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__inv-card-body">';
+			html += buildCapacityBlock( 'tables', 'Full Tables', tableSvg, selEv.tables_booked, selEv.tables_free, selEv.tables_total, isTActive );
+			html += buildCapacityBlock( 'seats', 'Individual Seats', seatSvg, selEv.seats_booked, selEv.seats_free, selEv.seats_total, isSActive );
+			html += '</div>';
+			html += '</div>';
 
 			inventoryGrid.innerHTML = html;
 
-			// Quick filter by clicking an event's button
-			var filterEvBtns = inventoryGrid.querySelectorAll( '[data-filter-ev]' );
-			Array.prototype.forEach.call( filterEvBtns, function ( btn ) {
-				btn.addEventListener( 'click', function () {
-					var evId = btn.getAttribute( 'data-filter-ev' );
-					if ( eventSelect ) {
-						eventSelect.value = evId;
-					}
-					state.eventId = evId;
-					state.page    = 1;
-					loadTransactions();
+			// (+) button listeners to open modal
+			var openMapBtns = inventoryGrid.querySelectorAll( '[data-action="open-map-modal"]' );
+			Array.prototype.forEach.call( openMapBtns, function ( btn ) {
+				btn.addEventListener( 'click', function ( e ) {
+					e.stopPropagation();
+					var focusTab = btn.getAttribute( 'data-focus' ) || 'all';
+					openMapModal( focusTab, selEv );
 				} );
 			} );
 
@@ -647,7 +641,7 @@
 				} );
 			}
 
-			// Quick filter by clicking a capacity block
+			// Quick filter by clicking a capacity block (outside the + button)
 			var blockEls = inventoryGrid.querySelectorAll( '[data-inv-filter]' );
 			Array.prototype.forEach.call( blockEls, function ( blk ) {
 				blk.style.cursor = 'pointer';
@@ -667,6 +661,489 @@
 					state.page        = 1;
 					loadTransactions();
 				} );
+			} );
+		}
+
+		// ------------------------------------------------------------------
+		// Top-Down Table & Seating Map Modal Controller
+		// ------------------------------------------------------------------
+		function openMapModal( focusTab, eventObj ) {
+			if ( ! mapModal ) {
+				return;
+			}
+
+			var ev = eventObj;
+			if ( ! ev && state.inventory && state.inventory.events ) {
+				for ( var i = 0; i < state.inventory.events.length; i++ ) {
+					if ( String( state.inventory.events[ i ].id ) === String( state.eventId ) ) {
+						ev = state.inventory.events[ i ];
+						break;
+					}
+				}
+			}
+
+			if ( ! ev ) {
+				return;
+			}
+
+			// If layout is already attached, use it directly
+			if ( ev.layout ) {
+				initMapModalContent( ev.layout, focusTab );
+				return;
+			}
+
+			// Otherwise fetch from REST endpoint
+			setBusy( dashLoader, true );
+			api( 'event-layout?event_id=' + encodeURIComponent( ev.id ), { method: 'GET' } )
+				.then( function ( res ) {
+					setBusy( dashLoader, false );
+					if ( res && res.layout ) {
+						ev.layout = res.layout;
+						initMapModalContent( res.layout, focusTab );
+					}
+				} )
+				.catch( function ( err ) {
+					setBusy( dashLoader, false );
+					alert( err.message || 'Could not load event floor plan layout.' );
+				} );
+		}
+
+		function initMapModalContent( layout, focusTab ) {
+			state.activeEventLayout = layout;
+
+			// Map initial focus to tab
+			if ( 'table' === focusTab ) {
+				state.activeMapTab = 'available-tables';
+			} else if ( 'seat' === focusTab ) {
+				state.activeMapTab = 'seat-pool';
+			} else {
+				state.activeMapTab = 'all';
+			}
+
+			state.activeMapTier   = '';
+			state.activeMapSearch = '';
+
+			if ( mapSearchInput ) {
+				mapSearchInput.value = '';
+			}
+
+			// Populate Tier Dropdown
+			if ( mapTierSelect ) {
+				var tierOpts = '<option value="">All Table Types (' + ( layout.tiers ? layout.tiers.length : 0 ) + ' Types)</option>';
+				( layout.tiers || [] ).forEach( function ( tr ) {
+					tierOpts += '<option value="' + tr.id + '">' + escapeHtml( tr.name ) + ' (' + tr.capacity + '-seater)</option>';
+				} );
+				mapTierSelect.innerHTML = tierOpts;
+				mapTierSelect.value = '';
+			}
+
+			// Subtitle in modal header
+			if ( mapEventName ) {
+				var subInfo = escapeHtml( layout.event_name );
+				if ( layout.event_date_fmt ) {
+					subInfo += ' &bull; ' + escapeHtml( layout.event_date_fmt );
+				}
+				if ( layout.venue ) {
+					subInfo += ' &bull; ' + escapeHtml( layout.venue );
+				}
+				mapEventName.innerHTML = subInfo;
+			}
+
+			// Render Stats Bar
+			renderMapStats( layout );
+
+			// Set active tab UI
+			Array.prototype.forEach.call( mapTabs, function ( tBtn ) {
+				var tVal = tBtn.getAttribute( 'data-map-tab' );
+				var isActive = ( tVal === state.activeMapTab );
+				tBtn.classList.toggle( 'is-active', isActive );
+				tBtn.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+			} );
+
+			// Render Topdown Grid
+			renderMapGrid();
+
+			// Show Modal
+			mapModal.hidden = false;
+			mapModal.style.display = 'flex';
+			document.body.style.overflow = 'hidden';
+			if ( mapScrollBody ) {
+				mapScrollBody.scrollTop = 0;
+			}
+		}
+
+		function closeMapModal() {
+			if ( ! mapModal ) {
+				return;
+			}
+			mapModal.hidden = true;
+			mapModal.style.display = 'none';
+			document.body.style.overflow = '';
+		}
+
+		function renderMapStats( layout ) {
+			if ( ! mapStatsBar || ! layout || ! layout.stats ) {
+				return;
+			}
+
+			var s = layout.stats;
+			var html = '';
+
+			html += '<div class="lccl-paydash__map-stat-chip">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.total_tables + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Tables Total</span>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__map-stat-chip lccl-paydash__map-stat-chip--green">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.table_pool_free + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Whole Free</span>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__map-stat-chip lccl-paydash__map-stat-chip--amber">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.table_pool_booked + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Full Booked</span>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__map-stat-chip lccl-paydash__map-stat-chip--blue">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.seat_pool_tables_count + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Seat Tables</span>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__map-stat-chip">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.seat_pool_total_seats + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Pool Seats</span>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__map-stat-chip lccl-paydash__map-stat-chip--blue">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.seat_pool_booked_seats + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Seats Booked</span>';
+			html += '</div>';
+
+			html += '<div class="lccl-paydash__map-stat-chip lccl-paydash__map-stat-chip--green">';
+			html += '<span class="lccl-paydash__map-stat-num">' + s.seat_pool_free_seats + '</span>';
+			html += '<span class="lccl-paydash__map-stat-lbl">Seats Left</span>';
+			html += '</div>';
+
+			mapStatsBar.innerHTML = html;
+		}
+
+		function renderMapGrid() {
+			if ( ! state.activeEventLayout || ! mapGrid ) {
+				return;
+			}
+
+			var layout = state.activeEventLayout;
+			var tables = layout.tables || [];
+
+			// Calculate counts for each tab
+			var counts = {
+				'all': tables.length,
+				'available-tables': 0,
+				'full-booked': 0,
+				'seat-pool': 0,
+				'free-seats': 0
+			};
+
+			tables.forEach( function ( t ) {
+				if ( 'table' === t.booking_mode && ! t.is_booked && ! t.is_blocked ) {
+					counts['available-tables']++;
+				}
+				if ( 'table' === t.booking_mode && t.is_booked ) {
+					counts['full-booked']++;
+				}
+				if ( 'seat' === t.booking_mode ) {
+					counts['seat-pool']++;
+					if ( t.seats_free > 0 ) {
+						counts['free-seats'] += ( t.seats_free || 0 );
+					}
+				}
+			} );
+
+			Array.prototype.forEach.call( mapTabs, function ( tabBtn ) {
+				var tKey = tabBtn.getAttribute( 'data-map-tab' );
+				var badge = tabBtn.querySelector( '[data-map-tab-cnt]' );
+				if ( badge && counts[ tKey ] !== undefined ) {
+					badge.textContent = counts[ tKey ];
+				}
+			} );
+
+			// Filter tables
+			var filtered = tables.filter( function ( t ) {
+				// Tab Filter
+				if ( 'available-tables' === state.activeMapTab ) {
+					if ( 'table' !== t.booking_mode || t.is_booked || t.is_blocked ) {
+						return false;
+					}
+				} else if ( 'full-booked' === state.activeMapTab ) {
+					if ( 'table' !== t.booking_mode || ! t.is_booked ) {
+						return false;
+					}
+				} else if ( 'seat-pool' === state.activeMapTab ) {
+					if ( 'seat' !== t.booking_mode ) {
+						return false;
+					}
+				} else if ( 'free-seats' === state.activeMapTab ) {
+					if ( 'seat' !== t.booking_mode || t.seats_free <= 0 ) {
+						return false;
+					}
+				}
+
+				// Tier Filter
+				if ( state.activeMapTier && String( t.type_id ) !== String( state.activeMapTier ) ) {
+					return false;
+				}
+
+				// Search Query Filter
+				if ( state.activeMapSearch ) {
+					var q = state.activeMapSearch.toLowerCase();
+					var match = ( t.table_label && t.table_label.toLowerCase().indexOf( q ) !== -1 ) ||
+						( t.type_name && t.type_name.toLowerCase().indexOf( q ) !== -1 ) ||
+						( t.seat_range && t.seat_range.toLowerCase().indexOf( q ) !== -1 );
+
+					if ( ! match && t.booking ) {
+						match = ( t.booking.attendee_name && t.booking.attendee_name.toLowerCase().indexOf( q ) !== -1 ) ||
+							( t.booking.order_ref && t.booking.order_ref.toLowerCase().indexOf( q ) !== -1 );
+					}
+
+					if ( ! match && t.seats ) {
+						for ( var s = 0; s < t.seats.length; s++ ) {
+							var st = t.seats[ s ];
+							if ( String( st.seat_number ) === q || ( 'seat ' + st.seat_number === q ) || ( 'seat #' + st.seat_number === q ) ) {
+								match = true;
+								break;
+							}
+							if ( st.booking && st.booking.attendee_name && st.booking.attendee_name.toLowerCase().indexOf( q ) !== -1 ) {
+								match = true;
+								break;
+							}
+						}
+					}
+
+					if ( ! match ) {
+						return false;
+					}
+				}
+
+				return true;
+			} );
+
+			if ( ! filtered.length ) {
+				mapGrid.innerHTML = '';
+				if ( mapEmpty ) {
+					mapEmpty.hidden = false;
+					mapEmpty.style.display = 'block';
+				}
+				return;
+			}
+
+			if ( mapEmpty ) {
+				mapEmpty.hidden = true;
+				mapEmpty.style.display = 'none';
+			}
+
+			var gridHtml = '';
+
+			filtered.forEach( function ( tbl ) {
+				var isFullBooked = ( 'table' === tbl.booking_mode && tbl.is_booked );
+				var isAvailTable = ( 'table' === tbl.booking_mode && ! tbl.is_booked && ! tbl.is_blocked );
+				var isSeatPool   = ( 'seat' === tbl.booking_mode );
+				var isBlocked    = tbl.is_blocked;
+
+				var cardClass = 'lccl-map-card';
+				var badgeClass = '';
+				var badgeText  = '';
+
+				if ( isFullBooked ) {
+					cardClass += ' lccl-map-card--full-booked';
+					badgeClass = 'lccl-map-pill lccl-map-pill--full-booked';
+					badgeText  = '★ Full Table Booked';
+				} else if ( isAvailTable ) {
+					cardClass += ' lccl-map-card--avail-table';
+					badgeClass = 'lccl-map-pill lccl-map-pill--avail-table';
+					badgeText  = '✓ Available Whole Table';
+				} else if ( isSeatPool ) {
+					cardClass += ' lccl-map-card--seat-pool';
+					badgeClass = 'lccl-map-pill lccl-map-pill--seat-pool';
+					badgeText  = '● Individual Seat Pool';
+				} else if ( isBlocked ) {
+					cardClass += ' lccl-map-card--blocked';
+					badgeClass = 'lccl-map-pill lccl-map-pill--blocked';
+					badgeText  = '✕ Admin Blocked';
+				}
+
+				gridHtml += '<div class="' + cardClass + '">';
+
+				// Head
+				gridHtml += '<div class="lccl-map-card__head">';
+				gridHtml += '<div class="lccl-map-card__title-wrap">';
+				gridHtml += '<h4 class="lccl-map-card__title">' + escapeHtml( tbl.table_label ) + '</h4>';
+				gridHtml += '<span class="lccl-map-card__tier">' + escapeHtml( tbl.type_name ) + ' &bull; ' + tbl.capacity + ' Seats</span>';
+				gridHtml += '</div>';
+				gridHtml += '<span class="' + badgeClass + '">' + badgeText + '</span>';
+				gridHtml += '</div>';
+
+				// Top-down visual stage
+				gridHtml += '<div class="lccl-map-stage">';
+
+				// Central Table Surface
+				gridHtml += '<div class="lccl-map-surface">';
+				gridHtml += '<span class="lccl-map-surface__lbl">' + escapeHtml( tbl.table_label ) + '</span>';
+				gridHtml += '<span class="lccl-map-surface__cap">' + tbl.capacity + ' Seats</span>';
+				if ( isSeatPool ) {
+					gridHtml += '<span class="lccl-map-surface__ratio">' + tbl.seats_booked + ' / ' + tbl.capacity + ' Booked</span>';
+				}
+				gridHtml += '</div>';
+
+				// Surrounding Chairs (Circular Top-Down layout)
+				var cap = tbl.capacity || 10;
+				var radiusPct = 40; // % distance from center
+
+				( tbl.seats || [] ).forEach( function ( st, sIdx ) {
+					var angle = ( sIdx / cap ) * 2 * Math.PI - ( Math.PI / 2 );
+					var lPct  = ( 50 + radiusPct * Math.cos( angle ) ).toFixed( 2 );
+					var tPct  = ( 50 + radiusPct * Math.sin( angle ) ).toFixed( 2 );
+
+					var chairClass = 'lccl-map-chair';
+					var chairTooltip = 'Seat #' + st.seat_number;
+					var chairDisplay = ( isSeatPool ? st.seat_number : sIdx + 1 );
+
+					if ( isFullBooked ) {
+						chairClass += ' lccl-map-chair--full-booked';
+						chairTooltip += ' • Booked as Full Table';
+						if ( tbl.booking ) {
+							chairTooltip += ' by ' + tbl.booking.attendee_name + ' (' + tbl.booking.order_ref + ')';
+						}
+					} else if ( isAvailTable ) {
+						chairClass += ' lccl-map-chair--avail-table';
+						chairTooltip += ' • Available with whole table (' + tbl.type_name + ')';
+					} else if ( isBlocked || st.is_blocked ) {
+						chairClass += ' lccl-map-chair--blocked';
+						chairTooltip += ' • Blocked by Administrator';
+					} else if ( st.is_booked ) {
+						chairClass += ' lccl-map-chair--seat-booked';
+						chairTooltip += ' • Booked individually';
+						if ( st.booking ) {
+							chairTooltip += ' by ' + st.booking.attendee_name + ' (' + st.booking.order_ref + ')';
+						}
+					} else {
+						chairClass += ' lccl-map-chair--seat-free';
+						chairTooltip += ' • Available for booking';
+					}
+
+					gridHtml += '<div class="' + chairClass + '" style="left:' + lPct + '%; top:' + tPct + '%;" title="' + escapeHtml( chairTooltip ) + '">';
+					gridHtml += '<span>' + chairDisplay + '</span>';
+					gridHtml += '</div>';
+				} );
+
+				gridHtml += '</div>'; // .lccl-map-stage
+
+				// Footer info & seat status
+				gridHtml += '<div class="lccl-map-card__footer">';
+
+				if ( isFullBooked ) {
+					if ( tbl.booking ) {
+						gridHtml += '<div class="lccl-map-card__booker">';
+						gridHtml += '<strong>' + escapeHtml( tbl.booking.attendee_name || '—' ) + '</strong>';
+						gridHtml += '<div class="lccl-map-card__submeta">';
+						gridHtml += '<code>' + escapeHtml( tbl.booking.order_ref ) + '</code>';
+						if ( tbl.booking.paid_fmt ) {
+							gridHtml += ' &bull; <small>' + escapeHtml( tbl.booking.paid_fmt ) + '</small>';
+						}
+						gridHtml += '</div>';
+						gridHtml += '</div>';
+					} else {
+						gridHtml += '<div class="lccl-map-card__booker"><strong>Booked as Full Table</strong></div>';
+					}
+				} else if ( isAvailTable ) {
+					gridHtml += '<div class="lccl-map-card__price-line">';
+					gridHtml += '<span class="lccl-map-card__avail-tag">Left Available</span>';
+					if ( tbl.price > 0 ) {
+						gridHtml += '<strong class="lccl-map-card__price">' + escapeHtml( layout.currency || 'LKR' ) + ' ' + tbl.price.toLocaleString( 'en-US', { minimumFractionDigits: 2 } ) + '</strong>';
+					}
+					gridHtml += '</div>';
+				} else if ( isSeatPool ) {
+					gridHtml += '<div class="lccl-map-card__seats-summary">';
+					gridHtml += '<div class="lccl-map-card__seat-metric-row">';
+					gridHtml += '<span><strong>' + tbl.seats_booked + '</strong> booked</span>';
+					gridHtml += '<span class="lccl-map-card__seats-free"><strong>' + tbl.seats_free + '</strong> free left</span>';
+					gridHtml += '</div>';
+
+					// Itemized seat numbers breakdown
+					var bookedList = [];
+					var freeList   = [];
+					( tbl.seats || [] ).forEach( function ( st ) {
+						if ( st.is_booked ) {
+							bookedList.push( '#' + st.seat_number );
+						} else if ( st.is_free ) {
+							freeList.push( '#' + st.seat_number );
+						}
+					} );
+
+					if ( bookedList.length ) {
+						gridHtml += '<div class="lccl-map-card__seat-chips"><span class="lccl-map-card__chip-lbl">Booked:</span> ' + escapeHtml( bookedList.slice( 0, 7 ).join( ', ' ) ) + ( bookedList.length > 7 ? '…' : '' ) + '</div>';
+					}
+					if ( freeList.length ) {
+						gridHtml += '<div class="lccl-map-card__seat-chips lccl-map-card__seat-chips--free"><span class="lccl-map-card__chip-lbl">Left:</span> ' + escapeHtml( freeList.slice( 0, 7 ).join( ', ' ) ) + ( freeList.length > 7 ? '…' : '' ) + '</div>';
+					}
+
+					gridHtml += '</div>'; // .lccl-map-card__seats-summary
+				} else if ( isBlocked ) {
+					gridHtml += '<div class="lccl-map-card__booker" style="color:#64748b; font-size:12px;">Table administratively blocked.</div>';
+				}
+
+				gridHtml += '</div>'; // .lccl-map-card__footer
+
+				gridHtml += '</div>'; // .lccl-map-card
+			} );
+
+			mapGrid.innerHTML = gridHtml;
+		}
+
+		// Close modal button listeners
+		var closeMapBtns = root.querySelectorAll( '[data-action="close-map-modal"]' );
+		Array.prototype.forEach.call( closeMapBtns, function ( cBtn ) {
+			cBtn.addEventListener( 'click', closeMapModal );
+		} );
+
+		// Modal ESC key listener
+		window.addEventListener( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key && mapModal && ! mapModal.hidden ) {
+				closeMapModal();
+			}
+		} );
+
+		// Modal tab switching
+		Array.prototype.forEach.call( mapTabs, function ( tabBtn ) {
+			tabBtn.addEventListener( 'click', function () {
+				var tVal = tabBtn.getAttribute( 'data-map-tab' );
+				state.activeMapTab = tVal;
+
+				Array.prototype.forEach.call( mapTabs, function ( tb ) {
+					var isActive = ( tb === tabBtn );
+					tb.classList.toggle( 'is-active', isActive );
+					tb.setAttribute( 'aria-selected', isActive ? 'true' : 'false' );
+				} );
+
+				renderMapGrid();
+			} );
+		} );
+
+		// Modal Tier filtering
+		if ( mapTierSelect ) {
+			mapTierSelect.addEventListener( 'change', function () {
+				state.activeMapTier = mapTierSelect.value;
+				renderMapGrid();
+			} );
+		}
+
+		// Modal Search filtering
+		if ( mapSearchInput ) {
+			mapSearchInput.addEventListener( 'input', function () {
+				clearTimeout( state.mapSearchTimer );
+				state.mapSearchTimer = setTimeout( function () {
+					state.activeMapSearch = ( mapSearchInput.value || '' ).trim();
+					renderMapGrid();
+				}, 200 );
 			} );
 		}
 

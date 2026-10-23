@@ -229,11 +229,11 @@ if ( $can_view && $user instanceof WP_User ) {
 					</div>
 				</div>
 				<div class="lccl-paydash__inventory-badge-wrap">
-					<span class="lccl-paydash__inventory-badge" data-inventory-badge><?php esc_html_e( 'All Events Overview', 'lccl-de' ); ?></span>
+					<span class="lccl-paydash__inventory-badge" data-inventory-badge><?php esc_html_e( 'Select an Event', 'lccl-de' ); ?></span>
 				</div>
 			</div>
 			<div class="lccl-paydash__inventory-grid" data-inventory-grid>
-				<!-- Populated dynamically via JS -->
+				<!-- Populated dynamically via JS: Default Empty State or Event Card -->
 			</div>
 		</section>
 
@@ -331,5 +331,86 @@ if ( $can_view && $user instanceof WP_User ) {
 		</div>
 
 	</section>
+
+	<!-- 4. Visual Seating & Top-Down Table Inventory Modal -->
+	<div class="lccl-paydash__map-modal" data-map-modal hidden style="display:none;" role="dialog" aria-modal="true" aria-labelledby="lccl-map-modal-title">
+		<div class="lccl-paydash__map-modal-backdrop" data-action="close-map-modal"></div>
+		<div class="lccl-paydash__map-modal-dialog">
+
+			<!-- Header -->
+			<div class="lccl-paydash__map-modal-head">
+				<div class="lccl-paydash__map-modal-title-group">
+					<span class="lccl-paydash__map-modal-icon" aria-hidden="true">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+							<circle cx="8" cy="8" r="2"></circle>
+							<circle cx="16" cy="8" r="2"></circle>
+							<circle cx="8" cy="16" r="2"></circle>
+							<circle cx="16" cy="16" r="2"></circle>
+						</svg>
+					</span>
+					<div class="lccl-paydash__map-modal-titles">
+						<h3 class="lccl-paydash__map-modal-title" id="lccl-map-modal-title">
+							<?php esc_html_e( 'Visual Seating & Table Inventory Map', 'lccl-de' ); ?>
+						</h3>
+						<p class="lccl-paydash__map-modal-sub" data-map-event-name>
+							<!-- Populated via JS -->
+						</p>
+					</div>
+				</div>
+				<button type="button" class="lccl-paydash__map-modal-close" data-action="close-map-modal" aria-label="<?php esc_attr_e( 'Close layout map', 'lccl-de' ); ?>">
+					&times;
+				</button>
+			</div>
+
+			<!-- Compact Summary Metrics Strip -->
+			<div class="lccl-paydash__map-stats-bar" data-map-stats-bar>
+				<!-- Populated via JS -->
+			</div>
+
+			<!-- Filter & Search Toolbar -->
+			<div class="lccl-paydash__map-toolbar">
+				<div class="lccl-paydash__map-tabs" role="tablist">
+					<button type="button" class="lccl-paydash__map-tab is-active" data-map-tab="all"><?php esc_html_e( 'All Tables', 'lccl-de' ); ?> <span class="lccl-paydash__map-pill-badge" data-map-tab-cnt="all">0</span></button>
+					<button type="button" class="lccl-paydash__map-tab" data-map-tab="available-tables"><?php esc_html_e( 'Available Whole Tables', 'lccl-de' ); ?> <span class="lccl-paydash__map-pill-badge" data-map-tab-cnt="available-tables">0</span></button>
+					<button type="button" class="lccl-paydash__map-tab" data-map-tab="full-booked"><?php esc_html_e( 'Full Tables Booked', 'lccl-de' ); ?> <span class="lccl-paydash__map-pill-badge" data-map-tab-cnt="full-booked">0</span></button>
+					<button type="button" class="lccl-paydash__map-tab" data-map-tab="seat-pool"><?php esc_html_e( 'Individual Seat Tables', 'lccl-de' ); ?> <span class="lccl-paydash__map-pill-badge" data-map-tab-cnt="seat-pool">0</span></button>
+					<button type="button" class="lccl-paydash__map-tab" data-map-tab="free-seats"><?php esc_html_e( 'Seats Left to Book', 'lccl-de' ); ?> <span class="lccl-paydash__map-pill-badge" data-map-tab-cnt="free-seats">0</span></button>
+				</div>
+				<div class="lccl-paydash__map-search-group">
+					<select class="lccl-bda__select lccl-paydash__map-tier-select" data-map-tier-select>
+						<option value=""><?php esc_html_e( 'All Table Types', 'lccl-de' ); ?></option>
+					</select>
+					<div class="lccl-paydash__map-search-wrap">
+						<svg class="lccl-paydash__map-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input type="search" class="lccl-bda__input lccl-paydash__map-search-input" data-map-search-input placeholder="<?php esc_attr_e( 'Search table, seat #, attendee…', 'lccl-de' ); ?>">
+					</div>
+				</div>
+			</div>
+
+			<!-- Color-Coding Legend -->
+			<div class="lccl-paydash__map-legend">
+				<span class="lccl-paydash__map-legend-item"><span class="lccl-paydash__legend-swatch lccl-paydash__legend-swatch--avail-table"></span> <?php esc_html_e( 'Available Whole Table', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__map-legend-item"><span class="lccl-paydash__legend-swatch lccl-paydash__legend-swatch--full-booked"></span> <?php esc_html_e( 'Full Table Booked (Amber)', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__map-legend-item"><span class="lccl-paydash__legend-swatch lccl-paydash__legend-swatch--seat-booked"></span> <?php esc_html_e( 'Booked Seat (Blue)', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__map-legend-item"><span class="lccl-paydash__legend-swatch lccl-paydash__legend-swatch--seat-free"></span> <?php esc_html_e( 'Available Seat (Green)', 'lccl-de' ); ?></span>
+				<span class="lccl-paydash__map-legend-item"><span class="lccl-paydash__legend-swatch lccl-paydash__legend-swatch--blocked"></span> <?php esc_html_e( 'Admin Blocked', 'lccl-de' ); ?></span>
+			</div>
+
+			<!-- Large Scrollable Floor Grid Body -->
+			<div class="lccl-paydash__map-scroll-body" data-map-scroll-body>
+				<div class="lccl-paydash__map-grid" data-map-grid>
+					<!-- Populated dynamically via JS -->
+				</div>
+				<div class="lccl-paydash__map-empty" data-map-empty hidden style="display:none;">
+					<p><?php esc_html_e( 'No tables match the selected filters.', 'lccl-de' ); ?></p>
+				</div>
+			</div>
+
+		</div>
+	</div>
 
 </div>
