@@ -271,8 +271,10 @@ class LCCL_DE_Admin_Programs {
 				'nonce_toggle'  => wp_create_nonce( 'lccl_de_testimonial_toggle' ),
 				'nonce_reorder' => wp_create_nonce( 'lccl_de_testimonial_reorder' ),
 				'i18n'          => array(
-					'selectPhoto' => __( 'Select Photo', 'lccl-de' ),
-					'usePhoto'    => __( 'Use this Photo', 'lccl-de' ),
+					'selectPhoto'   => __( 'Select Photo', 'lccl-de' ),
+					'usePhoto'      => __( 'Use this Photo', 'lccl-de' ),
+					'enterLinkText' => __( 'Enter text to display:', 'lccl-de' ),
+					'enterLinkUrl'  => __( 'Enter URL (e.g. https://example.com):', 'lccl-de' ),
 				),
 			)
 		);

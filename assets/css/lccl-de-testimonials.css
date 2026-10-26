@@ -631,3 +631,33 @@
 	outline: 2px solid #f7c016;
 	outline-offset: 2px;
 }
+
+/* Hyperlinks inside testimonial quotes */
+.lccl-t-link {
+	color: #f7c016;
+	text-decoration: underline;
+	font-weight: 600;
+	transition: color 0.2s ease, opacity 0.2s ease;
+	cursor: pointer;
+}
+
+.lccl-t-link:hover,
+.lccl-t-link:focus {
+	color: #c9a012;
+	text-decoration: underline;
+	opacity: 0.9;
+}
+
+.lccl-design-2 .lccl-t-link {
+	color: #f7c016;
+}
+
+.lccl-t-modal-content .lccl-t-link {
+	color: #f7c016;
+	text-decoration: underline;
+	font-weight: 600;
+}
+
+.lccl-t-modal-content .lccl-t-link:hover {
+	color: #c9a012;
+}

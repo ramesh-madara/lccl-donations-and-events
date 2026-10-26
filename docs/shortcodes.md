@@ -221,6 +221,7 @@ Renders a dynamic, auto-scrolling carousel of active testimonials managed from t
   - Aligned section header on top-left matching the site's typography.
   - Infinite auto-scrolling loop (pauses when hovering or when the read-more popup is open).
   - Truncates long testimonials and automatically adds a "Read more" popup modal.
+  - Supports embedded hyperlinks in testimonial bodies using `[{Display Text}(https://example.com)]`, automatically rendered as clickable links opening in a new tab (`target="_blank"`).
   - Card design (Gold Top Banner vs Minimal Bordered) and scroll behavior (Snap Scroll vs Marquee) are globally configurable via **WP Admin → LCCL Programs → Testimonials**.
 
 ---

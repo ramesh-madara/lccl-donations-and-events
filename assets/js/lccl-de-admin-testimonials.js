@@ -124,6 +124,47 @@
 			openModal('Edit Testimonial', rawData);
 		});
 
+		// Insert link into testimonial quote
+		$(document).on('click', '#lccl-t-add-link-btn', function(e) {
+			e.preventDefault();
+			const textarea = document.getElementById('lccl-t-quote');
+			if (!textarea) return;
+
+			const start = textarea.selectionStart;
+			const end = textarea.selectionEnd;
+			const textVal = textarea.value;
+			const selectedText = textVal.substring(start, end).trim();
+
+			let linkText = selectedText;
+			if (!linkText) {
+				const promptTextMsg = (window.lcclDePrograms && lcclDePrograms.i18n && lcclDePrograms.i18n.enterLinkText)
+					? lcclDePrograms.i18n.enterLinkText
+					: 'Enter text to display:';
+				linkText = prompt(promptTextMsg);
+				if (!linkText || linkText.trim() === '') return;
+				linkText = linkText.trim();
+			}
+
+			const promptUrlMsg = (window.lcclDePrograms && lcclDePrograms.i18n && lcclDePrograms.i18n.enterLinkUrl)
+				? lcclDePrograms.i18n.enterLinkUrl
+				: 'Enter URL (e.g. https://example.com):';
+			let url = prompt(promptUrlMsg, 'https://');
+			if (!url || url.trim() === '' || url.trim() === 'https://') return;
+			url = url.trim();
+
+			const formattedLink = '[{' + linkText + '}(' + url + ')]';
+
+			// Insert formatted link
+			textarea.value = textVal.substring(0, start) + formattedLink + textVal.substring(end);
+
+			// Position cursor right after the inserted link
+			const newCursorPos = start + formattedLink.length;
+			textarea.focus();
+			textarea.setSelectionRange(newCursorPos, newCursorPos);
+
+			$(textarea).trigger('input');
+		});
+
 		// Save Form
 		$(document).on('click', '#lccl-de-modal-save', function(e) {
 			e.preventDefault();

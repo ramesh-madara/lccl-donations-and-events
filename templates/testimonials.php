@@ -90,7 +90,7 @@ if ( $scroll === 'scroll-constant' && ! empty( $active_testimonials ) ) {
 								<?php endif; ?>
 								<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>" data-author-date="<?php echo esc_attr( $formatted_date ); ?>">
 									<p class="lccl-t-quote-text" data-full-quote="<?php echo esc_attr( $t['quote'] ); ?>">
-										<?php echo nl2br( esc_html( $t['quote'] ) ); ?>
+										<?php echo LCCL_DE_Testimonials::format_quote( $t['quote'] ); ?>
 									</p>
 									<button type="button" class="lccl-t-read-more" style="display: none;"><?php esc_html_e( 'Read more', 'lccl-de' ); ?></button>
 								</div>
@@ -106,7 +106,7 @@ if ( $scroll === 'scroll-constant' && ! empty( $active_testimonials ) ) {
 								<?php endif; ?>
 								<div class="lccl-t-quote-container" data-author-name="<?php echo esc_attr( $t['name'] ); ?>" data-author-role="<?php echo esc_attr( $t['role'] ?? '' ); ?>" data-author-date="<?php echo esc_attr( $formatted_date ); ?>">
 									<p class="lccl-t-quote-text" data-full-quote="<?php echo esc_attr( $t['quote'] ); ?>">
-										<?php echo nl2br( esc_html( $t['quote'] ) ); ?>
+										<?php echo LCCL_DE_Testimonials::format_quote( $t['quote'] ); ?>
 									</p>
 									<button type="button" class="lccl-t-read-more" style="display: none;"><?php esc_html_e( 'Read more', 'lccl-de' ); ?></button>
 								</div>

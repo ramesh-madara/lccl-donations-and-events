@@ -13,7 +13,8 @@ $photo_url  = ! empty( $t['photo_url'] ) ? esc_url( $t['photo_url'] ) : '';
 $t_name     = esc_html( $t['name'] );
 $t_role     = ! empty( $t['role'] ) ? esc_html( $t['role'] ) : '';
 $t_date     = ! empty( $t['date'] ) ? esc_html( $t['date'] ) : '';
-$t_quote    = esc_html( wp_trim_words( $t['quote'], 20 ) );
+$clean_quote = preg_replace( '/\[\s*\{?([^{}()\[\]\r\n]+?)\}?\s*(?:\]\s*\(|\()\s*\{?([^\s{}()\[\]\r\n]+?)\}?\s*\)\s*\]?/u', '$1', $t['quote'] );
+$t_quote     = esc_html( wp_trim_words( $clean_quote, 20 ) );
 
 // We need raw data for the JS to populate the edit modal
 $raw_data = array(

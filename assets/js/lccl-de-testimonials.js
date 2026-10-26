@@ -310,6 +310,25 @@
 		setTimeout(checkTruncation, 100);
 		$(window).on('resize', checkTruncation);
 
+		function formatQuote(text) {
+			if (!text) return '';
+			let escaped = $('<div>').text(text).html();
+			escaped = escaped.replace(/\[\s*\{?([^{}()\[\]\r\n]+?)\}?\s*(?:\]\s*\(|\()\s*\{?([^\s{}()\[\]\r\n]+?)\}?\s*\)\s*\]?/g, function(match, label, url) {
+				let cleanUrl = url.trim().replace(/&amp;/g, '&');
+				if (/^www\./i.test(cleanUrl)) {
+					cleanUrl = 'https://' + cleanUrl;
+				} else if (!/^(?:https?:\/\/|mailto:|tel:|\/)/i.test(cleanUrl) && /^[a-z0-9.-]+\.[a-z]{2,}/i.test(cleanUrl)) {
+					cleanUrl = 'https://' + cleanUrl;
+				}
+				if (!/^(?:https?:\/\/|mailto:|tel:|\/)/i.test(cleanUrl)) {
+					return label;
+				}
+				cleanUrl = cleanUrl.replace(/"/g, '&quot;');
+				return '<a href="' + cleanUrl + '" target="_blank" rel="noopener noreferrer" class="lccl-t-link">' + label + '</a>';
+			});
+			return escaped.replace(/\n/g, '<br>');
+		}
+
 		// Modal logic
 		$(document).off('click.lcclTestimonials', '.lccl-t-read-more').on('click.lcclTestimonials', '.lccl-t-read-more', function(e) {
 			e.preventDefault();
@@ -319,7 +338,7 @@
 			const role = $container.data('author-role') || '';
 			const date = $container.data('author-date') || '';
 			const fullQuote = $(this).siblings('.lccl-t-quote-text').data('full-quote');
-			const formattedQuote = fullQuote.replace(/\n/g, '<br>');
+			const formattedQuote = formatQuote(fullQuote);
 			const avatarHtml = $cardInner.find('.lccl-t-avatar-wrapper').html();
 			
 			let modalHtml = '<div style="width: 88px; height: 88px; margin: 0 auto 15px auto;">' + avatarHtml + '</div>';

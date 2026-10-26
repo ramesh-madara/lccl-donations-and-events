@@ -198,8 +198,19 @@ wp_enqueue_media();
 				</div>
 
 				<div class="lccl-de-form-row">
-					<label for="lccl-t-quote"><?php esc_html_e( 'Testimonial', 'lccl-de' ); ?> <span class="required">*</span></label>
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+						<label for="lccl-t-quote" style="margin-bottom: 0;"><?php esc_html_e( 'Testimonial', 'lccl-de' ); ?> <span class="required">*</span></label>
+						<button type="button" class="button button-small" id="lccl-t-add-link-btn" title="<?php esc_attr_e( 'Insert link on selected text', 'lccl-de' ); ?>" style="display: inline-flex; align-items: center; gap: 4px;">
+							<span class="dashicons dashicons-admin-links" style="font-size: 16px; width: 16px; height: 16px; line-height: 16px;"></span>
+							<?php esc_html_e( 'Add Link', 'lccl-de' ); ?>
+						</button>
+					</div>
 					<textarea name="quote" id="lccl-t-quote" rows="4" class="large-text" required></textarea>
+					<p class="description" style="margin-top: 5px; font-size: 12px; color: #646970;">
+						<?php esc_html_e( 'Tip: Select text and click "Add Link", or type ', 'lccl-de' ); ?>
+						<code>[{Display Text}(https://example.com)]</code>
+						<?php esc_html_e( ' to open links in a new tab.', 'lccl-de' ); ?>
+					</p>
 				</div>
 			</form>
 		</div>

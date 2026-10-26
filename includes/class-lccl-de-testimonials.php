@@ -76,6 +76,57 @@ class LCCL_DE_Testimonials {
 	}
 
 	/**
+	 * Format testimonial quote, parsing hyperlink syntax [{Displaytext}({URL})] to HTML links.
+	 *
+	 * Supports syntax variants:
+	 *   [{Display Text}(https://example.com)]
+	 *   [{Display Text}({https://example.com})]
+	 *   [Display Text(https://example.com)]
+	 *   [Display Text](https://example.com)
+	 *
+	 * Links open in a new tab with rel="noopener noreferrer".
+	 *
+	 * @param string $quote Raw testimonial quote text.
+	 * @return string HTML-escaped quote with sanitized <a> tags and line breaks.
+	 */
+	public static function format_quote( $quote ) {
+		if ( empty( $quote ) ) {
+			return '';
+		}
+
+		// 1. Escape HTML for entire string
+		$escaped = esc_html( $quote );
+
+		// 2. Parse hyperlink syntax
+		$pattern = '/\[\s*\{?([^{}()\[\]\r\n]+?)\}?\s*(?:\]\s*\(|\()\s*\{?([^\s{}()\[\]\r\n]+?)\}?\s*\)\s*\]?/u';
+		$formatted = preg_replace_callback(
+			$pattern,
+			function( $matches ) {
+				$label = trim( $matches[1] );
+				$url   = htmlspecialchars_decode( trim( $matches[2] ) );
+
+				// Prepend https:// if starts with www. or top-level domain without protocol
+				if ( preg_match( '/^www\./i', $url ) ) {
+					$url = 'https://' . $url;
+				} elseif ( ! preg_match( '~^(?:https?://|mailto:|tel:|/)~i', $url ) && preg_match( '~^[a-z0-9.-]+\.[a-z]{2,}~i', $url ) ) {
+					$url = 'https://' . $url;
+				}
+
+				$safe_url = esc_url( $url );
+				if ( empty( $safe_url ) ) {
+					return $label;
+				}
+
+				return '<a href="' . $safe_url . '" target="_blank" rel="noopener noreferrer" class="lccl-t-link">' . $label . '</a>';
+			},
+			$escaped
+		);
+
+		// 3. Convert newlines to <br> tags
+		return nl2br( $formatted );
+	}
+
+	/**
 	 * AJAX: Save or Update a testimonial.
 	 */
 	public static function ajax_save() {
