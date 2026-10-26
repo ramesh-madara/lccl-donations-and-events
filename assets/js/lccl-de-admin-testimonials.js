@@ -410,9 +410,13 @@
 
 		// Design Selector & Preview
 		function updateDesignPreview() {
+			const $preview = $('#lccl-de-design-preview');
+			if (!$preview.length) {
+				return;
+			}
+
 			const design = $('#lccl-de-testimonial-design').val();
 			const scroll = $('#lccl-de-testimonial-scroll').val();
-			const $preview = $('#lccl-de-design-preview');
 			
 			// Pause existing carousel if any
 			$preview.find('.lccl-testimonials-carousel').trigger('pauseCarousel');
@@ -432,8 +436,15 @@
 			}
 		}
 
-		$('#lccl-de-testimonial-design, #lccl-de-testimonial-scroll').on('change', updateDesignPreview);
+		$(document).on('change', '#lccl-de-testimonial-design, #lccl-de-testimonial-scroll', updateDesignPreview);
 		updateDesignPreview();
+
+		// Re-run on AJAX tab switch
+		$(document).on('lccl_tab_loaded', function(e, tab) {
+			if (tab === 'testimonials') {
+				updateDesignPreview();
+			}
+		});
 
 		$('#lccl-de-save-design').on('click', function() {
 			const $btn = $(this);

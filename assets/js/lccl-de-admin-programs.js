@@ -354,6 +354,10 @@
 			if ( push && url && window.history && history.pushState ) {
 				history.pushState( { lcclTab: tab, lcclProgram: program || '' }, '', url );
 			}
+			if ( window.jQuery ) {
+				window.jQuery( document ).trigger( 'lccl_tab_loaded', [ tab, program ] );
+			}
+			document.dispatchEvent( new CustomEvent( 'lccl_tab_loaded', { detail: { tab: tab, program: program } } ) );
 		}
 
 		function load( tab, program, url, push ) {
@@ -445,6 +449,9 @@
 			if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button ) {
 				return;
 			}
+			if ( link.getAttribute( 'data-no-ajax' ) === '1' ) {
+				return;
+			}
 			event.preventDefault();
 			openFromLink( link, true );
 		} );
@@ -455,6 +462,9 @@
 				return;
 			}
 			if ( event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button ) {
+				return;
+			}
+			if ( link.getAttribute( 'data-no-ajax' ) === '1' ) {
 				return;
 			}
 			if ( ! link.getAttribute( 'data-program' ) && ! link.getAttribute( 'data-tab' ) ) {

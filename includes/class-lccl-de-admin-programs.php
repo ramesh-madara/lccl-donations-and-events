@@ -181,6 +181,7 @@ class LCCL_DE_Admin_Programs {
 			return;
 		}
 
+		// Always enqueue all hub stylesheets so every tab renders styled without delay or refresh.
 		wp_enqueue_style(
 			'lccl-de-admin-programs',
 			LCCL_DE_URL . 'assets/css/lccl-de-admin-programs.css',
@@ -188,44 +189,46 @@ class LCCL_DE_Admin_Programs {
 			LCCL_DE_VERSION
 		);
 
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
-		if ( self::TAB_TESTIMONIALS === $tab ) {
-			wp_enqueue_media();
-			wp_enqueue_style(
-				'lccl-de-admin-testimonials',
-				LCCL_DE_URL . 'assets/css/lccl-de-admin-testimonials.css',
-				array(),
-				LCCL_DE_VERSION
-			);
-			wp_enqueue_style(
-				'lccl-de-testimonials',
-				LCCL_DE_URL . 'assets/css/lccl-de-testimonials.css',
-				array(),
-				LCCL_DE_VERSION
-			);
-			wp_enqueue_script(
-				'lccl-de-testimonials',
-				LCCL_DE_URL . 'assets/js/lccl-de-testimonials.js',
-				array( 'jquery' ),
-				LCCL_DE_VERSION,
-				true
-			);
-			wp_enqueue_script(
-				'lccl-de-admin-testimonials',
-				LCCL_DE_URL . 'assets/js/lccl-de-admin-testimonials.js',
-				array( 'jquery', 'lccl-de-admin-programs', 'lccl-de-testimonials' ),
-				LCCL_DE_VERSION,
-				true
-			);
-		}
+		wp_enqueue_style(
+			'lccl-de-admin-testimonials',
+			LCCL_DE_URL . 'assets/css/lccl-de-admin-testimonials.css',
+			array(),
+			LCCL_DE_VERSION
+		);
 
+		wp_enqueue_style(
+			'lccl-de-testimonials',
+			LCCL_DE_URL . 'assets/css/lccl-de-testimonials.css',
+			array(),
+			LCCL_DE_VERSION
+		);
+
+		wp_enqueue_style(
+			'lccl-de-admin-fundraiser',
+			LCCL_DE_URL . 'assets/css/lccl-de-admin-fundraiser.css',
+			array(),
+			LCCL_DE_VERSION
+		);
+
+		// Always enqueue media library and testimonials scripts for the admin hub.
+		wp_enqueue_media();
+		wp_enqueue_script(
+			'lccl-de-testimonials',
+			LCCL_DE_URL . 'assets/js/lccl-de-testimonials.js',
+			array( 'jquery' ),
+			LCCL_DE_VERSION,
+			true
+		);
+		wp_enqueue_script(
+			'lccl-de-admin-testimonials',
+			LCCL_DE_URL . 'assets/js/lccl-de-admin-testimonials.js',
+			array( 'jquery', 'lccl-de-admin-programs', 'lccl-de-testimonials' ),
+			LCCL_DE_VERSION,
+			true
+		);
+
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : '';
 		if ( self::TAB_FUNDRAISER === $tab ) {
-			wp_enqueue_style(
-				'lccl-de-admin-fundraiser',
-				LCCL_DE_URL . 'assets/css/lccl-de-admin-fundraiser.css',
-				array(),
-				LCCL_DE_VERSION
-			);
 			wp_enqueue_script(
 				'lccl-de-admin-fundraiser',
 				LCCL_DE_URL . 'assets/js/lccl-de-admin-fundraiser.js',

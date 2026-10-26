@@ -113,6 +113,7 @@ if ( LCCL_DE_Admin_Programs::TAB_PROGRAMS !== $tab ) {
 			href="<?php echo esc_url( add_query_arg( array( 'page' => LCCL_DE_Admin_Programs::PAGE, 'tab' => LCCL_DE_Admin_Programs::TAB_FUNDRAISER ), admin_url( 'admin.php' ) ) ); ?>"
 			role="tab"
 			data-tab="fundraiser"
+			data-no-ajax="1"
 			aria-selected="<?php echo LCCL_DE_Admin_Programs::TAB_FUNDRAISER === $tab ? 'true' : 'false'; ?>"
 			aria-controls="lccl-prog-tab-panel"
 		>
