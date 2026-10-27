@@ -1,6 +1,43 @@
 
 .lccl-fr-wrapper, .lccl-fr-wrapper * { box-sizing: border-box; }
 
+/* Reuse payment-form controls without the standalone form's outer spacing. */
+.lccl-fr-wrapper .lccl-bdf.lccl-bdf--donation.lccl-fr-payment-control {
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    background: transparent;
+}
+
+.lccl-fr-wrapper .lccl-fr-row label {
+    line-height: 24px;
+    margin-bottom: 7px;
+}
+
+.lccl-fr-wrapper .lccl-fr-payment-control .lccl-bdf__label {
+    line-height: 24px;
+    margin-bottom: 7px;
+    font-weight: 400;
+    white-space: normal;
+}
+
+.lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-wrap,
+.lccl-fr-wrapper .lccl-fr-payment-control input.lccl-df__phone-number {
+    height: 46px;
+    min-height: 46px;
+}
+
+.lccl-fr-wrapper .total > span:first-of-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+}
+
+.lccl-fr-wrapper .lccl-fr-payment-control .lccl-mf__secure-note svg {
+    flex-shrink: 0;
+}
+
 
 
 .topbar {
@@ -175,6 +212,7 @@
     padding: 8px 0;
     color: #555;
     gap: 15px;
+    flex-wrap: wrap;
 }
 
 .total {
@@ -184,6 +222,7 @@
     background: #f7f7f7;
     font-size: 21px;
     font-weight: bold;
+    flex-wrap: wrap;
 }
 
 .total > span:first-of-type {
@@ -696,14 +735,16 @@ body.lccl-modal-prevent-scroll {
     color: #475569;
 }
 
-.lccl-fr-table-chip.in-seat-pool {
+.lccl-fr-table-chip.in-seat-pool,
+.lccl-fr-table-chip.is-unavailable {
     background: #f8fafc;
     border-color: #e2e8f0;
     cursor: not-allowed;
     opacity: 0.65;
 }
 
-.lccl-fr-table-chip.in-seat-pool .chip-status {
+.lccl-fr-table-chip.in-seat-pool .chip-status,
+.lccl-fr-table-chip.is-unavailable .chip-status {
     background: #e2e8f0;
     color: #64748b;
 }
@@ -744,5 +785,74 @@ body.lccl-modal-prevent-scroll {
 
     .seat-map-grid {
         grid-template-columns: repeat(6, 1fr);
+    }
+
+    .total > span:first-of-type,
+    .total > span:last-of-type {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* Table Pool Mini-Grid inside Seating Map (mirrors table selector IDs & statuses) */
+.seat-map-table-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: 5px;
+}
+
+.seat-map-tbl {
+    padding: 5px 3px;
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    letter-spacing: 0.3px;
+    transition: all 0.15s ease;
+    user-select: none;
+}
+
+.seat-map-tbl.map-tbl-avail {
+    background: #fef9c3;
+    color: #854d0e;
+    border-color: #facc15;
+}
+
+.seat-map-tbl.map-tbl-reserved {
+    background: #fff7ed;
+    color: #9a3412;
+    border-color: #fdba74;
+    border-style: dashed;
+    opacity: 0.8;
+}
+
+.seat-map-tbl.map-tbl-booked {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #cbd5e1;
+    opacity: 0.6;
+}
+
+.seat-map-tbl.map-tbl-selected {
+    background: #fef3c7;
+    border: 2px solid #b45309;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, .3);
+}
+
+/* Seating plan image responsive (ensure readable on mobile) */
+@media (max-width: 560px) {
+    .seating-plan-trigger img {
+        min-height: 160px;
+        object-fit: contain;
+    }
+
+    .seat-map-table-grid {
+        grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+    }
+
+    .seat-map-tbl {
+        font-size: 9px;
+        padding: 4px 2px;
     }
 }

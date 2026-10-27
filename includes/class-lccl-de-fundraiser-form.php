@@ -22,7 +22,9 @@ class LCCL_DE_Fundraiser_Form {
 	}
 
 	public static function render( $atts ) {
-		wp_enqueue_style( 'lccl-de-fundraiser-form', LCCL_DE_URL . 'assets/css/lccl-de-fundraiser-form.css', array(), LCCL_DE_VERSION );
+		wp_enqueue_style( 'lccl-de-blood-donor-form', LCCL_DE_URL . 'assets/css/lccl-de-blood-donor-form.css', array(), LCCL_DE_VERSION );
+		wp_enqueue_style( 'lccl-de-fundraiser-form', LCCL_DE_URL . 'assets/css/lccl-de-fundraiser-form.css', array( 'lccl-de-blood-donor-form' ), filemtime( LCCL_DE_PATH . 'assets/css/lccl-de-fundraiser-form.css' ) );
+		wp_enqueue_script( 'lccl-de-fundraiser-phone', LCCL_DE_URL . 'assets/js/lccl-de-fundraiser-phone.js', array(), filemtime( LCCL_DE_PATH . 'assets/js/lccl-de-fundraiser-phone.js' ), true );
 
 		// Return callback from PayCenter
 		if ( ! empty( $_GET['lccl_fnd_return'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -84,6 +86,11 @@ class LCCL_DE_Fundraiser_Form {
 		$attendee_name   = sanitize_text_field( $raw['attendee_name'] ?? '' );
 		$attendee_email  = sanitize_email( $raw['attendee_email'] ?? '' );
 		$attendee_phone  = sanitize_text_field( $raw['attendee_phone'] ?? '' );
+		$phone_code = sanitize_text_field( $raw['phone_country_code'] ?? '' );
+		if ( '' !== $attendee_phone && 0 !== strpos( $attendee_phone, '+' ) && '' !== $phone_code ) {
+			$clean_digits = ltrim( preg_replace( '/[^\d]/', '', $attendee_phone ), '0' );
+			$attendee_phone = $phone_code . ' ' . ( $clean_digits ?: $attendee_phone );
+		}
 		$attendee_notes  = sanitize_textarea_field( $raw['notes'] ?? '' );
 		$qty             = (int) ( $raw['qty'] ?? 1 );
 		$selected_tables = isset( $raw['selectedTables'] ) && is_array( $raw['selectedTables'] )
@@ -296,16 +303,16 @@ class LCCL_DE_Fundraiser_Form {
 
 			if ( is_wp_error( $response_data ) ) {
 				return '<div class="lccl-fr-card" style="margin:30px auto; max-width:600px; padding:24px; border-left:4px solid #dc2626;">' .
-					'<h2 style="color:#dc2626;">' . esc_html__( 'Payment Verification Failed', 'lccl-de' ) . '</h2>' .
-					'<p>' . esc_html( $response_data->get_error_message() ) . '</p>' .
-					'<p>' . esc_html__( 'If your account was charged, please contact us with Reference: ', 'lccl-de' ) . '<strong>' . esc_html( $order_ref ) . '</strong></p>' .
+					'<h2 style="color:#dc2626;">' . esc_html__( 'Payment Verification Notice', 'lccl-de' ) . '</h2>' .
+					'<p>' . esc_html__( 'Your payment is being processed. Please check your booking status before trying again.', 'lccl-de' ) . '</p>' .
+					'<p style="font-size:13px; color:#666;">' . esc_html__( 'Booking Reference: ', 'lccl-de' ) . '<strong>' . esc_html( $order_ref ) . '</strong></p>' .
 					'</div>';
 			}
 
 			if ( ! LCCL_DE_Paycenter_Client::is_success( $response_data ) ) {
 				return '<div class="lccl-fr-card" style="margin:30px auto; max-width:600px; padding:24px; border-left:4px solid #dc2626;">' .
-					'<h2 style="color:#dc2626;">' . esc_html__( 'Payment Not Successful', 'lccl-de' ) . '</h2>' .
-					'<p>' . esc_html__( 'The bank payment gateway indicated that the transaction could not be completed.', 'lccl-de' ) . '</p>' .
+					'<h2 style="color:#dc2626;">' . esc_html__( 'Payment Unsuccessful', 'lccl-de' ) . '</h2>' .
+					'<p>' . esc_html__( 'Your payment could not be completed. Please try again or use another payment method.', 'lccl-de' ) . '</p>' .
 					'</div>';
 			}
 
@@ -352,6 +359,21 @@ class LCCL_DE_Fundraiser_Form {
 			self::send_booking_confirmation( $booking, $receipt, $event );
 		}
 
+		// Only show success card after verified payment and booking finalisation
+		if ( 'paid' !== $booking['status'] ) {
+			if ( 'pending' === $booking['status'] ) {
+				return '<div class="lccl-fr-card" style="margin:30px auto; max-width:600px; padding:24px; border-left:4px solid #d97706; background:#fffbe8;">' .
+					'<h2 style="color:#d97706; margin-top:0;">' . esc_html__( 'Payment Processing', 'lccl-de' ) . '</h2>' .
+					'<p>' . esc_html__( 'Your payment is being processed. Please check your booking status before trying again.', 'lccl-de' ) . '</p>' .
+					'<p style="font-size:13px; color:#666;">' . esc_html__( 'Booking Reference: ', 'lccl-de' ) . '<strong>' . esc_html( $order_ref ) . '</strong></p>' .
+					'</div>';
+			}
+			return '<div class="lccl-fr-card" style="margin:30px auto; max-width:600px; padding:24px; border-left:4px solid #dc2626; background:#fef2f2;">' .
+				'<h2 style="color:#dc2626; margin-top:0;">' . esc_html__( 'Payment Unsuccessful', 'lccl-de' ) . '</h2>' .
+				'<p>' . esc_html__( 'Your payment could not be completed. Please try again or use another payment method.', 'lccl-de' ) . '</p>' .
+				'</div>';
+		}
+
 		// Render confirmation view
 		return self::render_success_view( $booking, $receipt, $event );
 	}
@@ -381,7 +403,7 @@ class LCCL_DE_Fundraiser_Form {
 			<div style="text-align:center; margin-bottom:24px;">
 				<div style="width:64px; height:64px; line-height:64px; border-radius:50%; background:#dcfce7; color:#16a34a; font-size:32px; margin:0 auto 12px;">✓</div>
 				<h2 style="font-size:24px; font-weight:700; color:#1a1d23; margin:0 0 6px;"><?php esc_html_e( 'Booking Confirmed!', 'lccl-de' ); ?></h2>
-				<p style="color:#6b7280; font-size:14px; margin:0;"><?php esc_html_e( 'Your payment was successfully received and your reservation is confirmed.', 'lccl-de' ); ?></p>
+				<p style="color:#6b7280; font-size:14px; margin:0;"><?php esc_html_e( 'Your payment was successful. Your booking is confirmed.', 'lccl-de' ); ?></p>
 			</div>
 
 			<div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:20px; margin-bottom:24px;">
@@ -462,7 +484,7 @@ class LCCL_DE_Fundraiser_Form {
 			return;
 		}
 
-		$event_name = $event['name'] ?? 'Fundraiser Gala';
+		$event_name = $event['name'] ?? __( 'Fundraiser Event', 'lccl-de' );
 		$venue      = $event['venue'] ?? 'TBA';
 		$event_date = ! empty( $event['event_date'] ) ? date( 'l, F j, Y', strtotime( $event['event_date'] ) ) : 'TBA';
 		$event_time = ! empty( $event['event_time'] ) ? date( 'h:i A', strtotime( $event['event_time'] ) ) : '';

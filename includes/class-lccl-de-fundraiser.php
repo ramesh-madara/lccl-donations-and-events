@@ -292,10 +292,12 @@ class LCCL_DE_Fundraiser {
 			return array();
 		}
 
-		// 2. Already paid/booked seat numbers
+		// 2. Already paid/booked seat numbers AND recently pending (anti-collision: 30-min window)
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = (array) $wpdb->get_results( $wpdb->prepare(
-			"SELECT seat_numbers FROM `{$bk}` WHERE event_id = %d AND booking_type = 'individual' AND status = 'paid'",
+			"SELECT seat_numbers FROM `{$bk}`
+			 WHERE event_id = %d AND booking_type = 'individual'
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)))",
 			$event_id
 		), ARRAY_A );
 		$booked = array();
@@ -395,7 +397,9 @@ class LCCL_DE_Fundraiser {
 		$bk = self::bookings_table();
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = (array) $wpdb->get_results( $wpdb->prepare(
-			"SELECT seat_numbers FROM `{$bk}` WHERE event_id = %d AND booking_type = 'individual' AND status = 'paid'",
+			"SELECT seat_numbers FROM `{$bk}`
+			 WHERE event_id = %d AND booking_type = 'individual'
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)))",
 			$event_id
 		), ARRAY_A );
 		$booked = array();
@@ -449,11 +453,12 @@ class LCCL_DE_Fundraiser {
 			$event_id
 		) );
 
-		// Booked seats from paid individual bookings
+		// Booked seats from paid individual bookings + recent pending (anti-collision)
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$seat_pool_booked = (int) $wpdb->get_var( $wpdb->prepare(
 			"SELECT COALESCE(SUM(qty), 0) FROM `{$bk}`
-			 WHERE event_id = %d AND booking_type = 'individual' AND status = 'paid'",
+			 WHERE event_id = %d AND booking_type = 'individual'
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)))",
 			$event_id
 		) );
 
