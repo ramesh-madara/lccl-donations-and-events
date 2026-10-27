@@ -14,8 +14,9 @@
 	--lccl-prog-font: "CooperHewitt-Book", "Segoe UI", sans-serif;
 	--lccl-prog-required: #d0021b;
 
-	max-width: 1080px;
-	margin: 12px 0 40px;
+	max-width: 100%;
+	margin: 12px 20px 40px 0;
+	box-sizing: border-box;
 	color: var(--lccl-prog-text);
 	font-family: var(--lccl-prog-font);
 }

@@ -50,8 +50,23 @@ class LCCL_DE_Fundraiser_Form {
 				'</div>';
 		}
 
-		$active_event = null;
-		if ( ! empty( $_GET['event_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$vip_pass       = isset( $_GET['vip_pass'] ) ? sanitize_text_field( wp_unslash( $_GET['vip_pass'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$vip_validation = null;
+		if ( ! empty( $vip_pass ) ) {
+			$vip_validation = LCCL_DE_Fundraiser::validate_access_token( $vip_pass );
+			if ( $vip_validation['valid'] ) {
+				$token_ev_id  = (int) $vip_validation['token_data']['event_id'];
+				$active_event = LCCL_DE_Fundraiser::get_event( $token_ev_id );
+			} else {
+				$vip_msg = $vip_validation['message'] ?? __( 'Invalid VIP reservation link.', 'lccl-de' );
+				$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #ef4444; padding:16px 20px; background:#fef2f2;">' .
+					'<h3 style="margin:0 0 6px 0; color:#dc2626; font-size:16px;">' . esc_html__( 'VIP Reservation Link Notice', 'lccl-de' ) . '</h3>' .
+					'<p style="margin:0; color:#991b1b; font-size:14px; line-height: 1.5;">' . esc_html( $vip_msg ) . '</p>' .
+					'</div>';
+			}
+		}
+
+		if ( ! $active_event && ! empty( $_GET['event_id'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$active_event = LCCL_DE_Fundraiser::get_event( (int) $_GET['event_id'] );
 		}
 		if ( ! $active_event ) {
@@ -97,16 +112,32 @@ class LCCL_DE_Fundraiser_Form {
 			? array_map( 'intval', $raw['selectedTables'] )
 			: array();
 
+		$vip_pass    = isset( $raw['vip_pass'] ) ? sanitize_text_field( $raw['vip_pass'] ) : '';
+		$vip_details = null;
+
 		$errors = array();
 		if ( ! $event_id ) $errors[] = __( 'No active event selected.', 'lccl-de' );
 		if ( '' === $attendee_name ) $errors[] = __( 'Name is required.', 'lccl-de' );
 		if ( '' === $attendee_email || ! is_email( $attendee_email ) ) $errors[] = __( 'A valid email address is required.', 'lccl-de' );
+
+		if ( ! empty( $vip_pass ) ) {
+			$vip_res = LCCL_DE_Fundraiser::validate_access_token( $vip_pass, $event_id );
+			if ( ! $vip_res['valid'] ) {
+				$errors[] = $vip_res['message'];
+			} else {
+				$vip_details = $vip_res['item_details'];
+			}
+		}
 
 		global $wpdb;
 		$total_amount = 0.0;
 
 		// Server-side booking guard: Whole Table Mode
 		if ( 'table' === $booking_type ) {
+			if ( empty( $selected_tables ) && $vip_details && ! empty( $vip_details['table_ids'] ) ) {
+				$selected_tables = $vip_details['table_ids'];
+			}
+
 			if ( empty( $selected_tables ) ) {
 				$errors[] = __( 'Please select at least one table to book.', 'lccl-de' );
 			} else {
@@ -125,11 +156,13 @@ class LCCL_DE_Fundraiser_Form {
 						$event_id
 					), ARRAY_A );
 
-					if ( ! $t_row || 'table' !== $t_row['booking_mode'] ) {
+					$is_vip_unlocked = $vip_details && in_array( $tid, $vip_details['table_ids'], true );
+
+					if ( ( ! $t_row || 'table' !== $t_row['booking_mode'] ) && ! $is_vip_unlocked ) {
 						$errors[] = __( 'One or more selected tables are allocated to individual seats and cannot be booked as whole tables.', 'lccl-de' );
 						break;
 					}
-					if ( (int) $t_row['is_blocked'] === 1 ) {
+					if ( (int) $t_row['is_blocked'] === 1 && ! $is_vip_unlocked ) {
 						$errors[] = sprintf(
 							/* translators: %s: table label */
 							__( 'Table %s has been reserved or blocked by event administration.', 'lccl-de' ),
@@ -157,24 +190,47 @@ class LCCL_DE_Fundraiser_Form {
 		// Server-side booking guard: Individual Seat Mode
 		$seat_numbers = '';
 		if ( 'individual' === $booking_type ) {
-			if ( $qty < 1 ) {
-				$errors[] = __( 'Quantity of seats must be at least 1.', 'lccl-de' );
-			} else {
-				$avail = LCCL_DE_Fundraiser::get_available_seat_numbers( $event_id );
-				if ( count( $avail ) < $qty ) {
+			$ev_row = LCCL_DE_Fundraiser::get_event( $event_id );
+			$base_ticket_price = $ev_row ? (float) $ev_row['ticket_price'] : 0.0;
+
+			if ( $vip_details && ! empty( $vip_details['seats'] ) ) {
+				$vip_seats = $vip_details['seats'];
+				if ( $qty < 1 ) {
+					$qty = count( $vip_seats );
+				}
+				if ( $qty > count( $vip_seats ) ) {
 					$errors[] = sprintf(
 						/* translators: %d: count */
-						__( 'Only %d individual seat(s) currently remain available for this event.', 'lccl-de' ),
-						count( $avail )
+						__( 'This VIP booking link reserves a maximum of %d seat(s).', 'lccl-de' ),
+						count( $vip_seats )
 					);
 				} else {
-					// Automatic allocation: assign lowest available sequential seat numbers
-					$allocated    = array_slice( $avail, 0, $qty );
-					$seat_numbers = implode( ',', $allocated );
-
-					$ev_row = LCCL_DE_Fundraiser::get_event( $event_id );
-					$base_ticket_price = $ev_row ? (float) $ev_row['ticket_price'] : 0.0;
-					$total_amount      = $qty * $base_ticket_price;
+					$assigned_seats  = array_slice( $vip_seats, 0, $qty );
+					$seat_numbers    = implode( ',', $assigned_seats );
+					$selected_tables = array();
+					$total_amount    = $qty * $base_ticket_price;
+				}
+			} else {
+				if ( $qty < 1 ) {
+					$errors[] = __( 'Quantity of seats must be at least 1.', 'lccl-de' );
+				} else {
+					$allocation = LCCL_DE_Fundraiser::allocate_seats_for_party( $event_id, $qty );
+					if ( empty( $allocation['seat_numbers'] ) ) {
+						$avail_count = count( LCCL_DE_Fundraiser::get_available_seat_numbers( $event_id ) );
+						if ( $avail_count < $qty ) {
+							$errors[] = sprintf(
+								/* translators: %d: count */
+								__( 'Only %d individual seat(s) currently remain available for this event.', 'lccl-de' ),
+								$avail_count
+							);
+						} else {
+							$errors[] = __( 'Unable to allocate seats for this party size at this time. Please try a smaller party size or contact event administration.', 'lccl-de' );
+						}
+					} else {
+						$seat_numbers    = implode( ',', $allocation['seat_numbers'] );
+						$selected_tables = $allocation['table_ids'];
+						$total_amount    = $qty * $base_ticket_price;
+					}
 				}
 			}
 		}
@@ -206,13 +262,14 @@ class LCCL_DE_Fundraiser_Form {
 				'seat_numbers'   => $seat_numbers,
 				'table_ids'      => implode( ',', $selected_tables ),
 				'notes'          => $attendee_notes,
+				'access_token'   => ! empty( $vip_pass ) ? $vip_pass : null,
 				'amount_lkr'     => $total_amount,
 				'currency'       => $currency,
 				'status'         => 'pending',
 				'ip_address'     => self::client_ip(),
 				'created_at'     => current_time( 'mysql' ),
 			),
-			array( '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s' )
+			array( '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s', '%s', '%f', '%s', '%s', '%s', '%s' )
 		);
 
 		if ( ! $inserted ) {
@@ -347,7 +404,26 @@ class LCCL_DE_Fundraiser_Form {
 				$tids = array_map( 'intval', explode( ',', $booking['table_ids'] ) );
 				foreach ( $tids as $tid ) {
 					if ( $tid > 0 ) {
-						$wpdb->update( $tbl, array( 'is_booked' => 1 ), array( 'id' => $tid ) );
+						$wpdb->update( $tbl, array( 'is_booked' => 1, 'is_blocked' => 0, 'block_group_id' => null, 'block_note' => null ), array( 'id' => $tid ) );
+					}
+				}
+			}
+
+			// If VIP access token was used, redeem token and clear any seat blocks
+			if ( ! empty( $booking['access_token'] ) ) {
+				LCCL_DE_Fundraiser::redeem_access_token( $booking['access_token'], $booking['id'] );
+
+				if ( ! empty( $booking['seat_numbers'] ) ) {
+					$sb = LCCL_DE_Fundraiser::seat_blocks_table();
+					$s_nums = array_filter( array_map( 'intval', explode( ',', $booking['seat_numbers'] ) ) );
+					if ( ! empty( $s_nums ) ) {
+						$placeholders = implode( ',', array_fill( 0, count( $s_nums ), '%d' ) );
+						// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+						$wpdb->query( $wpdb->prepare(
+							"DELETE FROM `{$sb}` WHERE event_id = %d AND seat_number IN ({$placeholders})",
+							$booking['event_id'],
+							...$s_nums
+						) );
 					}
 				}
 			}
@@ -391,7 +467,10 @@ class LCCL_DE_Fundraiser_Form {
 		$seat_display = '';
 		if ( $is_individual ) {
 			$seat_nums = array_filter( array_map( 'trim', explode( ',', $booking['seat_numbers'] ?? '' ) ) );
-			$seat_display = ! empty( $seat_nums ) ? 'Seat #' . implode( ', Seat #', $seat_nums ) : 'Auto-allocated (' . $booking['qty'] . ' seats)';
+			$seat_display = LCCL_DE_Fundraiser::format_seats_with_tables( (int) $booking['event_id'], $seat_nums );
+			if ( empty( $seat_display ) ) {
+				$seat_display = ! empty( $seat_nums ) ? 'Seat #' . implode( ', Seat #', $seat_nums ) : 'Auto-allocated (' . $booking['qty'] . ' seats)';
+			}
 		} else {
 			$table_labels = self::get_table_labels( $booking['table_ids'] ?? '' );
 			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table(s)';
@@ -493,7 +572,10 @@ class LCCL_DE_Fundraiser_Form {
 		$seat_display = '';
 		if ( $is_individual ) {
 			$seat_nums = array_filter( array_map( 'trim', explode( ',', $booking['seat_numbers'] ?? '' ) ) );
-			$seat_display = ! empty( $seat_nums ) ? 'Seat #' . implode( ', Seat #', $seat_nums ) : 'Auto-allocated (' . $booking['qty'] . ' seats)';
+			$seat_display = LCCL_DE_Fundraiser::format_seats_with_tables( (int) $booking['event_id'], $seat_nums );
+			if ( empty( $seat_display ) ) {
+				$seat_display = ! empty( $seat_nums ) ? 'Seat #' . implode( ', Seat #', $seat_nums ) : 'Auto-allocated (' . $booking['qty'] . ' seats)';
+			}
 		} else {
 			$table_labels = self::get_table_labels( $booking['table_ids'] ?? '' );
 			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table(s)';

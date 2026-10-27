@@ -1061,6 +1061,7 @@ class LCCL_DE_Admin_Programs {
 			$ev['blocked_seat_details'] = LCCL_DE_Fundraiser::get_blocked_seat_details( $ev['id'] );
 			$ev['blocked_seat_groups']  = LCCL_DE_Fundraiser::get_blocked_seat_groups( $ev['id'] );
 			$ev['booked_seats']         = LCCL_DE_Fundraiser::get_booked_seat_numbers( $ev['id'] );
+			$ev['vip_tokens']           = LCCL_DE_Fundraiser::get_event_tokens( $ev['id'] );
 		}
 		unset( $ev );
 		$fr_stats    = LCCL_DE_Fundraiser::get_stats();

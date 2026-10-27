@@ -856,3 +856,72 @@ body.lccl-modal-prevent-scroll {
         padding: 4px 2px;
     }
 }
+
+/* VIP Private Booking Link Styles */
+.lccl-fr-vip-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #fefce8 0%, #fffbeb 50%, #fef3c7 100%);
+    border: 1px solid #fde047;
+    border-left: 6px solid #d97706;
+    border-radius: 10px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+}
+
+.lccl-fr-vip-banner__icon {
+    font-size: 28px;
+    line-height: 1;
+    background: #fef08a;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #facc15;
+    flex-shrink: 0;
+}
+
+.lccl-fr-vip-banner__body {
+    flex: 1;
+}
+
+.lccl-fr-vip-banner__tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    background: #d97706;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+
+.lccl-fr-vip-banner__title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #78350f;
+    margin: 0 0 6px 0;
+}
+
+.lccl-fr-vip-banner__desc {
+    font-size: 13px;
+    color: #92400e;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.lccl-fr-table-chip.is-vip {
+    border: 2px solid #d97706 !important;
+    background: #fffbeb !important;
+    box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.25) !important;
+}
+
+.lccl-fr-table-chip.is-vip .chip-status {
+    color: #b45309 !important;
+}

@@ -72,41 +72,52 @@
 	/* ────────────────────────────────────────────────────────────
 	   Universal Modal Helpers
 	──────────────────────────────────────────────────────────── */
-	const modalBackdrop = document.getElementById('lccl-frx-modal-backdrop');
-	const modalTitle = document.getElementById('lccl-frx-modal-title');
-	const modalBody = document.getElementById('lccl-frx-modal-body');
-	const modalFoot = document.getElementById('lccl-frx-modal-foot');
-	const modalCloseBtn = document.getElementById('lccl-frx-modal-close');
+	function getModalElements() {
+		const backdrop = document.getElementById('lccl-frx-modal-backdrop');
+		if (!backdrop) return null;
+		return {
+			backdrop,
+			title: document.getElementById('lccl-frx-modal-title') || backdrop.querySelector('.lccl-frx-modal__title'),
+			body: document.getElementById('lccl-frx-modal-body') || backdrop.querySelector('.lccl-frx-modal__body'),
+			foot: document.getElementById('lccl-frx-modal-foot') || backdrop.querySelector('.lccl-frx-modal__foot'),
+			closeBtn: document.getElementById('lccl-frx-modal-close') || backdrop.querySelector('.lccl-frx-modal__close'),
+		};
+	}
 
 	function openModal(title, bodyHtml, footHtml = '') {
-		if (!modalBackdrop) return;
-		if (modalTitle) modalTitle.innerHTML = title;
-		if (modalBody) modalBody.innerHTML = bodyHtml;
-		if (modalFoot) {
-			modalFoot.innerHTML = footHtml;
-			modalFoot.style.display = footHtml ? 'flex' : 'none';
+		const m = getModalElements();
+		if (!m || !m.backdrop) return;
+		if (m.title) m.title.innerHTML = title;
+		if (m.body) m.body.innerHTML = bodyHtml;
+		if (m.foot) {
+			m.foot.innerHTML = footHtml;
+			m.foot.style.display = footHtml ? 'flex' : 'none';
 		}
-		modalBackdrop.style.display = 'flex';
-		modalBackdrop.setAttribute('aria-hidden', 'false');
+		m.backdrop.style.display = 'flex';
+		m.backdrop.setAttribute('aria-hidden', 'false');
 	}
 
 	function closeModal() {
-		if (!modalBackdrop) return;
-		modalBackdrop.style.display = 'none';
-		modalBackdrop.setAttribute('aria-hidden', 'true');
-		if (modalBody) modalBody.innerHTML = '';
-		if (modalFoot) modalFoot.innerHTML = '';
+		const m = getModalElements();
+		if (!m || !m.backdrop) return;
+		m.backdrop.style.display = 'none';
+		m.backdrop.setAttribute('aria-hidden', 'true');
+		if (m.body) m.body.innerHTML = '';
+		if (m.foot) m.foot.innerHTML = '';
 	}
 
-	if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
-	if (modalBackdrop) {
-		modalBackdrop.addEventListener('click', e => {
-			if (e.target === modalBackdrop) closeModal();
-		});
-	}
-	document.addEventListener('keydown', e => {
-		if (e.key === 'Escape' && modalBackdrop && modalBackdrop.style.display !== 'none') {
+	document.addEventListener('click', e => {
+		if (e.target && (e.target.id === 'lccl-frx-modal-close' || e.target.closest('#lccl-frx-modal-close') || e.target.id === 'lccl-frx-modal-backdrop')) {
 			closeModal();
+		}
+	});
+
+	document.addEventListener('keydown', e => {
+		if (e.key === 'Escape') {
+			const backdrop = document.getElementById('lccl-frx-modal-backdrop');
+			if (backdrop && backdrop.style.display !== 'none') {
+				closeModal();
+			}
 		}
 	});
 
@@ -537,6 +548,11 @@
 			const metaStr = (grp.blocked_at ? formatDateTime(grp.blocked_at) : '') +
 				(grp.blocked_by_name ? ` · by ${esc(grp.blocked_by_name)}` : '');
 
+			const activeToken = (ev.vip_tokens || []).find(t => t.status === 'active' && t.item_type === 'table_group' && t.item_ref === grp.group_id);
+			const vipBadge = activeToken
+				? `<span class="lccl-frx-badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde047;font-weight:600;" title="VIP booking link generated">⭐ VIP Link Active</span>`
+				: '';
+
 			const tableChips = tables.map(t => {
 				const poolText = t.booking_mode === 'table' ? '🟣 Table' : '🔵 Seat';
 				return `<span class="lccl-frx-seat-chip lccl-frx-table-chip" data-table-id="${t.id}" title="Click to locate ${esc(t.table_label)} in floor plan">🏷️ ${esc(t.table_label)} <small style="opacity:0.85;margin-left:3px;">(${esc(t.type_name)}, ${t.capacity}s • ${poolText})</small></span>`;
@@ -549,6 +565,7 @@
 							<span>🏢 ${esc(groupLabel)}</span>
 							<span class="lccl-frx-badge lccl-frx-badge--failed">${tables.length} table${isGroup ? 's' : ''}</span>
 							<span class="lccl-frx-badge lccl-frx-badge--private">${grp.total_capacity} seats total</span>
+							${vipBadge}
 						</div>
 						<div class="lccl-frx-seat-group-card__meta">${metaStr}</div>
 					</div>
@@ -564,6 +581,8 @@
 					<div class="lccl-frx-seat-group-card__actions">
 						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--outline"
 							data-action="view-table-group" data-group-id="${esc(grp.group_id)}">👁️ Details</button>
+						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm ${activeToken ? 'lccl-frx-btn--secondary' : 'lccl-frx-btn--primary'}"
+							data-action="vip-link-table-group" data-group-id="${esc(grp.group_id)}" title="Generate or share private VIP booking link">🔗 ${activeToken ? 'Manage VIP Link' : 'Private Link'}</button>
 						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--success-outline"
 							data-action="resend-table-group" data-group-id="${esc(grp.group_id)}">↩ Re-send to Pool</button>
 					</div>
@@ -606,12 +625,18 @@
 				? (grp.group_id.startsWith('grp_') ? 'Seat Group' : grp.group_id)
 				: 'Individual / Single Block';
 
+			const activeToken = (ev.vip_tokens || []).find(t => t.status === 'active' && t.item_type === 'seat_group' && t.item_ref === grp.group_id);
+			const vipBadge = activeToken
+				? `<span class="lccl-frx-badge" style="background:#fef3c7;color:#92400e;border:1px solid #fde047;font-weight:600;" title="VIP booking link generated">⭐ VIP Link Active</span>`
+				: '';
+
 			return `
 				<div class="lccl-frx-seat-group-card" data-group-id="${esc(grp.group_id)}">
 					<div class="lccl-frx-seat-group-card__head">
 						<div class="lccl-frx-seat-group-card__title">
 							<span>👥 ${esc(groupLabel)}</span>
 							<span class="lccl-frx-badge lccl-frx-badge--failed">${seats.length} seat${seats.length > 1 ? 's' : ''}</span>
+							${vipBadge}
 						</div>
 						<div class="lccl-frx-seat-group-card__meta">${metaStr}</div>
 					</div>
@@ -627,6 +652,8 @@
 					<div class="lccl-frx-seat-group-card__actions">
 						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--outline"
 							data-action="view-seat-group" data-group-id="${esc(grp.group_id)}">👁️ Details</button>
+						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm ${activeToken ? 'lccl-frx-btn--secondary' : 'lccl-frx-btn--primary'}"
+							data-action="vip-link-seat-group" data-group-id="${esc(grp.group_id)}" title="Generate or share private VIP booking link">🔗 ${activeToken ? 'Manage VIP Link' : 'Private Link'}</button>
 						<button type="button" class="lccl-frx-btn lccl-frx-btn--sm lccl-frx-btn--success-outline"
 							data-action="resend-seat-group" data-group-id="${esc(grp.group_id)}">↩ Re-send to Seat Pool</button>
 					</div>
@@ -1275,20 +1302,29 @@
 		let footHtml = '';
 		if (isGroup) {
 			footHtml = `
-				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-seat">Close</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-modal-vip-seat-single">🔗 Private VIP Link (Group)</button>
 				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-resend-single">↩ Re-send Only Seat #${seatNum}</button>
-				<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-all-grp">↩ Re-send Whole Group (${grp.seats.length} seats)</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-all-grp">↩ Re-send Whole Group</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-seat">Close</button>
 			`;
 		} else {
 			footHtml = `
-				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-seat">Close</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-modal-vip-seat-single">🔗 Private VIP Link</button>
 				<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-single">↩ Re-send to Seat Pool</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-seat">Close</button>
 			`;
 		}
 
 		openModal(`Blocked Seat #${seatNum}`, bodyHtml, footHtml);
 
 		document.getElementById('frx-btn-modal-close-seat')?.addEventListener('click', closeModal);
+		document.getElementById('frx-btn-modal-vip-seat-single')?.addEventListener('click', () => {
+			if (isGroup) {
+				openVipLinkForSeatGroup(grp.group_id);
+			} else {
+				openVipLinkModal('seat', String(seatNum), `Seat #${seatNum}`, `Individual Seat #${seatNum}`);
+			}
+		});
 		document.getElementById('frx-btn-modal-resend-single')?.addEventListener('click', () => {
 			closeModal();
 			resendSingleSeat(seatNum);
@@ -1378,11 +1414,15 @@
 			</div>
 		`;
 		const footHtml = `
-			<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-grp">Close</button>
+			<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-modal-vip-seat-grp">🔗 Private VIP Link</button>
 			<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-grp">↩ Re-send Group to Seat Pool</button>
+			<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-grp">Close</button>
 		`;
 		openModal(`Seat Group Details (${seats.length} seats)`, bodyHtml, footHtml);
 		document.getElementById('frx-btn-modal-close-grp')?.addEventListener('click', closeModal);
+		document.getElementById('frx-btn-modal-vip-seat-grp')?.addEventListener('click', () => {
+			openVipLinkForSeatGroup(grp.group_id);
+		});
 		document.getElementById('frx-btn-modal-resend-grp')?.addEventListener('click', () => {
 			closeModal();
 			resendSeatGroup(grp.group_id);
@@ -1503,12 +1543,16 @@
 		`;
 
 		const footHtml = `
-			<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-tbl-grp">Close</button>
+			<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-modal-vip-tbl-grp">🔗 Private VIP Link</button>
 			<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-all-tbl-grp">↩ Re-send ${isGroup ? `Whole Group (${tables.length} tables)` : 'Table'} to Pool</button>
+			<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-tbl-grp">Close</button>
 		`;
 
 		openModal(title, bodyHtml, footHtml);
 		document.getElementById('frx-btn-modal-close-tbl-grp')?.addEventListener('click', closeModal);
+		document.getElementById('frx-btn-modal-vip-tbl-grp')?.addEventListener('click', () => {
+			openVipLinkForTableGroup(grp.group_id);
+		});
 		document.getElementById('frx-btn-modal-resend-all-tbl-grp')?.addEventListener('click', () => {
 			closeModal();
 			resendTableGroup(grp.group_id);
@@ -1559,19 +1603,30 @@
 		let footHtml = '';
 		if (isGroup) {
 			footHtml = `
-				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-tbl">Close</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-modal-vip-tbl-single">🔗 Private VIP Link (Group)</button>
 				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-resend-single-tbl">↩ Re-send Only This Table</button>
-				<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-all-grp-tbl">↩ Re-send Whole Group (${grp.tables.length} tables)</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-all-grp-tbl">↩ Re-send Whole Group</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-tbl">Close</button>
 			`;
 		} else {
 			footHtml = `
-				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-tbl">Close</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-modal-vip-tbl-single">🔗 Private VIP Link</button>
 				<button type="button" class="lccl-frx-btn lccl-frx-btn--success-outline lccl-frx-btn--sm" id="frx-btn-modal-resend-single-tbl">↩ Re-send to Pool</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-modal-close-tbl">Close</button>
 			`;
 		}
 
 		openModal(`Blocked Table: ${esc(tbl.table_label)}`, bodyHtml, footHtml);
 		document.getElementById('frx-btn-modal-close-tbl')?.addEventListener('click', closeModal);
+		document.getElementById('frx-btn-modal-vip-tbl-single')?.addEventListener('click', () => {
+			if (isGroup) {
+				openVipLinkForTableGroup(grp.group_id);
+			} else {
+				const label = tbl.table_label || `Table #${tbl.id}`;
+				const summary = `Table: ${label} (${tbl.capacity} seats • ${tbl.type_name})`;
+				openVipLinkModal('table', String(tbl.id), label, summary);
+			}
+		});
 		document.getElementById('frx-btn-modal-resend-single-tbl')?.addEventListener('click', () => {
 			closeModal();
 			resendTableToPool(tbl.id);
@@ -1580,6 +1635,192 @@
 			closeModal();
 			resendTableGroup(grp.group_id);
 		});
+	}
+
+	/* ────────────────────────────────────────────────────────────
+	   VIP / Private Booking Link Modal Management
+	──────────────────────────────────────────────────────────── */
+	function openVipLinkModal(itemType, itemRef, defaultLabel, extraSummary) {
+		const ev = getEvent(currentEventId);
+		if (!ev) return;
+
+		const activeTokens = (ev.vip_tokens || []).filter(t => t.status === 'active');
+		const existingToken = activeTokens.find(t => t.item_type === itemType && String(t.item_ref) === String(itemRef));
+
+		const title = `🔗 Private VIP Booking Link`;
+
+		if (existingToken) {
+			const bodyHtml = `
+				<div style="background:#fefce8;border:1px solid #fde047;border-left:5px solid #d97706;padding:14px;border-radius:8px;margin-bottom:16px;">
+					<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+						<span style="font-size:11px;font-weight:700;text-transform:uppercase;color:#b45309;letter-spacing:0.5px;">Active VIP Link</span>
+						<span class="lccl-frx-badge" style="background:#dcfce7;color:#166534;">Active</span>
+					</div>
+					<div style="font-size:14px;font-weight:700;color:#78350f;margin-bottom:4px;">${esc(defaultLabel)}</div>
+					<div style="font-size:12px;color:#92400e;">${extraSummary}</div>
+				</div>
+
+				<div class="lccl-frx-modal-dl" style="margin-bottom:14px;">
+					<div class="lccl-frx-modal-dt">Recipient:</div>
+					<div class="lccl-frx-modal-dd"><strong>${esc(existingToken.recipient_label || 'VIP Guest')}</strong></div>
+					<div class="lccl-frx-modal-dt">Expires At:</div>
+					<div class="lccl-frx-modal-dd">${existingToken.expires_at ? formatDateTime(existingToken.expires_at) : '<em>Never (No expiry)</em>'}</div>
+					<div class="lccl-frx-modal-dt">Created:</div>
+					<div class="lccl-frx-modal-dd">${formatDateTime(existingToken.created_at)}</div>
+				</div>
+
+				<div style="margin-bottom:16px;">
+					<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;">Private Shareable URL:</label>
+					<div style="display:flex;gap:6px;">
+						<input type="text" id="frx-vip-url-input" class="lccl-frx-form-input" style="flex:1;font-family:monospace;font-size:12px;background:#f8fafc;" readonly value="${esc(existingToken.booking_url)}">
+						<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-copy-vip-link" title="Copy link to clipboard">📋 Copy</button>
+					</div>
+					<p style="font-size:11px;color:#6b7280;margin:6px 0 0 0;">This secret link unlocks this blocked reservation on the public booking form and allows only the recipient to book it.</p>
+				</div>
+			`;
+
+			const eventRow = getEvent(currentEventId);
+			const shareText = `Greetings! An exclusive VIP reservation has been reserved for you for ${eventRow?.name || 'our upcoming event'}. Please use this private link to confirm and complete your booking:\n${existingToken.booking_url}`;
+			const waUrl = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(shareText);
+
+			const footHtml = `
+				<a href="${waUrl}" target="_blank" rel="noopener noreferrer" class="lccl-frx-btn lccl-frx-btn--sm" style="background:#25D366;color:#fff;border-color:#25D366;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">💬 WhatsApp</a>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--danger-outline lccl-frx-btn--sm" id="frx-btn-revoke-vip-link">✕ Revoke Link</button>
+				<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-close-vip-modal">Close</button>
+			`;
+
+			openModal(title, bodyHtml, footHtml);
+
+			document.getElementById('frx-btn-close-vip-modal')?.addEventListener('click', closeModal);
+			document.getElementById('frx-btn-copy-vip-link')?.addEventListener('click', () => {
+				const input = document.getElementById('frx-vip-url-input');
+				if (input) {
+					input.select();
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						navigator.clipboard.writeText(input.value);
+					} else {
+						document.execCommand('copy');
+					}
+					toast('VIP Booking Link copied to clipboard!', 'success');
+				}
+			});
+			document.getElementById('frx-btn-revoke-vip-link')?.addEventListener('click', () => {
+				if (!confirm('Are you sure you want to revoke this VIP booking link? The guest will no longer be able to use it.')) return;
+				ajax('lccl_de_fr_revoke_token', { token: existingToken.token }).then(res => {
+					if (!res.success) {
+						toast(res.data?.message || 'Error revoking token', 'error');
+						return;
+					}
+					existingToken.status = 'revoked';
+					toast('VIP link revoked successfully', 'success');
+					closeModal();
+					renderBlockedPanel();
+				}).catch(() => toast('Request failed', 'error'));
+			});
+			return;
+		}
+
+		// Generation Form
+		const bodyHtml = `
+			<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-left:5px solid #16a34a;padding:14px;border-radius:8px;margin-bottom:16px;">
+				<div style="font-size:14px;font-weight:700;color:#166534;margin-bottom:4px;">${esc(defaultLabel)}</div>
+				<div style="font-size:12px;color:#15803d;">${extraSummary}</div>
+			</div>
+
+			<form id="frx-vip-gen-form">
+				<div style="margin-bottom:14px;">
+					<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Recipient Name / VIP Guest Label (Optional):</label>
+					<input type="text" id="frx-vip-recipient-input" class="lccl-frx-form-input" placeholder="e.g. Dr. Perera / Prime Sponsor" style="width:100%;box-sizing:border-box;">
+					<span style="font-size:11px;color:#6b7280;">Displayed on the VIP greeting banner when they open the link.</span>
+				</div>
+
+				<div style="margin-bottom:14px;">
+					<label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px;">Link Validity / Expiry:</label>
+					<select id="frx-vip-expiry-select" class="lccl-frx-form-input" style="width:100%;box-sizing:border-box;">
+						<option value="0">Never (No expiry)</option>
+						<option value="24">24 hours</option>
+						<option value="48" selected>48 hours</option>
+						<option value="72">72 hours (3 days)</option>
+						<option value="168">7 days (1 week)</option>
+					</select>
+				</div>
+			</form>
+		`;
+
+		const footHtml = `
+			<button type="button" class="lccl-frx-btn lccl-frx-btn--primary lccl-frx-btn--sm" id="frx-btn-generate-vip-link">✨ Generate VIP Booking Link</button>
+			<button type="button" class="lccl-frx-btn lccl-frx-btn--outline lccl-frx-btn--sm" id="frx-btn-cancel-vip-modal">Cancel</button>
+		`;
+
+		openModal(title, bodyHtml, footHtml);
+
+		document.getElementById('frx-btn-cancel-vip-modal')?.addEventListener('click', closeModal);
+		document.getElementById('frx-btn-generate-vip-link')?.addEventListener('click', () => {
+			const recipient = document.getElementById('frx-vip-recipient-input')?.value?.trim() || '';
+			const hours = parseInt(document.getElementById('frx-vip-expiry-select')?.value, 10) || 0;
+
+			const btn = document.getElementById('frx-btn-generate-vip-link');
+			if (btn) btn.disabled = true;
+
+			ajax('lccl_de_fr_get_or_create_token', {
+				event_id: currentEventId,
+				item_type: itemType,
+				item_ref: itemRef,
+				recipient_label: recipient,
+				expires_hours: hours,
+			}).then(res => {
+				if (!res.success) {
+					if (btn) btn.disabled = false;
+					toast(res.data?.message || 'Error generating link', 'error');
+					return;
+				}
+				if (!ev.vip_tokens) ev.vip_tokens = [];
+				ev.vip_tokens.unshift({
+					event_id: currentEventId,
+					token: res.data.token,
+					booking_url: res.data.booking_url,
+					item_type: itemType,
+					item_ref: itemRef,
+					recipient_label: res.data.recipient_label,
+					expires_at: res.data.expires_at,
+					status: res.data.status,
+					created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
+				});
+				toast('VIP link generated successfully!', 'success');
+				// Re-open with active link view
+				openVipLinkModal(itemType, itemRef, defaultLabel, extraSummary);
+				renderBlockedPanel();
+			}).catch(() => {
+				if (btn) btn.disabled = false;
+				toast('Request failed', 'error');
+			});
+		});
+	}
+
+	function openVipLinkForTableGroup(groupId) {
+		const ev = getEvent(currentEventId);
+		const groups = getBlockedTableGroups(ev);
+		const grp = groups.find(g => g.group_id === groupId);
+		if (!grp) return;
+
+		const tables = grp.tables || [];
+		const isGroup = tables.length > 1;
+		const defaultLabel = isGroup ? `Table Group (${tables.length} tables)` : (tables[0]?.table_label || 'Table Block');
+		const extraSummary = `Tables: ${tables.map(t => t.table_label).join(', ')} (${grp.total_capacity} seats total)`;
+
+		openVipLinkModal('table_group', grp.group_id, defaultLabel, extraSummary);
+	}
+
+	function openVipLinkForSeatGroup(groupId) {
+		const ev = getEvent(currentEventId);
+		const grp = (ev?.blocked_seat_groups || []).find(g => g.group_id === groupId);
+		if (!grp) return;
+
+		const seats = grp.seats || [];
+		const defaultLabel = grp.group_id ? (grp.group_id.startsWith('grp_') ? 'Seat Group' : grp.group_id) : 'Seat Block';
+		const extraSummary = `Seats: #${seats.join(', #')} (${seats.length} seats total)`;
+
+		openVipLinkModal('seat_group', grp.group_id, defaultLabel, extraSummary);
 	}
 
 	// Action delegation for Blocked Table Groups list
@@ -1605,6 +1846,8 @@
 			viewTableGroupDetails(groupId);
 		} else if (action === 'resend-table-group') {
 			resendTableGroup(groupId);
+		} else if (action === 'vip-link-table-group') {
+			openVipLinkForTableGroup(groupId);
 		}
 	});
 
@@ -1660,6 +1903,8 @@
 			viewSeatGroupDetails(groupId);
 		} else if (action === 'resend-seat-group') {
 			resendSeatGroup(groupId);
+		} else if (action === 'vip-link-seat-group') {
+			openVipLinkForSeatGroup(groupId);
 		}
 	});
 

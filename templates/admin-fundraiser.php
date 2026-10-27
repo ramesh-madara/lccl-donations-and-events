@@ -622,24 +622,6 @@ $fr_bookings_json = wp_json_encode( $fr_bookings );
 	</div><!-- /panel-allbookings -->
 
 	<!-- ============================================================
-	     UNIVERSAL MODAL (Block Note / Inspection & Re-send)
-	============================================================ -->
-	<div class="lccl-frx-modal-backdrop" id="lccl-frx-modal-backdrop" style="display:none;">
-		<div class="lccl-frx-modal" id="lccl-frx-modal">
-			<div class="lccl-frx-modal__head">
-				<h3 class="lccl-frx-modal__title" id="frx-modal-title"><?php esc_html_e( 'Details', 'lccl-de' ); ?></h3>
-				<button type="button" class="lccl-frx-modal__close" id="frx-modal-close">&times;</button>
-			</div>
-			<div class="lccl-frx-modal__body" id="frx-modal-body">
-				<!-- Injected by JS -->
-			</div>
-			<div class="lccl-frx-modal__foot" id="frx-modal-foot">
-				<!-- Injected by JS -->
-			</div>
-		</div>
-	</div>
-
-	<!-- ============================================================
 	     PANEL: CREATE EVENT
 	============================================================ -->
 	<div class="lccl-frx-panel" id="lccl-frx-panel-create">

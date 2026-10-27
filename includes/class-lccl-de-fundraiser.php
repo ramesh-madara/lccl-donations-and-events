@@ -31,6 +31,10 @@ class LCCL_DE_Fundraiser {
 		add_action( 'wp_ajax_lccl_de_fr_unblock_seat_group',         array( __CLASS__, 'ajax_unblock_seat_group' ) );
 		add_action( 'wp_ajax_lccl_de_fr_clear_seat_blocks',          array( __CLASS__, 'ajax_clear_seat_blocks' ) );
 
+		// VIP / Private Booking Link hooks
+		add_action( 'wp_ajax_lccl_de_fr_get_or_create_token',        array( __CLASS__, 'ajax_get_or_create_token' ) );
+		add_action( 'wp_ajax_lccl_de_fr_revoke_token',               array( __CLASS__, 'ajax_revoke_token' ) );
+
 		// Ensure public booking page exists.
 		if ( class_exists( 'LCCL_DE_Roles' ) ) {
 			LCCL_DE_Roles::ensure_fundraiser_page();
@@ -46,6 +50,7 @@ class LCCL_DE_Fundraiser {
 	public static function tables_table() { global $wpdb; return $wpdb->prefix . 'lccl_de_fr_tables'; }
 	public static function bookings_table() { global $wpdb; return $wpdb->prefix . 'lccl_de_fr_bookings'; }
 	public static function seat_blocks_table() { global $wpdb; return $wpdb->prefix . 'lccl_de_fr_seat_blocks'; }
+	public static function access_tokens_table() { global $wpdb; return $wpdb->prefix . 'lccl_de_fr_access_tokens'; }
 
 	/* -----------------------------------------------------------------------
 	 * Schema installer - called by LCCL_DE_Schema::install
@@ -204,6 +209,77 @@ class LCCL_DE_Fundraiser {
 			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			$wpdb->query( "ALTER TABLE `{$bookings}` ADD COLUMN `notes` text DEFAULT NULL AFTER `table_ids`" );
 		}
+
+		$col_bk_token = $wpdb->get_var( $wpdb->prepare(
+			"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = 'access_token'",
+			$bookings
+		) );
+		if ( ! $col_bk_token ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE `{$bookings}` ADD COLUMN `access_token` varchar(64) DEFAULT NULL AFTER `notes`, ADD INDEX bk_access_token (`access_token`)" );
+		}
+
+		$access_tokens = self::access_tokens_table();
+		dbDelta( "CREATE TABLE {$access_tokens} (
+			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			event_id bigint(20) unsigned NOT NULL,
+			token varchar(64) NOT NULL,
+			item_type varchar(20) NOT NULL,
+			item_ref text NOT NULL,
+			recipient_label varchar(255) DEFAULT '',
+			expires_at datetime DEFAULT NULL,
+			status varchar(20) NOT NULL DEFAULT 'active',
+			redeemed_booking_id bigint(20) unsigned DEFAULT NULL,
+			created_by bigint(20) unsigned DEFAULT NULL,
+			created_at datetime NOT NULL,
+			redeemed_at datetime DEFAULT NULL,
+			PRIMARY KEY  (id),
+			UNIQUE KEY token (token),
+			KEY event_id (event_id),
+			KEY status (status),
+			KEY event_item (event_id, item_type)
+		) {$charset};" );
+
+		// Fallback direct creation if dbDelta was skipped
+		$wpdb->query( "CREATE TABLE IF NOT EXISTS `{$access_tokens}` (
+			`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+			`event_id` bigint(20) unsigned NOT NULL,
+			`token` varchar(64) NOT NULL,
+			`item_type` varchar(20) NOT NULL,
+			`item_ref` text NOT NULL,
+			`recipient_label` varchar(255) DEFAULT '',
+			`expires_at` datetime DEFAULT NULL,
+			`status` varchar(20) NOT NULL DEFAULT 'active',
+			`redeemed_booking_id` bigint(20) unsigned DEFAULT NULL,
+			`created_by` bigint(20) unsigned DEFAULT NULL,
+			`created_at` datetime NOT NULL,
+			`redeemed_at` datetime DEFAULT NULL,
+			PRIMARY KEY (`id`),
+			UNIQUE KEY `token` (`token`),
+			KEY `event_id` (`event_id`),
+			KEY `status` (`status`),
+			KEY `event_item` (`event_id`, `item_type`)
+		) {$charset};" );
+
+		// Backfill any legacy blocked tables that were blocked before block_group_id was introduced
+		$unlinked = $wpdb->get_results( "SELECT id, blocked_at, block_note FROM `{$tables}` WHERE is_blocked = 1 AND (block_group_id IS NULL OR block_group_id = '')", ARRAY_A );
+		if ( ! empty( $unlinked ) ) {
+			$grouped = array();
+			foreach ( $unlinked as $u ) {
+				$k = ( $u['blocked_at'] ?: 'legacy' ) . '_' . ( $u['block_note'] ?: 'block' );
+				$grouped[ $k ][] = (int) $u['id'];
+			}
+			foreach ( $grouped as $k => $ids ) {
+				$new_gid = 'tbl_grp_' . wp_generate_password( 8, false, false );
+				$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( $wpdb->prepare(
+					"UPDATE `{$tables}` SET block_group_id = %s WHERE id IN ({$placeholders})",
+					$new_gid,
+					...$ids
+				) );
+			}
+		}
 	}
 
 	/* -----------------------------------------------------------------------
@@ -270,25 +346,35 @@ class LCCL_DE_Fundraiser {
 		), ARRAY_A );
 	}
 
-	public static function get_available_seat_numbers( $event_id ) {
+	/**
+	 * Map each seat-pool table to its sequential seat numbers and identify available seats.
+	 *
+	 * Preserves sequential numbering 1..total_seats across all seat-pool tables,
+	 * matching the admin floor plan and visual grid.
+	 *
+	 * @param int $event_id
+	 * @return array List of tables with start_seat, end_seat, available_seats, and available_count.
+	 */
+	public static function get_seat_pool_table_availability( $event_id ) {
 		global $wpdb;
 		$tb = self::tables_table();
 		$tt = self::table_types_table();
 		$bk = self::bookings_table();
 		$sb = self::seat_blocks_table();
 
-		// 1. Total capacity from unblocked seat-pool tables
+		// 1. All seat-pool tables in display order (matching admin grid sequence)
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$total_capacity = (int) $wpdb->get_var( $wpdb->prepare(
-			"SELECT COALESCE(SUM(ty.capacity), 0)
+		$tables = (array) $wpdb->get_results( $wpdb->prepare(
+			"SELECT ta.*, ty.name AS type_name, ty.capacity, ty.price
 			 FROM `{$tb}` ta
 			 JOIN `{$tt}` ty ON ta.type_id = ty.id
 			 WHERE ta.event_id = %d
 			   AND (ta.booking_mode = 'seat' OR ta.booking_mode IS NULL OR ta.booking_mode = '')
-			   AND ta.is_blocked = 0",
+			 ORDER BY ta.type_id ASC, ta.sort_order ASC, ta.id ASC",
 			$event_id
-		) );
-		if ( $total_capacity < 1 ) {
+		), ARRAY_A );
+
+		if ( empty( $tables ) ) {
 			return array();
 		}
 
@@ -320,12 +406,272 @@ class LCCL_DE_Fundraiser {
 		), ARRAY_A );
 		$blocked_seats = array_map( function( $r ) { return (int) $r['seat_number']; }, $blocked_rows );
 
-		// 4. Sequence 1..total_capacity excluding booked & blocked (sorted ascending for deterministic auto-allocation)
-		$all         = range( 1, $total_capacity );
-		$unavailable = array_unique( array_merge( $booked, $blocked_seats ) );
-		$available   = array_values( array_diff( $all, $unavailable ) );
-		sort( $available, SORT_NUMERIC );
-		return $available;
+		$unavailable = array_flip( array_unique( array_merge( $booked, $blocked_seats ) ) );
+
+		// 4. Map sequential seat ranges to each table
+		$seat_counter = 1;
+		$table_map    = array();
+
+		foreach ( $tables as $tbl ) {
+			$cap   = (int) $tbl['capacity'];
+			$start = $seat_counter;
+			$end   = $seat_counter + $cap - 1;
+			$seat_counter += $cap;
+
+			$free_seats = array();
+			$is_blocked = (int) $tbl['is_blocked'];
+
+			if ( ! $is_blocked ) {
+				for ( $s = $start; $s <= $end; $s++ ) {
+					if ( ! isset( $unavailable[ $s ] ) ) {
+						$free_seats[] = $s;
+					}
+				}
+			}
+
+			$table_map[] = array(
+				'table_id'        => (int) $tbl['id'],
+				'table_label'     => $tbl['table_label'],
+				'type_id'         => (int) $tbl['type_id'],
+				'type_name'       => $tbl['type_name'],
+				'capacity'        => $cap,
+				'start_seat'      => $start,
+				'end_seat'        => $end,
+				'is_blocked'      => $is_blocked,
+				'available_seats' => $free_seats,
+				'available_count' => count( $free_seats ),
+			);
+		}
+
+		return $table_map;
+	}
+
+	/**
+	 * Get a flat, sorted list of all individual seat numbers currently available.
+	 *
+	 * @param int $event_id
+	 * @return int[]
+	 */
+	public static function get_available_seat_numbers( $event_id ) {
+		$table_map = self::get_seat_pool_table_availability( $event_id );
+		$all_free  = array();
+		foreach ( $table_map as $t ) {
+			if ( ! empty( $t['available_seats'] ) ) {
+				foreach ( $t['available_seats'] as $s ) {
+					$all_free[] = $s;
+				}
+			}
+		}
+		sort( $all_free, SORT_NUMERIC );
+		return $all_free;
+	}
+
+	/**
+	 * Allocate seats for a party of $qty with 3-tier precedence:
+	 *  Tier 1: Single-table fit (party seated 100% together at the earliest matching table).
+	 *  Tier 2: Closest adjacent tables (when split is required, pick closest neighbouring tables).
+	 *  Tier 3: General split fallback (fill earliest available seats across remaining tables).
+	 *
+	 * @param int $event_id
+	 * @param int $qty
+	 * @return array {
+	 *     @type int[]    $seat_numbers Allocated seat numbers
+	 *     @type int[]    $table_ids    IDs of tables utilized
+	 *     @type string[] $table_labels Labels of tables utilized
+	 *     @type bool     $is_split     True if party was seated across >1 table
+	 *     @type int      $tier         Allocation tier applied (1, 2, or 3; 0 if failed)
+	 * }
+	 */
+	public static function allocate_seats_for_party( $event_id, $qty ) {
+		$qty = (int) $qty;
+		if ( $qty < 1 ) {
+			return array(
+				'seat_numbers' => array(),
+				'table_ids'    => array(),
+				'table_labels' => array(),
+				'is_split'     => false,
+				'tier'         => 0,
+			);
+		}
+
+		$tables = self::get_seat_pool_table_availability( $event_id );
+		if ( empty( $tables ) ) {
+			return array(
+				'seat_numbers' => array(),
+				'table_ids'    => array(),
+				'table_labels' => array(),
+				'is_split'     => false,
+				'tier'         => 0,
+			);
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// TIER 1: Single-Table Fit (Keep Party 100% Together)
+		// ─────────────────────────────────────────────────────────────────
+		foreach ( $tables as $tbl ) {
+			if ( $tbl['available_count'] >= $qty ) {
+				$allocated_seats = array_slice( $tbl['available_seats'], 0, $qty );
+				return array(
+					'seat_numbers' => $allocated_seats,
+					'table_ids'    => array( $tbl['table_id'] ),
+					'table_labels' => array( $tbl['table_label'] ),
+					'is_split'     => false,
+					'tier'         => 1,
+				);
+			}
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// TIER 2: Closest Adjacent Tables
+		// ─────────────────────────────────────────────────────────────────
+		// Search sliding windows of neighbouring tables (window size 2, then 3, up to 4)
+		// whose combined free seats can hold the party.
+		$num_tables = count( $tables );
+		for ( $window_size = 2; $window_size <= min( 4, $num_tables ); $window_size++ ) {
+			for ( $i = 0; $i <= $num_tables - $window_size; $i++ ) {
+				$window_avail = 0;
+				for ( $w = 0; $w < $window_size; $w++ ) {
+					$window_avail += $tables[ $i + $w ]['available_count'];
+				}
+				if ( $window_avail >= $qty ) {
+					// Found an adjacent cluster of neighbouring tables!
+					$allocated_seats = array();
+					$used_tbl_ids    = array();
+					$used_tbl_labels = array();
+
+					for ( $w = 0; $w < $window_size; $w++ ) {
+						$tbl = $tables[ $i + $w ];
+						if ( $tbl['available_count'] < 1 ) {
+							continue;
+						}
+						foreach ( $tbl['available_seats'] as $s ) {
+							$allocated_seats[] = $s;
+							if ( ! in_array( $tbl['table_id'], $used_tbl_ids, true ) ) {
+								$used_tbl_ids[]    = $tbl['table_id'];
+								$used_tbl_labels[] = $tbl['table_label'];
+							}
+							if ( count( $allocated_seats ) === $qty ) {
+								break 2;
+							}
+						}
+					}
+
+					return array(
+						'seat_numbers' => $allocated_seats,
+						'table_ids'    => $used_tbl_ids,
+						'table_labels' => $used_tbl_labels,
+						'is_split'     => true,
+						'tier'         => 2,
+					);
+				}
+			}
+		}
+
+		// ─────────────────────────────────────────────────────────────────
+		// TIER 3: General Split Fallback (Near Sell-Out)
+		// ─────────────────────────────────────────────────────────────────
+		// If total remaining venue capacity >= $qty, collect seats in order
+		// from any remaining tables with free seats so no booking is rejected.
+		$total_avail = 0;
+		foreach ( $tables as $tbl ) {
+			$total_avail += $tbl['available_count'];
+		}
+		if ( $total_avail < $qty ) {
+			return array(
+				'seat_numbers' => array(),
+				'table_ids'    => array(),
+				'table_labels' => array(),
+				'is_split'     => false,
+				'tier'         => 0,
+			);
+		}
+
+		$allocated_seats = array();
+		$used_tbl_ids    = array();
+		$used_tbl_labels = array();
+
+		foreach ( $tables as $tbl ) {
+			if ( $tbl['available_count'] < 1 ) {
+				continue;
+			}
+			foreach ( $tbl['available_seats'] as $s ) {
+				$allocated_seats[] = $s;
+				if ( ! in_array( $tbl['table_id'], $used_tbl_ids, true ) ) {
+					$used_tbl_ids[]    = $tbl['table_id'];
+					$used_tbl_labels[] = $tbl['table_label'];
+				}
+				if ( count( $allocated_seats ) === $qty ) {
+					break 2;
+				}
+			}
+		}
+
+		return array(
+			'seat_numbers' => $allocated_seats,
+			'table_ids'    => $used_tbl_ids,
+			'table_labels' => $used_tbl_labels,
+			'is_split'     => true,
+			'tier'         => 3,
+		);
+	}
+
+	/**
+	 * Format a comma-separated list of seat numbers with their assigned table labels.
+	 *
+	 * E.g. "Table T-01: Seat #1, Seat #2" or for split:
+	 * "Table T-02: Seat #19, Seat #20 & Table T-03: Seat #21, Seat #22"
+	 *
+	 * @param int          $event_id
+	 * @param string|array $seat_numbers
+	 * @return string
+	 */
+	public static function format_seats_with_tables( $event_id, $seat_numbers ) {
+		if ( is_array( $seat_numbers ) ) {
+			$nums = array_filter( array_map( 'intval', $seat_numbers ) );
+		} else {
+			$nums = array_filter( array_map( 'intval', explode( ',', (string) $seat_numbers ) ) );
+		}
+		if ( empty( $nums ) ) {
+			return '';
+		}
+		sort( $nums, SORT_NUMERIC );
+
+		$tables = self::get_seat_pool_table_availability( $event_id );
+		if ( empty( $tables ) ) {
+			return 'Seat #' . implode( ', Seat #', $nums );
+		}
+
+		// Group seat numbers by table
+		$grouped = array();
+		foreach ( $nums as $n ) {
+			$found = false;
+			foreach ( $tables as $tbl ) {
+				if ( $n >= $tbl['start_seat'] && $n <= $tbl['end_seat'] ) {
+					$lbl = $tbl['table_label'];
+					if ( ! isset( $grouped[ $lbl ] ) ) {
+						$grouped[ $lbl ] = array();
+					}
+					$grouped[ $lbl ][] = $n;
+					$found = true;
+					break;
+				}
+			}
+			if ( ! $found ) {
+				$grouped['General'][] = $n;
+			}
+		}
+
+		$parts = array();
+		foreach ( $grouped as $tbl_label => $s_list ) {
+			$seats_str = 'Seat #' . implode( ', Seat #', $s_list );
+			if ( 'General' === $tbl_label ) {
+				$parts[] = $seats_str;
+			} else {
+				$parts[] = 'Table ' . $tbl_label . ' (' . $seats_str . ')';
+			}
+		}
+
+		return implode( ' & ', $parts );
 	}
 
 	public static function get_blocked_seat_numbers( $event_id ) {
@@ -837,15 +1183,39 @@ class LCCL_DE_Fundraiser {
 				...$table_ids
 			) );
 		} elseif ( ! empty( $group_id ) ) {
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-			$wpdb->query( $wpdb->prepare(
-				"UPDATE `{$tbl}` SET is_blocked = 0, block_group_id = NULL, block_note = NULL, blocked_at = NULL, blocked_by = NULL WHERE event_id = %d AND block_group_id = %s",
-				$event_id,
-				$group_id
-			) );
+			if ( strpos( $group_id, 'legacy_' ) === 0 ) {
+				$parts    = explode( '_', substr( $group_id, 7 ), 2 );
+				$blk_at   = $parts[0] ?? '';
+				$blk_note = $parts[1] ?? '';
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( $wpdb->prepare(
+					"UPDATE `{$tbl}` SET is_blocked = 0, block_group_id = NULL, block_note = NULL, blocked_at = NULL, blocked_by = NULL WHERE event_id = %d AND (block_group_id = %s OR (blocked_at = %s AND block_note = %s))",
+					$event_id,
+					$group_id,
+					$blk_at,
+					$blk_note
+				) );
+			} elseif ( strpos( $group_id, 'single_tbl_' ) === 0 ) {
+				$tid = (int) substr( $group_id, 11 );
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( $wpdb->prepare(
+					"UPDATE `{$tbl}` SET is_blocked = 0, block_group_id = NULL, block_note = NULL, blocked_at = NULL, blocked_by = NULL WHERE event_id = %d AND id = %d",
+					$event_id,
+					$tid
+				) );
+			} else {
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( $wpdb->prepare(
+					"UPDATE `{$tbl}` SET is_blocked = 0, block_group_id = NULL, block_note = NULL, blocked_at = NULL, blocked_by = NULL WHERE event_id = %d AND block_group_id = %s",
+					$event_id,
+					$group_id
+				) );
+			}
 		} else {
 			wp_send_json_error( array( 'message' => 'Please provide a group ID or table IDs to unblock.' ) );
 		}
+
+		self::revoke_tokens_for_items( $event_id, array( 'table', 'table_group' ), $group_id, $table_ids );
 
 		wp_send_json_success( array(
 			'event_id'  => $event_id,
@@ -1014,6 +1384,8 @@ class LCCL_DE_Fundraiser {
 			wp_send_json_error( array( 'message' => 'Please provide a group ID or seat number to unblock.' ) );
 		}
 
+		self::revoke_tokens_for_items( $event_id, array( 'seat', 'seat_group' ), $group_id, $seat_num > 0 ? array( $seat_num ) : array() );
+
 		wp_send_json_success( array(
 			'event_id'      => $event_id,
 			'groups'        => self::get_blocked_seat_groups( $event_id ),
@@ -1030,6 +1402,7 @@ class LCCL_DE_Fundraiser {
 		}
 		$sb = self::seat_blocks_table();
 		$wpdb->delete( $sb, array( 'event_id' => $event_id ) );
+		self::revoke_tokens_for_items( $event_id, array( 'seat', 'seat_group' ) );
 		wp_send_json_success( array(
 			'cleared'       => true,
 			'groups'        => array(),
@@ -1091,5 +1464,453 @@ class LCCL_DE_Fundraiser {
 				) );
 			}
 		}
+	}
+
+	/* -----------------------------------------------------------------------
+	 * Private / VIP Access Token helpers
+	 * --------------------------------------------------------------------- */
+
+	public static function get_vip_booking_url( $token, $event_id = 0 ) {
+		$base = class_exists( 'LCCL_DE_Roles' ) ? LCCL_DE_Roles::fundraiser_page_url() : '';
+		if ( empty( $base ) ) {
+			$base = home_url( '/fundraiser-seat-booking/' );
+		}
+		$args = array( 'vip_pass' => $token );
+		if ( $event_id > 0 ) {
+			$args['event_id'] = $event_id;
+		}
+		return add_query_arg( $args, $base );
+	}
+
+	public static function get_active_token_for_item( $event_id, $item_type, $item_ref ) {
+		global $wpdb;
+		$tbl = self::access_tokens_table();
+		$ref = is_array( $item_ref ) ? implode( ',', array_map( 'trim', $item_ref ) ) : trim( (string) $item_ref );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$row = $wpdb->get_row( $wpdb->prepare(
+			"SELECT * FROM `{$tbl}`
+			 WHERE event_id = %d AND item_type = %s AND item_ref = %s AND status = 'active'
+			   AND (expires_at IS NULL OR expires_at > %s)
+			 ORDER BY id DESC LIMIT 1",
+			$event_id,
+			$item_type,
+			$ref,
+			current_time( 'mysql' )
+		), ARRAY_A );
+
+		return $row ?: null;
+	}
+
+	public static function generate_access_token( $event_id, $item_type, $item_ref, $recipient_label = '', $expires_hours = 0 ) {
+		global $wpdb;
+		$tbl = self::access_tokens_table();
+		$ref = is_array( $item_ref ) ? implode( ',', array_map( 'trim', $item_ref ) ) : trim( (string) $item_ref );
+
+		// Check if active token already exists for this exact item
+		$existing = self::get_active_token_for_item( $event_id, $item_type, $ref );
+		if ( $existing ) {
+			$existing['booking_url'] = self::get_vip_booking_url( $existing['token'], $event_id );
+			return $existing;
+		}
+
+		$token = wp_generate_password( 32, false, false );
+		$now   = current_time( 'mysql' );
+		$uid   = get_current_user_id();
+
+		$expires_at = null;
+		$hours = (int) $expires_hours;
+		if ( $hours > 0 ) {
+			$expires_at = date( 'Y-m-d H:i:s', current_time( 'timestamp' ) + ( $hours * HOUR_IN_SECONDS ) );
+		}
+
+		$inserted = $wpdb->insert(
+			$tbl,
+			array(
+				'event_id'        => (int) $event_id,
+				'token'           => $token,
+				'item_type'       => sanitize_key( $item_type ),
+				'item_ref'        => $ref,
+				'recipient_label' => sanitize_text_field( $recipient_label ),
+				'expires_at'      => $expires_at,
+				'status'          => 'active',
+				'created_by'      => $uid,
+				'created_at'      => $now,
+			),
+			array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s' )
+		);
+
+		if ( ! $inserted ) {
+			// Auto-heal: Ensure table exists and retry
+			self::install( $wpdb->get_charset_collate() );
+			$inserted = $wpdb->insert(
+				$tbl,
+				array(
+					'event_id'        => (int) $event_id,
+					'token'           => $token,
+					'item_type'       => sanitize_key( $item_type ),
+					'item_ref'        => $ref,
+					'recipient_label' => sanitize_text_field( $recipient_label ),
+					'expires_at'      => $expires_at,
+					'status'          => 'active',
+					'created_by'      => $uid,
+					'created_at'      => $now,
+				),
+				array( '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s' )
+			);
+			if ( ! $inserted ) {
+				return false;
+			}
+		}
+
+		$id = $wpdb->insert_id;
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM `{$tbl}` WHERE id = %d", $id ), ARRAY_A );
+		if ( $row ) {
+			$row['booking_url'] = self::get_vip_booking_url( $row['token'], $event_id );
+		}
+		return $row;
+	}
+
+	public static function validate_access_token( $token_string, $event_id = 0 ) {
+		global $wpdb;
+		$token_string = sanitize_text_field( trim( $token_string ) );
+		if ( empty( $token_string ) ) {
+			return array( 'valid' => false, 'error' => 'empty_token', 'message' => __( 'Missing VIP pass code.', 'lccl-de' ) );
+		}
+
+		$tbl = self::access_tokens_table();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM `{$tbl}` WHERE token = %s LIMIT 1", $token_string ), ARRAY_A );
+
+		if ( ! $row ) {
+			return array( 'valid' => false, 'error' => 'not_found', 'message' => __( 'Invalid VIP reservation link.', 'lccl-de' ) );
+		}
+
+		if ( 'redeemed' === $row['status'] ) {
+			return array(
+				'valid'      => false,
+				'error'      => 'redeemed',
+				'token_data' => $row,
+				'message'    => __( 'This private VIP booking link has already been used and redeemed.', 'lccl-de' ),
+			);
+		}
+
+		if ( 'revoked' === $row['status'] ) {
+			return array(
+				'valid'      => false,
+				'error'      => 'revoked',
+				'token_data' => $row,
+				'message'    => __( 'This private VIP reservation link has been revoked by event administration.', 'lccl-de' ),
+			);
+		}
+
+		if ( ! empty( $row['expires_at'] ) && strtotime( $row['expires_at'] ) < current_time( 'timestamp' ) ) {
+			return array(
+				'valid'      => false,
+				'error'      => 'expired',
+				'token_data' => $row,
+				'message'    => __( 'This private VIP reservation link has expired.', 'lccl-de' ),
+			);
+		}
+
+		if ( $event_id > 0 && (int) $row['event_id'] !== (int) $event_id ) {
+			return array(
+				'valid'      => false,
+				'error'      => 'event_mismatch',
+				'token_data' => $row,
+				'message'    => __( 'This VIP reservation link is for a different event.', 'lccl-de' ),
+			);
+		}
+
+		// Resolve items unlocked by this token
+		$ev_id   = (int) $row['event_id'];
+		$itype   = $row['item_type'];
+		$iref    = $row['item_ref'];
+		$details = array(
+			'item_type'       => $itype,
+			'item_ref'        => $iref,
+			'recipient_label' => $row['recipient_label'],
+			'tables'          => array(),
+			'table_ids'       => array(),
+			'table_labels'    => array(),
+			'seats'           => array(),
+			'seat_count'      => 0,
+			'total_capacity'  => 0,
+			'total_amount'    => 0.0,
+			'type_id'         => 0,
+			'booking_mode'    => 'table',
+		);
+
+		$tables_table = self::tables_table();
+		$types_table  = self::table_types_table();
+		$ev_row       = self::get_event( $ev_id );
+		$ticket_price = $ev_row ? (float) $ev_row['ticket_price'] : 0.0;
+
+		if ( 'table' === $itype || 'table_group' === $itype ) {
+			$details['booking_mode'] = 'table';
+			$found_tables = array();
+			if ( strpos( $iref, 'legacy_' ) === 0 ) {
+				$parts    = explode( '_', substr( $iref, 7 ), 2 );
+				$blk_at   = $parts[0] ?? '';
+				$blk_note = $parts[1] ?? '';
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$found_tables = (array) $wpdb->get_results( $wpdb->prepare(
+					"SELECT ta.*, ty.name AS type_name, ty.capacity, ty.price
+					 FROM `{$tables_table}` ta
+					 JOIN `{$types_table}` ty ON ta.type_id = ty.id
+					 WHERE ta.event_id = %d AND (ta.block_group_id = %s OR (ta.blocked_at = %s AND ta.block_note = %s))
+					 ORDER BY ta.sort_order ASC, ta.id ASC",
+					$ev_id,
+					$iref,
+					$blk_at,
+					$blk_note
+				), ARRAY_A );
+			} elseif ( strpos( $iref, 'single_tbl_' ) === 0 ) {
+				$tid = (int) substr( $iref, 11 );
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$found_tables = (array) $wpdb->get_results( $wpdb->prepare(
+					"SELECT ta.*, ty.name AS type_name, ty.capacity, ty.price
+					 FROM `{$tables_table}` ta
+					 JOIN `{$types_table}` ty ON ta.type_id = ty.id
+					 WHERE ta.event_id = %d AND ta.id = %d
+					 ORDER BY ta.sort_order ASC, ta.id ASC",
+					$ev_id,
+					$tid
+				), ARRAY_A );
+			} elseif ( strpos( $iref, 'tbl_grp_' ) === 0 ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$found_tables = (array) $wpdb->get_results( $wpdb->prepare(
+					"SELECT ta.*, ty.name AS type_name, ty.capacity, ty.price
+					 FROM `{$tables_table}` ta
+					 JOIN `{$types_table}` ty ON ta.type_id = ty.id
+					 WHERE ta.event_id = %d AND ta.block_group_id = %s
+					 ORDER BY ta.sort_order ASC, ta.id ASC",
+					$ev_id,
+					$iref
+				), ARRAY_A );
+			} else {
+				$tids = array_filter( array_map( 'intval', explode( ',', $iref ) ) );
+				if ( ! empty( $tids ) ) {
+					$placeholders = implode( ',', array_fill( 0, count( $tids ), '%d' ) );
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$found_tables = (array) $wpdb->get_results( $wpdb->prepare(
+						"SELECT ta.*, ty.name AS type_name, ty.capacity, ty.price
+						 FROM `{$tables_table}` ta
+						 JOIN `{$types_table}` ty ON ta.type_id = ty.id
+						 WHERE ta.event_id = %d AND ta.id IN ({$placeholders})
+						 ORDER BY ta.sort_order ASC, ta.id ASC",
+						$ev_id,
+						...$tids
+					), ARRAY_A );
+				}
+			}
+
+			$tot_cap = 0;
+			$tot_amt = 0.0;
+			$t_labels = array();
+			$t_ids    = array();
+			$type_id  = 0;
+			foreach ( $found_tables as $ft ) {
+				$t_ids[]    = (int) $ft['id'];
+				$t_labels[] = $ft['table_label'];
+				$tot_cap   += (int) $ft['capacity'];
+				$tot_amt   += (float) $ft['price'];
+				if ( ! $type_id ) {
+					$type_id = (int) $ft['type_id'];
+				}
+			}
+			$details['tables']         = $found_tables;
+			$details['table_ids']      = $t_ids;
+			$details['table_labels']   = $t_labels;
+			$details['total_capacity'] = $tot_cap;
+			$details['total_amount']   = $tot_amt;
+			$details['type_id']        = $type_id;
+		} elseif ( 'seat' === $itype || 'seat_group' === $itype ) {
+			$details['booking_mode'] = 'individual';
+			$sb = self::seat_blocks_table();
+			$found_seats = array();
+			if ( strpos( $iref, 'grp_' ) === 0 || strpos( $iref, 'single_' ) === 0 || ! is_numeric( str_replace( ',', '', $iref ) ) ) {
+				// Group ID
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$rows = (array) $wpdb->get_col( $wpdb->prepare(
+					"SELECT seat_number FROM `{$sb}` WHERE event_id = %d AND group_id = %s ORDER BY seat_number ASC",
+					$ev_id,
+					$iref
+				) );
+				$found_seats = array_map( 'intval', $rows );
+			} else {
+				$snums = array_filter( array_map( 'intval', explode( ',', $iref ) ) );
+				if ( ! empty( $snums ) ) {
+					$placeholders = implode( ',', array_fill( 0, count( $snums ), '%d' ) );
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$rows = (array) $wpdb->get_col( $wpdb->prepare(
+						"SELECT seat_number FROM `{$sb}` WHERE event_id = %d AND seat_number IN ({$placeholders}) ORDER BY seat_number ASC",
+						$ev_id,
+						...$snums
+					) );
+					$found_seats = array_map( 'intval', $rows );
+				}
+			}
+
+			sort( $found_seats, SORT_NUMERIC );
+			$details['seats']        = $found_seats;
+			$details['seat_count']   = count( $found_seats );
+			$details['total_amount'] = count( $found_seats ) * $ticket_price;
+		}
+
+		return array(
+			'valid'        => true,
+			'token'        => $row['token'],
+			'token_data'   => $row,
+			'item_details' => $details,
+		);
+	}
+
+	public static function redeem_access_token( $token_string, $booking_id ) {
+		global $wpdb;
+		$token_string = sanitize_text_field( trim( $token_string ) );
+		if ( empty( $token_string ) || ! $booking_id ) {
+			return false;
+		}
+
+		$tbl = self::access_tokens_table();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		return (bool) $wpdb->query( $wpdb->prepare(
+			"UPDATE `{$tbl}`
+			 SET status = 'redeemed', redeemed_booking_id = %d, redeemed_at = %s
+			 WHERE token = %s AND status = 'active'",
+			$booking_id,
+			current_time( 'mysql' ),
+			$token_string
+		) );
+	}
+
+	public static function revoke_access_token( $token_id_or_string ) {
+		global $wpdb;
+		$tbl = self::access_tokens_table();
+		if ( is_numeric( $token_id_or_string ) && (int) $token_id_or_string > 0 ) {
+			return (bool) $wpdb->update( $tbl, array( 'status' => 'revoked' ), array( 'id' => (int) $token_id_or_string ) );
+		}
+		$token = sanitize_text_field( trim( $token_id_or_string ) );
+		if ( empty( $token ) ) {
+			return false;
+		}
+		return (bool) $wpdb->update( $tbl, array( 'status' => 'revoked' ), array( 'token' => $token ) );
+	}
+
+	public static function revoke_tokens_for_items( $event_id, $item_types, $group_id = '', $item_ids = array() ) {
+		global $wpdb;
+		$tbl         = self::access_tokens_table();
+		$types_clean = array_map( 'sanitize_key', (array) $item_types );
+		$types_in    = "'" . implode( "','", $types_clean ) . "'";
+
+		if ( ! empty( $group_id ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( $wpdb->prepare(
+				"UPDATE `{$tbl}` SET status = 'revoked' WHERE event_id = %d AND item_type IN ({$types_in}) AND item_ref = %s AND status = 'active'",
+				$event_id,
+				$group_id
+			) );
+		}
+
+		if ( ! empty( $item_ids ) ) {
+			$csv = implode( ',', $item_ids );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( $wpdb->prepare(
+				"UPDATE `{$tbl}` SET status = 'revoked' WHERE event_id = %d AND item_type IN ({$types_in}) AND item_ref = %s AND status = 'active'",
+				$event_id,
+				$csv
+			) );
+			foreach ( $item_ids as $iid ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$wpdb->query( $wpdb->prepare(
+					"UPDATE `{$tbl}` SET status = 'revoked' WHERE event_id = %d AND item_type IN ({$types_in}) AND item_ref = %s AND status = 'active'",
+					$event_id,
+					(string) $iid
+				) );
+			}
+		}
+	}
+
+	public static function get_event_tokens( $event_id ) {
+		global $wpdb;
+		$tbl = self::access_tokens_table();
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = (array) $wpdb->get_results( $wpdb->prepare(
+			"SELECT * FROM `{$tbl}` WHERE event_id = %d ORDER BY id DESC",
+			(int) $event_id
+		), ARRAY_A );
+		foreach ( $rows as &$r ) {
+			$r['booking_url'] = self::get_vip_booking_url( $r['token'], (int) $event_id );
+		}
+		unset( $r );
+		return $rows;
+	}
+
+	public static function ajax_get_or_create_token() {
+		self::nonce_check();
+		$event_id        = (int) ( $_POST['event_id'] ?? 0 );
+		$item_type       = sanitize_key( $_POST['item_type'] ?? '' );
+		$item_ref        = sanitize_text_field( wp_unslash( $_POST['item_ref'] ?? '' ) );
+		$recipient_label = sanitize_text_field( wp_unslash( $_POST['recipient_label'] ?? '' ) );
+		$expires_hours   = (int) ( $_POST['expires_hours'] ?? 0 );
+		$force_new       = ! empty( $_POST['force_new'] );
+
+		if ( ! $event_id || empty( $item_type ) || empty( $item_ref ) ) {
+			wp_send_json_error( array( 'message' => 'Missing required parameters.' ) );
+		}
+
+		if ( $force_new ) {
+			$prev = self::get_active_token_for_item( $event_id, $item_type, $item_ref );
+			if ( $prev ) {
+				self::revoke_access_token( $prev['token'] );
+			}
+		}
+
+		$token_data = self::generate_access_token( $event_id, $item_type, $item_ref, $recipient_label, $expires_hours );
+		if ( ! $token_data ) {
+			global $wpdb;
+			$detail = ! empty( $wpdb->last_error ) ? ': ' . $wpdb->last_error : '.';
+			wp_send_json_error( array( 'message' => 'Failed to generate VIP booking link' . $detail ) );
+		}
+
+		$val = self::validate_access_token( $token_data['token'], $event_id );
+
+		$event_row  = self::get_event( $event_id );
+		$event_name = $event_row ? $event_row['name'] : 'Fundraiser Gala';
+		$share_text = sprintf(
+			/* translators: 1: Event name, 2: VIP booking url */
+			__( "Greetings! An exclusive VIP reservation has been reserved for you for %1\$s. Please use this private link to confirm and complete your booking:\n%2\$s", 'lccl-de' ),
+			$event_name,
+			$token_data['booking_url']
+		);
+
+		wp_send_json_success( array(
+			'token'           => $token_data['token'],
+			'booking_url'     => $token_data['booking_url'],
+			'recipient_label' => $token_data['recipient_label'],
+			'expires_at'      => $token_data['expires_at'],
+			'status'          => $token_data['status'],
+			'item_details'    => $val['item_details'] ?? null,
+			'whatsapp_share'  => 'https://api.whatsapp.com/send?text=' . rawurlencode( $share_text ),
+		) );
+	}
+
+	public static function ajax_revoke_token() {
+		self::nonce_check();
+		$token_str = sanitize_text_field( wp_unslash( $_POST['token'] ?? '' ) );
+		$token_id  = (int) ( $_POST['token_id'] ?? 0 );
+
+		if ( empty( $token_str ) && empty( $token_id ) ) {
+			wp_send_json_error( array( 'message' => 'Invalid token identifier.' ) );
+		}
+
+		$success = self::revoke_access_token( $token_id ?: $token_str );
+		if ( ! $success ) {
+			wp_send_json_error( array( 'message' => 'Unable to revoke VIP link.' ) );
+		}
+
+		wp_send_json_success( array( 'message' => 'VIP link has been revoked.' ) );
 	}
 }
