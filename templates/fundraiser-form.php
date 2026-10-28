@@ -174,7 +174,7 @@ $js_data = array(
 
 			<div class="booking-type">
 				<label class="type-option <?php echo $available_seats_count > 0 ? 'active' : 'is-disabled'; ?>" id="typeIndividual">
-					<input type="radio" name="booking_type" value="individual" <?php echo $available_seats_count > 0 ? 'checked' : 'disabled'; ?>>
+					<input type="radio" name="booking_type" value="individual" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0; margin:0;" <?php echo $available_seats_count > 0 ? 'checked' : 'disabled'; ?>>
 					<div class="type-header-row">
 						<span class="type-title"><?php esc_html_e( 'Individual Seat Booking', 'lccl-de' ); ?></span>
 						<?php if ( $available_seats_count > 0 ) : ?>
@@ -188,7 +188,7 @@ $js_data = array(
 					</span>
 				</label>
 				<label class="type-option <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'active' : ''; ?> <?php echo $total_table_pool_free === 0 ? 'is-disabled' : ''; ?>" id="typeTable">
-					<input type="radio" name="booking_type" value="table" <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'checked' : ''; ?> <?php echo $total_table_pool_free === 0 ? 'disabled' : ''; ?>>
+					<input type="radio" name="booking_type" value="table" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0; margin:0;" <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'checked' : ''; ?> <?php echo $total_table_pool_free === 0 ? 'disabled' : ''; ?>>
 					<div class="type-header-row">
 						<span class="type-title"><?php esc_html_e( 'Table Booking', 'lccl-de' ); ?></span>
 						<?php if ( $total_table_pool_free > 0 ) : ?>
@@ -450,7 +450,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 			</div>
 
 			<!-- SUMMARY -->
-			<div class="summary" style="margin-top: 25px;">
+			<div class="summary" style="margin-top: 25px; border-top: none; padding-top: 0;">
 				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span><?php esc_html_e( 'Booking Type', 'lccl-de' ); ?></span>
 					<strong id="summaryType">
@@ -544,7 +544,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 			<div class="dummy-image">
 				<div>
 					<h3><?php esc_html_e( 'TOGETHER,', 'lccl-de' ); ?><br><?php esc_html_e( 'WE SERVE', 'lccl-de' ); ?></h3>
-					<p><?php esc_html_e( 'Support our community projects and help us create sustainable impact across our society.', 'lccl-de' ); ?></p>
+					<p style="color: #ffffff;"><?php esc_html_e( 'Support our community projects and help us create sustainable impact across our society.', 'lccl-de' ); ?></p>
 				</div>
 			</div>
 			
@@ -578,37 +578,14 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 
 				<!-- Visual Seating Map Layout -->
 				<div class="seat-map">
-					<div class="stage"><?php esc_html_e( 'STAGE', 'lccl-de' ); ?></div>
-					<div class="seat-map-grid">
-						<?php
-						$seat_total   = max( 1, (int) ( $pool_stats['seats_total'] ?? 0 ) );
-						$seat_booked  = (int) ( $pool_stats['seats_booked'] ?? 0 );
-						$seat_blocked = (int) ( $pool_stats['seat_pool_blocked'] ?? 0 );
-						$dots_count   = min( 60, $seat_total );
-						for ( $i = 0; $i < $dots_count; $i++ ) :
-							$ratio         = $i / (float) $dots_count;
-							$booked_ratio  = $seat_total > 0 ? ( $seat_booked / $seat_total ) : 0;
-							$blocked_ratio = $seat_total > 0 ? ( ( $seat_booked + $seat_blocked ) / $seat_total ) : 0;
-							$dot_cls       = 'available';
-							$dot_title     = __( 'Available seat slot', 'lccl-de' );
-							if ( $ratio < $booked_ratio ) {
-								$dot_cls   = 'sold';
-								$dot_title = __( 'Booked seat', 'lccl-de' );
-							} elseif ( $ratio < $blocked_ratio ) {
-								$dot_cls   = 'blocked';
-								$dot_title = __( 'Reserved seat', 'lccl-de' );
-							}
-						?>
-							<div class="seat-dot <?php echo esc_attr( $dot_cls ); ?>" title="<?php echo esc_attr( $dot_title ); ?>"></div>
-						<?php endfor; ?>
-					</div>
-
-					<!-- Table Pool Visual Mini-Grid (mirrors table selector IDs & statuses) -->
 					<?php
+					$seat_booked  = (int) ( $pool_stats['seats_booked'] ?? 0 );
+					$seat_blocked = (int) ( $pool_stats['seat_pool_blocked'] ?? 0 );
 					$table_pool_tables = array_filter( $tables, function( $t ) { return 'table' === $t['booking_mode']; } );
 					if ( ! empty( $table_pool_tables ) ) :
 					?>
-					<div class="seat-map-tables" style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed #d1d5db;">
+					<!-- Table Pool Visual Mini-Grid (mirrors table selector IDs & statuses) -->
+					<div class="seat-map-tables">
 						<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; margin-bottom: 8px; font-weight: 600;"><?php esc_html_e( 'Table Pool', 'lccl-de' ); ?></div>
 						<div class="seat-map-table-grid">
 							<?php foreach ( $table_pool_tables as $tpt ) :

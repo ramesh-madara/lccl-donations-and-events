@@ -100,7 +100,7 @@
 	margin: 0 0 2px;
 }
 
-.lccl-prog .lccl-prog__panel > .lccl-prog__crumbs:first-child {
+.lccl-prog .lccl-prog__panel>.lccl-prog__crumbs:first-child {
 	margin-top: 0;
 }
 
@@ -731,8 +731,15 @@
 }
 
 @keyframes lcclFadeIn {
-	from { opacity: 0; transform: translateY(4px); }
-	to { opacity: 1; transform: translateY(0); }
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 .lccl-gw-panel__header {
@@ -843,15 +850,15 @@
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.lccl-prog .lccl-gw-switch input:checked + .lccl-gw-switch__slider {
+.lccl-prog .lccl-gw-switch input:checked+.lccl-gw-switch__slider {
 	background-color: #10b981;
 }
 
-.lccl-prog .lccl-gw-switch input:checked + .lccl-gw-switch__slider::before {
+.lccl-prog .lccl-gw-switch input:checked+.lccl-gw-switch__slider::before {
 	transform: translateX(20px);
 }
 
-.lccl-prog .lccl-gw-switch input:focus-visible + .lccl-gw-switch__slider {
+.lccl-prog .lccl-gw-switch input:focus-visible+.lccl-gw-switch__slider {
 	box-shadow: 0 0 0 2px #fff, 0 0 0 4px #10b981;
 }
 
@@ -871,5 +878,3 @@
 	color: #4b5563;
 	border: 1px solid #e5e7eb;
 }
- 
- 

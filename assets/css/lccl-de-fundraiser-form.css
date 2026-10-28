@@ -147,9 +147,12 @@
 }
 
 .type-option input {
-    width: auto;
-    height: auto;
-    margin-right: 8px;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+    width: 0;
+    height: 0;
+    margin: 0;
 }
 
 .type-title {
@@ -161,7 +164,7 @@
     display: block;
     color: #777;
     font-size: 13px;
-    margin: 7px 0 0 25px;
+    margin: 6px 0 0 0;
     line-height: 1.4;
 }
 
@@ -201,9 +204,9 @@
 }
 
 .summary {
-    border-top: 1px solid #ddd;
+    border-top: none !important;
     margin-top: 25px;
-    padding-top: 18px;
+    padding-top: 0;
 }
 
 .summary-line {
@@ -285,11 +288,13 @@
 }
 
 .dummy-image h3 {
+    color: #fff;
     font-size: 34px;
     margin: 0 0 15px;
 }
 
 .dummy-image p {
+    color: #fff !important;
     font-size: 17px;
     line-height: 1.55;
 }
