@@ -277,7 +277,7 @@ class LCCL_DE_Sponsorship_Form {
 			'lccl-de-blood-donor-form',
 			LCCL_DE_URL . 'assets/css/lccl-de-blood-donor-form.css',
 			array(),
-			LCCL_DE_VERSION
+			filemtime( LCCL_DE_PATH . 'assets/css/lccl-de-blood-donor-form.css' )
 		);
 
 		// Gateway return detection.

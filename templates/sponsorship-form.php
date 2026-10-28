@@ -192,7 +192,7 @@ $currency_form_class    = ' is-currency-' . strtolower( $currency );
 				$completed_msg = sprintf( __( 'The funding goal for "%s" has been reached. Thank you for your interest and support. This project is no longer accepting contributions. Please select another project or event to support.', 'lccl-de' ), $clean_title );
 			}
 			?>
-			<p class="lccl-bdf__banner lccl-bdf__banner--success" data-lccl-notice="completed" role="alert" <?php echo $is_completed ? '' : 'hidden'; ?> style="background-color: #ecfdf5; border-color: #10b981; color: #065f46; margin-bottom: 24px;">
+			<p class="lccl-bdf__banner lccl-bdf__banner--success" data-lccl-notice="completed" role="alert" <?php echo $is_completed ? '' : 'hidden'; ?> style="background-color: #ecfdf5; border-color: #10b981; color: #065f46; margin-bottom: 24px; border-radius: 3px;">
 				<span style="font-weight: 600; display: block; margin-bottom: 4px; font-size: 15px;"><?php esc_html_e( 'Financial Goal Met!', 'lccl-de' ); ?></span>
 				<span class="lccl-completed-msg">
 					<?php echo $is_completed ? esc_html( $completed_msg ) : esc_html__( 'Thank you for your interest! This project has already reached its financial goal and we are no longer accepting donations for it. Please select another project to support.', 'lccl-de' ); ?>

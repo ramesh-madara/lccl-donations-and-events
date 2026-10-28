@@ -218,24 +218,24 @@ $js_data = array(
 				</div>
 
 				<?php if ( $available_seats_count === 0 ) : ?>
-					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #dc2626; font-weight: 600; background: #fef2f2; border-left: 4px solid #dc2626;">
+					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #dc2626; font-weight: 600; background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 3px;">
 						<?php esc_html_e( 'Notice: All individual seats for this event are currently booked or reserved.', 'lccl-de' ); ?>
 					</div>
 				<?php else : ?>
-					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #4b5563; line-height: 1.5;">
+					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #4b5563; line-height: 1.5; border-radius: 3px;">
 						<strong><?php esc_html_e( 'Seat Allocation:', 'lccl-de' ); ?></strong> <?php esc_html_e( 'Seats are automatically allocated to keep your party seated together at the same table whenever possible.', 'lccl-de' ); ?>
 					</div>
 				<?php endif; ?>
 
 				<?php if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) : ?>
-					<div class="seat-info" style="padding: 12px 15px; background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.5; border-radius: 4px;">
+					<div class="seat-info" style="padding: 12px 15px; background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.5; border-radius: 3px;">
 						<strong><?php esc_html_e( 'VIP Reserved Seats:', 'lccl-de' ); ?></strong> <span id="indivSeatCount"><?php echo (int) ( $vip_details['seat_count'] ?? 1 ); ?></span>
 						<span style="color:#b45309; font-weight:700; margin-left:8px;">(⭐ <?php echo esc_html( ! empty( $vip_details['seats'] ) ? 'Seats #' . implode( ', #', $vip_details['seats'] ) : 'VIP Reserved' ); ?>)</span>
 						<br>
 						<span class="small" style="color: #92400e; font-size: 12px;"><?php esc_html_e( 'These seats have been exclusively held for you and will be confirmed under your name upon payment.', 'lccl-de' ); ?></span>
 					</div>
 				<?php else : ?>
-					<div class="seat-info" style="padding: 12px 15px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 13px; line-height: 1.5; border-radius: 4px;">
+					<div class="seat-info" style="padding: 12px 15px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 13px; line-height: 1.5; border-radius: 3px;">
 						<strong><?php esc_html_e( 'Seats to be allocated:', 'lccl-de' ); ?></strong> <span id="indivSeatCount"><?php echo $available_seats_count > 0 ? '1' : '0'; ?></span>
 						<span style="color:#059669; font-weight:600; margin-left:8px;">(<?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'seats available', 'lccl-de' ); ?>)</span>
 						<br>
@@ -280,7 +280,7 @@ $js_data = array(
 					</div>
 				</div>
 
-				<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #4b5563; line-height: 1.5;">
+				<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #4b5563; line-height: 1.5; border-radius: 3px;">
 					<?php esc_html_e( 'Only tables available for table booking can be selected. Tables reserved for individual seat bookings or marked unavailable cannot be booked.', 'lccl-de' ); ?>
 				</div>
 
@@ -290,7 +290,7 @@ $js_data = array(
 					
 					<!-- Container where interactive chips render -->
 					<div id="tableChipsContainer" class="lccl-fr-table-grid">
-						<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px;">
+						<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 3px;">
 							<?php esc_html_e( 'Select a table type to view the available tables.', 'lccl-de' ); ?>
 						</div>
 					</div>
@@ -445,7 +445,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 			<div class="lccl-fr-row" style="margin-top: 10px;">
 				<div style="grid-column: span 2;">
 					<label for="booking_notes"><?php esc_html_e( 'Special Requests (Optional)', 'lccl-de' ); ?></label>
-					<textarea id="booking_notes" name="notes" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ccc; font-size: 14px; min-height: 60px; box-sizing: border-box;" placeholder="<?php esc_attr_e( 'Enter any special requests here', 'lccl-de' ); ?>"></textarea>
+					<textarea id="booking_notes" name="notes" rows="2" style="width: 100%; padding: 10px; border: 1px solid #ccc; font-size: 14px; min-height: 60px; box-sizing: border-box; border-radius: 3px;" placeholder="<?php esc_attr_e( 'Enter any special requests here', 'lccl-de' ); ?>"></textarea>
 				</div>
 			</div>
 
@@ -530,12 +530,23 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				⏳ <?php esc_html_e( 'Processing your booking — please wait…', 'lccl-de' ); ?>
 			</div>
 
-<div class="lccl-bdf lccl-bdf--donation lccl-fr-payment-control">
+			<div class="lccl-bdf lccl-bdf--donation lccl-fr-payment-control">
 				<p class="lccl-mf__secure-note">
 					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
 					<?php esc_html_e( 'Payments are processed securely via Commercial Bank of Ceylon (CBC) Paycenter.', 'lccl-de' ); ?>
 				</p>
-</div>
+
+				<div class="lccl-df__pay-icons">
+					<img
+						src="<?php echo esc_url( LCCL_DE_URL . 'assets/img/pay-icons.png' ); ?>"
+						alt="<?php esc_attr_e( 'Accepted Payment Methods: Visa, Mastercard, American Express, UnionPay, LankaPay', 'lccl-de' ); ?>"
+						class="lccl-df__pay-icons-img"
+						loading="lazy"
+						width="720"
+						height="120"
+					>
+				</div>
+			</div>
 
 		</form>
 
@@ -567,7 +578,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 					<strong><?php echo esc_html( $currency ); ?> <?php echo esc_html( number_format( $ticket_price, 2 ) ); ?></strong>
 				</div>
 
-				<div class="detail" style="border-top: 1px solid #e2e8f0; margin-top: 12px; padding-top: 12px;">
+				<div class="detail">
 					<span><?php esc_html_e( 'Individual Seats Available', 'lccl-de' ); ?></span>
 					<strong style="color: #166534; font-weight:600;"><?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'Seats', 'lccl-de' ); ?></strong>
 				</div>
@@ -864,7 +875,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		selectTable.innerHTML = '';
 
 		if (!tid || tid === '') {
-			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px;">Select a table type to view the available tables.</div>';
+			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 3px;">Select a table type to view the available tables.</div>';
 			inputTableQty.setAttribute('disabled', 'disabled');
 			inputTableQty.value = 1;
 			updateTotal();
@@ -873,7 +884,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		var tierTables = fundData.tables[tid] || [];
 		if (tierTables.length === 0) {
-			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #dc2626; background: #fef2f2; border: 1px dashed #fca5a5; border-radius: 6px;">No tables are currently available for this table type.</div>';
+			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #dc2626; background: #fef2f2; border: 1px dashed #fca5a5; border-radius: 3px;">No tables are currently available for this table type.</div>';
 			inputTableQty.setAttribute('disabled', 'disabled');
 			inputTableQty.value = 1;
 			updateTotal();
@@ -1038,7 +1049,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			notice.style.background = '#fef2f2';
 			notice.style.color = '#991b1b';
 			notice.style.fontSize = '13px';
-			notice.style.borderRadius = '4px';
+			notice.style.borderRadius = '3px';
 			notice.textContent = 'All tables of this type are currently reserved, booked, or unavailable.';
 			chipsContainer.appendChild(notice);
 		} else {

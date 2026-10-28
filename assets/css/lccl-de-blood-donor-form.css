@@ -259,7 +259,7 @@
 	padding: 16px 20px 16px 18px;
 	border: 1px solid #f0d98a;
 	border-left: 6px solid var(--lccl-bdf-primary);
-	border-radius: 4px;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-primary-soft);
 	background-image: linear-gradient(180deg, #fffbeb 0%, var(--lccl-bdf-primary-soft) 100%);
 	box-shadow: 0 10px 24px rgba(247, 192, 22, 0.18);
@@ -813,7 +813,7 @@
 	margin: 0 !important;
 	margin-top: 0 !important;
 	padding: 0 !important;
-	border-radius: 8px;
+	border-radius: 3px;
 	overflow: hidden;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
@@ -852,6 +852,7 @@
 	margin-top: 0 !important;
 	overflow: hidden;
 	border: 3px solid #f7f7f7;
+	border-radius: 3px;
 	scroll-margin-top: 96px;
 	align-self: start !important;
 }
@@ -890,7 +891,7 @@
 	min-width: 0;
 	height: 46px;
 	padding: 0 4px;
-	border-radius: 0;
+	border-radius: 3px;
 	border-width: 1.5px;
 	border-style: solid;
 	font-family: var(--lccl-bdf-font);
@@ -1013,7 +1014,7 @@
 	padding: 0 10px;
 	border: 1px solid var(--lccl-bdf-border);
 	border-right: none;
-	border-radius: 0;
+	border-radius: 3px 0 0 3px;
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
@@ -1051,7 +1052,7 @@
 	padding: 0 10px;
 	border: 1px solid var(--lccl-bdf-border);
 	border-left: none;
-	border-radius: 0;
+	border-radius: 0 3px 3px 0;
 	background-color: var(--lccl-bdf-gold-dark);
 	color: #ffffff;
 	cursor: default;
@@ -1078,6 +1079,7 @@
 	background-color: #ffffff;
 	border: 1px solid var(--lccl-bdf-border);
 	border-top: none;
+	border-radius: 0 0 3px 3px;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 	z-index: 10;
 }
@@ -1136,7 +1138,7 @@
 	margin: 0;
 	padding: 8px 6px;
 	border: none;
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	box-shadow: none;
 	color: #ffffff;
@@ -1195,6 +1197,7 @@
 	gap: 6px 1.3%;
 	margin: 0;
 	padding: 8px 0 16px;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
 }
@@ -1254,7 +1257,7 @@
 	padding: 14px 18px;
 	background-color: #f8fafc;
 	border: 1px solid #e2e8f0;
-	border-radius: 6px;
+	border-radius: 3px;
 	transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1391,7 +1394,7 @@
 	max-width: 90vw;
 	background: #ffffff;
 	border: 1px solid #cbd5e1;
-	border-radius: 6px;
+	border-radius: 3px;
 	box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 	z-index: 9999;
 	display: flex;
@@ -1419,7 +1422,7 @@
 	padding: 0 10px;
 	font-size: 13px;
 	border: 1px solid #cbd5e1;
-	border-radius: 4px;
+	border-radius: 3px;
 	outline: none;
 	background: #ffffff;
 	color: #1e293b;
@@ -1488,7 +1491,7 @@
 	gap: 4px;
 	padding: 0 6px;
 	border: 1px solid var(--lccl-bdf-border);
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-field-text);
 	font-family: var(--lccl-bdf-font);
@@ -1620,7 +1623,7 @@ input#lccl-mf-phone::placeholder {
 	height: 49px;
 	min-height: 49px;
 	padding: 8px 13px;
-	border-radius: 0;
+	border-radius: 3px;
 	font-size: 17px;
 }
 
@@ -1638,7 +1641,7 @@ input#lccl-mf-phone::placeholder {
 	min-height: 40px;
 	height: 72px;
 	padding: 8px 13px;
-	border-radius: 0;
+	border-radius: 3px;
 	resize: vertical;
 }
 
@@ -1649,6 +1652,8 @@ input#lccl-mf-phone::placeholder {
 	gap: 0;
 	width: 100%;
 	margin: 22px 0 10px;
+	border-radius: 3px;
+	overflow: hidden;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__total-label {
@@ -1668,6 +1673,7 @@ input#lccl-mf-phone::placeholder {
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	white-space: nowrap;
+	border-radius: 3px 0 0 3px;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__total-input,
@@ -1681,7 +1687,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0;
 	padding: 0 20px 0 10px;
 	border: none;
-	border-radius: 0;
+	border-radius: 0 3px 3px 0;
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
@@ -1699,7 +1705,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 20px 0 0;
 	padding: 20px;
 	border: none;
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
 	font-size: 24px;
@@ -1799,7 +1805,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0 !important;
 	margin-top: 0 !important;
 	padding: 0 !important;
-	border-radius: 8px;
+	border-radius: 3px;
 	overflow: hidden;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
@@ -1836,6 +1842,7 @@ input#lccl-mf-phone::placeholder {
 	margin-top: 0 !important;
 	overflow: hidden;
 	border: 3px solid #f7f7f7;
+	border-radius: 3px;
 	scroll-margin-top: 96px;
 	align-self: start !important;
 }
@@ -1896,7 +1903,7 @@ input#lccl-mf-phone::placeholder {
 	height: 40px;
 	min-height: 40px;
 	padding: 8px 13px;
-	border-radius: 0;
+	border-radius: 3px;
 	font-size: 17px;
 }
 
@@ -1910,6 +1917,7 @@ input#lccl-mf-phone::placeholder {
 	padding: 16px;
 	border-left: 4px solid var(--lccl-bdf-gold-light);
 	background-color: var(--lccl-bdf-primary-soft);
+	border-radius: 3px;
 }
 
 .lccl-bdf.lccl-bdf--membership .lccl-mf__family[hidden],
@@ -1934,7 +1942,7 @@ input#lccl-mf-phone::placeholder {
 	padding: 8px 13px;
 	border: 1px solid var(--lccl-bdf-border);
 	border-right: none;
-	border-radius: 0;
+	border-radius: 3px 0 0 3px;
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
@@ -1961,7 +1969,7 @@ input#lccl-mf-phone::placeholder {
 	padding: 0 10px;
 	border: 1px solid var(--lccl-bdf-border);
 	border-left: none;
-	border-radius: 0;
+	border-radius: 0 3px 3px 0;
 	background-color: var(--lccl-bdf-gold-dark);
 	color: #ffffff;
 	font-family: var(--lccl-bdf-font);
@@ -2094,7 +2102,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 20px 0 0;
 	padding: 20px;
 	border: none;
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
 	font-size: 24px;
@@ -2235,7 +2243,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0 !important;
 	margin-top: 0 !important;
 	padding: 0 !important;
-	border-radius: 8px;
+	border-radius: 3px;
 	overflow: hidden;
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 	border: 3px solid #f7f7f7;
@@ -2261,6 +2269,7 @@ input#lccl-mf-phone::placeholder {
 	margin-top: 0 !important;
 	overflow: hidden;
 	border: 3px solid #f7f7f7;
+	border-radius: 3px;
 	scroll-margin-top: 96px;
 	align-self: start !important;
 }
@@ -2318,7 +2327,7 @@ input#lccl-mf-phone::placeholder {
 	padding: 0 10px;
 	border: 1px solid var(--lccl-bdf-border);
 	border-right: none;
-	border-radius: 0;
+	border-radius: 3px 0 0 3px;
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
@@ -2357,7 +2366,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0;
 	padding: 8px 6px;
 	border: none;
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	box-shadow: none;
 	color: #ffffff;
@@ -2415,7 +2424,7 @@ input#lccl-mf-phone::placeholder {
 	height: 49px;
 	min-height: 49px;
 	padding: 8px 13px;
-	border-radius: 0;
+	border-radius: 3px;
 	font-size: 17px;
 }
 
@@ -2424,7 +2433,7 @@ input#lccl-mf-phone::placeholder {
 	height: 48px;
 	min-height: 48px;
 	padding: 0 40px 0 13px;
-	border-radius: 0;
+	border-radius: 3px;
 	font-size: 16px;
 	line-height: 48px;
 	white-space: nowrap;
@@ -2434,7 +2443,7 @@ input#lccl-mf-phone::placeholder {
 .lccl-bdf.lccl-bdf--sponsorship textarea.lccl-df__message {
 	min-height: 105px;
 	padding: 11px 13px;
-	border-radius: 0;
+	border-radius: 3px;
 	resize: vertical;
 }
 
@@ -2445,6 +2454,8 @@ input#lccl-mf-phone::placeholder {
 	gap: 0;
 	width: 100%;
 	margin: 22px 0 10px;
+	border-radius: 3px;
+	overflow: hidden;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__total-label {
@@ -2464,6 +2475,7 @@ input#lccl-mf-phone::placeholder {
 	letter-spacing: 0.04em;
 	text-transform: uppercase;
 	white-space: nowrap;
+	border-radius: 3px 0 0 3px;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-df__total-input,
@@ -2477,7 +2489,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0;
 	padding: 0 12px;
 	border: none;
-	border-radius: 0;
+	border-radius: 0 3px 3px 0;
 	background-color: var(--lccl-bdf-field-bg);
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
@@ -2496,7 +2508,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 20px 0 0;
 	padding: 20px;
 	border: none;
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
 	font-size: 24px;
@@ -2537,6 +2549,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0 0 14px;
 	padding: 20px;
 	border: 1px solid #eee;
+	border-radius: 3px;
 	background-color: #ffffff;
 }
 
@@ -2553,6 +2566,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 0 0 11px;
 	padding: 5px 9px;
 	background-color: var(--lccl-bdf-gold-light);
+	border-radius: 3px;
 	color: var(--lccl-bdf-heading);
 	font-family: var(--lccl-bdf-font);
 	font-size: 12px;
@@ -2604,12 +2618,15 @@ input#lccl-mf-phone::placeholder {
 	height: 7px;
 	margin: 10px 0 14px;
 	background-color: #eeeeee;
+	border-radius: 3px;
+	overflow: hidden;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__progress span {
 	display: block;
 	height: 100%;
 	background-color: var(--lccl-bdf-gold-light);
+	border-radius: 3px;
 }
 
 .lccl-bdf.lccl-bdf--sponsorship .lccl-ps__pick,
@@ -2620,7 +2637,7 @@ input#lccl-mf-phone::placeholder {
 	margin: 14px 0 0;
 	padding: 10px 12px;
 	border: none;
-	border-radius: 0;
+	border-radius: 3px;
 	background-color: var(--lccl-bdf-gold-light);
 	color: #ffffff;
 	cursor: pointer;
@@ -2755,10 +2772,11 @@ input#lccl-mf-phone::placeholder {
    ========================================================================== */
 
 /* Inline notices (error / warning above the form) */
-.lccl-bdf--membership .lccl-mf__notice {
+.lccl-bdf--membership .lccl-mf__notice,
+.lccl-mf__notice {
 	margin: 0 0 24px;
 	padding: 14px 18px;
-	border-radius: 6px;
+	border-radius: 3px;
 	font-size: 15px;
 	line-height: 1.55;
 }
@@ -2935,7 +2953,7 @@ input#lccl-mf-phone::placeholder {
 
 .lccl-mf__result {
 	padding: 36px 32px;
-	border-radius: 10px;
+	border-radius: 3px;
 	text-align: center;
 }
 
@@ -3010,7 +3028,7 @@ input#lccl-mf-phone::placeholder {
 .lccl-mf__result-details code {
 	background: rgba(0,0,0,0.06);
 	padding: 2px 6px;
-	border-radius: 4px;
+	border-radius: 3px;
 	font-size: 13px;
 	letter-spacing: 0.04em;
 }
@@ -3125,5 +3143,135 @@ a.lccl-terms-link:focus {
 .lccl-bdf form.is-currency-lkr .lccl-df__submit:focus,
 .lccl-bdf form.is-currency-lkr .lccl-df__custom-select-trigger {
 	color: #ffffff !important;
+}
+
+/* ==========================================================================
+   Definitive 3px Border Radius for Donation & Project Sponsorship Pages
+   ========================================================================== */
+
+/* Outer Form Cards, Image Panels and Images */
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__form,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__form,
+.lccl-bdf.lccl-bdf--donation .lccl-donation__image-panel,
+.lccl-bdf.lccl-bdf--donation .lccl-donation__image,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image-panel,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__image {
+	border-radius: 3px !important;
+}
+
+/* Form Fields: Inputs, Selects, Textareas */
+.lccl-bdf.lccl-bdf--donation input,
+.lccl-bdf.lccl-bdf--donation select,
+.lccl-bdf.lccl-bdf--donation textarea,
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__input,
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__textarea,
+.lccl-bdf.lccl-bdf--donation .lccl-df__message,
+.lccl-bdf.lccl-bdf--sponsorship input,
+.lccl-bdf.lccl-bdf--sponsorship select,
+.lccl-bdf.lccl-bdf--sponsorship textarea,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__input,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__select,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__textarea,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__message {
+	border-radius: 3px !important;
+}
+
+/* Currency Chips & Amount Presets */
+.lccl-bdf .lccl-df__currency-chip,
+.lccl-df__currency-chip,
+.lccl-bdf.lccl-bdf--donation .lccl-df__preset,
+.lccl-bdf.lccl-bdf--donation button.lccl-df__preset,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__preset,
+.lccl-bdf.lccl-bdf--sponsorship button.lccl-df__preset {
+	border-radius: 3px !important;
+}
+
+/* Amount Row Segmented Controls */
+.lccl-bdf.lccl-bdf--donation .lccl-df__amount-input,
+.lccl-bdf.lccl-bdf--donation input.lccl-df__amount-input,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__amount-input,
+.lccl-bdf.lccl-bdf--sponsorship input.lccl-df__amount-input {
+	border-radius: 3px 0 0 3px !important;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-trigger,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-trigger {
+	border-radius: 0 3px 3px 0 !important;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__custom-select-options,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__custom-select-options {
+	border-radius: 0 0 3px 3px !important;
+	overflow: hidden !important;
+}
+
+/* Total Display Block */
+.lccl-bdf.lccl-bdf--donation .lccl-df__total,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__total {
+	border-radius: 3px !important;
+	overflow: hidden !important;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__total-label,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__total-label {
+	border-radius: 3px 0 0 3px !important;
+}
+
+.lccl-bdf.lccl-bdf--donation .lccl-df__total-input,
+.lccl-bdf.lccl-bdf--donation input.lccl-df__total-input,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__total-input,
+.lccl-bdf.lccl-bdf--sponsorship input.lccl-df__total-input {
+	border-radius: 0 3px 3px 0 !important;
+}
+
+/* Submit & Project Selection Buttons */
+.lccl-bdf.lccl-bdf--donation .lccl-df__submit,
+.lccl-bdf.lccl-bdf--donation button.lccl-df__submit,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__submit,
+.lccl-bdf.lccl-bdf--sponsorship button.lccl-df__submit,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__pick,
+.lccl-bdf.lccl-bdf--sponsorship button.lccl-ps__pick {
+	border-radius: 3px !important;
+}
+
+/* International Phone Controls */
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-wrap,
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--donation input.lccl-df__phone-number,
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-dropdown,
+.lccl-bdf.lccl-bdf--donation .lccl-df__phone-search-input,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-display,
+.lccl-bdf.lccl-bdf--sponsorship input.lccl-df__phone-number,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-dropdown,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-search-input {
+	border-radius: 3px !important;
+}
+
+/* Checkboxes, Anonymous Box, Causes Box & Sponsorship Project Cards */
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__check,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__check,
+.lccl-bdf.lccl-bdf--donation .lccl-df__anon-box,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__anon-box,
+.lccl-bdf.lccl-bdf--donation .lccl-df__causes,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__card,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__status,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__progress,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-ps__progress span {
+	border-radius: 3px !important;
+}
+
+/* Banners, Notices and Code Blocks */
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__banner,
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__banner--success,
+.lccl-bdf.lccl-bdf--donation .lccl-bdf__banner--error,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__banner,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__banner--success,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__banner--error,
+.lccl-bdf.lccl-bdf--donation .lccl-mf__notice,
+.lccl-bdf.lccl-bdf--sponsorship .lccl-mf__notice,
+.lccl-bdf.lccl-bdf--donation code,
+.lccl-bdf.lccl-bdf--sponsorship code {
+	border-radius: 3px !important;
 }
 

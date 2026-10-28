@@ -22,7 +22,7 @@ class LCCL_DE_Fundraiser_Form {
 	}
 
 	public static function render( $atts ) {
-		wp_enqueue_style( 'lccl-de-blood-donor-form', LCCL_DE_URL . 'assets/css/lccl-de-blood-donor-form.css', array(), LCCL_DE_VERSION );
+		wp_enqueue_style( 'lccl-de-blood-donor-form', LCCL_DE_URL . 'assets/css/lccl-de-blood-donor-form.css', array(), filemtime( LCCL_DE_PATH . 'assets/css/lccl-de-blood-donor-form.css' ) );
 		wp_enqueue_style( 'lccl-de-fundraiser-form', LCCL_DE_URL . 'assets/css/lccl-de-fundraiser-form.css', array( 'lccl-de-blood-donor-form' ), filemtime( LCCL_DE_PATH . 'assets/css/lccl-de-fundraiser-form.css' ) );
 		wp_enqueue_script( 'lccl-de-fundraiser-phone', LCCL_DE_URL . 'assets/js/lccl-de-fundraiser-phone.js', array(), filemtime( LCCL_DE_PATH . 'assets/js/lccl-de-fundraiser-phone.js' ), true );
 
@@ -35,7 +35,7 @@ class LCCL_DE_Fundraiser_Form {
 
 		// Cancel notification
 		if ( ! empty( $_GET['lccl_fnd_cancel'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #d97706; padding:16px 20px; background:#fffbe8;">' .
+			$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #d97706; padding:16px 20px; background:#fffbe8; border-radius:3px;">' .
 				'<h3 style="margin:0 0 6px 0; color:#d97706; font-size:16px;">' . esc_html__( 'Payment Cancelled', 'lccl-de' ) . '</h3>' .
 				'<p style="margin:0; color:#555; font-size:14px;">' . esc_html__( 'Your booking payment transaction was cancelled. No charges were made. You may adjust your selection and try again.', 'lccl-de' ) . '</p>' .
 				'</div>';
@@ -44,7 +44,7 @@ class LCCL_DE_Fundraiser_Form {
 		// Error notification from redirect
 		if ( ! empty( $_GET['lccl_fnd_error'] ) || ! empty( $_GET['lccl_mf_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$err_msg = ! empty( $_GET['lccl_fnd_error'] ) ? sanitize_text_field( wp_unslash( $_GET['lccl_fnd_error'] ) ) : sanitize_text_field( wp_unslash( $_GET['lccl_mf_error'] ) );
-			$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #dc2626; padding:16px 20px; background:#fef2f2;">' .
+			$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #dc2626; padding:16px 20px; background:#fef2f2; border-radius:3px;">' .
 				'<h3 style="margin:0 0 6px 0; color:#dc2626; font-size:16px;">' . esc_html__( 'Booking Notice', 'lccl-de' ) . '</h3>' .
 				'<p style="margin:0; color:#991b1b; font-size:14px; line-height: 1.5;">' . esc_html( $err_msg ) . '</p>' .
 				'</div>';
@@ -59,7 +59,7 @@ class LCCL_DE_Fundraiser_Form {
 				$active_event = LCCL_DE_Fundraiser::get_event( $token_ev_id );
 			} else {
 				$vip_msg = $vip_validation['message'] ?? __( 'Invalid VIP reservation link.', 'lccl-de' );
-				$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #ef4444; padding:16px 20px; background:#fef2f2;">' .
+				$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #ef4444; padding:16px 20px; background:#fef2f2; border-radius:3px;">' .
 					'<h3 style="margin:0 0 6px 0; color:#dc2626; font-size:16px;">' . esc_html__( 'VIP Reservation Link Notice', 'lccl-de' ) . '</h3>' .
 					'<p style="margin:0; color:#991b1b; font-size:14px; line-height: 1.5;">' . esc_html( $vip_msg ) . '</p>' .
 					'</div>';
@@ -478,14 +478,14 @@ class LCCL_DE_Fundraiser_Form {
 
 		ob_start();
 		?>
-		<div class="lccl-fr-card" style="margin:30px auto; max-width:680px; padding:32px; background:#fff; border-radius:12px; box-shadow:0 4px 16px rgba(0,0,0,.08); border-top:6px solid #16a34a;">
+		<div class="lccl-fr-card" style="margin:30px auto; max-width:680px; padding:32px; background:#fff; border-radius:3px; box-shadow:0 4px 16px rgba(0,0,0,.08); border-top:6px solid #16a34a;">
 			<div style="text-align:center; margin-bottom:24px;">
 				<div style="width:64px; height:64px; line-height:64px; border-radius:50%; background:#dcfce7; color:#16a34a; font-size:32px; margin:0 auto 12px;">✓</div>
 				<h2 style="font-size:24px; font-weight:700; color:#1a1d23; margin:0 0 6px;"><?php esc_html_e( 'Booking Confirmed!', 'lccl-de' ); ?></h2>
 				<p style="color:#6b7280; font-size:14px; margin:0;"><?php esc_html_e( 'Your payment was successful. Your booking is confirmed.', 'lccl-de' ); ?></p>
 			</div>
 
-			<div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:20px; margin-bottom:24px;">
+			<div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; padding:20px; margin-bottom:24px;">
 				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
 					<span style="color:#6b7280;"><?php esc_html_e( 'Booking Reference', 'lccl-de' ); ?></span>
 					<strong style="font-family:monospace; font-size:15px; color:#1a1d23;"><?php echo esc_html( $booking['order_ref'] ); ?></strong>
@@ -514,7 +514,7 @@ class LCCL_DE_Fundraiser_Form {
 					<span style="color:#6b7280;"><?php esc_html_e( 'Booking Type', 'lccl-de' ); ?></span>
 					<span><?php echo esc_html( $is_individual ? 'Individual Seats (' . $booking['qty'] . ')' : 'Whole Table Reservation' ); ?></span>
 				</div>
-				<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; background:#eff6ff; margin:6px -12px; padding:10px 12px; border-radius:6px;">
+				<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; background:#eff6ff; margin:6px -12px; padding:10px 12px; border-radius:3px;">
 					<span style="color:#1d4ed8; font-weight:600;"><?php echo esc_html( $is_individual ? __( 'Assigned Seat Numbers', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
 					<strong style="color:#1d4ed8; font-size:16px; font-weight:700;"><?php echo esc_html( $seat_display ); ?></strong>
 				</div>
@@ -530,7 +530,7 @@ class LCCL_DE_Fundraiser_Form {
 				</div>
 			</div>
 
-			<div style="padding:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; margin-bottom:24px;">
+			<div style="padding:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:3px; margin-bottom:24px;">
 				<p style="margin:0; font-size:13px; color:#166534; line-height:1.5;">
 					<?php printf(
 						/* translators: %s: email */
