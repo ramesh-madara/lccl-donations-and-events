@@ -199,6 +199,7 @@
 .type-title {
     font-weight: bold;
     font-size: 16px;
+    white-space: nowrap;
 }
 
 .type-help {
@@ -652,8 +653,9 @@ body.lccl-modal-prevent-scroll {
 /* Badge pills */
 .type-header-row {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
     margin-bottom: 6px;
 }
 
@@ -807,14 +809,63 @@ body.lccl-modal-prevent-scroll {
 
 .lccl-fr-table-legend {
     display: flex;
-    gap: 12px;
+    gap: 10px 14px;
     flex-wrap: wrap;
-    font-size: 11px;
-    color: #666;
+    align-items: center;
+    font-size: 12px;
+    color: #4b5563;
     margin: 8px 0 16px;
-    padding: 8px 12px;
+    padding: 9px 12px;
     background: #f8fafc;
+    border: 1px solid #e2e8f0;
     border-radius: 3px;
+}
+
+.lccl-fr-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
+}
+
+.lccl-fr-legend-swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.lccl-fr-legend-swatch--available {
+    background: #fef08a;
+    border: 1.5px solid #f7c600;
+}
+
+.lccl-fr-legend-swatch--selected {
+    background: #b45309;
+    border: 1.5px solid #78350f;
+}
+
+.lccl-fr-legend-swatch--reserved {
+    background: #fed7aa;
+    border: 1.5px dashed #fdba74;
+}
+
+.lccl-fr-legend-swatch--booked {
+    background: #cbd5e1;
+    border: 1.5px solid #94a3b8;
+}
+
+.lccl-fr-legend-swatch--unavailable {
+    background: #e2e8f0;
+    border: 1.5px solid #cbd5e1;
+}
+
+.lccl-fr-legend-sub {
+    color: #64748b;
+    font-size: 11px;
+    margin-left: -2px;
 }
 
 .small {

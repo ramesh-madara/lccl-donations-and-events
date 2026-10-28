@@ -1307,22 +1307,14 @@
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-wrap,
-.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap {
-	position: relative;
-	flex: 0 0 86px;
-	width: 86px;
-	min-width: 86px;
-	max-width: 86px;
-	height: 49px;
-}
-
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__phone-code-wrap,
 .lccl-bdf.lccl-bdf--membership .lccl-df__phone-code-wrap {
 	position: relative;
 	flex: 0 0 86px;
 	width: 86px;
 	min-width: 86px;
 	max-width: 86px;
-	height: 40px;
+	height: 49px;
 }
 
 .lccl-bdf.lccl-bdf--donation .lccl-df__phone-code-display,
@@ -1900,8 +1892,8 @@ input#lccl-mf-phone::placeholder {
 .lccl-bdf.lccl-bdf--membership input.lccl-bdf__input,
 .lccl-bdf.lccl-bdf--membership .lccl-bdf__select,
 .lccl-bdf.lccl-bdf--membership select.lccl-bdf__select {
-	height: 40px;
-	min-height: 40px;
+	height: 49px;
+	min-height: 49px;
 	padding: 8px 13px;
 	border-radius: 3px;
 	font-size: 17px;
@@ -1936,8 +1928,8 @@ input#lccl-mf-phone::placeholder {
 .lccl-bdf.lccl-bdf--membership input.lccl-df__amount-input {
 	flex: 1 1 auto;
 	min-width: 0;
-	height: 40px;
-	min-height: 40px;
+	height: 49px;
+	min-height: 49px;
 	margin: 0;
 	padding: 8px 13px;
 	border: 1px solid var(--lccl-bdf-border);
@@ -1965,7 +1957,8 @@ input#lccl-mf-phone::placeholder {
 	flex: 0 0 auto;
 	width: 80px;
 	min-width: 80px;
-	height: 40px;
+	height: 49px;
+	min-height: 49px;
 	padding: 0 10px;
 	border: 1px solid var(--lccl-bdf-border);
 	border-left: none;
@@ -2868,6 +2861,7 @@ input#lccl-mf-phone::placeholder {
 /* Payment method icons at the bottom of the payment form */
 .lccl-bdf--donation .lccl-df__pay-icons,
 .lccl-bdf--sponsorship .lccl-df__pay-icons,
+.lccl-bdf--membership .lccl-df__pay-icons,
 .lccl-df__pay-icons {
 	display: flex;
 	align-items: center;
@@ -2878,6 +2872,7 @@ input#lccl-mf-phone::placeholder {
 
 .lccl-bdf--donation .lccl-df__pay-icons-img,
 .lccl-bdf--sponsorship .lccl-df__pay-icons-img,
+.lccl-bdf--membership .lccl-df__pay-icons-img,
 .lccl-df__pay-icons-img {
 	display: block;
 	width: 100%;
@@ -3172,7 +3167,12 @@ a.lccl-terms-link:focus {
 .lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__input,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__select,
 .lccl-bdf.lccl-bdf--sponsorship .lccl-bdf__textarea,
-.lccl-bdf.lccl-bdf--sponsorship .lccl-df__message {
+.lccl-bdf.lccl-bdf--sponsorship .lccl-df__message,
+.lccl-bdf.lccl-bdf--membership input,
+.lccl-bdf.lccl-bdf--membership select,
+.lccl-bdf.lccl-bdf--membership textarea,
+.lccl-bdf.lccl-bdf--membership .lccl-bdf__input,
+.lccl-bdf.lccl-bdf--membership .lccl-bdf__select {
 	border-radius: 3px !important;
 }
 

@@ -296,9 +296,27 @@ $js_data = array(
 					</div>
 
 					<div class="lccl-fr-table-legend">
-						<span><strong style="color:#854d0e;">🟢 Available</strong> <?php esc_html_e( '(select to book)', 'lccl-de' ); ?></span>
-						<span><strong style="color:#9a3412;">🔒 Reserved</strong></span>
-						<span><strong style="color:#475569;">⚫ Booked</strong></span>
+						<span class="lccl-fr-legend-item">
+							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--available"></span>
+							<strong style="color:#854d0e;"><?php esc_html_e( 'Available', 'lccl-de' ); ?></strong>
+							<span class="lccl-fr-legend-sub"><?php esc_html_e( '(select to book)', 'lccl-de' ); ?></span>
+						</span>
+						<span class="lccl-fr-legend-item">
+							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--selected"></span>
+							<strong style="color:#b45309;"><?php esc_html_e( 'Selected', 'lccl-de' ); ?></strong>
+						</span>
+						<span class="lccl-fr-legend-item">
+							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--reserved"></span>
+							<strong style="color:#9a3412;"><?php esc_html_e( 'Reserved', 'lccl-de' ); ?></strong>
+						</span>
+						<span class="lccl-fr-legend-item">
+							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--booked"></span>
+							<strong style="color:#475569;"><?php esc_html_e( 'Booked', 'lccl-de' ); ?></strong>
+						</span>
+						<span class="lccl-fr-legend-item">
+							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--unavailable"></span>
+							<strong style="color:#64748b;"><?php esc_html_e( 'Unavailable', 'lccl-de' ); ?></strong>
+						</span>
 					</div>
 
 					<!-- Hidden native multi-select for standard form submission compatibility -->
