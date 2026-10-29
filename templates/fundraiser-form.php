@@ -746,7 +746,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 
 					<!-- ── 1. SEAT POOL LAYOUT (Active for Individual Seat Booking) ── -->
 					<div id="poolLayoutSeat" class="seat-map-tables" style="display: <?php echo $is_initial_table_mode ? 'none' : 'block'; ?>;">
-						<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; margin-bottom: 8px; font-weight: 600;"><?php esc_html_e( 'Seat Pool', 'lccl-de' ); ?></div>
+						<div class="table-pool-heading" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #17365D; margin-bottom: 8px; font-weight: 700;"><?php esc_html_e( 'Seat Pool', 'lccl-de' ); ?></div>
 						<?php if ( ! empty( $seat_pool_rendered ) ) : ?>
 							<div class="seat-map-table-grid" id="seatMapGridSeat">
 								<?php foreach ( $seat_pool_rendered as $spr ) : ?>
@@ -772,7 +772,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 
 					<!-- ── 2. TABLE POOL LAYOUT (Active for Full Table Booking) ── -->
 					<div id="poolLayoutTable" class="seat-map-tables" style="display: <?php echo $is_initial_table_mode ? 'block' : 'none'; ?>;">
-						<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; margin-bottom: 8px; font-weight: 600;"><?php esc_html_e( 'Table Pool', 'lccl-de' ); ?></div>
+						<div class="table-pool-heading" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #17365D; margin-bottom: 8px; font-weight: 700;"><?php esc_html_e( 'Table Pool', 'lccl-de' ); ?></div>
 						<?php if ( ! empty( $table_pool_tables ) ) : ?>
 							<div class="seat-map-table-grid" id="seatMapGridTable">
 								<?php foreach ( $table_pool_tables as $tpt ) :

@@ -403,10 +403,11 @@
 
 .seat-map {
     margin-top: 22px;
-    background: #f4f4f4;
+    background: #F1F5F9;
     padding: 18px;
     text-align: center;
-    border-radius: 3px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
 }
 
 .stage {
@@ -468,7 +469,7 @@
 }
 
 .legend .legend-avail::before {
-    background: #eab308;
+    background: #35A853;
 }
 
 .legend .legend-partial::before {
@@ -480,11 +481,11 @@
 }
 
 .legend .legend-booked::before {
-    background: #94a3b8;
+    background: #657386;
 }
 
 .legend .legend-table::before {
-    background: #eab308;
+    background: #35A853;
 }
 
 .seat-dot.sold {
@@ -1025,9 +1026,9 @@ body.lccl-modal-prevent-scroll {
 }
 
 .seat-map-tbl.map-tbl-avail {
-    background: #fef9c3;
-    color: #854d0e;
-    border-color: #facc15;
+    background: #DDF7E5;
+    color: #176B35;
+    border: 1px solid #35A853;
 }
 
 .seat-map-tbl.map-tbl-partial {
@@ -1045,17 +1046,23 @@ body.lccl-modal-prevent-scroll {
 }
 
 .seat-map-tbl.map-tbl-booked {
-    background: #f1f5f9;
-    color: #64748b;
-    border-color: #cbd5e1;
-    opacity: 0.6;
+    background: #E9EDF2;
+    color: #657386;
+    border: 1px solid #C7D0DC;
+    opacity: 1;
 }
 
 .seat-map-tbl.map-tbl-selected {
-    background: #fef3c7 !important;
-    border: 2px solid #b45309 !important;
-    box-shadow: 0 0 0 2.5px rgba(245, 158, 11, .35) !important;
+    background: #DBEAFE !important;
+    border: 2px solid #2563EB !important;
+    color: #1D4ED8 !important;
+    box-shadow: 0 0 0 2.5px rgba(37, 99, 235, .25) !important;
     opacity: 1 !important;
+}
+
+.table-pool-heading {
+    color: #17365D !important;
+    font-weight: 700;
 }
 
 /* Seating plan image responsive (ensure readable on mobile) */
