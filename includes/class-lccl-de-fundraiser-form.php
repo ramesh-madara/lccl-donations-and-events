@@ -521,60 +521,60 @@ class LCCL_DE_Fundraiser_Form {
 
 		ob_start();
 		?>
-		<div class="lccl-fr-card" style="margin:30px auto; max-width:680px; padding:32px; background:#fff; border-radius:3px; box-shadow:0 4px 16px rgba(0,0,0,.08); border-top:6px solid #16a34a;">
-			<div style="text-align:center; margin-bottom:24px;">
-				<div style="width:64px; height:64px; line-height:64px; border-radius:50%; background:#dcfce7; color:#16a34a; font-size:32px; margin:0 auto 12px;">✓</div>
-				<h2 style="font-size:24px; font-weight:700; color:#1a1d23; margin:0 0 6px;"><?php esc_html_e( 'Booking Confirmed!', 'lccl-de' ); ?></h2>
-				<p style="color:#6b7280; font-size:14px; margin:0;"><?php esc_html_e( 'Your payment was successful, and your booking is confirmed.', 'lccl-de' ); ?></p>
+		<div class="lccl-fr-card lccl-fr-conf-card">
+			<div class="lccl-fr-conf-header">
+				<div class="lccl-fr-conf-icon">✓</div>
+				<h2 class="lccl-fr-conf-title"><?php esc_html_e( 'Booking Confirmed!', 'lccl-de' ); ?></h2>
+				<p class="lccl-fr-conf-subtitle"><?php esc_html_e( 'Your payment was successful, and your booking is confirmed.', 'lccl-de' ); ?></p>
 			</div>
 
-			<div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; padding:20px; margin-bottom:24px;">
-				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-					<span style="color:#6b7280;"><?php esc_html_e( 'Booking Reference', 'lccl-de' ); ?></span>
-					<strong style="font-family:monospace; font-size:15px; color:#1a1d23;"><?php echo esc_html( $booking['order_ref'] ); ?></strong>
+			<div class="lccl-fr-conf-box">
+				<div class="lccl-fr-conf-row lccl-fr-conf-row--inline-mobile">
+					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Booking Reference', 'lccl-de' ); ?></span>
+					<strong class="lccl-fr-conf-val lccl-fr-conf-ref"><?php echo esc_html( $booking['order_ref'] ); ?></strong>
 				</div>
-				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-					<span style="color:#6b7280;"><?php esc_html_e( 'Payment Transaction ID', 'lccl-de' ); ?></span>
-					<strong style="font-family:monospace; font-size:14px; color:#1a1d23;"><?php echo esc_html( $receipt ); ?></strong>
+				<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
+					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Payment Transaction ID', 'lccl-de' ); ?></span>
+					<strong class="lccl-fr-conf-val lccl-fr-conf-mono"><?php echo esc_html( $receipt ); ?></strong>
 				</div>
-				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-					<span style="color:#6b7280;"><?php esc_html_e( 'Event', 'lccl-de' ); ?></span>
-					<strong style="color:#1a1d23;"><?php echo esc_html( $event_name ); ?></strong>
+				<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
+					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Event', 'lccl-de' ); ?></span>
+					<strong class="lccl-fr-conf-val lccl-fr-conf-event-title"><?php echo esc_html( $event_name ); ?></strong>
 				</div>
 				<?php if ( $event_date ) : ?>
-					<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-						<span style="color:#6b7280;"><?php esc_html_e( 'Event Date & Time', 'lccl-de' ); ?></span>
-						<span><?php echo esc_html( $event_date . ( $event_time ? ' at ' . $event_time : '' ) ); ?></span>
+					<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
+						<span class="lccl-fr-conf-label"><?php esc_html_e( 'Event Date & Time', 'lccl-de' ); ?></span>
+						<span class="lccl-fr-conf-val"><?php echo esc_html( $event_date . ( $event_time ? ' at ' . $event_time : '' ) ); ?></span>
 					</div>
 				<?php endif; ?>
 				<?php if ( $venue ) : ?>
-					<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-						<span style="color:#6b7280;"><?php esc_html_e( 'Venue', 'lccl-de' ); ?></span>
-						<span><?php echo esc_html( $venue ); ?></span>
+					<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
+						<span class="lccl-fr-conf-label"><?php esc_html_e( 'Venue', 'lccl-de' ); ?></span>
+						<span class="lccl-fr-conf-val"><?php echo esc_html( $venue ); ?></span>
 					</div>
 				<?php endif; ?>
-				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-					<span style="color:#6b7280;"><?php esc_html_e( 'Booking Type', 'lccl-de' ); ?></span>
-					<span><?php echo esc_html( $is_individual ? 'Individual Seats (' . $booking['qty'] . ')' : 'Whole Table Reservation' ); ?></span>
+				<div class="lccl-fr-conf-row lccl-fr-conf-row--inline-mobile">
+					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Booking Type', 'lccl-de' ); ?></span>
+					<span class="lccl-fr-conf-val"><?php echo esc_html( $is_individual ? 'Individual Seats (' . $booking['qty'] . ')' : 'Whole Table Reservation' ); ?></span>
 				</div>
-				<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; background:#eff6ff; margin:6px -12px; padding:10px 12px; border-radius:3px;">
-					<span style="color:#1d4ed8; font-weight:600;"><?php echo esc_html( $is_individual ? __( 'Assigned Seat(s)', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
-					<strong style="color:#1d4ed8; font-size:16px; font-weight:700;"><?php echo esc_html( $seat_display ); ?></strong>
+				<div class="lccl-fr-conf-row lccl-fr-conf-row--highlight">
+					<span class="lccl-fr-conf-label"><?php echo esc_html( $is_individual ? __( 'Assigned Seat(s)', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
+					<strong class="lccl-fr-conf-val lccl-fr-conf-seats"><?php echo esc_html( $seat_display ); ?></strong>
 				</div>
 				<?php if ( ! empty( $booking['notes'] ) ) : ?>
-					<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-						<span style="color:#6b7280;"><?php esc_html_e( 'Special Requests', 'lccl-de' ); ?></span>
-						<span style="color:#1a1d23; max-width:60%; text-align:right;"><?php echo esc_html( $booking['notes'] ); ?></span>
+					<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
+						<span class="lccl-fr-conf-label"><?php esc_html_e( 'Special Requests', 'lccl-de' ); ?></span>
+						<span class="lccl-fr-conf-val"><?php echo esc_html( $booking['notes'] ); ?></span>
 					</div>
 				<?php endif; ?>
-				<div style="display:flex; justify-content:space-between; padding:8px 0;">
-					<span style="color:#6b7280;"><?php esc_html_e( 'Amount Paid', 'lccl-de' ); ?></span>
-					<strong style="font-size:16px; color:#16a34a;">LKR <?php echo esc_html( number_format( (float) $booking['amount_lkr'], 2 ) ); ?></strong>
+				<div class="lccl-fr-conf-row lccl-fr-conf-row--inline-mobile">
+					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Amount Paid', 'lccl-de' ); ?></span>
+					<strong class="lccl-fr-conf-val lccl-fr-conf-amount">LKR <?php echo esc_html( number_format( (float) $booking['amount_lkr'], 2 ) ); ?></strong>
 				</div>
 			</div>
 
-			<div style="padding:16px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:3px; margin-bottom:24px;">
-				<p style="margin:0; font-size:13px; color:#166534; line-height:1.5;">
+			<div class="lccl-fr-conf-notice">
+				<p>
 					<?php printf(
 						/* translators: %s: email */
 						esc_html__( 'A confirmation email containing your booking details and allocated seat numbers has been sent to %s. Please present your confirmation email or booking reference at the reception counter upon arrival.', 'lccl-de' ),
@@ -583,8 +583,8 @@ class LCCL_DE_Fundraiser_Form {
 				</p>
 			</div>
 
-			<div style="text-align:center;">
-				<a href="<?php echo esc_url( remove_query_arg( array( 'lccl_fnd_return', 'lccl_fnd_ref', 'reqid', 'ReqID' ) ) ); ?>" class="lccl-fr-button" style="display:inline-block; text-decoration:none;">
+			<div class="lccl-fr-conf-actions">
+				<a href="<?php echo esc_url( remove_query_arg( array( 'lccl_fnd_return', 'lccl_fnd_ref', 'reqid', 'ReqID' ) ) ); ?>" class="lccl-fr-button lccl-fr-conf-btn">
 					<?php esc_html_e( 'Return to Event Page', 'lccl-de' ); ?>
 				</a>
 			</div>

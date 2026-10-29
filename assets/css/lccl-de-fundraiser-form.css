@@ -1459,3 +1459,284 @@ body.lccl-modal-prevent-scroll {
     color: #0f172a;
     font-weight: 600;
 }
+
+/* ───────────────────────────────────────────────────────────
+   Booking Confirmation Card (Desktop & Responsive Mobile)
+─────────────────────────────────────────────────────────── */
+.lccl-fr-conf-card {
+    margin: 30px auto;
+    max-width: 680px;
+    padding: 32px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, .08);
+    border-top: 6px solid #16a34a;
+    box-sizing: border-box;
+}
+
+.lccl-fr-conf-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.lccl-fr-conf-icon {
+    width: 64px;
+    height: 64px;
+    line-height: 64px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #16a34a;
+    font-size: 32px;
+    margin: 0 auto 12px;
+    font-weight: 700;
+}
+
+.lccl-fr-conf-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1d23;
+    margin: 0 0 6px;
+}
+
+.lccl-fr-conf-subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.lccl-fr-conf-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+    box-sizing: border-box;
+}
+
+.lccl-fr-conf-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 9px 0;
+    border-bottom: 1px solid #eee;
+    gap: 16px;
+    box-sizing: border-box;
+}
+
+.lccl-fr-conf-row:last-child {
+    border-bottom: none;
+    padding-bottom: 2px;
+}
+
+.lccl-fr-conf-label {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 150px;
+    flex-shrink: 0;
+}
+
+.lccl-fr-conf-val {
+    color: #1a1d23;
+    font-size: 14px;
+    text-align: right;
+    word-break: break-word;
+}
+
+.lccl-fr-conf-ref {
+    font-family: monospace;
+    font-size: 15px;
+    color: #1a1d23;
+    font-weight: 700;
+}
+
+.lccl-fr-conf-mono {
+    font-family: monospace;
+    font-size: 13.5px;
+    color: #1a1d23;
+    font-weight: 600;
+}
+
+.lccl-fr-conf-event-title {
+    color: #111827;
+    font-weight: 600;
+}
+
+.lccl-fr-conf-amount {
+    font-size: 16px;
+    color: #16a34a;
+    font-weight: 700;
+}
+
+/* Highlight row: Assigned Seat(s) / Reserved Table(s) */
+.lccl-fr-conf-row.lccl-fr-conf-row--highlight {
+    background: #eff6ff;
+    margin: 6px -14px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    border-bottom-color: #dbeafe;
+}
+
+.lccl-fr-conf-row.lccl-fr-conf-row--highlight .lccl-fr-conf-label {
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.lccl-fr-conf-row.lccl-fr-conf-row--highlight .lccl-fr-conf-val.lccl-fr-conf-seats {
+    color: #1d4ed8;
+    font-size: 15.5px;
+    font-weight: 700;
+}
+
+.lccl-fr-conf-notice {
+    padding: 16px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 4px;
+    margin-bottom: 24px;
+}
+
+.lccl-fr-conf-notice p {
+    margin: 0;
+    font-size: 13px;
+    color: #166534;
+    line-height: 1.55;
+}
+
+.lccl-fr-conf-actions {
+    text-align: center;
+}
+
+.lccl-fr-conf-btn {
+    display: inline-block;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 12px 24px;
+}
+
+/* ── Mobile Screen Adaptation (<= 560px) ── */
+@media (max-width: 560px) {
+    .lccl-fr-conf-card {
+        padding: 20px 14px !important;
+        margin: 14px auto !important;
+        border-radius: 6px !important;
+    }
+
+    .lccl-fr-conf-header {
+        margin-bottom: 18px !important;
+    }
+
+    .lccl-fr-conf-icon {
+        width: 50px !important;
+        height: 50px !important;
+        line-height: 50px !important;
+        font-size: 24px !important;
+        margin: 0 auto 10px !important;
+    }
+
+    .lccl-fr-conf-title {
+        font-size: 20px !important;
+        margin-bottom: 4px !important;
+    }
+
+    .lccl-fr-conf-subtitle {
+        font-size: 13px !important;
+    }
+
+    .lccl-fr-conf-box {
+        padding: 12px !important;
+        margin-bottom: 18px !important;
+        border-radius: 6px !important;
+    }
+
+    /* Stack long fields so label and value never collide */
+    .lccl-fr-conf-row.lccl-fr-conf-row--stack-mobile {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        padding: 9px 0 !important;
+    }
+
+    .lccl-fr-conf-row.lccl-fr-conf-row--stack-mobile .lccl-fr-conf-label {
+        font-size: 11.5px !important;
+        color: #64748b !important;
+        font-weight: 500 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.03em !important;
+        min-width: auto !important;
+    }
+
+    .lccl-fr-conf-row.lccl-fr-conf-row--stack-mobile .lccl-fr-conf-val {
+        text-align: left !important;
+        width: 100% !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        line-height: 1.4 !important;
+        color: #0f172a !important;
+    }
+
+    /* Keep concise fields inline */
+    .lccl-fr-conf-row.lccl-fr-conf-row--inline-mobile {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 8px 0 !important;
+        gap: 10px !important;
+    }
+
+    .lccl-fr-conf-row.lccl-fr-conf-row--inline-mobile .lccl-fr-conf-label {
+        font-size: 13px !important;
+        min-width: auto !important;
+    }
+
+    .lccl-fr-conf-row.lccl-fr-conf-row--inline-mobile .lccl-fr-conf-val {
+        text-align: right !important;
+        font-size: 14px !important;
+    }
+
+    /* Stack highlight allocation row for high legibility */
+    .lccl-fr-conf-row.lccl-fr-conf-row--highlight {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        margin: 6px -6px !important;
+        padding: 10px 10px !important;
+        border-radius: 4px !important;
+    }
+
+    .lccl-fr-conf-row.lccl-fr-conf-row--highlight .lccl-fr-conf-label {
+        font-size: 11px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        color: #1d4ed8 !important;
+        min-width: auto !important;
+    }
+
+    .lccl-fr-conf-row.lccl-fr-conf-row--highlight .lccl-fr-conf-val.lccl-fr-conf-seats {
+        font-size: 15px !important;
+        font-weight: 700 !important;
+        color: #1e40af !important;
+        text-align: left !important;
+        line-height: 1.35 !important;
+    }
+
+    .lccl-fr-conf-notice {
+        padding: 12px 14px !important;
+        margin-bottom: 18px !important;
+        border-radius: 4px !important;
+    }
+
+    .lccl-fr-conf-notice p {
+        font-size: 12.5px !important;
+    }
+
+    .lccl-fr-conf-btn {
+        width: 100% !important;
+        display: block !important;
+        box-sizing: border-box !important;
+        padding: 13px 16px !important;
+        font-size: 14px !important;
+        text-align: center !important;
+    }
+}
