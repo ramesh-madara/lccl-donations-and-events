@@ -237,6 +237,16 @@ class LCCL_DE_Paycenter_Client {
 	}
 
 	/**
+	 * Alias for is_approved().
+	 *
+	 * @param array $response_data Decoded responseData from payment_complete().
+	 * @return bool
+	 */
+	public static function is_success( array $response_data ) {
+		return self::is_approved( $response_data );
+	}
+
+	/**
 	 * Extract the bank transaction reference from a PAYMENT_COMPLETE response.
 	 *
 	 * This is the gateway receipt stored in the DB as gateway_receipt.

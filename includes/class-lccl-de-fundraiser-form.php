@@ -378,10 +378,35 @@ class LCCL_DE_Fundraiser_Form {
 					'</div>';
 			}
 
-			if ( ! LCCL_DE_Paycenter_Client::is_success( $response_data ) ) {
-				return '<div class="lccl-fr-card" style="margin:30px auto; max-width:600px; padding:24px; border-left:4px solid #dc2626;">' .
-					'<h2 style="color:#dc2626;">' . esc_html__( 'Payment Unsuccessful', 'lccl-de' ) . '</h2>' .
+			if ( ! LCCL_DE_Paycenter_Client::is_approved( $response_data ) ) {
+				$resp_code = isset( $response_data['responseCode'] ) ? (string) $response_data['responseCode'] : '';
+				$resp_text = isset( $response_data['responseText'] ) ? (string) $response_data['responseText'] : 'Declined';
+				error_log( sprintf( '[LCCL Paycenter Fundraiser] Booking %s payment declined. Code: %s, Text: %s', $order_ref, $resp_code, $resp_text ) );
+
+				$wpdb->update(
+					$bk_table,
+					array(
+						'status'           => 'failed',
+						'session_id'       => $reqid,
+						'gateway_response' => wp_json_encode( $response_data ),
+					),
+					array( 'id' => $booking['id'] )
+				);
+
+				$wpdb->update(
+					LCCL_DE_Schema::payments_table(),
+					array(
+						'status'           => 'failed',
+						'gateway_response' => wp_json_encode( $response_data ),
+					),
+					array( 'order_ref' => $order_ref )
+				);
+
+				return '<div class="lccl-fr-card" style="margin:30px auto; max-width:600px; padding:24px; border-left:4px solid #dc2626; background:#fef2f2;">' .
+					'<h2 style="color:#dc2626; margin-top:0;">' . esc_html__( 'Payment Unsuccessful', 'lccl-de' ) . '</h2>' .
 					'<p>' . esc_html__( 'Your payment could not be completed. Please try again or use another payment method.', 'lccl-de' ) . '</p>' .
+					'<p style="font-size:13px; color:#666;">' . esc_html__( 'Booking Reference: ', 'lccl-de' ) . '<strong>' . esc_html( $order_ref ) . '</strong></p>' .
+					'<div style="margin-top:20px;"><a href="' . esc_url( remove_query_arg( array( 'lccl_fnd_return', 'lccl_fnd_ref', 'reqid', 'ReqID', 'clientRef' ) ) ) . '" class="lccl-fr-button" style="display:inline-block; text-decoration:none; padding:10px 20px; background:#1e293b; color:#fff; border-radius:4px; font-weight:600;">' . esc_html__( 'Return to Booking Form', 'lccl-de' ) . '</a></div>' .
 					'</div>';
 			}
 
