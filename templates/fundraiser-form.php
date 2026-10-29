@@ -120,7 +120,10 @@ $js_data = array(
 	) : array( 'active' => false ),
 );
 
-$initial_preview = null;
+$initial_preview        = null;
+$initial_allocated_text = '';
+$initial_allocated_html = '';
+$initial_badge_text     = '';
 if ( $available_seats_count > 0 ) {
 	$init_qty = 1;
 	if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
@@ -131,6 +134,17 @@ if ( $available_seats_count > 0 ) {
 		$init_qty,
 		$is_vip ? $vip_pass_str : ''
 	);
+	if ( $initial_preview && ! is_wp_error( $initial_preview ) ) {
+		$initial_allocated_text = $initial_preview['formatted'] ?? '';
+		$initial_allocated_html = $initial_preview['formatted_html'] ?? ( ! empty( $initial_preview['formatted'] ) ? esc_html( $initial_preview['formatted'] ) : '' );
+		if ( ! empty( $initial_preview['is_vip'] ) ) {
+			$initial_badge_text = __( 'VIP Reserved', 'lccl-de' );
+		} elseif ( ! empty( $initial_preview['is_split'] ) || ( ! empty( $initial_preview['grouped'] ) && count( $initial_preview['grouped'] ) > 1 ) ) {
+			$initial_badge_text = __( 'Adjacent Tables', 'lccl-de' );
+		} else {
+			$initial_badge_text = __( 'Seating Together', 'lccl-de' );
+		}
+	}
 }
 ?>
 <div class="lccl-fr-wrapper">
@@ -233,70 +247,67 @@ if ( $available_seats_count > 0 ) {
 					</div>
 				</div>
 
-				<!-- DYNAMIC SEAT ALLOCATION PREVIEW (ABOVE SEAT ALLOCATION) -->
-				<div id="individualSeatPreview" class="lccl-fr-allocated-preview" style="margin-bottom: 12px; <?php echo $available_seats_count === 0 ? 'display:none;' : ''; ?>">
-					<div class="lccl-fr-allocated-preview__header">
-						<div class="lccl-fr-allocated-preview__title">
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-							<span><?php esc_html_e( 'Allocated Table & Seat Numbers', 'lccl-de' ); ?></span>
-						</div>
-						<span class="lccl-fr-allocated-preview__badge<?php echo ( ! empty( $initial_preview['is_split'] ) ) ? ' lccl-fr-allocated-preview__badge--split' : ''; ?>" id="allocatedSeatsStatus">
-							<?php
-							if ( $initial_preview && ! is_wp_error( $initial_preview ) ) {
-								if ( ! empty( $initial_preview['is_vip'] ) ) {
-									esc_html_e( 'VIP Reserved', 'lccl-de' );
-								} elseif ( $initial_preview['is_split'] ) {
-									esc_html_e( 'Adjacent Tables', 'lccl-de' );
-								} else {
-									esc_html_e( 'Seated Together', 'lccl-de' );
-								}
-							}
-							?>
-						</span>
-					</div>
-					<div class="lccl-fr-allocated-preview__body" id="allocatedSeatsContent">
-						<?php if ( $initial_preview && ! is_wp_error( $initial_preview ) && ! empty( $initial_preview['grouped'] ) ) : ?>
-							<div class="lccl-fr-seat-groups">
-								<?php foreach ( $initial_preview['grouped'] as $grp ) : ?>
-									<div class="lccl-fr-seat-group">
-										<span class="lccl-fr-table-badge">Table <?php echo esc_html( $grp['table_label'] ); ?></span>
-										<span class="lccl-fr-seat-badges">
-											<?php foreach ( $grp['seat_numbers'] as $sn ) : ?>
-												<span class="lccl-fr-seat-badge<?php echo ! empty( $initial_preview['is_vip'] ) ? ' lccl-fr-seat-badge--vip' : ''; ?>">Seat #<?php echo esc_html( $sn ); ?></span>
-											<?php endforeach; ?>
-										</span>
-									</div>
-								<?php endforeach; ?>
-							</div>
-						<?php else : ?>
-							<span class="lccl-fr-allocated-preview__loading"><?php esc_html_e( 'Select number of seats above to view seat allocation.', 'lccl-de' ); ?></span>
-						<?php endif; ?>
-					</div>
-				</div>
-
 				<?php if ( $available_seats_count === 0 ) : ?>
 					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #dc2626; font-weight: 600; background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 3px;">
 						<?php esc_html_e( 'Notice: All individual seats for this event are currently booked or reserved.', 'lccl-de' ); ?>
 					</div>
 				<?php else : ?>
 					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #4b5563; line-height: 1.5; border-radius: 3px;">
-						<strong><?php esc_html_e( 'Seat Allocation:', 'lccl-de' ); ?></strong> <?php esc_html_e( 'Seats are automatically allocated to keep your party seated together at the same table whenever possible.', 'lccl-de' ); ?>
+						<strong><?php esc_html_e( 'Seat Allocation:', 'lccl-de' ); ?></strong> <?php esc_html_e( 'Seats are automatically allocated consecutively, based on availability.', 'lccl-de' ); ?>
 					</div>
 				<?php endif; ?>
 
 				<?php if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) : ?>
-					<div class="seat-info" style="padding: 12px 15px; background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.5; border-radius: 3px;">
-						<strong><?php esc_html_e( 'VIP Reserved Seats:', 'lccl-de' ); ?></strong> <span id="indivSeatCount"><?php echo (int) ( $vip_details['seat_count'] ?? 1 ); ?></span>
-						<span style="color:#b45309; font-weight:700; margin-left:8px;">(⭐ <?php echo esc_html( ! empty( $vip_details['seats'] ) ? 'Seats #' . implode( ', #', $vip_details['seats'] ) : 'VIP Reserved' ); ?>)</span>
-						<br>
-						<span class="small" style="color: #92400e; font-size: 12px;"><?php esc_html_e( 'These seats have been exclusively held for you and will be confirmed under your name upon payment.', 'lccl-de' ); ?></span>
+					<div class="seat-info" id="indivSeatInfoCard" style="padding: 12px 16px; background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.5; border-radius: 3px; color: #92400e;">
+						<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
+							<div style="font-size: 14px;">
+								<strong style="color: #78350f;"><?php esc_html_e( 'Seats to be allocated:', 'lccl-de' ); ?></strong> <span id="indivSeatCount" style="color: #78350f; font-weight: 700;"><?php echo (int) ( $vip_details['seat_count'] ?? 1 ); ?></span>
+								<span style="color: #b45309; font-weight: 700; margin-left: 8px;">(⭐ <?php esc_html_e( 'VIP Reserved', 'lccl-de' ); ?>)</span>
+							</div>
+							<span id="allocatedSeatsBadge" class="lccl-fr-gold-pill" style="<?php echo empty( $initial_badge_text ) ? 'display: none;' : ''; ?>">
+								<?php echo esc_html( $initial_badge_text ?: __( 'VIP Reserved', 'lccl-de' ) ); ?>
+							</span>
+						</div>
+						<div style="margin-bottom: 4px; color: #92400e;">
+							<?php esc_html_e( 'These seats have been exclusively held for you and will be confirmed under your name upon payment.', 'lccl-de' ); ?>
+						</div>
+						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #78350f;">
+							<div style="flex: 0 0 auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;">
+								<span><?php esc_html_e( 'Your allocated seats:', 'lccl-de' ); ?></span>
+								<span id="allocatedSeatsSpinner" style="display: none; line-height: 1;">
+									<svg class="lccl-fr-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+								</span>
+							</div>
+							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #78350f; font-weight: 600;">
+								<?php echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							</div>
+						</div>
 					</div>
 				<?php else : ?>
-					<div class="seat-info" style="padding: 12px 15px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 13px; line-height: 1.5; border-radius: 3px;">
-						<strong><?php esc_html_e( 'Seats to be allocated:', 'lccl-de' ); ?></strong> <span id="indivSeatCount"><?php echo $available_seats_count > 0 ? '1' : '0'; ?></span>
-						<span style="color:#059669; font-weight:600; margin-left:8px;">(<?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'seats available', 'lccl-de' ); ?>)</span>
-						<br>
-						<span class="small" style="color: #64748b; font-size: 12px;"><?php esc_html_e( 'Your allocated table and seat numbers will be sent to your registered email address and mobile number once payment is confirmed.', 'lccl-de' ); ?></span>
+					<div class="seat-info" id="indivSeatInfoCard" style="padding: 12px 16px; background: #f8fafc; border: 1px solid #e2e8f0; font-size: 13px; line-height: 1.5; border-radius: 4px; color: #475569;">
+						<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
+							<div style="font-size: 14px;">
+								<strong style="color: #0f172a;"><?php esc_html_e( 'Seats to be allocated:', 'lccl-de' ); ?></strong> <span id="indivSeatCount" style="color: #0f172a; font-weight: 700;"><?php echo $available_seats_count > 0 ? '1' : '0'; ?></span>
+								<span style="color: #047857; font-weight: 600; margin-left: 8px;">(<?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'seats available', 'lccl-de' ); ?>)</span>
+							</div>
+							<span id="allocatedSeatsBadge" class="lccl-fr-gold-pill" style="<?php echo empty( $initial_badge_text ) ? 'display: none;' : ''; ?>">
+								<?php echo esc_html( $initial_badge_text ); ?>
+							</span>
+						</div>
+						<div style="margin-bottom: 4px; color: #475569;">
+							<?php esc_html_e( 'Your consecutive seat numbers will be sent to your registered email address and mobile number once your payment is successful.', 'lccl-de' ); ?>
+						</div>
+						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #475569;">
+							<div style="flex: 0 0 auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;">
+								<span><?php esc_html_e( 'Your allocated seats:', 'lccl-de' ); ?></span>
+								<span id="allocatedSeatsSpinner" style="display: none; line-height: 1;">
+									<svg class="lccl-fr-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #2563eb;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+								</span>
+							</div>
+							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #334155; font-weight: 500;">
+								<?php echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+							</div>
+						</div>
 					</div>
 				<?php endif; ?>
 			</div>
@@ -335,8 +346,8 @@ if ( $available_seats_count > 0 ) {
 						</select>
 					</div>
 					<div>
-						<label for="tableQty"><?php esc_html_e( 'Number of Tables', 'lccl-de' ); ?> <span class="required">*</span></label>
-						<input type="number" id="tableQty" min="1" max="10" value="1" disabled>
+						<label for="tableQty"><?php esc_html_e( 'Number of Tables Selected', 'lccl-de' ); ?> <span class="required">*</span></label>
+						<input type="number" id="tableQty" min="0" value="0" readonly>
 					</div>
 				</div>
 
@@ -558,8 +569,8 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							$tbl_str = ! empty( $vip_details['table_labels'] ) ? implode( ', ', $vip_details['table_labels'] ) : 'VIP Table';
 							echo esc_html( $tbl_str . ' (VIP reserved)' );
 						} else {
-							if ( $initial_preview && ! is_wp_error( $initial_preview ) && ! empty( $initial_preview['formatted'] ) ) {
-								echo esc_html( $initial_preview['formatted'] );
+							if ( ! empty( $initial_allocated_html ) ) {
+								echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							} else {
 								esc_html_e( '1 (Sequential auto-allocation)', 'lccl-de' );
 							}
@@ -659,9 +670,8 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				<!-- Visual Seating Map Layout -->
 				<div class="seat-map">
 					<?php
-					$seat_booked  = (int) ( $pool_stats['seats_booked'] ?? 0 );
-					$seat_blocked = (int) ( $pool_stats['seat_pool_blocked'] ?? 0 );
 					$table_pool_tables = array_filter( $tables, function( $t ) { return 'table' === $t['booking_mode']; } );
+					$table_pool_booked_total = max( 0, count( $table_pool_tables ) - $total_table_pool_free );
 					if ( ! empty( $table_pool_tables ) ) :
 					?>
 					<!-- Table Pool Visual Mini-Grid (mirrors table selector IDs & statuses) -->
@@ -673,12 +683,9 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 								$tpt_blocked = (int) $tpt['is_blocked'] === 1;
 								$tpt_cls     = 'map-tbl-avail';
 								$tpt_title   = $tpt['table_label'] . ' — ' . __( 'Available', 'lccl-de' );
-								if ( $tpt_booked ) {
+								if ( $tpt_booked || $tpt_blocked ) {
 									$tpt_cls   = 'map-tbl-booked';
 									$tpt_title = $tpt['table_label'] . ' — ' . __( 'Booked', 'lccl-de' );
-								} elseif ( $tpt_blocked ) {
-									$tpt_cls   = 'map-tbl-reserved';
-									$tpt_title = $tpt['table_label'] . ' — ' . __( 'Reserved', 'lccl-de' );
 								}
 							?>
 								<div class="seat-map-tbl <?php echo esc_attr( $tpt_cls ); ?>" title="<?php echo esc_attr( $tpt_title ); ?>" data-table-id="<?php echo esc_attr( $tpt['id'] ); ?>">
@@ -690,10 +697,8 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 					<?php endif; ?>
 
 					<div class="legend">
-						<span class="legend-avail"><?php esc_html_e( 'Available Seats', 'lccl-de' ); ?> (<?php echo esc_html( $available_seats_count ); ?>)</span>
-						<span class="legend-blocked"><?php esc_html_e( 'Reserved', 'lccl-de' ); ?> (<?php echo esc_html( $seat_blocked ); ?>)</span>
-						<span class="legend-booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?> (<?php echo esc_html( $seat_booked ); ?>)</span>
 						<span class="legend-table"><?php esc_html_e( 'Tables Available', 'lccl-de' ); ?> (<?php echo esc_html( $total_table_pool_free ); ?>)</span>
+						<span class="legend-booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?> (<?php echo esc_html( $table_pool_booked_total ); ?>)</span>
 					</div>
 				</div>
 
@@ -824,35 +829,40 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 	
-	var previewWrap = document.getElementById('individualSeatPreview');
-	var previewContent = document.getElementById('allocatedSeatsContent');
-	var previewStatus = document.getElementById('allocatedSeatsStatus');
+	var allocatedSeatsLine = document.getElementById('allocatedSeatsLine');
+	var allocatedSeatsText = document.getElementById('allocatedSeatsText');
+	var allocatedSeatsSpinner = document.getElementById('allocatedSeatsSpinner');
+	var allocatedSeatsBadge = document.getElementById('allocatedSeatsBadge');
 	var previewTimer = null;
 	var lastFetchedQty = <?php echo ( $initial_preview && ! is_wp_error( $initial_preview ) ) ? (int) $initial_preview['qty'] : 'null'; ?>;
 
 	function fetchSeatAllocationPreview(qty) {
-		if (!previewWrap || !previewContent) return;
+		if (!allocatedSeatsText || !allocatedSeatsLine) return;
 
 		var q = parseInt(qty) || 0;
 		if (q < 1) {
-			previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__loading">' +
-				'<?php echo esc_js( __( 'Please enter a valid number of seats.', 'lccl-de' ) ); ?>' + '</span>';
-			if (previewStatus) {
-				previewStatus.textContent = '';
-				previewStatus.className = 'lccl-fr-allocated-preview__badge';
+			if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
+			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
+			allocatedSeatsLine.style.display = 'none';
+			allocatedSeatsText.innerHTML = '';
+			return;
+		}
+
+		if (q === lastFetchedQty && allocatedSeatsText.innerHTML && allocatedSeatsText.getAttribute('data-loaded') === 'true') {
+			if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
+			if (allocatedSeatsBadge && allocatedSeatsBadge.textContent.trim()) {
+				allocatedSeatsBadge.style.display = 'inline-flex';
 			}
+			allocatedSeatsText.style.opacity = '1';
+			allocatedSeatsLine.style.display = 'flex';
 			return;
 		}
 
-		if (q === lastFetchedQty && !previewWrap.classList.contains('is-loading')) {
-			return;
+		allocatedSeatsLine.style.display = 'flex';
+		if (allocatedSeatsSpinner) {
+			allocatedSeatsSpinner.style.display = 'inline-flex';
 		}
-
-		previewWrap.classList.add('is-loading');
-		if (previewStatus) {
-			previewStatus.textContent = '<?php echo esc_js( __( 'Checking seats...', 'lccl-de' ) ); ?>';
-			previewStatus.className = 'lccl-fr-allocated-preview__badge';
-		}
+		allocatedSeatsText.style.opacity = '0.4';
 
 		var formData = new FormData();
 		formData.append('action', 'lccl_de_fundraiser_preview_seats');
@@ -870,75 +880,81 @@ document.addEventListener('DOMContentLoaded', function() {
 		})
 		.then(function(res) { return res.json(); })
 		.then(function(data) {
-			previewWrap.classList.remove('is-loading');
+			if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
+			allocatedSeatsText.style.opacity = '1';
+			allocatedSeatsText.setAttribute('data-loaded', 'true');
 			if (data && data.success && data.data) {
 				lastFetchedQty = q;
 				renderSeatAllocation(data.data);
 			} else {
-				var msg = (data && data.data && data.data.message) ? data.data.message : '<?php echo esc_js( __( 'Unable to load seat allocation.', 'lccl-de' ) ); ?>';
-				previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__error">' + msg + '</span>';
-				if (previewStatus) {
-					previewStatus.textContent = '<?php echo esc_js( __( 'Unavailable', 'lccl-de' ) ); ?>';
-					previewStatus.className = 'lccl-fr-allocated-preview__badge lccl-fr-allocated-preview__badge--error';
-				}
+				if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
+				var msg = (data && data.data && data.data.message) ? data.data.message : '<?php echo esc_js( __( 'Unable to allocate consecutive seats for this quantity.', 'lccl-de' ) ); ?>';
+				allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + msg + '</span>';
 			}
 		})
-		.catch(function(err) {
-			previewWrap.classList.remove('is-loading');
-			previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__error">' + '<?php echo esc_js( __( 'Error checking seat allocation.', 'lccl-de' ) ); ?>' + '</span>';
-			if (previewStatus) {
-				previewStatus.textContent = '<?php echo esc_js( __( 'Error', 'lccl-de' ) ); ?>';
-				previewStatus.className = 'lccl-fr-allocated-preview__badge lccl-fr-allocated-preview__badge--error';
-			}
+		.catch(function() {
+			if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
+			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
+			allocatedSeatsText.style.opacity = '1';
+			allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + '<?php echo esc_js( __( 'Error checking seat allocation.', 'lccl-de' ) ); ?>' + '</span>';
 		});
 	}
 
 	function renderSeatAllocation(data) {
-		if (!previewContent) return;
+		if (!allocatedSeatsText || !allocatedSeatsLine) return;
 
 		var groups = data.grouped || [];
 		if (groups.length === 0) {
-			previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__error">' + '<?php echo esc_js( __( 'No seats available for this selection.', 'lccl-de' ) ); ?>' + '</span>';
+			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
+			allocatedSeatsLine.style.display = 'none';
 			return;
 		}
 
-		var html = '<div class="lccl-fr-seat-groups">';
+		var html = '';
 		for (var i = 0; i < groups.length; i++) {
 			var grp = groups[i];
-			html += '<div class="lccl-fr-seat-group">';
-			html += '<span class="lccl-fr-table-badge">Table ' + grp.table_label + '</span>';
-			html += '<span class="lccl-fr-seat-badges">';
-			var isVip = data.is_vip ? ' lccl-fr-seat-badge--vip' : '';
-			for (var j = 0; j < grp.seat_numbers.length; j++) {
-				html += '<span class="lccl-fr-seat-badge' + isVip + '">Seat #' + grp.seat_numbers[j] + '</span>';
-			}
-			html += '</span>';
-			html += '</div>';
-		}
-		html += '</div>';
-
-		previewContent.innerHTML = html;
-
-		if (previewStatus) {
-			if (data.is_vip) {
-				previewStatus.textContent = '<?php echo esc_js( __( 'VIP Reserved', 'lccl-de' ) ); ?>';
-				previewStatus.className = 'lccl-fr-allocated-preview__badge';
-			} else if (data.is_split) {
-				previewStatus.textContent = '<?php echo esc_js( __( 'Adjacent Tables', 'lccl-de' ) ); ?>';
-				previewStatus.className = 'lccl-fr-allocated-preview__badge lccl-fr-allocated-preview__badge--split';
+			var seatWord = grp.seat_numbers.length === 1 ? 'Seat' : 'Seats';
+			var seatStr = seatWord + ' ' + grp.seat_numbers.join(', ');
+			var lbl = grp.table_label || '';
+			if (lbl === 'General') {
+				html += '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-seats">' + seatStr + '</span></div>';
 			} else {
-				previewStatus.textContent = '<?php echo esc_js( __( 'Seated Together', 'lccl-de' ) ); ?>';
-				previewStatus.className = 'lccl-fr-allocated-preview__badge';
+				var tblPrefix = (lbl.toLowerCase().indexOf('table') === 0) ? lbl : ('Table ' + lbl);
+				html += '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-tbl">' + tblPrefix + ' —</span><span class="lccl-fr-allocated-seats">' + seatStr + '</span></div>';
 			}
 		}
 
-		if (data.formatted && sumSel && mode === 'individual') {
-			sumSel.textContent = data.formatted;
+		allocatedSeatsText.innerHTML = html;
+		allocatedSeatsLine.style.display = 'flex';
+
+		// Update gold pill status badge
+		if (allocatedSeatsBadge) {
+			var isSplit = !!data.is_split || groups.length > 1;
+			if (data.is_vip) {
+				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'VIP Reserved', 'lccl-de' ) ); ?>';
+				allocatedSeatsBadge.style.display = 'inline-flex';
+			} else if (isSplit) {
+				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'Adjacent Tables', 'lccl-de' ) ); ?>';
+				allocatedSeatsBadge.style.display = 'inline-flex';
+			} else {
+				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'Seating Together', 'lccl-de' ) ); ?>';
+				allocatedSeatsBadge.style.display = 'inline-flex';
+			}
+		}
+
+		if (sumSel && mode === 'individual') {
+			sumSel.innerHTML = html;
 		}
 	}
 
 	function queueSeatAllocationPreview(qty) {
 		clearTimeout(previewTimer);
+		if (allocatedSeatsSpinner) {
+			allocatedSeatsSpinner.style.display = 'inline-flex';
+		}
+		if (allocatedSeatsText) {
+			allocatedSeatsText.style.opacity = '0.4';
+		}
 		previewTimer = setTimeout(function() {
 			fetchSeatAllocationPreview(qty);
 		}, 150);
@@ -970,12 +986,16 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Dynamically fetch allocated seats for selected quantity
 			if (q > 0) {
 				queueSeatAllocationPreview(q);
-			} else if (previewContent) {
-				previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__loading">' +
-					'<?php echo esc_js( __( 'Please select the number of seats above.', 'lccl-de' ) ); ?>' + '</span>';
-				if (previewStatus) {
-					previewStatus.textContent = '';
-					previewStatus.className = 'lccl-fr-allocated-preview__badge';
+			} else if (allocatedSeatsLine) {
+				if (allocatedSeatsSpinner) {
+					allocatedSeatsSpinner.style.display = 'none';
+				}
+				if (allocatedSeatsBadge) {
+					allocatedSeatsBadge.style.display = 'none';
+				}
+				allocatedSeatsLine.style.display = 'none';
+				if (allocatedSeatsText) {
+					allocatedSeatsText.innerHTML = '';
 				}
 			}
 		} else {
@@ -1043,34 +1063,17 @@ document.addEventListener('DOMContentLoaded', function() {
 	inputQty.addEventListener('input', updateTotal);
 	inputQty.addEventListener('change', updateTotal);
 
-	inputTableQty.addEventListener('input', function() {
-		var max = parseInt(this.max) || 1;
-		var val = parseInt(this.value) || 1;
-		if (val > max) {
-			val = max;
-			this.value = max;
-		}
-		if (val < 1) {
-			val = 1;
-			this.value = 1;
-		}
-
-		// Adjust selected chips if user decreased count below currently selected
-		var selChips = chipsContainer.querySelectorAll('.lccl-fr-table-chip.is-selected');
-		if (selChips.length > val) {
-			for (var i = selChips.length - 1; i >= val; i--) {
-				var tid = selChips[i].getAttribute('data-id');
-				selChips[i].classList.remove('is-selected');
-				for (var j = 0; j < selectTable.options.length; j++) {
-					if (selectTable.options[j].value === tid) {
-						selectTable.options[j].selected = false;
-						break;
-					}
-				}
-			}
-		}
-		updateTotal();
-	});
+	var tablePulseTimer = null;
+	function triggerTableQtyPulse() {
+		if (!inputTableQty) return;
+		inputTableQty.classList.remove('lccl-fr-border-pulse');
+		clearTimeout(tablePulseTimer);
+		void inputTableQty.offsetWidth;
+		inputTableQty.classList.add('lccl-fr-border-pulse');
+		tablePulseTimer = setTimeout(function() {
+			inputTableQty.classList.remove('lccl-fr-border-pulse');
+		}, 950);
+	}
 
 	function renderTableChips(tid) {
 		chipsContainer.innerHTML = '';
@@ -1079,8 +1082,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		if (!tid || tid === '') {
 			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 3px;">Select a table type to view the available tables.</div>';
-			inputTableQty.setAttribute('disabled', 'disabled');
-			inputTableQty.value = 1;
+			inputTableQty.value = 0;
 			updateTotal();
 			return;
 		}
@@ -1093,8 +1095,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		if (tierTables.length === 0) {
 			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #dc2626; background: #fef2f2; border: 1px dashed #fca5a5; border-radius: 3px;">No tables are currently available for this table type.</div>';
-			inputTableQty.setAttribute('disabled', 'disabled');
-			inputTableQty.value = 1;
+			inputTableQty.value = 0;
 			updateTotal();
 			return;
 		}
@@ -1145,7 +1146,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					if (fundData.vip && fundData.vip.active && fundData.vip.mode === 'table') {
 						return; // Locked for VIP
 					}
-					var maxQty = parseInt(inputTableQty.value) || 1;
 					var isCurrentlySelected = chip.classList.contains('is-selected');
 
 					if (isCurrentlySelected) {
@@ -1157,18 +1157,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} else {
-						var selectedChips = chipsContainer.querySelectorAll('.lccl-fr-table-chip.is-selected');
-						if (selectedChips.length >= maxQty) {
-							var maxAvail = parseInt(inputTableQty.max) || availCount;
-							if (maxQty < maxAvail) {
-								maxQty++;
-								inputTableQty.value = maxQty;
-							} else {
-								alert('You can only select ' + maxQty + ' table(s). Increase "Number of Tables" to select more.');
-								return;
-							}
-						}
-
 						chip.classList.add('is-selected');
 						for (var k = 0; k < selectTable.options.length; k++) {
 							if (selectTable.options[k].value === String(tbl.id)) {
@@ -1177,6 +1165,10 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					}
+
+					var selCount = chipsContainer.querySelectorAll('.lccl-fr-table-chip.is-selected').length;
+					inputTableQty.value = selCount;
+					triggerTableQtyPulse();
 					updateTotal();
 				});
 			} else if (isBooked) {
@@ -1201,7 +1193,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 				// Interactive click listener
 				chip.addEventListener('click', function() {
-					var maxQty = parseInt(inputTableQty.value) || 1;
 					var isCurrentlySelected = chip.classList.contains('is-selected');
 
 					if (isCurrentlySelected) {
@@ -1213,19 +1204,6 @@ document.addEventListener('DOMContentLoaded', function() {
 							}
 						}
 					} else {
-						var selectedChips = chipsContainer.querySelectorAll('.lccl-fr-table-chip.is-selected');
-						if (selectedChips.length >= maxQty) {
-							// If space allows in available tables, automatically increment quantity for seamless UX
-							var maxAvail = parseInt(inputTableQty.max) || availCount;
-							if (maxQty < maxAvail) {
-								maxQty++;
-								inputTableQty.value = maxQty;
-							} else {
-								alert('You can only select ' + maxQty + ' table(s). Increase "Number of Tables" to select more.');
-								return;
-							}
-						}
-
 						chip.classList.add('is-selected');
 						for (var k = 0; k < selectTable.options.length; k++) {
 							if (selectTable.options[k].value === String(tbl.id)) {
@@ -1235,6 +1213,9 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					}
 
+					var selCount = chipsContainer.querySelectorAll('.lccl-fr-table-chip.is-selected').length;
+					inputTableQty.value = selCount;
+					triggerTableQtyPulse();
 					updateTotal();
 				});
 			}
@@ -1244,8 +1225,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 
 		if (availCount === 0) {
-			inputTableQty.setAttribute('disabled', 'disabled');
-			inputTableQty.value = 1;
+			inputTableQty.value = 0;
 			var notice = document.createElement('div');
 			notice.style.gridColumn = '1 / -1';
 			notice.style.padding = '12px 16px';
@@ -1257,9 +1237,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			notice.textContent = 'All tables of this type are currently reserved, booked, or unavailable.';
 			chipsContainer.appendChild(notice);
 		} else {
-			inputTableQty.removeAttribute('disabled');
 			inputTableQty.max = availCount;
-			inputTableQty.value = 1;
+			inputTableQty.value = 0;
 
 			// Auto-select the first available table for user convenience
 			var firstAvailChip = chipsContainer.querySelector('.lccl-fr-table-chip.is-available');
@@ -1405,7 +1384,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			var targetTids = fundData.vip.table_ids || [];
 			if (inputTableQty) {
 				inputTableQty.value = targetTids.length;
-				inputTableQty.disabled = true;
+				inputTableQty.readOnly = true;
 			}
 			// Pre-select the VIP tables
 			targetTids.forEach(function(tid) {

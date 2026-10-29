@@ -33,10 +33,18 @@ class LCCL_DE_Fundraiser_Form {
 			return self::render_payment_callback();
 		}
 
-		$output = '';
+		// Expire any stale pending holds before rendering
+		LCCL_DE_Fundraiser::expire_stale_pending_bookings();
+
+		$output       = '';
+		$active_event = null;
 
 		// Cancel notification
 		if ( ! empty( $_GET['lccl_fnd_cancel'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$cancel_ref = isset( $_GET['lccl_fnd_ref'] ) ? sanitize_text_field( wp_unslash( $_GET['lccl_fnd_ref'] ) ) : '';
+			if ( '' !== $cancel_ref ) {
+				LCCL_DE_Fundraiser::cancel_pending_booking( $cancel_ref );
+			}
 			$output .= '<div class="lccl-fr-card" style="margin:20px 0; border-left:4px solid #d97706; padding:16px 20px; background:#fffbe8; border-radius:3px;">' .
 				'<h3 style="margin:0 0 6px 0; color:#d97706; font-size:16px;">' . esc_html__( 'Payment Cancelled', 'lccl-de' ) . '</h3>' .
 				'<p style="margin:0; color:#555; font-size:14px;">' . esc_html__( 'Your booking payment transaction was cancelled. No charges were made. You may adjust your selection and try again.', 'lccl-de' ) . '</p>' .
@@ -146,6 +154,8 @@ class LCCL_DE_Fundraiser_Form {
 				$tbl = LCCL_DE_Fundraiser::tables_table();
 				$tt  = LCCL_DE_Fundraiser::table_types_table();
 				$calc_table_total = 0.0;
+				$held_table_ids   = LCCL_DE_Fundraiser::get_held_table_ids( $event_id );
+				$held_lookup      = array_flip( $held_table_ids );
 
 				foreach ( $selected_tables as $tid ) {
 					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -172,10 +182,10 @@ class LCCL_DE_Fundraiser_Form {
 						);
 						break;
 					}
-					if ( (int) $t_row['is_booked'] === 1 ) {
+					if ( (int) $t_row['is_booked'] === 1 || isset( $held_lookup[ $tid ] ) ) {
 						$errors[] = sprintf(
 							/* translators: %s: table label */
-							__( 'Table %s has just been booked by another attendee. Please select a different table.', 'lccl-de' ),
+							__( 'Table %s is currently being booked by another attendee. Please select a different table.', 'lccl-de' ),
 							$t_row['table_label']
 						);
 						break;
@@ -356,8 +366,8 @@ class LCCL_DE_Fundraiser_Form {
 		$event = LCCL_DE_Fundraiser::get_event( $booking['event_id'] );
 		$receipt = $booking['gateway_receipt'] ?? '';
 
-		// If pending and we have reqid, call PAYMENT_COMPLETE
-		if ( 'pending' === $booking['status'] && '' !== $reqid ) {
+		// If pending (or pending that expired during checkout) and we have reqid, call PAYMENT_COMPLETE
+		if ( ( 'pending' === $booking['status'] || 'cancelled' === $booking['status'] ) && '' !== $reqid ) {
 			$response_data = LCCL_DE_Paycenter_Client::payment_complete( $reqid, self::PROFILE );
 
 			if ( is_wp_error( $response_data ) ) {
@@ -679,6 +689,9 @@ class LCCL_DE_Fundraiser_Form {
 	 */
 	public static function ajax_preview_seats() {
 		check_ajax_referer( 'lccl_fundraiser_preview_seats', 'nonce' );
+
+		// Clean up any stale holds before computing preview
+		LCCL_DE_Fundraiser::expire_stale_pending_bookings();
 
 		$event_id  = isset( $_POST['event_id'] ) ? (int) $_POST['event_id'] : 0;
 		$qty       = isset( $_POST['qty'] ) ? (int) $_POST['qty'] : 1;

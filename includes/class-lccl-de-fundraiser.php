@@ -41,6 +41,11 @@ class LCCL_DE_Fundraiser {
 		}
 	}
 
+	/**
+	 * Anti-collision temporary hold duration for pending bookings in minutes.
+	 */
+	const PENDING_HOLD_MINUTES = 10;
+
 	/* -----------------------------------------------------------------------
 	 * Table name helpers
 	 * --------------------------------------------------------------------- */
@@ -319,7 +324,7 @@ class LCCL_DE_Fundraiser {
 		$t  = self::tables_table();
 		$tt = self::table_types_table();
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return (array) $wpdb->get_results( $wpdb->prepare(
+		$rows = (array) $wpdb->get_results( $wpdb->prepare(
 			"SELECT ta.*, ty.name AS type_name, ty.capacity, ty.price, u.display_name AS blocked_by_name
 			 FROM `{$t}` ta
 			 JOIN `{$tt}` ty ON ta.type_id = ty.id
@@ -328,11 +333,32 @@ class LCCL_DE_Fundraiser {
 			 ORDER BY ta.type_id ASC, ta.sort_order ASC",
 			$event_id
 		), ARRAY_A );
+
+		$held_table_ids = self::get_held_table_ids( $event_id );
+		if ( ! empty( $held_table_ids ) ) {
+			$held_lookup = array_flip( $held_table_ids );
+			foreach ( $rows as &$row ) {
+				$tid = (int) $row['id'];
+				if ( isset( $held_lookup[ $tid ] ) ) {
+					$row['is_booked']       = 1;
+					$row['is_pending_held'] = 1;
+				}
+			}
+			unset( $row );
+		}
+
+		return $rows;
 	}
 
 	public static function get_available_tables_by_type( $event_id, $type_id ) {
 		global $wpdb;
 		$t = self::tables_table();
+		$held_ids = self::get_held_table_ids( $event_id );
+		$not_in_clause = '';
+		if ( ! empty( $held_ids ) ) {
+			$escaped_ids = implode( ',', array_map( 'intval', $held_ids ) );
+			$not_in_clause = " AND id NOT IN ({$escaped_ids})";
+		}
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		return (array) $wpdb->get_results( $wpdb->prepare(
 			"SELECT * FROM `{$t}`
@@ -340,10 +366,105 @@ class LCCL_DE_Fundraiser {
 			   AND booking_mode = 'table'
 			   AND is_booked = 0
 			   AND is_blocked = 0
+			   {$not_in_clause}
 			 ORDER BY sort_order ASC",
 			$event_id,
 			$type_id
 		), ARRAY_A );
+	}
+
+	/**
+	 * Return table IDs that are currently held by pending or paid table bookings within the hold window.
+	 *
+	 * @param int $event_id
+	 * @return int[]
+	 */
+	public static function get_held_table_ids( $event_id ) {
+		global $wpdb;
+		$bk           = self::bookings_table();
+		$hold_minutes = self::PENDING_HOLD_MINUTES;
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$rows = (array) $wpdb->get_results( $wpdb->prepare(
+			"SELECT table_ids FROM `{$bk}`
+			 WHERE event_id = %d AND booking_type = 'table'
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL %d MINUTE)))",
+			$event_id,
+			$hold_minutes
+		), ARRAY_A );
+
+		$held = array();
+		foreach ( $rows as $row ) {
+			if ( ! empty( $row['table_ids'] ) ) {
+				foreach ( explode( ',', $row['table_ids'] ) as $tid ) {
+					$id = (int) trim( $tid );
+					if ( $id > 0 ) {
+						$held[] = $id;
+					}
+				}
+			}
+		}
+
+		return array_values( array_unique( $held ) );
+	}
+
+	/**
+	 * Cancel a pending booking and release its held seats/tables immediately.
+	 *
+	 * @param string $order_ref
+	 * @return bool
+	 */
+	public static function cancel_pending_booking( $order_ref ) {
+		global $wpdb;
+		$order_ref = sanitize_text_field( $order_ref );
+		if ( '' === $order_ref ) {
+			return false;
+		}
+
+		$bk = self::bookings_table();
+		$pt = LCCL_DE_Schema::payments_table();
+
+		$updated = $wpdb->update(
+			$bk,
+			array( 'status' => 'cancelled' ),
+			array( 'order_ref' => $order_ref, 'status' => 'pending' ),
+			array( '%s' ),
+			array( '%s', '%s' )
+		);
+
+		$wpdb->update(
+			$pt,
+			array( 'status' => 'cancelled' ),
+			array( 'order_ref' => $order_ref, 'status' => 'pending' ),
+			array( '%s' ),
+			array( '%s', '%s' )
+		);
+
+		return (bool) $updated;
+	}
+
+	/**
+	 * Expire stale pending bookings older than the hold window.
+	 */
+	public static function expire_stale_pending_bookings() {
+		global $wpdb;
+		$bk           = self::bookings_table();
+		$pt           = LCCL_DE_Schema::payments_table();
+		$hold_minutes = self::PENDING_HOLD_MINUTES;
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE `{$bk}` SET status = 'cancelled'
+			 WHERE status = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL %d MINUTE)",
+			$hold_minutes
+		) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( $wpdb->prepare(
+			"UPDATE `{$pt}` SET status = 'cancelled'
+			 WHERE membership_type = 'fundraiser' AND status = 'pending' AND created_at < DATE_SUB(NOW(), INTERVAL %d MINUTE)",
+			$hold_minutes
+		) );
 	}
 
 	/**
@@ -378,13 +499,15 @@ class LCCL_DE_Fundraiser {
 			return array();
 		}
 
-		// 2. Already paid/booked seat numbers AND recently pending (anti-collision: 30-min window)
+		// 2. Already paid/booked seat numbers AND recently pending (anti-collision hold window)
+		$hold_minutes = self::PENDING_HOLD_MINUTES;
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = (array) $wpdb->get_results( $wpdb->prepare(
 			"SELECT seat_numbers FROM `{$bk}`
 			 WHERE event_id = %d AND booking_type = 'individual'
-			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)))",
-			$event_id
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL %d MINUTE)))",
+			$event_id,
+			$hold_minutes
 		), ARRAY_A );
 		$booked = array();
 		foreach ( $rows as $row ) {
@@ -638,7 +761,8 @@ class LCCL_DE_Fundraiser {
 
 		$tables = self::get_seat_pool_table_availability( $event_id );
 		if ( empty( $tables ) ) {
-			return 'Seat #' . implode( ', Seat #', $nums );
+			$seat_word = count( $nums ) === 1 ? __( 'Seat', 'lccl-de' ) : __( 'Seats', 'lccl-de' );
+			return $seat_word . ' ' . implode( ', ', $nums );
 		}
 
 		// Group seat numbers by table
@@ -663,11 +787,13 @@ class LCCL_DE_Fundraiser {
 
 		$parts = array();
 		foreach ( $grouped as $tbl_label => $s_list ) {
-			$seats_str = 'Seat #' . implode( ', Seat #', $s_list );
+			$seat_word  = count( $s_list ) === 1 ? __( 'Seat', 'lccl-de' ) : __( 'Seats', 'lccl-de' );
+			$seats_str  = $seat_word . ' ' . implode( ', ', $s_list );
 			if ( 'General' === $tbl_label ) {
 				$parts[] = $seats_str;
 			} else {
-				$parts[] = 'Table ' . $tbl_label . ' (' . $seats_str . ')';
+				$tbl_prefix = ( stripos( $tbl_label, 'Table' ) === 0 ) ? $tbl_label : 'Table ' . $tbl_label;
+				$parts[]    = $tbl_prefix . ' — ' . $seats_str;
 			}
 		}
 
@@ -775,16 +901,32 @@ class LCCL_DE_Fundraiser {
 
 		$formatted = self::format_seats_with_tables( $event_id, $allocation['seat_numbers'] );
 
+		$html_rows = array();
+		foreach ( $grouped as $tbl_label => $g_data ) {
+			$s_list     = $g_data['seat_numbers'];
+			$seat_word  = count( $s_list ) === 1 ? __( 'Seat', 'lccl-de' ) : __( 'Seats', 'lccl-de' );
+			$seats_str  = $seat_word . ' ' . implode( ', ', $s_list );
+			if ( 'General' === $tbl_label ) {
+				$html_rows[] = '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-seats">' . esc_html( $seats_str ) . '</span></div>';
+			} else {
+				$tbl_prefix  = ( stripos( $tbl_label, 'Table' ) === 0 ) ? $tbl_label : 'Table ' . $tbl_label;
+				$html_rows[] = '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-tbl">' . esc_html( $tbl_prefix ) . ' —</span><span class="lccl-fr-allocated-seats">' . esc_html( $seats_str ) . '</span></div>';
+			}
+		}
+
+		$formatted_html = implode( '', $html_rows );
+
 		return array(
-			'qty'          => $qty,
-			'seat_numbers' => $allocation['seat_numbers'],
-			'seats'        => $seat_assignments,
-			'grouped'      => array_values( $grouped ),
-			'table_labels' => $allocation['table_labels'],
-			'is_split'     => (bool) ( $allocation['is_split'] ?? false ),
-			'tier'         => (int) ( $allocation['tier'] ?? 1 ),
-			'formatted'    => $formatted,
-			'is_vip'       => ! empty( $allocation['is_vip'] ),
+			'qty'            => $qty,
+			'seat_numbers'   => $allocation['seat_numbers'],
+			'seats'          => $seat_assignments,
+			'grouped'        => array_values( $grouped ),
+			'table_labels'   => $allocation['table_labels'],
+			'is_split'       => (bool) ( $allocation['is_split'] ?? false ),
+			'tier'           => (int) ( $allocation['tier'] ?? 1 ),
+			'formatted'      => $formatted,
+			'formatted_html' => $formatted_html,
+			'is_vip'         => ! empty( $allocation['is_vip'] ),
 		);
 	}
 
@@ -854,13 +996,15 @@ class LCCL_DE_Fundraiser {
 
 	public static function get_booked_seat_numbers( $event_id ) {
 		global $wpdb;
-		$bk = self::bookings_table();
+		$bk           = self::bookings_table();
+		$hold_minutes = self::PENDING_HOLD_MINUTES;
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$rows = (array) $wpdb->get_results( $wpdb->prepare(
 			"SELECT seat_numbers FROM `{$bk}`
 			 WHERE event_id = %d AND booking_type = 'individual'
-			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)))",
-			$event_id
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL %d MINUTE)))",
+			$event_id,
+			$hold_minutes
 		), ARRAY_A );
 		$booked = array();
 		foreach ( $rows as $row ) {
@@ -880,27 +1024,39 @@ class LCCL_DE_Fundraiser {
 
 	public static function get_pool_stats( $event_id ) {
 		global $wpdb;
-		$ta = self::tables_table();
-		$tt = self::table_types_table();
-		$bk = self::bookings_table();
-		$sb = self::seat_blocks_table();
+		$ta           = self::tables_table();
+		$tt           = self::table_types_table();
+		$bk           = self::bookings_table();
+		$sb           = self::seat_blocks_table();
+		$hold_minutes = self::PENDING_HOLD_MINUTES;
 
-		// Table pool
+		// Table pool - calculate free, booked, and blocked taking active holds into account
+		$held_table_ids = self::get_held_table_ids( $event_id );
+		$held_lookup    = array_flip( $held_table_ids );
+
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$table_pool_free = (int) $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(*) FROM `{$ta}` WHERE event_id = %d AND booking_mode = 'table' AND is_booked = 0 AND is_blocked = 0",
+		$table_rows = (array) $wpdb->get_results( $wpdb->prepare(
+			"SELECT id, is_booked, is_blocked FROM `{$ta}` WHERE event_id = %d AND booking_mode = 'table'",
 			$event_id
-		) );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$table_pool_booked = (int) $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(*) FROM `{$ta}` WHERE event_id = %d AND booking_mode = 'table' AND is_booked = 1",
-			$event_id
-		) );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$table_pool_blocked = (int) $wpdb->get_var( $wpdb->prepare(
-			"SELECT COUNT(*) FROM `{$ta}` WHERE event_id = %d AND booking_mode = 'table' AND is_blocked = 1 AND is_booked = 0",
-			$event_id
-		) );
+		), ARRAY_A );
+
+		$table_pool_free    = 0;
+		$table_pool_booked  = 0;
+		$table_pool_blocked = 0;
+
+		foreach ( $table_rows as $tr ) {
+			$tid   = (int) $tr['id'];
+			$is_b  = ( (int) $tr['is_booked'] === 1 || isset( $held_lookup[ $tid ] ) );
+			$is_bl = ( (int) $tr['is_blocked'] === 1 );
+
+			if ( $is_b ) {
+				$table_pool_booked++;
+			} elseif ( $is_bl ) {
+				$table_pool_blocked++;
+			} else {
+				$table_pool_free++;
+			}
+		}
 
 		// Seat pool total capacity (unblocked seat tables)
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -918,8 +1074,9 @@ class LCCL_DE_Fundraiser {
 		$seat_pool_booked = (int) $wpdb->get_var( $wpdb->prepare(
 			"SELECT COALESCE(SUM(qty), 0) FROM `{$bk}`
 			 WHERE event_id = %d AND booking_type = 'individual'
-			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL 30 MINUTE)))",
-			$event_id
+			   AND (status = 'paid' OR (status = 'pending' AND created_at > DATE_SUB(NOW(), INTERVAL %d MINUTE)))",
+			$event_id,
+			$hold_minutes
 		) );
 
 		// Individually blocked seat numbers

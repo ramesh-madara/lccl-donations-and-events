@@ -21,10 +21,38 @@
     white-space: normal;
 }
 
+.lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-row {
+    display: flex !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    width: 100% !important;
+}
+
 .lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-wrap,
-.lccl-fr-wrapper .lccl-fr-payment-control input.lccl-df__phone-number {
-    height: 46px;
-    min-height: 46px;
+.lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-display,
+.lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display,
+.lccl-fr-wrapper .lccl-fr-payment-control input.lccl-df__phone-number,
+.lccl-fr-wrapper .lccl-fr-payment-control input.lccl-bdf__input.lccl-df__phone-number {
+    height: 46px !important;
+    min-height: 46px !important;
+    max-height: 46px !important;
+    box-sizing: border-box !important;
+}
+
+.lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    border: 1px solid #ccc !important;
+    background-color: #fafafa !important;
+}
+
+.lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display:hover,
+.lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display:focus,
+.lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display.is-active {
+    border-color: #94a3b8 !important;
+    background-color: #ffffff !important;
 }
 
 .lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-wrap,
@@ -648,6 +676,17 @@ body.lccl-modal-prevent-scroll {
         max-width: 96vw;
         max-height: 88vh;
     }
+
+    /* Mobile fundraiser phone field height parity */
+    .lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-wrap,
+    .lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-display,
+    .lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display,
+    .lccl-fr-wrapper .lccl-fr-payment-control input.lccl-df__phone-number,
+    .lccl-fr-wrapper .lccl-fr-payment-control input.lccl-bdf__input.lccl-df__phone-number {
+        height: 46px !important;
+        min-height: 46px !important;
+        max-height: 46px !important;
+    }
 }
 
 /* Badge pills */
@@ -912,6 +951,16 @@ body.lccl-modal-prevent-scroll {
         text-align: center;
         border-radius: 0 0 3px 3px;
     }
+
+    .lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-wrap,
+    .lccl-fr-wrapper .lccl-fr-payment-control .lccl-df__phone-code-display,
+    .lccl-fr-wrapper .lccl-fr-payment-control button.lccl-df__phone-code-display,
+    .lccl-fr-wrapper .lccl-fr-payment-control input.lccl-df__phone-number,
+    .lccl-fr-wrapper .lccl-fr-payment-control input.lccl-bdf__input.lccl-df__phone-number {
+        height: 46px !important;
+        min-height: 46px !important;
+        max-height: 46px !important;
+    }
 }
 
 /* Table Pool Mini-Grid inside Seating Map (mirrors table selector IDs & statuses) */
@@ -1175,4 +1224,124 @@ body.lccl-modal-prevent-scroll {
     font-size: 13px;
     color: #dc2626;
     font-weight: 600;
+}
+
+/* Spinner Animation for Dynamic Seat Allocation */
+@keyframes lcclFrSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.lccl-fr-spin {
+    animation: lcclFrSpin 0.75s linear infinite !important;
+    display: inline-block;
+    vertical-align: middle;
+    transform-origin: center center;
+}
+
+/* Gold Accent Pill for Seat Allocation Status */
+.lccl-fr-gold-pill {
+    display: inline-flex;
+    align-items: center;
+    background-color: #fef08a !important;
+    border: none !important;
+    color: #854d0e !important;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    line-height: 1.4;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    box-shadow: none !important;
+}
+
+/* Allocated Seats Row & Wrapped Numbers Alignment */
+#allocatedSeatsText {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    row-gap: 3px;
+    column-gap: 6px;
+    align-items: start;
+}
+
+#allocatedSeatsText > span:only-child {
+    grid-column: 1 / -1;
+}
+
+#allocatedSeatsText .lccl-fr-allocated-row {
+    display: contents;
+}
+
+#allocatedSeatsText .lccl-fr-allocated-row > .lccl-fr-allocated-seats:only-child {
+    grid-column: 1 / -1;
+}
+
+.lccl-fr-allocated-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.lccl-fr-allocated-row + .lccl-fr-allocated-row {
+    margin-top: 3px;
+}
+
+.lccl-fr-allocated-tbl {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.lccl-fr-allocated-seats {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Table Quantity Read-Only Input & Pulse Animation */
+.lccl-fr-wrapper #tableQty[readonly] {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    font-weight: 600 !important;
+    cursor: default !important;
+    user-select: none;
+    border: 1px solid #ccc;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.lccl-fr-wrapper #tableQty::-webkit-inner-spin-button,
+.lccl-fr-wrapper #tableQty::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.lccl-fr-wrapper #tableQty {
+    -moz-appearance: textfield;
+}
+
+@keyframes lcclFrBorderPulse {
+    0% {
+        border-color: #ccc;
+        box-shadow: 0 0 0 0 rgba(180, 83, 9, 0);
+    }
+    25% {
+        border-color: #b45309;
+        box-shadow: 0 0 0 3.5px rgba(180, 83, 9, 0.45);
+    }
+    50% {
+        border-color: #b45309;
+        box-shadow: 0 0 0 1.5px rgba(180, 83, 9, 0.25);
+    }
+    75% {
+        border-color: #b45309;
+        box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.45);
+    }
+    100% {
+        border-color: #ccc;
+        box-shadow: 0 0 0 0 rgba(180, 83, 9, 0);
+    }
+}
+
+.lccl-fr-wrapper #tableQty.lccl-fr-border-pulse,
+#tableQty.lccl-fr-border-pulse {
+    animation: lcclFrBorderPulse 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
