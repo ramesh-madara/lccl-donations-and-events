@@ -1407,27 +1407,27 @@ body.lccl-modal-prevent-scroll {
 @keyframes lcclFrBorderPulse {
     0% {
         border-color: #ccc;
-        box-shadow: 0 0 0 0 rgba(180, 83, 9, 0);
+        box-shadow: 0 0 0 0 rgba(29, 78, 216, 0);
     }
 
     25% {
-        border-color: #b45309;
-        box-shadow: 0 0 0 3.5px rgba(180, 83, 9, 0.45);
+        border-color: rgb(29, 78, 216);
+        box-shadow: 0 0 0 3.5px rgba(29, 78, 216, 0.45);
     }
 
     50% {
-        border-color: #b45309;
-        box-shadow: 0 0 0 1.5px rgba(180, 83, 9, 0.25);
+        border-color: rgb(29, 78, 216);
+        box-shadow: 0 0 0 1.5px rgba(29, 78, 216, 0.25);
     }
 
     75% {
-        border-color: #b45309;
-        box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.45);
+        border-color: rgb(29, 78, 216);
+        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.45);
     }
 
     100% {
         border-color: #ccc;
-        box-shadow: 0 0 0 0 rgba(180, 83, 9, 0);
+        box-shadow: 0 0 0 0 rgba(29, 78, 216, 0);
     }
 }
 
