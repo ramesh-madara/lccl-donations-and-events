@@ -1,5 +1,7 @@
-
-.lccl-fr-wrapper, .lccl-fr-wrapper * { box-sizing: border-box; }
+.lccl-fr-wrapper,
+.lccl-fr-wrapper * {
+    box-sizing: border-box;
+}
 
 /* Reuse payment-form controls without the standalone form's outer spacing. */
 .lccl-fr-wrapper .lccl-bdf.lccl-bdf--donation.lccl-fr-payment-control {
@@ -64,7 +66,7 @@
     border-radius: 3px !important;
 }
 
-.lccl-fr-wrapper .total > span:first-of-type {
+.lccl-fr-wrapper .total>span:first-of-type {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -118,7 +120,7 @@
 .event-card {
     background: #fff;
     border: 1px solid #ededed;
-    box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
     border-radius: 3px;
 }
 
@@ -165,7 +167,9 @@
     color: #d40000;
 }
 
-.lccl-fr-wrapper input, .lccl-fr-wrapper select, .lccl-fr-wrapper textarea {
+.lccl-fr-wrapper input,
+.lccl-fr-wrapper select,
+.lccl-fr-wrapper textarea {
     margin: 0;
     box-shadow: none;
     border-radius: 3px;
@@ -302,14 +306,14 @@
     overflow: hidden;
 }
 
-.total > span:first-of-type {
+.total>span:first-of-type {
     background: #f7c600;
     padding: 16px 20px;
     font-size: 16px;
     border-radius: 3px 0 0 3px;
 }
 
-.total > span:last-of-type {
+.total>span:last-of-type {
     padding: 16px 20px;
     border-radius: 0 3px 3px 0;
 }
@@ -353,7 +357,7 @@
 .dummy-image {
     min-height: 430px;
     background:
-        linear-gradient(rgba(12,47,95,.78), rgba(12,47,95,.68)),
+        linear-gradient(rgba(12, 47, 95, .78), rgba(12, 47, 95, .68)),
         radial-gradient(circle at 70% 25%, #f7c600 0 7%, transparent 8%),
         linear-gradient(135deg, #123c72, #1e5e9d);
     color: #fff;
@@ -423,12 +427,14 @@
 .seat-dot {
     font-size: 10px;
     padding: 8px 2px;
-    background: #72a8e8; /* AVAILABLE */
+    background: #72a8e8;
+    /* AVAILABLE */
     border-radius: 50%;
 }
 
 .seat-dot.sold {
-    background: #aaa; /* BOOKED */
+    background: #aaa;
+    /* BOOKED */
     color: #fff;
 }
 
@@ -517,7 +523,7 @@
 .seating-plan-trigger:focus-visible,
 .seating-plan-trigger:hover {
     border-color: #d6a900;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .seating-plan-trigger img {
@@ -548,7 +554,7 @@
     font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.3px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease, transform 0.2s ease;
@@ -669,6 +675,7 @@ body.lccl-modal-prevent-scroll {
     .lccl-sp-modal {
         padding: 12px;
     }
+
     .lccl-sp-modal__close-btn {
         top: 14px;
         right: 14px;
@@ -676,6 +683,7 @@ body.lccl-modal-prevent-scroll {
         height: 38px;
         font-size: 26px;
     }
+
     .lccl-sp-modal__img {
         max-width: 96vw;
         max-height: 88vh;
@@ -743,13 +751,33 @@ body.lccl-modal-prevent-scroll {
     grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
     grid-auto-rows: 82px;
     align-content: start;
-    height: 182px;
+    height: auto;
+    min-height: auto;
+    max-height: 280px;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 4px;
-    scrollbar-gutter: stable;
     gap: 10px;
     margin: 14px 0 10px;
+    transition: max-height 0.25s ease;
+}
+
+.lccl-fr-table-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.lccl-fr-table-grid::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.lccl-fr-table-grid::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.lccl-fr-table-grid::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }
 
 .lccl-fr-table-chip {
@@ -864,7 +892,7 @@ body.lccl-modal-prevent-scroll {
     align-items: center;
     font-size: 12px;
     color: #4b5563;
-    margin: 8px 0 16px;
+    margin: 18px 0 16px;
     padding: 9px 12px;
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -931,6 +959,7 @@ body.lccl-modal-prevent-scroll {
 }
 
 @media (max-width: 560px) {
+
     .lccl-fr-row,
     .booking-type {
         grid-template-columns: 1fr;
@@ -944,13 +973,13 @@ body.lccl-modal-prevent-scroll {
         grid-template-columns: repeat(6, 1fr);
     }
 
-    .total > span:first-of-type {
+    .total>span:first-of-type {
         width: 100%;
         text-align: center;
         border-radius: 3px 3px 0 0;
     }
 
-    .total > span:last-of-type {
+    .total>span:last-of-type {
         width: 100%;
         text-align: center;
         border-radius: 0 0 3px 3px;
@@ -1239,8 +1268,13 @@ body.lccl-modal-prevent-scroll {
 
 /* Spinner Animation for Dynamic Seat Allocation */
 @keyframes lcclFrSpin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .lccl-fr-spin {
@@ -1276,7 +1310,7 @@ body.lccl-modal-prevent-scroll {
     align-items: start;
 }
 
-#allocatedSeatsText > span:only-child {
+#allocatedSeatsText>span:only-child {
     grid-column: 1 / -1;
 }
 
@@ -1284,7 +1318,7 @@ body.lccl-modal-prevent-scroll {
     display: contents;
 }
 
-#allocatedSeatsText .lccl-fr-allocated-row > .lccl-fr-allocated-seats:only-child {
+#allocatedSeatsText .lccl-fr-allocated-row>.lccl-fr-allocated-seats:only-child {
     grid-column: 1 / -1;
 }
 
@@ -1294,7 +1328,7 @@ body.lccl-modal-prevent-scroll {
     gap: 5px;
 }
 
-.lccl-fr-allocated-row + .lccl-fr-allocated-row {
+.lccl-fr-allocated-row+.lccl-fr-allocated-row {
     margin-top: 3px;
 }
 
@@ -1334,18 +1368,22 @@ body.lccl-modal-prevent-scroll {
         border-color: #ccc;
         box-shadow: 0 0 0 0 rgba(180, 83, 9, 0);
     }
+
     25% {
         border-color: #b45309;
         box-shadow: 0 0 0 3.5px rgba(180, 83, 9, 0.45);
     }
+
     50% {
         border-color: #b45309;
         box-shadow: 0 0 0 1.5px rgba(180, 83, 9, 0.25);
     }
+
     75% {
         border-color: #b45309;
         box-shadow: 0 0 0 4px rgba(180, 83, 9, 0.45);
     }
+
     100% {
         border-color: #ccc;
         box-shadow: 0 0 0 0 rgba(180, 83, 9, 0);
