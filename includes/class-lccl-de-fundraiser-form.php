@@ -531,15 +531,15 @@ class LCCL_DE_Fundraiser_Form {
 			<div class="lccl-fr-conf-box">
 				<div class="lccl-fr-conf-row lccl-fr-conf-row--inline-mobile">
 					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Booking Reference', 'lccl-de' ); ?></span>
-					<strong class="lccl-fr-conf-val lccl-fr-conf-ref"><?php echo esc_html( $booking['order_ref'] ); ?></strong>
+					<span class="lccl-fr-conf-val lccl-fr-conf-ref"><?php echo esc_html( $booking['order_ref'] ); ?></span>
 				</div>
 				<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
 					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Payment Transaction ID', 'lccl-de' ); ?></span>
-					<strong class="lccl-fr-conf-val lccl-fr-conf-mono"><?php echo esc_html( $receipt ); ?></strong>
+					<span class="lccl-fr-conf-val lccl-fr-conf-mono"><?php echo esc_html( $receipt ); ?></span>
 				</div>
 				<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
 					<span class="lccl-fr-conf-label"><?php esc_html_e( 'Event', 'lccl-de' ); ?></span>
-					<strong class="lccl-fr-conf-val lccl-fr-conf-event-title"><?php echo esc_html( $event_name ); ?></strong>
+					<span class="lccl-fr-conf-val lccl-fr-conf-event-title"><?php echo esc_html( $event_name ); ?></span>
 				</div>
 				<?php if ( $event_date ) : ?>
 					<div class="lccl-fr-conf-row lccl-fr-conf-row--stack-mobile">
