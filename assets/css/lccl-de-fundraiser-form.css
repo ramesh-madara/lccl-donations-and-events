@@ -441,11 +441,20 @@
 .legend {
     display: flex;
     justify-content: center;
-    gap: 14px;
+    align-items: center;
+    gap: 16px;
     flex-wrap: wrap;
     margin-top: 13px;
     font-size: 11px;
     color: #555;
+    line-height: 1.2;
+}
+
+.legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.2;
 }
 
 .legend span::before {
@@ -454,8 +463,8 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    margin-right: 5px;
-    vertical-align: middle;
+    margin-right: 0;
+    flex-shrink: 0;
 }
 
 .legend .legend-avail::before {

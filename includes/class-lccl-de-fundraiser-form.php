@@ -33,6 +33,12 @@ class LCCL_DE_Fundraiser_Form {
 			return self::render_payment_callback();
 		}
 
+		// Developer Preview Mode (Web Confirmation UI & Email Template Preview)
+		// Safe in production (admin-only), or remove this block before production launch
+		if ( ! empty( $_GET['lccl_preview'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return self::render_dev_preview();
+		}
+
 		// Expire any stale pending holds before rendering
 		LCCL_DE_Fundraiser::expire_stale_pending_bookings();
 
@@ -588,16 +594,11 @@ class LCCL_DE_Fundraiser_Form {
 	}
 
 	/**
-	 * Send confirmation email and SMS to attendee, plus admin notification.
+	 * Build confirmation email subject and HTML body.
 	 */
-	public static function send_booking_confirmation( $booking, $receipt, $event = null ) {
+	public static function get_booking_confirmation_email_content( $booking, $receipt, $event = null ) {
 		if ( ! $event && ! empty( $booking['event_id'] ) ) {
 			$event = LCCL_DE_Fundraiser::get_event( $booking['event_id'] );
-		}
-
-		$to = sanitize_email( $booking['attendee_email'] ?? '' );
-		if ( ! is_email( $to ) ) {
-			return;
 		}
 
 		$event_name = $event['name'] ?? __( 'Fundraiser Event', 'lccl-de' );
@@ -620,12 +621,18 @@ class LCCL_DE_Fundraiser_Form {
 
 		$subject = sprintf( 'Booking Confirmation – %s (%s)', $event_name, $booking['order_ref'] );
 
+		$logo_url = function_exists( 'content_url' )
+			? content_url( '/uploads/2021/09/Logo-resize-replace-01.png' )
+			: 'http://lccl.local/wp-content/uploads/2021/09/Logo-resize-replace-01.png';
+
 		// Email HTML body
 		$body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif; background:#f4f6f8; margin:0; padding:24px;">' .
 			'<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08);">' .
-			'<tr><td style="background:#1a4a8a; padding:28px 24px 22px; text-align:center; color:#fff;">' .
-			'<div style="margin-bottom:14px;"><img src="https://colomboleads.org/wp-content/uploads/2021/08/NEW-Logo-1.png" alt="LIONS CLUB OF COLOMBO LEADS" width="220" style="display:inline-block; max-width:220px; width:100%; height:auto; background:#ffffff; padding:8px 14px; border-radius:4px; border:0;"></div>' .
-			'<h1 style="margin:0; font-size:20px; font-weight:700; color:#ffffff; letter-spacing:0.04em; text-transform:uppercase;">LIONS CLUB OF COLOMBO LEADS</h1>' .
+			'<tr><td style="background:#1a4a8a; padding:24px 20px 20px; text-align:center; color:#fff;">' .
+			'<div style="text-align:center; margin-bottom:12px;">' .
+			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="140" style="display:inline-block; max-width:140px; width:100%; height:auto; border:0; vertical-align:middle;">' .
+			'</div>' .
+			'<h1 style="margin:0; font-size:18px; font-weight:700; color:#ffffff; letter-spacing:0.04em; text-transform:uppercase;">LIONS CLUB OF COLOMBO LEADS</h1>' .
 			'<p style="margin:6px 0 0; font-size:13px; color:#e0e7ff; opacity:0.95;">Event Booking & Seat Allocation Confirmation</p>' .
 			'</td></tr>' .
 			'<tr><td style="padding:24px 30px;">' .
@@ -647,12 +654,48 @@ class LCCL_DE_Fundraiser_Form {
 			'<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#92400e;">' .
 			'<strong>Important:</strong> Please present this confirmation email or quote your booking reference <strong>' . esc_html( $booking['order_ref'] ) . '</strong> at the reception/ticket counter upon arrival at the venue.' .
 			'</div>' .
-			'<p style="font-size:13px; color:#777; margin:0;">Warm regards,<br><strong>LIONS CLUB OF COLOMBO LEADS</strong></p>' .
+			'<p style="font-size:13px; color:#777; margin:0; line-height:1.6;">Best regards,<br><br><strong>LIONS CLUB OF COLOMBO LEADS</strong></p>' .
 			'</td></tr>' .
 			'<tr><td style="background:#f4f6f8; padding:16px; text-align:center; font-size:11px; color:#888;">' .
 			'Lions Club of Colombo Leads · District 306 B2 · Sri Lanka' .
 			'</td></tr>' .
 			'</table></body></html>';
+
+		return array(
+			'subject' => $subject,
+			'body'    => $body,
+		);
+	}
+
+	/**
+	 * Send confirmation email and SMS to attendee, plus admin notification.
+	 */
+	public static function send_booking_confirmation( $booking, $receipt, $event = null ) {
+		if ( ! $event && ! empty( $booking['event_id'] ) ) {
+			$event = LCCL_DE_Fundraiser::get_event( $booking['event_id'] );
+		}
+
+		$to = sanitize_email( $booking['attendee_email'] ?? '' );
+		if ( ! is_email( $to ) ) {
+			return;
+		}
+
+		$email_content = self::get_booking_confirmation_email_content( $booking, $receipt, $event );
+		$subject       = $email_content['subject'];
+		$body          = $email_content['body'];
+		$event_name    = $event['name'] ?? __( 'Fundraiser Event', 'lccl-de' );
+		$is_individual = ( 'individual' === $booking['booking_type'] );
+		$seat_display  = '';
+		if ( $is_individual ) {
+			$seat_nums = array_filter( array_map( 'trim', explode( ',', $booking['seat_numbers'] ?? '' ) ) );
+			$seat_display = LCCL_DE_Fundraiser::format_seats_with_tables( (int) $booking['event_id'], $seat_nums );
+			if ( empty( $seat_display ) ) {
+				$seat_display = ! empty( $seat_nums ) ? 'Seat #' . implode( ', Seat #', $seat_nums ) : 'Auto-allocated (' . $booking['qty'] . ' seats)';
+			}
+		} else {
+			$table_labels = self::get_table_labels( $booking['table_ids'] ?? '' );
+			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table(s)';
+		}
 
 		$headers = array(
 			'Content-Type: text/html; charset=UTF-8',
@@ -729,6 +772,146 @@ class LCCL_DE_Fundraiser_Form {
 		}
 
 		wp_send_json_success( $preview );
+	}
+
+	/**
+	 * Developer preview renderer for Web Order Confirmation UI & Email Template.
+	 *
+	 * Accessible via: ?lccl_preview=ui or ?lccl_preview=email
+	 * Optional parameters: &mode=individual (default) or &mode=table
+	 *
+	 * PRODUCTION NOTE:
+	 * By default, this is restricted to WordPress Administrators (`manage_options`).
+	 * To completely remove when going to production, remove the 3-line check in `render()`.
+	 */
+	public static function render_dev_preview() {
+		// Security check: restrict preview to logged-in administrators
+		if ( ! current_user_can( 'manage_options' ) && ! ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ) {
+			return '<div style="max-width:680px; margin:30px auto; padding:20px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:4px; text-align:center;">' .
+				esc_html__( 'Preview mode is only accessible to WordPress Administrators.', 'lccl-de' ) .
+				'</div>';
+		}
+
+		$preview_type = isset( $_GET['lccl_preview'] ) ? sanitize_text_field( wp_unslash( $_GET['lccl_preview'] ) ) : 'ui';
+		$mode         = ( isset( $_GET['mode'] ) && 'table' === $_GET['mode'] ) ? 'table' : 'individual';
+		$is_indiv     = ( 'individual' === $mode );
+
+		$active_event = LCCL_DE_Fundraiser::get_active_public_event();
+		if ( ! $active_event ) {
+			$active_event = array(
+				'id'         => 1,
+				'name'       => 'LCCL Annual Fundraiser Gala 2026',
+				'event_date' => '2026-11-15',
+				'event_time' => '18:30:00',
+				'venue'      => 'Grand Ballroom, Hotel Galadari, Colombo',
+			);
+		}
+
+		if ( $is_indiv ) {
+			$mock_booking = array(
+				'id'             => 999,
+				'order_ref'      => 'FND-65FA38',
+				'attendee_name'  => 'Saman Padukka',
+				'attendee_email' => 'saman@example.com',
+				'attendee_phone' => '+94 77 123 4567',
+				'booking_type'   => 'individual',
+				'qty'            => 2,
+				'seat_numbers'   => '51, 53',
+				'table_ids'      => '',
+				'notes'          => 'Please arrange vegetarian meal',
+				'amount_lkr'     => 15000.00,
+				'event_id'       => (int) $active_event['id'],
+			);
+			$mock_receipt = '2026200000437627';
+		} else {
+			$mock_booking = array(
+				'id'             => 999,
+				'order_ref'      => 'FND-TBLE01',
+				'attendee_name'  => 'Dr. Samantha Perera',
+				'attendee_email' => 'samantha.perera@example.com',
+				'attendee_phone' => '+94 71 987 6543',
+				'booking_type'   => 'table',
+				'qty'            => 1,
+				'seat_numbers'   => '',
+				'table_ids'      => 'P04',
+				'notes'          => 'VIP corporate table reservation',
+				'amount_lkr'     => 120000.00,
+				'event_id'       => (int) $active_event['id'],
+			);
+			$mock_receipt = '2026200000981240';
+		}
+
+		// Handle live test email dispatch
+		$send_status_msg = '';
+		if ( ! empty( $_POST['lccl_send_test_email'] ) && check_admin_referer( 'lccl_dev_preview_send', 'preview_nonce' ) ) {
+			$test_email = sanitize_email( wp_unslash( $_POST['test_recipient'] ?? '' ) );
+			if ( is_email( $test_email ) ) {
+				$mock_booking['attendee_email'] = $test_email;
+				self::send_booking_confirmation( $mock_booking, $mock_receipt, $active_event );
+				$send_status_msg = '<div style="background:#dcfce7; color:#166534; padding:8px 14px; border-radius:4px; font-size:12px; margin-top:10px; font-weight:600;">✓ Live test confirmation email sent to ' . esc_html( $test_email ) . '</div>';
+			}
+		}
+
+		ob_start();
+		$current_url = remove_query_arg( array( 'lccl_preview', 'mode' ) );
+		$admin_user  = wp_get_current_user();
+		$admin_email = ( $admin_user && $admin_user->user_email ) ? $admin_user->user_email : get_option( 'admin_email' );
+		?>
+		<div style="background:#0f172a; border-radius:6px; padding:14px 18px; margin:20px auto 26px; max-width:680px; box-shadow:0 4px 12px rgba(0,0,0,0.15); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; color:#fff; box-sizing:border-box;">
+			<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; border-bottom:1px solid #1e293b; padding-bottom:10px;">
+				<div style="display:flex; align-items:center; gap:8px;">
+					<span style="background:#f59e0b; color:#0f172a; font-weight:700; font-size:11px; padding:2px 8px; border-radius:3px; text-transform:uppercase; letter-spacing:0.04em;">Dev Preview Mode</span>
+					<span style="font-size:12px; color:#94a3b8;">Order Confirmation & Email Template Viewer</span>
+				</div>
+				<a href="<?php echo esc_url( $current_url ); ?>" style="color:#94a3b8; text-decoration:none; font-size:12px; font-weight:500;">&larr; Return to Live Form</a>
+			</div>
+			
+			<div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+				<div style="display:flex; gap:6px; flex-wrap:wrap;">
+					<a href="<?php echo esc_url( add_query_arg( array( 'lccl_preview' => 'ui', 'mode' => 'individual' ), $current_url ) ); ?>" 
+					   style="background:<?php echo ( 'ui' === $preview_type && $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'ui' === $preview_type && $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
+						Web UI (Individual Seats)
+					</a>
+					<a href="<?php echo esc_url( add_query_arg( array( 'lccl_preview' => 'ui', 'mode' => 'table' ), $current_url ) ); ?>" 
+					   style="background:<?php echo ( 'ui' === $preview_type && ! $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'ui' === $preview_type && ! $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
+						Web UI (Table Booking)
+					</a>
+					<a href="<?php echo esc_url( add_query_arg( array( 'lccl_preview' => 'email', 'mode' => 'individual' ), $current_url ) ); ?>" 
+					   style="background:<?php echo ( 'email' === $preview_type && $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'email' === $preview_type && $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
+						Email (Individual Seats)
+					</a>
+					<a href="<?php echo esc_url( add_query_arg( array( 'lccl_preview' => 'email', 'mode' => 'table' ), $current_url ) ); ?>" 
+					   style="background:<?php echo ( 'email' === $preview_type && ! $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'email' === $preview_type && ! $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
+						Email (Table Booking)
+					</a>
+				</div>
+			</div>
+
+			<form method="post" style="margin-top:12px; padding-top:10px; border-top:1px dashed #334155; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+				<?php wp_nonce_field( 'lccl_dev_preview_send', 'preview_nonce' ); ?>
+				<input type="hidden" name="lccl_send_test_email" value="1">
+				<label style="font-size:12px; color:#cbd5e1;">Send Test Email to:</label>
+				<input type="email" name="test_recipient" value="<?php echo esc_attr( $admin_email ); ?>" required style="background:#1e293b; color:#fff; border:1px solid #475569; padding:5px 8px; border-radius:4px; font-size:12px; min-width:210px;">
+				<button type="submit" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Send Test Email</button>
+			</form>
+			<?php echo $send_status_msg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+		</div>
+		<?php
+		$toolbar = ob_get_clean();
+
+		if ( 'email' === $preview_type ) {
+			$email_data = self::get_booking_confirmation_email_content( $mock_booking, $mock_receipt, $active_event );
+			$email_preview = '<div style="max-width:680px; margin:0 auto 12px; padding:10px 14px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:4px; font-size:13px; color:#1e40af;">' .
+				'<strong>Subject:</strong> ' . esc_html( $email_data['subject'] ) .
+				'</div>' .
+				'<div style="max-width:680px; margin:0 auto 30px; box-shadow:0 4px 16px rgba(0,0,0,0.08); border-radius:8px; overflow:hidden;">' .
+				$email_data['body'] .
+				'</div>';
+			return $toolbar . $email_preview;
+		}
+
+		// Web UI Confirmation View
+		return $toolbar . self::render_success_view( $mock_booking, $mock_receipt, $active_event );
 	}
 
 	private static function client_ip() {
