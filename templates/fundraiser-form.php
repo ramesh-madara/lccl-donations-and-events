@@ -341,6 +341,7 @@ if ( $available_seats_count > 0 ) {
 							?>
 								<option 
 									value="<?php echo esc_attr( $t['id'] ); ?>" 
+									data-name="<?php echo esc_attr( $t['name'] ); ?>"
 									data-price="<?php echo esc_attr( $t['price'] ); ?>"
 									data-capacity="<?php echo esc_attr( $t['capacity'] ); ?>"
 									data-available="<?php echo esc_attr( $s['table_pool_free'] ); ?>"
@@ -541,51 +542,76 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							esc_html_e( 'Table Booking (VIP)', 'lccl-de' );
 						} elseif ( $is_vip ) {
 							esc_html_e( 'Individual Seats (VIP)', 'lccl-de' );
+						} elseif ( $available_seats_count === 0 && $total_table_pool_free > 0 ) {
+							esc_html_e( 'Table Booking', 'lccl-de' );
 						} else {
 							esc_html_e( 'Individual Seats', 'lccl-de' );
 						}
 						?>
 					</strong>
 				</div>
-				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
-					<span><?php esc_html_e( 'Seats / Tables', 'lccl-de' ); ?></span>
+
+				<!-- INDIVIDUAL SEATS ROWS -->
+				<div id="summaryLineIndivQty" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span><?php esc_html_e( 'Assigned Seat(s)', 'lccl-de' ); ?></span>
 					<strong id="summaryQuantity">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
-							$cnt = (int) ( $vip_details['seat_count'] ?? 1 );
-							echo esc_html( $cnt . ( $cnt === 1 ? ' Seat' : ' Seats' ) );
-						} elseif ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
-							$cnt = count( $vip_details['table_ids'] ?? array() );
-							echo esc_html( $cnt . ( $cnt === 1 ? ' Table' : ' Tables' ) );
+							echo esc_html( (int) ( $vip_details['seat_count'] ?? 1 ) );
 						} else {
-							esc_html_e( '1 Seat', 'lccl-de' );
+							echo esc_html( $available_seats_count > 0 ? '1' : '0' );
 						}
 						?>
 					</strong>
 				</div>
-				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
-					<span><?php esc_html_e( 'Assigned / Selected', 'lccl-de' ); ?></span>
-					<strong id="summarySelection">
+				<div id="summaryLineIndivAlloc" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span style="flex-shrink: 0;"><?php esc_html_e( 'Your allocated seats', 'lccl-de' ); ?></span>
+					<strong id="summarySelection" style="text-align: right; max-width: 65%;">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							$cnt = (int) ( $vip_details['seat_count'] ?? 1 );
 							$seats_str = ! empty( $vip_details['seats'] ) ? ': Seats #' . implode( ', #', $vip_details['seats'] ) : '';
 							echo esc_html( $cnt . ' (VIP reserved' . $seats_str . ')' );
-						} elseif ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
-							$tbl_str = ! empty( $vip_details['table_labels'] ) ? implode( ', ', $vip_details['table_labels'] ) : 'VIP Table';
-							echo esc_html( $tbl_str . ' (VIP reserved)' );
 						} else {
 							if ( ! empty( $initial_allocated_html ) ) {
 								echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							} else {
-								esc_html_e( '1 (Sequential auto-allocation)', 'lccl-de' );
+								esc_html_e( 'None', 'lccl-de' );
 							}
 						}
 						?>
 					</strong>
 				</div>
+
+				<!-- TABLE BOOKING ROWS -->
+				<div id="summaryLineTableType" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span><?php esc_html_e( 'Table Type', 'lccl-de' ); ?></span>
+					<strong id="summaryTableType">
+						<?php
+						if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
+							echo esc_html( $vip_details['table_type_name'] ?? 'VIP Table' );
+						} else {
+							esc_html_e( 'None selected', 'lccl-de' );
+						}
+						?>
+					</strong>
+				</div>
+				<div id="summaryLineTableSel" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+					<span style="flex-shrink: 0;"><?php esc_html_e( 'Tables Selected', 'lccl-de' ); ?></span>
+					<strong id="summaryTableSelection" style="text-align: right; max-width: 65%;">
+						<?php
+						if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
+							$tbl_str = ! empty( $vip_details['table_labels'] ) ? implode( ', ', $vip_details['table_labels'] ) : 'VIP Table';
+							echo esc_html( $tbl_str . ' (VIP reserved)' );
+						} else {
+							esc_html_e( 'None selected', 'lccl-de' );
+						}
+						?>
+					</strong>
+				</div>
+
 				<div class="total">
-					<span><?php esc_html_e( 'TOTAL AMOUNT', 'lccl-de' ); ?></span>
+					<span><?php esc_html_e( 'Total Amount', 'lccl-de' ); ?></span>
 					<span><?php echo esc_html( $currency ); ?> <span id="lccl-fundraiser-total-display"><?php echo number_format( $ticket_price, 2 ); ?></span></span>
 					<input type="hidden" name="total_amount" id="lccl-fundraiser-total-hidden" value="<?php echo esc_attr( $ticket_price ); ?>">
 				</div>
@@ -847,6 +873,12 @@ document.addEventListener('DOMContentLoaded', function() {
 	var sumType = document.getElementById('summaryType');
 	var sumQty = document.getElementById('summaryQuantity');
 	var sumSel = document.getElementById('summarySelection');
+	var sumTableType = document.getElementById('summaryTableType');
+	var sumTableSel = document.getElementById('summaryTableSelection');
+	var lineIndivQty = document.getElementById('summaryLineIndivQty');
+	var lineIndivAlloc = document.getElementById('summaryLineIndivAlloc');
+	var lineTableType = document.getElementById('summaryLineTableType');
+	var lineTableSel = document.getElementById('summaryLineTableSel');
 
 	var poolLayoutSeat = document.getElementById('poolLayoutSeat');
 	var poolLayoutTable = document.getElementById('poolLayoutTable');
@@ -967,6 +999,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
 			allocatedSeatsText.style.opacity = '1';
 			allocatedSeatsText.setAttribute('data-loaded', 'true');
+			if (sumSel) sumSel.style.opacity = '1';
 			if (data && data.success && data.data) {
 				lastFetchedQty = q;
 				renderSeatAllocation(data.data);
@@ -974,6 +1007,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 				var msg = (data && data.data && data.data.message) ? data.data.message : '<?php echo esc_js( __( 'Unable to allocate consecutive seats for this quantity.', 'lccl-de' ) ); ?>';
 				allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + msg + '</span>';
+				if (sumSel && mode === 'individual') {
+					sumSel.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + msg + '</span>';
+				}
 				lastAllocatedLabels = [];
 				updateSeatPoolTableHighlights([]);
 			}
@@ -982,7 +1018,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
 			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 			allocatedSeatsText.style.opacity = '1';
-			allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + '<?php echo esc_js( __( 'Error checking seat allocation.', 'lccl-de' ) ); ?>' + '</span>';
+			if (sumSel) sumSel.style.opacity = '1';
+			var errMsg = '<?php echo esc_js( __( 'Error checking seat allocation.', 'lccl-de' ) ); ?>';
+			allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + errMsg + '</span>';
+			if (sumSel && mode === 'individual') {
+				sumSel.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + errMsg + '</span>';
+			}
 			lastAllocatedLabels = [];
 			updateSeatPoolTableHighlights([]);
 		});
@@ -995,6 +1036,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (groups.length === 0) {
 			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 			allocatedSeatsLine.style.display = 'none';
+			if (sumSel && mode === 'individual') {
+				sumSel.textContent = 'None';
+			}
 			lastAllocatedLabels = [];
 			updateSeatPoolTableHighlights([]);
 			return;
@@ -1053,6 +1097,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (allocatedSeatsText) {
 			allocatedSeatsText.style.opacity = '0.4';
 		}
+		if (sumSel && mode === 'individual') {
+			sumSel.style.opacity = '0.4';
+		}
 		previewTimer = setTimeout(function() {
 			fetchSeatAllocationPreview(qty);
 		}, 150);
@@ -1072,13 +1119,22 @@ document.addEventListener('DOMContentLoaded', function() {
 				indivSeatCount.textContent = q;
 			}
 			
+			if (lineIndivQty) lineIndivQty.style.display = 'flex';
+			if (lineIndivAlloc) lineIndivAlloc.style.display = 'flex';
+			if (lineTableType) lineTableType.style.display = 'none';
+			if (lineTableSel) lineTableSel.style.display = 'none';
+
 			sumType.textContent = (fundData.vip && fundData.vip.active) ? 'Individual Seats (VIP)' : 'Individual Seats';
-			sumQty.textContent = q + (q === 1 ? ' Seat' : ' Seats');
+			if (sumQty) {
+				sumQty.textContent = q;
+			}
 			if (fundData.vip && fundData.vip.active && fundData.vip.mode === 'individual') {
 				var seatDetail = (fundData.vip.seats && fundData.vip.seats.length > 0) ? ': Seats #' + fundData.vip.seats.join(', #') : '';
-				sumSel.textContent = q > 0 ? (q + ' (VIP reserved' + seatDetail + ')') : 'None';
-			} else {
-				sumSel.textContent = q > 0 ? (q + ' (Sequential auto-allocation)') : 'None';
+				if (sumSel) sumSel.textContent = q > 0 ? (q + ' (VIP reserved' + seatDetail + ')') : 'None';
+			} else if (q < 1) {
+				if (sumSel) sumSel.textContent = 'None';
+			} else if (allocatedSeatsText && allocatedSeatsText.innerHTML && allocatedSeatsText.getAttribute('data-loaded') === 'true') {
+				if (sumSel) sumSel.innerHTML = allocatedSeatsText.innerHTML;
 			}
 
 			// Dynamically fetch allocated seats for selected quantity
@@ -1108,12 +1164,27 @@ document.addEventListener('DOMContentLoaded', function() {
 				tot = selCount * p;
 			}
 			
+			if (lineIndivQty) lineIndivQty.style.display = 'none';
+			if (lineIndivAlloc) lineIndivAlloc.style.display = 'none';
+			if (lineTableType) lineTableType.style.display = 'flex';
+			if (lineTableSel) lineTableSel.style.display = 'flex';
+
 			sumType.textContent = (fundData.vip && fundData.vip.active) ? 'Table Booking (VIP)' : 'Table Booking';
-			sumQty.textContent = selCount + (selCount === 1 ? ' Table' : ' Tables');
-			if (fundData.vip && fundData.vip.active && fundData.vip.mode === 'table') {
-				sumSel.textContent = selLabels.length > 0 ? (selLabels.join(', ') + ' (VIP reserved)') : 'None selected';
-			} else {
-				sumSel.textContent = selLabels.length > 0 ? selLabels.join(', ') : 'None selected';
+			if (sumTableType) {
+				if (type && type !== '') {
+					var opt = selectType.options[selectType.selectedIndex];
+					var typeName = (opt && opt.value) ? (opt.getAttribute('data-name') || opt.textContent.split('–')[0].trim()) : 'None selected';
+					sumTableType.textContent = typeName;
+				} else {
+					sumTableType.textContent = 'None selected';
+				}
+			}
+			if (sumTableSel) {
+				if (fundData.vip && fundData.vip.active && fundData.vip.mode === 'table') {
+					sumTableSel.textContent = selLabels.length > 0 ? (selLabels.join(', ') + ' (VIP reserved)') : 'None selected';
+				} else {
+					sumTableSel.textContent = selLabels.length > 0 ? selLabels.join(', ') : 'None selected';
+				}
 			}
 		}
 		
@@ -1131,6 +1202,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			panelTable.style.display = 'none';
 			if (poolLayoutSeat) poolLayoutSeat.style.display = 'block';
 			if (poolLayoutTable) poolLayoutTable.style.display = 'none';
+			if (lineIndivQty) lineIndivQty.style.display = 'flex';
+			if (lineIndivAlloc) lineIndivAlloc.style.display = 'flex';
+			if (lineTableType) lineTableType.style.display = 'none';
+			if (lineTableSel) lineTableSel.style.display = 'none';
 			updateSeatPoolTableHighlights(lastAllocatedLabels);
 		} else {
 			typeTable.classList.add('active');
@@ -1139,6 +1214,10 @@ document.addEventListener('DOMContentLoaded', function() {
 			panelIndiv.style.display = 'none';
 			if (poolLayoutTable) poolLayoutTable.style.display = 'block';
 			if (poolLayoutSeat) poolLayoutSeat.style.display = 'none';
+			if (lineIndivQty) lineIndivQty.style.display = 'none';
+			if (lineIndivAlloc) lineIndivAlloc.style.display = 'none';
+			if (lineTableType) lineTableType.style.display = 'flex';
+			if (lineTableSel) lineTableSel.style.display = 'flex';
 			syncMapTableHighlights();
 		}
 		updateTotal();

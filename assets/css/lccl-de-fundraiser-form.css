@@ -1394,3 +1394,59 @@ body.lccl-modal-prevent-scroll {
 #tableQty.lccl-fr-border-pulse {
     animation: lcclFrBorderPulse 0.9s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
 }
+
+/* Dynamic Booking Summary Styling */
+.lccl-fr-wrapper .summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+    font-size: 15px;
+    gap: 12px;
+}
+
+.lccl-fr-wrapper .summary-line span:first-child {
+    color: #475569;
+    font-weight: 500;
+}
+
+.lccl-fr-wrapper .summary-line strong {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+#summarySelection {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+    transition: opacity 0.15s ease-in-out;
+}
+
+#summarySelection .lccl-fr-allocated-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: baseline;
+    gap: 5px;
+    text-align: right;
+    font-weight: 600;
+}
+
+#summarySelection .lccl-fr-allocated-tbl {
+    color: #0f172a;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+#summarySelection .lccl-fr-allocated-seats {
+    color: #334155;
+    font-weight: 600;
+}
+
+#summaryTableSelection,
+#summaryTableType {
+    text-align: right;
+    color: #0f172a;
+    font-weight: 600;
+}

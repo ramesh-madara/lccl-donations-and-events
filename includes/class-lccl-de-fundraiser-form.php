@@ -519,7 +519,7 @@ class LCCL_DE_Fundraiser_Form {
 			<div style="text-align:center; margin-bottom:24px;">
 				<div style="width:64px; height:64px; line-height:64px; border-radius:50%; background:#dcfce7; color:#16a34a; font-size:32px; margin:0 auto 12px;">✓</div>
 				<h2 style="font-size:24px; font-weight:700; color:#1a1d23; margin:0 0 6px;"><?php esc_html_e( 'Booking Confirmed!', 'lccl-de' ); ?></h2>
-				<p style="color:#6b7280; font-size:14px; margin:0;"><?php esc_html_e( 'Your payment was successful. Your booking is confirmed.', 'lccl-de' ); ?></p>
+				<p style="color:#6b7280; font-size:14px; margin:0;"><?php esc_html_e( 'Your payment was successful, and your booking is confirmed.', 'lccl-de' ); ?></p>
 			</div>
 
 			<div style="background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; padding:20px; margin-bottom:24px;">
@@ -528,7 +528,7 @@ class LCCL_DE_Fundraiser_Form {
 					<strong style="font-family:monospace; font-size:15px; color:#1a1d23;"><?php echo esc_html( $booking['order_ref'] ); ?></strong>
 				</div>
 				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-					<span style="color:#6b7280;"><?php esc_html_e( 'Bank Receipt / Transaction ID', 'lccl-de' ); ?></span>
+					<span style="color:#6b7280;"><?php esc_html_e( 'Payment Transaction ID', 'lccl-de' ); ?></span>
 					<strong style="font-family:monospace; font-size:14px; color:#1a1d23;"><?php echo esc_html( $receipt ); ?></strong>
 				</div>
 				<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
@@ -537,7 +537,7 @@ class LCCL_DE_Fundraiser_Form {
 				</div>
 				<?php if ( $event_date ) : ?>
 					<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-						<span style="color:#6b7280;"><?php esc_html_e( 'Date & Time', 'lccl-de' ); ?></span>
+						<span style="color:#6b7280;"><?php esc_html_e( 'Event Date & Time', 'lccl-de' ); ?></span>
 						<span><?php echo esc_html( $event_date . ( $event_time ? ' at ' . $event_time : '' ) ); ?></span>
 					</div>
 				<?php endif; ?>
@@ -552,12 +552,12 @@ class LCCL_DE_Fundraiser_Form {
 					<span><?php echo esc_html( $is_individual ? 'Individual Seats (' . $booking['qty'] . ')' : 'Whole Table Reservation' ); ?></span>
 				</div>
 				<div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #eee; background:#eff6ff; margin:6px -12px; padding:10px 12px; border-radius:3px;">
-					<span style="color:#1d4ed8; font-weight:600;"><?php echo esc_html( $is_individual ? __( 'Assigned Seat Numbers', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
+					<span style="color:#1d4ed8; font-weight:600;"><?php echo esc_html( $is_individual ? __( 'Assigned Seat(s)', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
 					<strong style="color:#1d4ed8; font-size:16px; font-weight:700;"><?php echo esc_html( $seat_display ); ?></strong>
 				</div>
 				<?php if ( ! empty( $booking['notes'] ) ) : ?>
 					<div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;">
-						<span style="color:#6b7280;"><?php esc_html_e( 'Notes / Requests', 'lccl-de' ); ?></span>
+						<span style="color:#6b7280;"><?php esc_html_e( 'Special Requests', 'lccl-de' ); ?></span>
 						<span style="color:#1a1d23; max-width:60%; text-align:right;"><?php echo esc_html( $booking['notes'] ); ?></span>
 					</div>
 				<?php endif; ?>
@@ -571,7 +571,7 @@ class LCCL_DE_Fundraiser_Form {
 				<p style="margin:0; font-size:13px; color:#166534; line-height:1.5;">
 					<?php printf(
 						/* translators: %s: email */
-						esc_html__( 'A confirmation email with your booking details and allocated seat numbers has been dispatched to %s. Please present your confirmation email or booking reference at the reception counter upon arrival.', 'lccl-de' ),
+						esc_html__( 'A confirmation email containing your booking details and allocated seat numbers has been sent to %s. Please present your confirmation email or booking reference at the reception counter upon arrival.', 'lccl-de' ),
 						'<strong>' . esc_html( $booking['attendee_email'] ) . '</strong>'
 					); ?>
 				</p>
@@ -618,35 +618,36 @@ class LCCL_DE_Fundraiser_Form {
 			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table(s)';
 		}
 
-		$subject = sprintf( '[LCCL] Booking Confirmation: %s (#%s)', $event_name, $booking['order_ref'] );
+		$subject = sprintf( 'Booking Confirmation – %s (%s)', $event_name, $booking['order_ref'] );
 
 		// Email HTML body
 		$body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif; background:#f4f6f8; margin:0; padding:24px;">' .
 			'<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08);">' .
-			'<tr><td style="background:#1a4a8a; padding:24px; text-align:center; color:#fff;">' .
-			'<h1 style="margin:0; font-size:22px; font-weight:700;">Lions Club of Colombo Leads</h1>' .
-			'<p style="margin:6px 0 0; font-size:14px; opacity:0.9;">Event Booking & Seat Allocation Confirmation</p>' .
+			'<tr><td style="background:#1a4a8a; padding:28px 24px 22px; text-align:center; color:#fff;">' .
+			'<div style="margin-bottom:14px;"><img src="https://colomboleads.org/wp-content/uploads/2021/08/NEW-Logo-1.png" alt="LIONS CLUB OF COLOMBO LEADS" width="220" style="display:inline-block; max-width:220px; width:100%; height:auto; background:#ffffff; padding:8px 14px; border-radius:4px; border:0;"></div>' .
+			'<h1 style="margin:0; font-size:20px; font-weight:700; color:#ffffff; letter-spacing:0.04em; text-transform:uppercase;">LIONS CLUB OF COLOMBO LEADS</h1>' .
+			'<p style="margin:6px 0 0; font-size:13px; color:#e0e7ff; opacity:0.95;">Event Booking & Seat Allocation Confirmation</p>' .
 			'</td></tr>' .
 			'<tr><td style="padding:24px 30px;">' .
 			'<p style="font-size:15px; color:#333; margin:0 0 16px;">Dear <strong>' . esc_html( $booking['attendee_name'] ) . '</strong>,</p>' .
 			'<p style="font-size:14px; color:#555; line-height:1.6; margin:0 0 20px;">' .
-			'Thank you for your generous support! Your booking for <strong>' . esc_html( $event_name ) . '</strong> has been successfully processed and confirmed.' .
+			'Thank you for your support. Your booking for <strong>' . esc_html( $event_name ) . '</strong> has been successfully processed and confirmed.' .
 			'</p>' .
 			'<table width="100%" cellpadding="8" cellspacing="0" style="border:1px solid #e5e7eb; border-radius:6px; font-size:13px; margin-bottom:20px;">' .
-			'<tr style="background:#f9fafb;"><td width="40%" style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Order Reference:</td><td style="font-family:monospace; font-weight:bold; color:#1a4a8a; border-bottom:1px solid #e5e7eb;">' . esc_html( $booking['order_ref'] ) . '</td></tr>' .
-			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Bank Receipt / Ref:</td><td style="font-family:monospace; border-bottom:1px solid #e5e7eb;">' . esc_html( $receipt ) . '</td></tr>' .
+			'<tr style="background:#f9fafb;"><td width="40%" style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Booking Reference:</td><td style="font-family:monospace; font-weight:bold; color:#1a4a8a; border-bottom:1px solid #e5e7eb;">' . esc_html( $booking['order_ref'] ) . '</td></tr>' .
+			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Payment Transaction ID:</td><td style="font-family:monospace; border-bottom:1px solid #e5e7eb;">' . esc_html( $receipt ) . '</td></tr>' .
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Event Date & Time:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $event_date . ( $event_time ? ' at ' . $event_time : '' ) ) . '</td></tr>' .
 			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Venue:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $venue ) . '</td></tr>' .
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Booking Type:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $is_individual ? 'Individual Seats' : 'Whole Table' ) . '</td></tr>' .
-			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Quantity:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $booking['qty'] ) . ( $is_individual ? ' seat(s)' : ' table(s)' ) . '</td></tr>' .
-			'<tr style="background:#eff6ff;"><td style="color:#1d4ed8; font-weight:bold; border-bottom:1px solid #e5e7eb;">' . ( $is_individual ? 'Assigned Seat Numbers:' : 'Reserved Tables:' ) . '</td><td style="color:#1d4ed8; font-weight:bold; font-size:15px; border-bottom:1px solid #e5e7eb;">' . esc_html( $seat_display ) . '</td></tr>' .
-			( ! empty( $booking['notes'] ) ? '<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Notes / Requests:</td><td style="border-bottom:1px solid #e5e7eb; color:#333;">' . esc_html( $booking['notes'] ) . '</td></tr>' : '' ) .
+			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">' . ( $is_individual ? 'Number of Seats:' : 'Number of Tables:' ) . '</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $booking['qty'] ) . '</td></tr>' .
+			'<tr style="background:#eff6ff;"><td style="color:#1d4ed8; font-weight:bold; border-bottom:1px solid #e5e7eb;">' . ( $is_individual ? 'Assigned Seat(s):' : 'Reserved Tables:' ) . '</td><td style="color:#1d4ed8; font-weight:bold; font-size:15px; border-bottom:1px solid #e5e7eb;">' . esc_html( $seat_display ) . '</td></tr>' .
+			( ! empty( $booking['notes'] ) ? '<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Special Requests:</td><td style="border-bottom:1px solid #e5e7eb; color:#333;">' . esc_html( $booking['notes'] ) . '</td></tr>' : '' ) .
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280;">Amount Paid:</td><td style="color:#16a34a; font-weight:bold; font-size:15px;">LKR ' . number_format( (float) $booking['amount_lkr'], 2 ) . '</td></tr>' .
 			'</table>' .
 			'<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#92400e;">' .
-			'<strong>Important:</strong> Please present this confirmation email or quote your Order Reference <strong>' . esc_html( $booking['order_ref'] ) . '</strong> at the reception / ticket counter upon arrival at the venue.' .
+			'<strong>Important:</strong> Please present this confirmation email or quote your booking reference <strong>' . esc_html( $booking['order_ref'] ) . '</strong> at the reception/ticket counter upon arrival at the venue.' .
 			'</div>' .
-			'<p style="font-size:13px; color:#777; margin:0;">Warm regards,<br><strong>Lions Club of Colombo Leads</strong></p>' .
+			'<p style="font-size:13px; color:#777; margin:0;">Warm regards,<br><strong>LIONS CLUB OF COLOMBO LEADS</strong></p>' .
 			'</td></tr>' .
 			'<tr><td style="background:#f4f6f8; padding:16px; text-align:center; font-size:11px; color:#888;">' .
 			'Lions Club of Colombo Leads · District 306 B2 · Sri Lanka' .
