@@ -453,7 +453,11 @@
 }
 
 .legend .legend-avail::before {
-    background: #72a8e8;
+    background: #eab308;
+}
+
+.legend .legend-partial::before {
+    background: #f97316;
 }
 
 .legend .legend-blocked::before {
@@ -988,6 +992,12 @@ body.lccl-modal-prevent-scroll {
     border-color: #facc15;
 }
 
+.seat-map-tbl.map-tbl-partial {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fb923c;
+}
+
 .seat-map-tbl.map-tbl-reserved {
     background: #fff7ed;
     color: #9a3412;
@@ -1004,9 +1014,10 @@ body.lccl-modal-prevent-scroll {
 }
 
 .seat-map-tbl.map-tbl-selected {
-    background: #fef3c7;
-    border: 2px solid #b45309;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, .3);
+    background: #fef3c7 !important;
+    border: 2px solid #b45309 !important;
+    box-shadow: 0 0 0 2.5px rgba(245, 158, 11, .35) !important;
+    opacity: 1 !important;
 }
 
 /* Seating plan image responsive (ensure readable on mobile) */

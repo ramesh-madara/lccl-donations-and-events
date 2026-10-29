@@ -120,10 +120,11 @@ $js_data = array(
 	) : array( 'active' => false ),
 );
 
-$initial_preview        = null;
-$initial_allocated_text = '';
-$initial_allocated_html = '';
-$initial_badge_text     = '';
+$initial_preview                = null;
+$initial_allocated_text         = '';
+$initial_allocated_html         = '';
+$initial_badge_text             = '';
+$initial_allocated_table_labels = array();
 if ( $available_seats_count > 0 ) {
 	$init_qty = 1;
 	if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
@@ -137,6 +138,11 @@ if ( $available_seats_count > 0 ) {
 	if ( $initial_preview && ! is_wp_error( $initial_preview ) ) {
 		$initial_allocated_text = $initial_preview['formatted'] ?? '';
 		$initial_allocated_html = $initial_preview['formatted_html'] ?? ( ! empty( $initial_preview['formatted'] ) ? esc_html( $initial_preview['formatted'] ) : '' );
+		if ( ! empty( $initial_preview['table_labels'] ) ) {
+			$initial_allocated_table_labels = (array) $initial_preview['table_labels'];
+		} elseif ( ! empty( $initial_preview['grouped'] ) ) {
+			$initial_allocated_table_labels = array_column( $initial_preview['grouped'], 'table_label' );
+		}
 		if ( ! empty( $initial_preview['is_vip'] ) ) {
 			$initial_badge_text = __( 'VIP Reserved', 'lccl-de' );
 		} elseif ( ! empty( $initial_preview['is_split'] ) || ( ! empty( $initial_preview['grouped'] ) && count( $initial_preview['grouped'] ) > 1 ) ) {
@@ -670,35 +676,106 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				<!-- Visual Seating Map Layout -->
 				<div class="seat-map">
 					<?php
-					$table_pool_tables = array_filter( $tables, function( $t ) { return 'table' === $t['booking_mode']; } );
+					$table_pool_tables       = array_values( array_filter( $tables, function( $t ) { return 'table' === $t['booking_mode']; } ) );
 					$table_pool_booked_total = max( 0, count( $table_pool_tables ) - $total_table_pool_free );
-					if ( ! empty( $table_pool_tables ) ) :
-					?>
-					<!-- Table Pool Visual Mini-Grid (mirrors table selector IDs & statuses) -->
-					<div class="seat-map-tables">
-						<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; margin-bottom: 8px; font-weight: 600;"><?php esc_html_e( 'Table Pool', 'lccl-de' ); ?></div>
-						<div class="seat-map-table-grid">
-							<?php foreach ( $table_pool_tables as $tpt ) :
-								$tpt_booked  = (int) $tpt['is_booked'] === 1;
-								$tpt_blocked = (int) $tpt['is_blocked'] === 1;
-								$tpt_cls     = 'map-tbl-avail';
-								$tpt_title   = $tpt['table_label'] . ' — ' . __( 'Available', 'lccl-de' );
-								if ( $tpt_booked || $tpt_blocked ) {
-									$tpt_cls   = 'map-tbl-booked';
-									$tpt_title = $tpt['table_label'] . ' — ' . __( 'Booked', 'lccl-de' );
-								}
-							?>
-								<div class="seat-map-tbl <?php echo esc_attr( $tpt_cls ); ?>" title="<?php echo esc_attr( $tpt_title ); ?>" data-table-id="<?php echo esc_attr( $tpt['id'] ); ?>">
-									<?php echo esc_html( $tpt['table_label'] ); ?>
-								</div>
-							<?php endforeach; ?>
-						</div>
-					</div>
-					<?php endif; ?>
 
-					<div class="legend">
-						<span class="legend-table"><?php esc_html_e( 'Tables Available', 'lccl-de' ); ?> (<?php echo esc_html( $total_table_pool_free ); ?>)</span>
-						<span class="legend-booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?> (<?php echo esc_html( $table_pool_booked_total ); ?>)</span>
+					// Query seat pool table availability & compute 3 statuses (Available, Partially Booked, Booked)
+					$seat_pool_tables        = LCCL_DE_Fundraiser::get_seat_pool_table_availability( (int) $active_event['id'] );
+					$seat_pool_avail_count   = 0;
+					$seat_pool_partial_count = 0;
+					$seat_pool_booked_count  = 0;
+					$seat_pool_rendered      = array();
+
+					foreach ( $seat_pool_tables as $spt ) {
+						$cap       = (int) ( $spt['capacity'] ?? 0 );
+						$avail_cnt = (int) ( $spt['available_count'] ?? 0 );
+						$is_bl     = ! empty( $spt['is_blocked'] );
+
+						if ( $is_bl || $avail_cnt === 0 ) {
+							$status_cls = 'map-tbl-booked';
+							$status_lbl = __( 'Booked (0 seats available)', 'lccl-de' );
+							$seat_pool_booked_count++;
+						} elseif ( $avail_cnt === $cap ) {
+							$status_cls = 'map-tbl-avail';
+							$status_lbl = sprintf( __( 'Available (%d seats)', 'lccl-de' ), $cap );
+							$seat_pool_avail_count++;
+						} else {
+							$status_cls = 'map-tbl-partial';
+							$status_lbl = sprintf( __( 'Partially Booked (%d of %d seats available)', 'lccl-de' ), $avail_cnt, $cap );
+							$seat_pool_partial_count++;
+						}
+
+						$is_init_selected = in_array( (string) $spt['table_label'], array_map( 'strval', $initial_allocated_table_labels ), true );
+
+						$seat_pool_rendered[] = array(
+							'table_id'    => (int) $spt['table_id'],
+							'table_label' => (string) $spt['table_label'],
+							'status_cls'  => $status_cls . ( $is_init_selected ? ' map-tbl-selected' : '' ),
+							'title'       => $spt['table_label'] . ' — ' . $status_lbl,
+						);
+					}
+
+					$is_initial_table_mode = ( ( $available_seats_count === 0 && $total_table_pool_free > 0 ) || ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) );
+					?>
+
+					<!-- ── 1. SEAT POOL LAYOUT (Active for Individual Seat Booking) ── -->
+					<div id="poolLayoutSeat" class="seat-map-tables" style="display: <?php echo $is_initial_table_mode ? 'none' : 'block'; ?>;">
+						<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; margin-bottom: 8px; font-weight: 600;"><?php esc_html_e( 'Seat Pool', 'lccl-de' ); ?></div>
+						<?php if ( ! empty( $seat_pool_rendered ) ) : ?>
+							<div class="seat-map-table-grid" id="seatMapGridSeat">
+								<?php foreach ( $seat_pool_rendered as $spr ) : ?>
+									<div class="seat-map-tbl <?php echo esc_attr( $spr['status_cls'] ); ?>" 
+										 title="<?php echo esc_attr( $spr['title'] ); ?>" 
+										 data-table-id="<?php echo esc_attr( $spr['table_id'] ); ?>" 
+										 data-table-label="<?php echo esc_attr( $spr['table_label'] ); ?>">
+										<?php echo esc_html( $spr['table_label'] ); ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
+							<div class="legend">
+								<span class="legend-avail"><?php esc_html_e( 'Available', 'lccl-de' ); ?> (<?php echo esc_html( $seat_pool_avail_count ); ?>)</span>
+								<span class="legend-partial"><?php esc_html_e( 'Partially Booked', 'lccl-de' ); ?> (<?php echo esc_html( $seat_pool_partial_count ); ?>)</span>
+								<span class="legend-booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?> (<?php echo esc_html( $seat_pool_booked_count ); ?>)</span>
+							</div>
+						<?php else : ?>
+							<div style="padding: 12px; color: #64748b; font-size: 12px; background: #fff; border-radius: 3px;">
+								<?php esc_html_e( 'No tables currently assigned to the Seat Pool for this event.', 'lccl-de' ); ?>
+							</div>
+						<?php endif; ?>
+					</div>
+
+					<!-- ── 2. TABLE POOL LAYOUT (Active for Full Table Booking) ── -->
+					<div id="poolLayoutTable" class="seat-map-tables" style="display: <?php echo $is_initial_table_mode ? 'block' : 'none'; ?>;">
+						<div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #64748b; margin-bottom: 8px; font-weight: 600;"><?php esc_html_e( 'Table Pool', 'lccl-de' ); ?></div>
+						<?php if ( ! empty( $table_pool_tables ) ) : ?>
+							<div class="seat-map-table-grid" id="seatMapGridTable">
+								<?php foreach ( $table_pool_tables as $tpt ) :
+									$tpt_booked  = (int) $tpt['is_booked'] === 1;
+									$tpt_blocked = (int) $tpt['is_blocked'] === 1;
+									$tpt_cls     = 'map-tbl-avail';
+									$tpt_title   = $tpt['table_label'] . ' — ' . __( 'Available', 'lccl-de' );
+									if ( $tpt_booked || $tpt_blocked ) {
+										$tpt_cls   = 'map-tbl-booked';
+										$tpt_title = $tpt['table_label'] . ' — ' . __( 'Booked', 'lccl-de' );
+									}
+								?>
+									<div class="seat-map-tbl <?php echo esc_attr( $tpt_cls ); ?>" 
+										 title="<?php echo esc_attr( $tpt_title ); ?>" 
+										 data-table-id="<?php echo esc_attr( $tpt['id'] ); ?>" 
+										 data-table-label="<?php echo esc_attr( $tpt['table_label'] ); ?>">
+										<?php echo esc_html( $tpt['table_label'] ); ?>
+									</div>
+								<?php endforeach; ?>
+							</div>
+							<div class="legend">
+								<span class="legend-table"><?php esc_html_e( 'Tables Available', 'lccl-de' ); ?> (<?php echo esc_html( $total_table_pool_free ); ?>)</span>
+								<span class="legend-booked"><?php esc_html_e( 'Booked', 'lccl-de' ); ?> (<?php echo esc_html( $table_pool_booked_total ); ?>)</span>
+							</div>
+						<?php else : ?>
+							<div style="padding: 12px; color: #64748b; font-size: 12px; background: #fff; border-radius: 3px;">
+								<?php esc_html_e( 'No tables currently assigned to the Table Pool for this event.', 'lccl-de' ); ?>
+							</div>
+						<?php endif; ?>
 					</div>
 				</div>
 
@@ -770,6 +847,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	var sumType = document.getElementById('summaryType');
 	var sumQty = document.getElementById('summaryQuantity');
 	var sumSel = document.getElementById('summarySelection');
+
+	var poolLayoutSeat = document.getElementById('poolLayoutSeat');
+	var poolLayoutTable = document.getElementById('poolLayoutTable');
+	var lastAllocatedLabels = <?php echo ! empty( $initial_allocated_table_labels ) ? wp_json_encode( array_values( $initial_allocated_table_labels ) ) : '[]'; ?>;
 
 	var submitBtn = document.getElementById('lccl-fundraiser-submit');
 	var termsAgree = document.getElementById('terms_agree');
@@ -845,6 +926,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 			allocatedSeatsLine.style.display = 'none';
 			allocatedSeatsText.innerHTML = '';
+			lastAllocatedLabels = [];
+			updateSeatPoolTableHighlights([]);
 			return;
 		}
 
@@ -855,6 +938,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 			allocatedSeatsText.style.opacity = '1';
 			allocatedSeatsLine.style.display = 'flex';
+			updateSeatPoolTableHighlights(lastAllocatedLabels);
 			return;
 		}
 
@@ -890,6 +974,8 @@ document.addEventListener('DOMContentLoaded', function() {
 				if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 				var msg = (data && data.data && data.data.message) ? data.data.message : '<?php echo esc_js( __( 'Unable to allocate consecutive seats for this quantity.', 'lccl-de' ) ); ?>';
 				allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + msg + '</span>';
+				lastAllocatedLabels = [];
+				updateSeatPoolTableHighlights([]);
 			}
 		})
 		.catch(function() {
@@ -897,6 +983,8 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 			allocatedSeatsText.style.opacity = '1';
 			allocatedSeatsText.innerHTML = '<span style="color:#dc2626; font-weight:600;">' + '<?php echo esc_js( __( 'Error checking seat allocation.', 'lccl-de' ) ); ?>' + '</span>';
+			lastAllocatedLabels = [];
+			updateSeatPoolTableHighlights([]);
 		});
 	}
 
@@ -907,6 +995,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (groups.length === 0) {
 			if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
 			allocatedSeatsLine.style.display = 'none';
+			lastAllocatedLabels = [];
+			updateSeatPoolTableHighlights([]);
 			return;
 		}
 
@@ -926,6 +1016,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		allocatedSeatsText.innerHTML = html;
 		allocatedSeatsLine.style.display = 'flex';
+
+		// Highlight the allocated tables in the Seat Pool mini-grid
+		var allocLabels = data.table_labels || [];
+		if (!allocLabels.length && data.grouped && data.grouped.length) {
+			allocLabels = data.grouped.map(function(g) { return g.table_label; });
+		}
+		lastAllocatedLabels = allocLabels;
+		updateSeatPoolTableHighlights(allocLabels);
 
 		// Update gold pill status badge
 		if (allocatedSeatsBadge) {
@@ -1031,11 +1129,17 @@ document.addEventListener('DOMContentLoaded', function() {
 			typeTable.classList.remove('active');
 			panelIndiv.style.display = 'block';
 			panelTable.style.display = 'none';
+			if (poolLayoutSeat) poolLayoutSeat.style.display = 'block';
+			if (poolLayoutTable) poolLayoutTable.style.display = 'none';
+			updateSeatPoolTableHighlights(lastAllocatedLabels);
 		} else {
 			typeTable.classList.add('active');
 			typeIndiv.classList.remove('active');
 			panelTable.style.display = 'block';
 			panelIndiv.style.display = 'none';
+			if (poolLayoutTable) poolLayoutTable.style.display = 'block';
+			if (poolLayoutSeat) poolLayoutSeat.style.display = 'none';
+			syncMapTableHighlights();
 		}
 		updateTotal();
 	}
@@ -1341,9 +1445,38 @@ document.addEventListener('DOMContentLoaded', function() {
 		if (submitSpinner) submitSpinner.style.display = 'block';
 	});
 
-	// Sync seating plan table mini-grid highlights with table chip selection
+	function normalizeTableLabel(l) {
+		if (!l) return '';
+		return String(l).trim().toLowerCase().replace(/^table\s+/i, '');
+	}
+
+	// Sync Seat Pool mini-grid highlights with allocated seats preview
+	function updateSeatPoolTableHighlights(allocatedLabels) {
+		allocatedLabels = allocatedLabels || [];
+		var mapTables = document.querySelectorAll('#seatMapGridSeat .seat-map-tbl');
+		if (!mapTables.length) return;
+
+		var normAllocated = allocatedLabels.map(function(lbl) {
+			return normalizeTableLabel(lbl);
+		}).filter(function(lbl) {
+			return lbl !== '';
+		});
+
+		for (var i = 0; i < mapTables.length; i++) {
+			var tbl = mapTables[i];
+			var rawLabel = tbl.getAttribute('data-table-label') || tbl.textContent;
+			var normLabel = normalizeTableLabel(rawLabel);
+			if (normAllocated.indexOf(normLabel) !== -1) {
+				tbl.classList.add('map-tbl-selected');
+			} else {
+				tbl.classList.remove('map-tbl-selected');
+			}
+		}
+	}
+
+	// Sync Table Pool mini-grid highlights with table chip selection
 	function syncMapTableHighlights() {
-		var mapTables = document.querySelectorAll('.seat-map-tbl');
+		var mapTables = document.querySelectorAll('#seatMapGridTable .seat-map-tbl');
 		if (!mapTables.length) return;
 		var selIds = getSelectedTableIds();
 		for (var m = 0; m < mapTables.length; m++) {
@@ -1360,7 +1493,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	var origUpdateTotal = updateTotal;
 	updateTotal = function() {
 		origUpdateTotal();
-		syncMapTableHighlights();
+		if (mode === 'individual') {
+			updateSeatPoolTableHighlights(lastAllocatedLabels);
+		} else {
+			syncMapTableHighlights();
+		}
 	};
 
 	// Initialize VIP Pass state if present
