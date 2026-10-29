@@ -830,31 +830,56 @@ body.lccl-modal-prevent-scroll {
 }
 
 .lccl-fr-table-chip.is-available {
-    border-color: #f7c600;
-    background: #fffdf5;
+    border: 1px solid #35A853;
+    background: #DDF7E5;
+    color: #176B35;
 }
 
 .lccl-fr-table-chip.is-available:hover {
-    border-color: #d97706;
-    background: #fef9c3;
+    border-color: #2e9649;
+    background: #cbf3d6;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(247, 198, 0, .25);
+    box-shadow: 0 4px 8px rgba(53, 168, 83, .22);
+}
+
+.lccl-fr-table-chip.is-available .chip-num {
+    color: #176B35;
+}
+
+.lccl-fr-table-chip.is-available .chip-meta {
+    color: #1e7e3f;
 }
 
 .lccl-fr-table-chip.is-available .chip-status {
-    background: #fef08a;
-    color: #854d0e;
+    background: #c2eed0;
+    color: #176B35;
 }
 
 .lccl-fr-table-chip.is-selected {
-    border: 2px solid #b45309;
-    background: #fef3c7;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, .3);
+    border: 2px solid #2563EB !important;
+    background: #DBEAFE !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .25) !important;
+    color: #1D4ED8 !important;
+}
+
+.lccl-fr-table-chip.is-selected:hover {
+    border-color: #1d4ed8 !important;
+    background: #dbeafe !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, .3) !important;
+}
+
+.lccl-fr-table-chip.is-selected .chip-num {
+    color: #1D4ED8 !important;
+}
+
+.lccl-fr-table-chip.is-selected .chip-meta {
+    color: #1D4ED8 !important;
 }
 
 .lccl-fr-table-chip.is-selected .chip-status {
-    background: #b45309;
-    color: #ffffff;
+    background: #2563EB !important;
+    color: #ffffff !important;
 }
 
 .lccl-fr-table-chip.is-blocked {
@@ -926,13 +951,13 @@ body.lccl-modal-prevent-scroll {
 }
 
 .lccl-fr-legend-swatch--available {
-    background: #fef08a;
-    border: 1.5px solid #f7c600;
+    background: #DDF7E5;
+    border: 1.5px solid #35A853;
 }
 
 .lccl-fr-legend-swatch--selected {
-    background: #b45309;
-    border: 1.5px solid #78350f;
+    background: #2563EB;
+    border: 1.5px solid #1D4ED8;
 }
 
 .lccl-fr-legend-swatch--reserved {

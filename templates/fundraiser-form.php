@@ -376,11 +376,11 @@ if ( $available_seats_count > 0 ) {
 					<div class="lccl-fr-table-legend">
 						<span class="lccl-fr-legend-item">
 							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--available"></span>
-							<strong style="color:#854d0e;"><?php esc_html_e( 'Available', 'lccl-de' ); ?></strong>
+							<strong style="color:#176B35;"><?php esc_html_e( 'Available', 'lccl-de' ); ?></strong>
 						</span>
 						<span class="lccl-fr-legend-item">
 							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--selected"></span>
-							<strong style="color:#b45309;"><?php esc_html_e( 'Selected', 'lccl-de' ); ?></strong>
+							<strong style="color:#1D4ED8;"><?php esc_html_e( 'Selected', 'lccl-de' ); ?></strong>
 						</span>
 					</div>
 
