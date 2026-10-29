@@ -19,6 +19,8 @@ class LCCL_DE_Fundraiser_Form {
 		if ( isset( $_POST[ self::NONCE_FIELD ] ) ) {
 			add_action( 'template_redirect', array( __CLASS__, 'maybe_handle_submit' ) );
 		}
+		add_action( 'wp_ajax_lccl_de_fundraiser_preview_seats', array( __CLASS__, 'ajax_preview_seats' ) );
+		add_action( 'wp_ajax_nopriv_lccl_de_fundraiser_preview_seats', array( __CLASS__, 'ajax_preview_seats' ) );
 	}
 
 	public static function render( $atts ) {
@@ -670,6 +672,24 @@ class LCCL_DE_Fundraiser_Form {
 	 */
 	public static function get_table_labels( $table_ids_csv ) {
 		return LCCL_DE_Fundraiser::get_table_labels( $table_ids_csv );
+	}
+
+	/**
+	 * AJAX endpoint: dynamically preview allocated seats for individual seat selection.
+	 */
+	public static function ajax_preview_seats() {
+		check_ajax_referer( 'lccl_fundraiser_preview_seats', 'nonce' );
+
+		$event_id  = isset( $_POST['event_id'] ) ? (int) $_POST['event_id'] : 0;
+		$qty       = isset( $_POST['qty'] ) ? (int) $_POST['qty'] : 1;
+		$vip_token = isset( $_POST['vip_token'] ) ? sanitize_text_field( wp_unslash( $_POST['vip_token'] ) ) : '';
+
+		$preview = LCCL_DE_Fundraiser::get_party_seat_preview( $event_id, $qty, $vip_token );
+		if ( is_wp_error( $preview ) ) {
+			wp_send_json_error( array( 'message' => $preview->get_error_message() ) );
+		}
+
+		wp_send_json_success( $preview );
 	}
 
 	private static function client_ip() {

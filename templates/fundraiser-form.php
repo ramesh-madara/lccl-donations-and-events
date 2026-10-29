@@ -97,6 +97,9 @@ if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
 
 // Ensure JS gets the data
 $js_data = array(
+	'event_id'              => (int) $active_event['id'],
+	'ajax_url'              => admin_url( 'admin-ajax.php' ),
+	'preview_nonce'         => wp_create_nonce( 'lccl_fundraiser_preview_seats' ),
 	'ticket_price'          => $ticket_price,
 	'currency'              => $currency,
 	'types'                 => $types,
@@ -116,6 +119,19 @@ $js_data = array(
 		'recipient'    => $vip_details['recipient_label'],
 	) : array( 'active' => false ),
 );
+
+$initial_preview = null;
+if ( $available_seats_count > 0 ) {
+	$init_qty = 1;
+	if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
+		$init_qty = (int) ( $vip_details['seat_count'] ?? 1 );
+	}
+	$initial_preview = LCCL_DE_Fundraiser::get_party_seat_preview(
+		(int) $active_event['id'],
+		$init_qty,
+		$is_vip ? $vip_pass_str : ''
+	);
+}
 ?>
 <div class="lccl-fr-wrapper">
 	<div class="lccl-fr-layout">
@@ -217,6 +233,47 @@ $js_data = array(
 					</div>
 				</div>
 
+				<!-- DYNAMIC SEAT ALLOCATION PREVIEW (ABOVE SEAT ALLOCATION) -->
+				<div id="individualSeatPreview" class="lccl-fr-allocated-preview" style="margin-bottom: 12px; <?php echo $available_seats_count === 0 ? 'display:none;' : ''; ?>">
+					<div class="lccl-fr-allocated-preview__header">
+						<div class="lccl-fr-allocated-preview__title">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+							<span><?php esc_html_e( 'Allocated Table & Seat Numbers', 'lccl-de' ); ?></span>
+						</div>
+						<span class="lccl-fr-allocated-preview__badge<?php echo ( ! empty( $initial_preview['is_split'] ) ) ? ' lccl-fr-allocated-preview__badge--split' : ''; ?>" id="allocatedSeatsStatus">
+							<?php
+							if ( $initial_preview && ! is_wp_error( $initial_preview ) ) {
+								if ( ! empty( $initial_preview['is_vip'] ) ) {
+									esc_html_e( 'VIP Reserved', 'lccl-de' );
+								} elseif ( $initial_preview['is_split'] ) {
+									esc_html_e( 'Adjacent Tables', 'lccl-de' );
+								} else {
+									esc_html_e( 'Seated Together', 'lccl-de' );
+								}
+							}
+							?>
+						</span>
+					</div>
+					<div class="lccl-fr-allocated-preview__body" id="allocatedSeatsContent">
+						<?php if ( $initial_preview && ! is_wp_error( $initial_preview ) && ! empty( $initial_preview['grouped'] ) ) : ?>
+							<div class="lccl-fr-seat-groups">
+								<?php foreach ( $initial_preview['grouped'] as $grp ) : ?>
+									<div class="lccl-fr-seat-group">
+										<span class="lccl-fr-table-badge">Table <?php echo esc_html( $grp['table_label'] ); ?></span>
+										<span class="lccl-fr-seat-badges">
+											<?php foreach ( $grp['seat_numbers'] as $sn ) : ?>
+												<span class="lccl-fr-seat-badge<?php echo ! empty( $initial_preview['is_vip'] ) ? ' lccl-fr-seat-badge--vip' : ''; ?>">Seat #<?php echo esc_html( $sn ); ?></span>
+											<?php endforeach; ?>
+										</span>
+									</div>
+								<?php endforeach; ?>
+							</div>
+						<?php else : ?>
+							<span class="lccl-fr-allocated-preview__loading"><?php esc_html_e( 'Select number of seats above to view seat allocation.', 'lccl-de' ); ?></span>
+						<?php endif; ?>
+					</div>
+				</div>
+
 				<?php if ( $available_seats_count === 0 ) : ?>
 					<div class="note" style="margin-bottom: 12px; font-size: 13px; color: #dc2626; font-weight: 600; background: #fef2f2; border-left: 4px solid #dc2626; border-radius: 3px;">
 						<?php esc_html_e( 'Notice: All individual seats for this event are currently booked or reserved.', 'lccl-de' ); ?>
@@ -255,6 +312,9 @@ $js_data = array(
 							<?php foreach ( $types as $t ) : 
 								$s = $type_stats[ $t['id'] ] ?? array( 'table_pool_free' => 0, 'total' => 0, 'table_pool_blocked' => 0, 'table_pool_booked' => 0 );
 								$has_free = $s['table_pool_free'] > 0;
+								if ( ! $has_free ) {
+									continue;
+								}
 								$label_extra = '';
 								if ( $has_free ) {
 									$label_extra = sprintf( __( '— %d available', 'lccl-de' ), $s['table_pool_free'] );
@@ -289,7 +349,7 @@ $js_data = array(
 					<label><?php esc_html_e( 'Select Table(s)', 'lccl-de' ); ?> <span class="required">*</span></label>
 					
 					<!-- Container where interactive chips render -->
-					<div id="tableChipsContainer" class="lccl-fr-table-grid">
+					<div id="tableChipsContainer" class="lccl-fr-table-grid" tabindex="0" role="region" aria-label="<?php esc_attr_e( 'Available tables', 'lccl-de' ); ?>">
 						<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #64748b; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 3px;">
 							<?php esc_html_e( 'Select a table type to view the available tables.', 'lccl-de' ); ?>
 						</div>
@@ -299,23 +359,10 @@ $js_data = array(
 						<span class="lccl-fr-legend-item">
 							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--available"></span>
 							<strong style="color:#854d0e;"><?php esc_html_e( 'Available', 'lccl-de' ); ?></strong>
-							<span class="lccl-fr-legend-sub"><?php esc_html_e( '(select to book)', 'lccl-de' ); ?></span>
 						</span>
 						<span class="lccl-fr-legend-item">
 							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--selected"></span>
 							<strong style="color:#b45309;"><?php esc_html_e( 'Selected', 'lccl-de' ); ?></strong>
-						</span>
-						<span class="lccl-fr-legend-item">
-							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--reserved"></span>
-							<strong style="color:#9a3412;"><?php esc_html_e( 'Reserved', 'lccl-de' ); ?></strong>
-						</span>
-						<span class="lccl-fr-legend-item">
-							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--booked"></span>
-							<strong style="color:#475569;"><?php esc_html_e( 'Booked', 'lccl-de' ); ?></strong>
-						</span>
-						<span class="lccl-fr-legend-item">
-							<span class="lccl-fr-legend-swatch lccl-fr-legend-swatch--unavailable"></span>
-							<strong style="color:#64748b;"><?php esc_html_e( 'Unavailable', 'lccl-de' ); ?></strong>
 						</span>
 					</div>
 
@@ -511,7 +558,11 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							$tbl_str = ! empty( $vip_details['table_labels'] ) ? implode( ', ', $vip_details['table_labels'] ) : 'VIP Table';
 							echo esc_html( $tbl_str . ' (VIP reserved)' );
 						} else {
-							esc_html_e( '1 (Sequential auto-allocation)', 'lccl-de' );
+							if ( $initial_preview && ! is_wp_error( $initial_preview ) && ! empty( $initial_preview['formatted'] ) ) {
+								echo esc_html( $initial_preview['formatted'] );
+							} else {
+								esc_html_e( '1 (Sequential auto-allocation)', 'lccl-de' );
+							}
 						}
 						?>
 					</strong>
@@ -773,6 +824,126 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 	}
 	
+	var previewWrap = document.getElementById('individualSeatPreview');
+	var previewContent = document.getElementById('allocatedSeatsContent');
+	var previewStatus = document.getElementById('allocatedSeatsStatus');
+	var previewTimer = null;
+	var lastFetchedQty = <?php echo ( $initial_preview && ! is_wp_error( $initial_preview ) ) ? (int) $initial_preview['qty'] : 'null'; ?>;
+
+	function fetchSeatAllocationPreview(qty) {
+		if (!previewWrap || !previewContent) return;
+
+		var q = parseInt(qty) || 0;
+		if (q < 1) {
+			previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__loading">' +
+				'<?php echo esc_js( __( 'Please enter a valid number of seats.', 'lccl-de' ) ); ?>' + '</span>';
+			if (previewStatus) {
+				previewStatus.textContent = '';
+				previewStatus.className = 'lccl-fr-allocated-preview__badge';
+			}
+			return;
+		}
+
+		if (q === lastFetchedQty && !previewWrap.classList.contains('is-loading')) {
+			return;
+		}
+
+		previewWrap.classList.add('is-loading');
+		if (previewStatus) {
+			previewStatus.textContent = '<?php echo esc_js( __( 'Checking seats...', 'lccl-de' ) ); ?>';
+			previewStatus.className = 'lccl-fr-allocated-preview__badge';
+		}
+
+		var formData = new FormData();
+		formData.append('action', 'lccl_de_fundraiser_preview_seats');
+		formData.append('event_id', fundData.event_id || 0);
+		formData.append('qty', q);
+		formData.append('nonce', fundData.preview_nonce || '');
+		if (fundData.vip && fundData.vip.active && fundData.vip.token) {
+			formData.append('vip_token', fundData.vip.token);
+		}
+
+		fetch(fundData.ajax_url, {
+			method: 'POST',
+			body: formData,
+			credentials: 'same-origin'
+		})
+		.then(function(res) { return res.json(); })
+		.then(function(data) {
+			previewWrap.classList.remove('is-loading');
+			if (data && data.success && data.data) {
+				lastFetchedQty = q;
+				renderSeatAllocation(data.data);
+			} else {
+				var msg = (data && data.data && data.data.message) ? data.data.message : '<?php echo esc_js( __( 'Unable to load seat allocation.', 'lccl-de' ) ); ?>';
+				previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__error">' + msg + '</span>';
+				if (previewStatus) {
+					previewStatus.textContent = '<?php echo esc_js( __( 'Unavailable', 'lccl-de' ) ); ?>';
+					previewStatus.className = 'lccl-fr-allocated-preview__badge lccl-fr-allocated-preview__badge--error';
+				}
+			}
+		})
+		.catch(function(err) {
+			previewWrap.classList.remove('is-loading');
+			previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__error">' + '<?php echo esc_js( __( 'Error checking seat allocation.', 'lccl-de' ) ); ?>' + '</span>';
+			if (previewStatus) {
+				previewStatus.textContent = '<?php echo esc_js( __( 'Error', 'lccl-de' ) ); ?>';
+				previewStatus.className = 'lccl-fr-allocated-preview__badge lccl-fr-allocated-preview__badge--error';
+			}
+		});
+	}
+
+	function renderSeatAllocation(data) {
+		if (!previewContent) return;
+
+		var groups = data.grouped || [];
+		if (groups.length === 0) {
+			previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__error">' + '<?php echo esc_js( __( 'No seats available for this selection.', 'lccl-de' ) ); ?>' + '</span>';
+			return;
+		}
+
+		var html = '<div class="lccl-fr-seat-groups">';
+		for (var i = 0; i < groups.length; i++) {
+			var grp = groups[i];
+			html += '<div class="lccl-fr-seat-group">';
+			html += '<span class="lccl-fr-table-badge">Table ' + grp.table_label + '</span>';
+			html += '<span class="lccl-fr-seat-badges">';
+			var isVip = data.is_vip ? ' lccl-fr-seat-badge--vip' : '';
+			for (var j = 0; j < grp.seat_numbers.length; j++) {
+				html += '<span class="lccl-fr-seat-badge' + isVip + '">Seat #' + grp.seat_numbers[j] + '</span>';
+			}
+			html += '</span>';
+			html += '</div>';
+		}
+		html += '</div>';
+
+		previewContent.innerHTML = html;
+
+		if (previewStatus) {
+			if (data.is_vip) {
+				previewStatus.textContent = '<?php echo esc_js( __( 'VIP Reserved', 'lccl-de' ) ); ?>';
+				previewStatus.className = 'lccl-fr-allocated-preview__badge';
+			} else if (data.is_split) {
+				previewStatus.textContent = '<?php echo esc_js( __( 'Adjacent Tables', 'lccl-de' ) ); ?>';
+				previewStatus.className = 'lccl-fr-allocated-preview__badge lccl-fr-allocated-preview__badge--split';
+			} else {
+				previewStatus.textContent = '<?php echo esc_js( __( 'Seated Together', 'lccl-de' ) ); ?>';
+				previewStatus.className = 'lccl-fr-allocated-preview__badge';
+			}
+		}
+
+		if (data.formatted && sumSel && mode === 'individual') {
+			sumSel.textContent = data.formatted;
+		}
+	}
+
+	function queueSeatAllocationPreview(qty) {
+		clearTimeout(previewTimer);
+		previewTimer = setTimeout(function() {
+			fetchSeatAllocationPreview(qty);
+		}, 150);
+	}
+
 	function updateTotal() {
 		var tot = 0;
 		if (mode === 'individual') {
@@ -794,6 +965,18 @@ document.addEventListener('DOMContentLoaded', function() {
 				sumSel.textContent = q > 0 ? (q + ' (VIP reserved' + seatDetail + ')') : 'None';
 			} else {
 				sumSel.textContent = q > 0 ? (q + ' (Sequential auto-allocation)') : 'None';
+			}
+
+			// Dynamically fetch allocated seats for selected quantity
+			if (q > 0) {
+				queueSeatAllocationPreview(q);
+			} else if (previewContent) {
+				previewContent.innerHTML = '<span class="lccl-fr-allocated-preview__loading">' +
+					'<?php echo esc_js( __( 'Please select the number of seats above.', 'lccl-de' ) ); ?>' + '</span>';
+				if (previewStatus) {
+					previewStatus.textContent = '';
+					previewStatus.className = 'lccl-fr-allocated-preview__badge';
+				}
 			}
 		} else {
 			var type = selectType.value;
@@ -858,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	
 	inputQty.addEventListener('input', updateTotal);
+	inputQty.addEventListener('change', updateTotal);
 
 	inputTableQty.addEventListener('input', function() {
 		var max = parseInt(this.max) || 1;
@@ -890,6 +1074,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	function renderTableChips(tid) {
 		chipsContainer.innerHTML = '';
+		chipsContainer.scrollTop = 0;
 		selectTable.innerHTML = '';
 
 		if (!tid || tid === '') {
@@ -900,7 +1085,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			return;
 		}
 
-		var tierTables = fundData.tables[tid] || [];
+		var tierTables = (fundData.tables[tid] || []).filter(function(tbl) {
+			var vipUnlocked = parseInt(tbl.is_vip_unlocked) === 1 ||
+				(fundData.vip && fundData.vip.active && fundData.vip.table_ids && fundData.vip.table_ids.indexOf(parseInt(tbl.id)) !== -1);
+			return parseInt(tbl.is_booked) !== 1 &&
+				(vipUnlocked || (tbl.booking_mode === 'table' && parseInt(tbl.is_blocked) !== 1));
+		});
 		if (tierTables.length === 0) {
 			chipsContainer.innerHTML = '<div style="grid-column: 1 / -1; padding: 18px; text-align: center; color: #dc2626; background: #fef2f2; border: 1px dashed #fca5a5; border-radius: 3px;">No tables are currently available for this table type.</div>';
 			inputTableQty.setAttribute('disabled', 'disabled');
@@ -989,10 +1179,6 @@ document.addEventListener('DOMContentLoaded', function() {
 					}
 					updateTotal();
 				});
-			} else if (!isTableMode) {
-				chip.classList.add('in-seat-pool', 'is-unavailable');
-				chip.setAttribute('title', 'Table reserved for individual seat bookings');
-				statusSpan.textContent = 'Unavailable';
 			} else if (isBooked) {
 				chip.classList.add('is-booked');
 				chip.setAttribute('title', 'Table already booked');

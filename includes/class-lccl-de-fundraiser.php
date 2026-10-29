@@ -674,6 +674,120 @@ class LCCL_DE_Fundraiser {
 		return implode( ' & ', $parts );
 	}
 
+	/**
+	 * Get preview of seat and table allocation for a party of $qty.
+	 *
+	 * @param int    $event_id
+	 * @param int    $qty
+	 * @param string $vip_token Optional VIP pass token.
+	 * @return array|WP_Error Array with seat details or WP_Error on failure.
+	 */
+	public static function get_party_seat_preview( $event_id, $qty, $vip_token = '' ) {
+		$event_id = (int) $event_id;
+		$qty      = (int) $qty;
+
+		if ( $event_id < 1 || $qty < 1 ) {
+			return new WP_Error( 'invalid_params', __( 'Please select at least 1 seat.', 'lccl-de' ) );
+		}
+
+		$table_map = self::get_seat_pool_table_availability( $event_id );
+		if ( empty( $table_map ) ) {
+			return new WP_Error( 'no_tables', __( 'No individual seats configured for this event.', 'lccl-de' ) );
+		}
+
+		$allocation = null;
+
+		// 1. VIP Token allocation
+		if ( ! empty( $vip_token ) ) {
+			$vip_details = self::verify_vip_token( $event_id, $vip_token );
+			if ( $vip_details && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
+				$vip_seats = ! empty( $vip_details['seats'] ) ? (array) $vip_details['seats'] : array();
+				if ( $qty > count( $vip_seats ) ) {
+					return new WP_Error( 'vip_limit', sprintf( __( 'This VIP link reserves a maximum of %d seat(s).', 'lccl-de' ), count( $vip_seats ) ) );
+				}
+				$allocated_seat_nums = array_slice( $vip_seats, 0, $qty );
+				$used_tbl_ids        = array();
+				$used_tbl_labels     = array();
+				foreach ( $allocated_seat_nums as $sn ) {
+					foreach ( $table_map as $tbl ) {
+						if ( $sn >= $tbl['start_seat'] && $sn <= $tbl['end_seat'] ) {
+							if ( ! in_array( $tbl['table_id'], $used_tbl_ids, true ) ) {
+								$used_tbl_ids[]    = $tbl['table_id'];
+								$used_tbl_labels[] = $tbl['table_label'];
+							}
+							break;
+						}
+					}
+				}
+				$allocation = array(
+					'seat_numbers' => $allocated_seat_nums,
+					'table_ids'    => $used_tbl_ids,
+					'table_labels' => $used_tbl_labels,
+					'is_split'     => count( $used_tbl_labels ) > 1,
+					'tier'         => 1,
+					'is_vip'       => true,
+				);
+			}
+		}
+
+		// 2. Standard 3-tier allocation
+		if ( ! $allocation ) {
+			$allocation = self::allocate_seats_for_party( $event_id, $qty );
+			if ( empty( $allocation['seat_numbers'] ) ) {
+				$avail_count = count( self::get_available_seat_numbers( $event_id ) );
+				if ( $avail_count < $qty ) {
+					return new WP_Error( 'insufficient_seats', sprintf( __( 'Only %d individual seat(s) currently remain available for this event.', 'lccl-de' ), $avail_count ) );
+				}
+				return new WP_Error( 'allocation_failed', __( 'Unable to allocate contiguous seats for this party size at this time.', 'lccl-de' ) );
+			}
+		}
+
+		// 3. Map seats to tables and build structured grouped response
+		$seat_assignments = array();
+		$grouped          = array();
+
+		foreach ( $allocation['seat_numbers'] as $seat_num ) {
+			$matched_tbl = null;
+			foreach ( $table_map as $tbl ) {
+				if ( $seat_num >= $tbl['start_seat'] && $seat_num <= $tbl['end_seat'] ) {
+					$matched_tbl = $tbl;
+					break;
+				}
+			}
+			$tbl_label = $matched_tbl ? $matched_tbl['table_label'] : 'General';
+			$tbl_id    = $matched_tbl ? (int) $matched_tbl['table_id'] : 0;
+
+			$seat_assignments[] = array(
+				'seat_number' => (int) $seat_num,
+				'table_label' => $tbl_label,
+				'table_id'    => $tbl_id,
+			);
+
+			if ( ! isset( $grouped[ $tbl_label ] ) ) {
+				$grouped[ $tbl_label ] = array(
+					'table_label'  => $tbl_label,
+					'table_id'     => $tbl_id,
+					'seat_numbers' => array(),
+				);
+			}
+			$grouped[ $tbl_label ]['seat_numbers'][] = (int) $seat_num;
+		}
+
+		$formatted = self::format_seats_with_tables( $event_id, $allocation['seat_numbers'] );
+
+		return array(
+			'qty'          => $qty,
+			'seat_numbers' => $allocation['seat_numbers'],
+			'seats'        => $seat_assignments,
+			'grouped'      => array_values( $grouped ),
+			'table_labels' => $allocation['table_labels'],
+			'is_split'     => (bool) ( $allocation['is_split'] ?? false ),
+			'tier'         => (int) ( $allocation['tier'] ?? 1 ),
+			'formatted'    => $formatted,
+			'is_vip'       => ! empty( $allocation['is_vip'] ),
+		);
+	}
+
 	public static function get_blocked_seat_numbers( $event_id ) {
 		global $wpdb;
 		$sb = self::seat_blocks_table();
