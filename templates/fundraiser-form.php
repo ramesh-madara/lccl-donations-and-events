@@ -245,7 +245,7 @@ if ( $available_seats_count > 0 ) {
 				<div class="lccl-fr-row">
 					<div>
 						<label for="ticketQty"><?php esc_html_e( 'Number of Seats', 'lccl-de' ); ?> <span class="required">*</span></label>
-						<input type="number" name="qty" id="ticketQty" min="<?php echo $available_seats_count > 0 ? '1' : '0'; ?>" max="<?php echo esc_attr( min( 10, $available_seats_count ) ); ?>" value="<?php echo $available_seats_count > 0 ? '1' : '0'; ?>" <?php echo $available_seats_count === 0 ? 'disabled' : ''; ?>>
+						<input type="number" name="qty" id="ticketQty" min="<?php echo $available_seats_count > 0 ? '1' : '0'; ?>" max="<?php echo esc_attr( min( 100, $available_seats_count ) ); ?>" value="<?php echo $available_seats_count > 0 ? '1' : '0'; ?>" <?php echo $available_seats_count === 0 ? 'disabled' : ''; ?>>
 					</div>
 					<div>
 						<label><?php esc_html_e( 'Price per Ticket', 'lccl-de' ); ?></label>
@@ -924,7 +924,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		var valid = false;
 		if (mode === 'individual') {
 			var q = parseInt(inputQty.value) || 0;
-			var maxSeats = fundData.available_seats_count || 0;
+			var maxSeats = Math.min( 100, fundData.available_seats_count || 0 );
 			valid = (q > 0 && q <= maxSeats);
 		} else {
 			var tq = parseInt(inputTableQty.value) || 0;
@@ -1113,7 +1113,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		var tot = 0;
 		if (mode === 'individual') {
 			var q = parseInt(inputQty.value) || 0;
-			var maxSeats = fundData.available_seats_count || 0;
+			var maxSeats = Math.min( 100, fundData.available_seats_count || 0 );
 			if (q > maxSeats) {
 				q = maxSeats;
 				inputQty.value = q;
