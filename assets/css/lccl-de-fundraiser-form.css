@@ -354,30 +354,27 @@
     padding-top: 12px;
 }
 
-.dummy-image {
+.dummy-image,
+.event-card-banner {
+    height: 430px;
     min-height: 430px;
-    background:
-        linear-gradient(rgba(12, 47, 95, .78), rgba(12, 47, 95, .68)),
-        radial-gradient(circle at 70% 25%, #f7c600 0 7%, transparent 8%),
-        linear-gradient(135deg, #123c72, #1e5e9d);
-    color: #fff;
+    background: #0c2f5f;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    text-align: center;
-    padding: 35px;
 }
 
-.dummy-image h3 {
-    color: #fff;
-    font-size: 34px;
-    margin: 0 0 15px;
-}
-
-.dummy-image p {
-    color: #fff !important;
-    font-size: 17px;
-    line-height: 1.55;
+.dummy-image img,
+.event-card-banner img,
+.event-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 .event-details {

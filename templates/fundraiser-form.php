@@ -664,11 +664,15 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 
 		<!-- EVENT INFORMATION / SEATING MAP ASIDE -->
 		<aside class="event-card">
-			<div class="dummy-image">
-				<div>
-					<h3><?php esc_html_e( 'TOGETHER,', 'lccl-de' ); ?><br><?php esc_html_e( 'WE SERVE', 'lccl-de' ); ?></h3>
-					<p style="color: #ffffff;"><?php esc_html_e( 'Support our community projects and help us create sustainable impact across our society.', 'lccl-de' ); ?></p>
-				</div>
+			<div class="dummy-image event-card-banner">
+				<img 
+					src="<?php echo esc_url( LCCL_DE_URL . 'assets/img/LIONS_HOPE.jpeg' ); ?>" 
+					alt="<?php esc_attr_e( 'Lions Hope - Lions Club of Colombo Leads', 'lccl-de' ); ?>"
+					class="event-card-img"
+					loading="lazy"
+					width="1600"
+					height="1600"
+				>
 			</div>
 			
 			<div class="event-details">
