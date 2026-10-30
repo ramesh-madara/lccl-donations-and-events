@@ -700,7 +700,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				</div>
 				<div class="detail">
 					<span><?php esc_html_e( 'Tables Available', 'lccl-de' ); ?></span>
-					<span style="color: #854d0e; font-weight: 400;"><?php echo esc_html( $total_table_pool_free ); ?> <?php esc_html_e( 'Tables', 'lccl-de' ); ?></span>
+					<span style="color: #166534; font-weight: 400;"><?php echo esc_html( $total_table_pool_free ); ?> <?php esc_html_e( 'Tables', 'lccl-de' ); ?></span>
 				</div>
 
 				<!-- Visual Seating Map Layout -->
