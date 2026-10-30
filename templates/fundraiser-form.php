@@ -553,7 +553,12 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 
 				<!-- INDIVIDUAL SEATS ROWS -->
 				<div id="summaryLineIndivQty" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
-					<span><?php esc_html_e( 'Assigned Seat(s)', 'lccl-de' ); ?></span>
+					<span id="summaryQuantityLabel">
+						<?php
+						$init_qty = ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ? (int) ( $vip_details['seat_count'] ?? 1 ) : ( $available_seats_count > 0 ? 1 : 0 );
+						echo ( $init_qty > 1 ) ? esc_html__( 'Assigned Seats', 'lccl-de' ) : esc_html__( 'Assigned Seat', 'lccl-de' );
+						?>
+					</span>
 					<span id="summaryQuantity">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
@@ -875,6 +880,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	var totalHid = document.getElementById('lccl-fundraiser-total-hidden');
 	
 	var sumType = document.getElementById('summaryType');
+	var sumQtyLabel = document.getElementById('summaryQuantityLabel');
 	var sumQty = document.getElementById('summaryQuantity');
 	var sumSel = document.getElementById('summarySelection');
 	var sumTableType = document.getElementById('summaryTableType');
@@ -1130,6 +1136,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			if (lineTableSel) lineTableSel.style.display = 'none';
 
 			sumType.textContent = (fundData.vip && fundData.vip.active) ? 'Individual Seats (VIP)' : 'Individual Seats';
+			if (sumQtyLabel) {
+				sumQtyLabel.textContent = (q > 1) ? '<?php echo esc_js( __( 'Assigned Seats', 'lccl-de' ) ); ?>' : '<?php echo esc_js( __( 'Assigned Seat', 'lccl-de' ) ); ?>';
+			}
 			if (sumQty) {
 				sumQty.textContent = q;
 			}
