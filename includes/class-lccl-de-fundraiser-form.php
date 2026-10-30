@@ -632,17 +632,17 @@ class LCCL_DE_Fundraiser_Form {
 		$subject = sprintf( 'Booking Confirmation – %s (%s)', $event_name, $booking['order_ref'] );
 
 		$logo_url = function_exists( 'content_url' )
-			? content_url( '/uploads/2021/09/Logo-resize-replace-01.png' )
-			: 'http://lccl.local/wp-content/uploads/2021/09/Logo-resize-replace-01.png';
+			? content_url( '/uploads/2021/09/Logo-resize-replace-01.png?v=2' )
+			: LCCL_DE_URL . 'assets/img/lccl-logo-email.png';
 
 		// Email HTML body
 		$body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif; background:#f4f6f8; margin:0; padding:24px;">' .
 			'<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08);">' .
-			'<tr><td style="background:#1a4a8a; padding:24px 20px 20px; text-align:center; color:#fff;">' .
-			'<div style="text-align:center; margin-bottom:14px;">' .
-			'<table align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto; display:inline-table;">' .
-			'<tr><td style="background:#ffffff; padding:6px 14px; border-radius:6px; text-align:center;">' .
-			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="125" style="display:block; max-width:125px; width:100%; height:auto; border:0; vertical-align:middle;">' .
+			'<tr><td style="background:#1a4a8a; padding:22px 20px 20px; text-align:center; color:#fff;">' .
+			'<div style="text-align:center; margin-bottom:12px;">' .
+			'<table align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto; display:inline-table; border-collapse:collapse;">' .
+			'<tr><td align="center" valign="middle" style="background:#ffffff; padding:4px 8px; border-radius:4px; text-align:center; vertical-align:middle; line-height:0;">' .
+			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="105" height="26" style="display:block; margin:0 auto; border:0; max-width:105px; width:105px; height:auto; vertical-align:middle;">' .
 			'</td></tr></table>' .
 			'</div>' .
 			'<h1 style="margin:0; font-size:18px; font-weight:700; color:#ffffff; letter-spacing:0.04em; text-transform:uppercase;">LIONS CLUB OF COLOMBO LEADS</h1>' .
