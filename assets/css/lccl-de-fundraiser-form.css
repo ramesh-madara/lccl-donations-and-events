@@ -1394,9 +1394,44 @@ body.lccl-modal-prevent-scroll {
     vertical-align: top;
     text-align: left;
     padding-bottom: 3px;
-    color: #334155;
+    color: #0f172a;
     font-weight: 400 !important;
     word-break: normal;
+}
+
+/* Allocated Seats Preview in Seat Info Card */
+#allocatedSeatsLine {
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
+    color: #0f172a !important;
+    line-height: 1.5 !important;
+}
+
+#allocatedSeatsLine span,
+#allocatedSeatsLine div,
+#allocatedSeatsText,
+#allocatedSeatsText .lccl-fr-allocated-table,
+#allocatedSeatsText .lccl-fr-allocated-row,
+#allocatedSeatsText .lccl-fr-allocated-tbl,
+#allocatedSeatsText .lccl-fr-allocated-seats {
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
+    color: #0f172a !important;
+    line-height: 1.5 !important;
+}
+
+.lccl-fr-seat-info-vip #allocatedSeatsLine,
+.lccl-fr-seat-info-vip #allocatedSeatsLine span,
+.lccl-fr-seat-info-vip #allocatedSeatsLine div,
+.lccl-fr-seat-info-vip #allocatedSeatsText,
+.lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-table,
+.lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-row,
+.lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-tbl,
+.lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-seats {
+    font-size: 13.5px !important;
+    font-weight: 400 !important;
+    color: #78350f !important;
+    line-height: 1.5 !important;
 }
 
 /* Table Quantity Read-Only Input & Pulse Animation */

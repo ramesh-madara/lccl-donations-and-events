@@ -264,7 +264,7 @@ if ( $available_seats_count > 0 ) {
 				<?php endif; ?>
 
 				<?php if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) : ?>
-					<div class="seat-info" id="indivSeatInfoCard" style="padding: 12px 16px; background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.5; border-radius: 3px; color: #92400e;">
+					<div class="seat-info lccl-fr-seat-info-vip" id="indivSeatInfoCard" style="padding: 12px 16px; background: #fefce8; border: 1px solid #fde047; border-left: 4px solid #d97706; font-size: 13px; line-height: 1.5; border-radius: 3px; color: #92400e;">
 						<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px;">
 							<div style="font-size: 14px;">
 								<strong style="color: #78350f;"><?php esc_html_e( 'Seats to be allocated:', 'lccl-de' ); ?></strong> <span id="indivSeatCount" style="color: #78350f; font-weight: 700;"><?php echo (int) ( $vip_details['seat_count'] ?? 1 ); ?></span>
@@ -284,7 +284,7 @@ if ( $available_seats_count > 0 ) {
 									<svg class="lccl-fr-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
 								</span>
 							</div>
-							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #78350f; font-weight: 600;">
+							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #78350f; font-weight: 400;">
 								<?php echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						</div>
@@ -303,14 +303,14 @@ if ( $available_seats_count > 0 ) {
 						<div style="margin-bottom: 4px; color: #475569;">
 							<?php esc_html_e( 'Your consecutive seat numbers will be sent to your registered email address and mobile number once your payment is successful.', 'lccl-de' ); ?>
 						</div>
-						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #475569;">
+						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #0f172a;">
 							<div style="flex: 0 0 auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;">
 								<span><?php esc_html_e( 'Your allocated seats:', 'lccl-de' ); ?></span>
 								<span id="allocatedSeatsSpinner" style="display: none; line-height: 1;">
 									<svg class="lccl-fr-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #2563eb;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
 								</span>
 							</div>
-							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #334155; font-weight: 500;">
+							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #0f172a; font-weight: 400;">
 								<?php echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						</div>
