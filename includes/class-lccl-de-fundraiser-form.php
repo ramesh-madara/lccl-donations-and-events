@@ -644,7 +644,7 @@ class LCCL_DE_Fundraiser_Form {
 			'<tr><td align="center" valign="middle" style="background:#ffffff; padding:4px 5px; border-radius:3px; text-align:center; vertical-align:middle; line-height:0;">' .
 			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="105" height="26" style="display:block; margin:0 auto; border:0; max-width:105px; width:105px; height:auto; vertical-align:middle;">' .
 			'</td></tr></table>' .
-			'</div>' .
+			'</div>' . 
 			'<h1 style="margin:0; font-size:18px; font-weight:700; color:#ffffff; letter-spacing:0.04em; text-transform:uppercase;">LIONS CLUB OF COLOMBO LEADS</h1>' .
 			'<p style="margin:6px 0 0; font-size:13px; color:#e0e7ff; opacity:0.95;">Event Booking & Seat Allocation Confirmation</p>' .
 			'</td></tr>' .
