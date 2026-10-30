@@ -566,7 +566,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				</div>
 				<div id="summaryLineIndivAlloc" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span style="flex-shrink: 0;"><?php esc_html_e( 'Your allocated seats', 'lccl-de' ); ?></span>
-					<span id="summarySelection" style="text-align: right; max-width: 75%;">
+					<div id="summarySelection" style="margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							$cnt = (int) ( $vip_details['seat_count'] ?? 1 );
@@ -580,7 +580,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							}
 						}
 						?>
-					</span>
+					</div>
 				</div>
 
 				<!-- TABLE BOOKING ROWS -->
@@ -598,7 +598,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				</div>
 				<div id="summaryLineTableSel" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span style="flex-shrink: 0;"><?php esc_html_e( 'Tables Selected', 'lccl-de' ); ?></span>
-					<span id="summaryTableSelection" style="text-align: right; max-width: 75%;">
+					<div id="summaryTableSelection" style="margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
 						<?php
 						if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							$tbl_str = ! empty( $vip_details['table_labels'] ) ? implode( ', ', $vip_details['table_labels'] ) : 'VIP Table';
@@ -607,7 +607,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							esc_html_e( 'None selected', 'lccl-de' );
 						}
 						?>
-					</span>
+					</div>
 				</div>
 
 				<div class="total">

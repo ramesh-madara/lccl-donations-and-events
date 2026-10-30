@@ -1471,52 +1471,84 @@ body.lccl-modal-prevent-scroll {
 
 #summaryType,
 #summaryQuantity,
-#summarySelection,
-#summaryTableType,
-#summaryTableSelection {
+#summaryTableType {
     color: #0f172a;
     font-weight: 400 !important;
     text-align: right;
 }
 
-#summarySelection {
-    display: block;
-    text-align: right;
+.lccl-fr-wrapper #summaryLineIndivAlloc,
+.lccl-fr-wrapper #summaryLineTableSel {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 8px 16px !important;
+    width: 100% !important;
+}
+
+.lccl-fr-wrapper #summaryLineIndivAlloc > span:first-child,
+.lccl-fr-wrapper #summaryLineTableSel > span:first-child {
+    flex: 0 0 auto !important;
+    color: #475569;
+    font-weight: 400 !important;
+}
+
+#summarySelection,
+#summaryTableSelection {
+    flex: 1 1 auto;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    justify-content: flex-start !important;
+    margin-left: auto !important;
+    text-align: right !important;
+    color: #0f172a;
+    font-weight: 400 !important;
+    min-width: 0 !important;
+    max-width: 100%;
     transition: opacity 0.15s ease-in-out;
 }
 
-#summarySelection .lccl-fr-allocated-table {
-    display: table;
-    border-collapse: collapse;
-    margin-left: auto;
-    text-align: left;
+#summarySelection .lccl-fr-allocated-table,
+#summaryTableSelection .lccl-fr-allocated-table {
+    display: table !important;
+    border-collapse: collapse !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+    text-align: left !important;
+    font-weight: 400 !important;
+    width: auto !important;
+    max-width: 100% !important;
+}
+
+#summarySelection .lccl-fr-allocated-row,
+#summaryTableSelection .lccl-fr-allocated-row {
+    display: table-row !important;
     font-weight: 400 !important;
 }
 
-#summarySelection .lccl-fr-allocated-row {
-    display: table-row;
+#summarySelection .lccl-fr-allocated-tbl,
+#summaryTableSelection .lccl-fr-allocated-tbl {
+    display: table-cell !important;
+    white-space: nowrap !important;
+    padding-right: 12px !important;
+    padding-bottom: 4px !important;
+    vertical-align: top !important;
+    text-align: left !important;
+    color: #0f172a !important;
     font-weight: 400 !important;
 }
 
-#summarySelection .lccl-fr-allocated-tbl {
-    display: table-cell;
-    white-space: nowrap;
-    padding-right: 10px;
-    padding-bottom: 4px;
-    vertical-align: top;
-    text-align: left;
-    color: #0f172a;
+#summarySelection .lccl-fr-allocated-seats,
+#summaryTableSelection .lccl-fr-allocated-seats {
+    display: table-cell !important;
+    vertical-align: top !important;
+    text-align: left !important;
+    padding-bottom: 4px !important;
+    color: #334155 !important;
     font-weight: 400 !important;
-}
-
-#summarySelection .lccl-fr-allocated-seats {
-    display: table-cell;
-    vertical-align: top;
-    text-align: left;
-    padding-bottom: 4px;
-    color: #334155;
-    font-weight: 400 !important;
-    word-break: normal;
+    word-break: normal !important;
 }
 
 /* ───────────────────────────────────────────────────────────
