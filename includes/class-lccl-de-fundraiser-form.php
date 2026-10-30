@@ -507,6 +507,7 @@ class LCCL_DE_Fundraiser_Form {
 		$event_time = ! empty( $event['event_time'] ) ? date( 'h:i A', strtotime( $event['event_time'] ) ) : '';
 
 		$is_individual = ( 'individual' === $booking['booking_type'] );
+		$is_single_qty = ( (int) ( $booking['qty'] ?? 1 ) === 1 );
 		$seat_display = '';
 		if ( $is_individual ) {
 			$seat_nums = array_filter( array_map( 'trim', explode( ',', $booking['seat_numbers'] ?? '' ) ) );
@@ -518,6 +519,10 @@ class LCCL_DE_Fundraiser_Form {
 			$table_labels = self::get_table_labels( $booking['table_ids'] ?? '' );
 			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table(s)';
 		}
+
+		$ui_allocation_label = $is_individual
+			? ( $is_single_qty ? __( 'Assigned Seat', 'lccl-de' ) : __( 'Assigned Seats', 'lccl-de' ) )
+			: ( $is_single_qty ? __( 'Reserved Table', 'lccl-de' ) : __( 'Reserved Tables', 'lccl-de' ) );
 
 		ob_start();
 		?>
@@ -558,7 +563,7 @@ class LCCL_DE_Fundraiser_Form {
 					<span class="lccl-fr-conf-val"><?php echo esc_html( $is_individual ? 'Individual Seats (' . $booking['qty'] . ')' : 'Whole Table Reservation' ); ?></span>
 				</div>
 				<div class="lccl-fr-conf-row lccl-fr-conf-row--highlight">
-					<span class="lccl-fr-conf-label"><?php echo esc_html( $is_individual ? __( 'Assigned Seat(s)', 'lccl-de' ) : __( 'Reserved Table(s)', 'lccl-de' ) ); ?></span>
+					<span class="lccl-fr-conf-label"><?php echo esc_html( $ui_allocation_label ); ?></span>
 					<strong class="lccl-fr-conf-val lccl-fr-conf-seats"><?php echo esc_html( $seat_display ); ?></strong>
 				</div>
 				<?php if ( ! empty( $booking['notes'] ) ) : ?>
@@ -607,7 +612,8 @@ class LCCL_DE_Fundraiser_Form {
 		$event_time = ! empty( $event['event_time'] ) ? date( 'h:i A', strtotime( $event['event_time'] ) ) : '';
 
 		$is_individual = ( 'individual' === $booking['booking_type'] );
-		$seat_display = '';
+		$is_single_qty = ( (int) ( $booking['qty'] ?? 1 ) === 1 );
+		$seat_display  = '';
 		if ( $is_individual ) {
 			$seat_nums = array_filter( array_map( 'trim', explode( ',', $booking['seat_numbers'] ?? '' ) ) );
 			$seat_display = LCCL_DE_Fundraiser::format_seats_with_tables( (int) $booking['event_id'], $seat_nums );
@@ -619,6 +625,10 @@ class LCCL_DE_Fundraiser_Form {
 			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table(s)';
 		}
 
+		$email_allocation_label = $is_individual
+			? ( $is_single_qty ? 'Assigned Seat:' : 'Assigned Seats:' )
+			: ( $is_single_qty ? 'Reserved Table:' : 'Reserved Tables:' );
+
 		$subject = sprintf( 'Booking Confirmation – %s (%s)', $event_name, $booking['order_ref'] );
 
 		$logo_url = function_exists( 'content_url' )
@@ -629,8 +639,11 @@ class LCCL_DE_Fundraiser_Form {
 		$body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif; background:#f4f6f8; margin:0; padding:24px;">' .
 			'<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08);">' .
 			'<tr><td style="background:#1a4a8a; padding:24px 20px 20px; text-align:center; color:#fff;">' .
-			'<div style="text-align:center; margin-bottom:12px;">' .
-			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="140" style="display:inline-block; max-width:140px; width:100%; height:auto; border:0; vertical-align:middle;">' .
+			'<div style="text-align:center; margin-bottom:14px;">' .
+			'<table align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto; display:inline-table;">' .
+			'<tr><td style="background:#ffffff; padding:6px 14px; border-radius:6px; text-align:center;">' .
+			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="125" style="display:block; max-width:125px; width:100%; height:auto; border:0; vertical-align:middle;">' .
+			'</td></tr></table>' .
 			'</div>' .
 			'<h1 style="margin:0; font-size:18px; font-weight:700; color:#ffffff; letter-spacing:0.04em; text-transform:uppercase;">LIONS CLUB OF COLOMBO LEADS</h1>' .
 			'<p style="margin:6px 0 0; font-size:13px; color:#e0e7ff; opacity:0.95;">Event Booking & Seat Allocation Confirmation</p>' .
@@ -647,17 +660,17 @@ class LCCL_DE_Fundraiser_Form {
 			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Venue:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $venue ) . '</td></tr>' .
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Booking Type:</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $is_individual ? 'Individual Seats' : 'Whole Table' ) . '</td></tr>' .
 			'<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">' . ( $is_individual ? 'Number of Seats:' : 'Number of Tables:' ) . '</td><td style="border-bottom:1px solid #e5e7eb;">' . esc_html( $booking['qty'] ) . '</td></tr>' .
-			'<tr style="background:#eff6ff;"><td style="color:#1d4ed8; font-weight:bold; border-bottom:1px solid #e5e7eb;">' . ( $is_individual ? 'Assigned Seat(s):' : 'Reserved Tables:' ) . '</td><td style="color:#1d4ed8; font-weight:bold; font-size:15px; border-bottom:1px solid #e5e7eb;">' . esc_html( $seat_display ) . '</td></tr>' .
+			'<tr style="background:#eff6ff;"><td style="color:#1d4ed8; font-weight:bold; border-bottom:1px solid #e5e7eb;">' . esc_html( $email_allocation_label ) . '</td><td style="color:#1d4ed8; font-weight:bold; font-size:15px; border-bottom:1px solid #e5e7eb;">' . esc_html( $seat_display ) . '</td></tr>' .
 			( ! empty( $booking['notes'] ) ? '<tr><td style="color:#6b7280; border-bottom:1px solid #e5e7eb;">Special Requests:</td><td style="border-bottom:1px solid #e5e7eb; color:#333;">' . esc_html( $booking['notes'] ) . '</td></tr>' : '' ) .
 			'<tr style="background:#f9fafb;"><td style="color:#6b7280;">Amount Paid:</td><td style="color:#16a34a; font-weight:bold; font-size:15px;">LKR ' . number_format( (float) $booking['amount_lkr'], 2 ) . '</td></tr>' .
 			'</table>' .
 			'<div style="background:#fffbeb; border-left:4px solid #f59e0b; padding:12px 16px; margin-bottom:20px; font-size:13px; color:#92400e;">' .
 			'<strong>Important:</strong> Please present this confirmation email or quote your booking reference <strong>' . esc_html( $booking['order_ref'] ) . '</strong> at the reception/ticket counter upon arrival at the venue.' .
 			'</div>' .
-			'<p style="font-size:13px; color:#777; margin:0; line-height:1.6;">Best regards,<br><br><strong>LIONS CLUB OF COLOMBO LEADS</strong></p>' .
+			'<p style="font-size:13px; color:#555; margin:0; line-height:1.4;">Best regards,<br><span style="display:inline-block; margin-top:6px; font-weight:bold; color:#1a1d23;">LIONS CLUB OF COLOMBO LEADS</span></p>' .
 			'</td></tr>' .
 			'<tr><td style="background:#f4f6f8; padding:16px; text-align:center; font-size:11px; color:#888;">' .
-			'Lions Club of Colombo Leads · District 306 B2 · Sri Lanka' .
+			'LIONS CLUB OF COLOMBO LEADS · DISTRICT 306 D6 · SRI LANKA' .
 			'</td></tr>' .
 			'</table></body></html>';
 
