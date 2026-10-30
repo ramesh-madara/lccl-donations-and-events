@@ -641,7 +641,7 @@ class LCCL_DE_Fundraiser_Form {
 			'<tr><td style="background:#1a4a8a; padding:22px 20px 20px; text-align:center; color:#fff;">' .
 			'<div style="text-align:center; margin-bottom:12px;">' .
 			'<table align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto; display:inline-table; border-collapse:collapse;">' .
-			'<tr><td align="center" valign="middle" style="background:#ffffff; padding:4px 8px; border-radius:4px; text-align:center; vertical-align:middle; line-height:0;">' .
+			'<tr><td align="center" valign="middle" style="background:#ffffff; padding:4px 5px; border-radius:4px; text-align:center; vertical-align:middle; line-height:0;">' .
 			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="105" height="26" style="display:block; margin:0 auto; border:0; max-width:105px; width:105px; height:auto; vertical-align:middle;">' .
 			'</td></tr></table>' .
 			'</div>' .
