@@ -611,7 +611,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				</div>
 
 				<div class="total">
-					<span><?php esc_html_e( 'Total Amount', 'lccl-de' ); ?></span>
+					<span><?php esc_html_e( 'TOTAL AMOUNT', 'lccl-de' ); ?></span>
 					<span><?php echo esc_html( $currency ); ?> <span id="lccl-fundraiser-total-display"><?php echo number_format( $ticket_price, 2 ); ?></span></span>
 					<input type="hidden" name="total_amount" id="lccl-fundraiser-total-hidden" value="<?php echo esc_attr( $ticket_price ); ?>">
 				</div>
