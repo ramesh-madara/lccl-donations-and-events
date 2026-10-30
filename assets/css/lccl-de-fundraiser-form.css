@@ -384,8 +384,10 @@
     padding: 24px;
 }
 
-.event-details .lccl-fr-wrapper h2 {
+.lccl-fr-wrapper .event-details h2,
+.event-details h2 {
     margin-bottom: 18px;
+    font-weight: 400 !important;
 }
 
 .detail {
@@ -394,10 +396,20 @@
     border-bottom: 1px solid #eee;
     padding: 10px 0;
     gap: 15px;
+    font-weight: 400 !important;
 }
 
+.detail span,
 .detail strong {
-    font-weight: 500;
+    font-weight: 400 !important;
+}
+
+.detail span:first-child {
+    text-align: left;
+}
+
+.detail span:last-child,
+.detail strong {
     text-align: right;
 }
 

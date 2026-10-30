@@ -672,31 +672,31 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 			</div>
 			
 			<div class="event-details">
-				<h2><?php echo esc_html( $active_event['name'] ); ?></h2>
+				<h2 style="font-weight: 400;"><?php echo esc_html( $active_event['name'] ); ?></h2>
 				<div class="detail">
 					<span><?php esc_html_e( 'Date', 'lccl-de' ); ?></span>
-					<strong><?php echo esc_html( $active_event['event_date'] ? date( 'j F Y', strtotime( $active_event['event_date'] ) ) : 'TBA' ); ?></strong>
+					<span><?php echo esc_html( $active_event['event_date'] ? date( 'j F Y', strtotime( $active_event['event_date'] ) ) : 'TBA' ); ?></span>
 				</div>
 				<div class="detail">
 					<span><?php esc_html_e( 'Time', 'lccl-de' ); ?></span>
-					<strong><?php echo esc_html( $active_event['event_time'] ? date( 'h:i A', strtotime( $active_event['event_time'] ) ) : 'TBA' ); ?></strong>
+					<span><?php echo esc_html( $active_event['event_time'] ? date( 'h:i A', strtotime( $active_event['event_time'] ) ) : 'TBA' ); ?></span>
 				</div>
 				<div class="detail">
 					<span><?php esc_html_e( 'Venue', 'lccl-de' ); ?></span>
-					<strong><?php echo esc_html( $active_event['venue'] ?: 'TBA' ); ?></strong>
+					<span><?php echo esc_html( $active_event['venue'] ?: 'TBA' ); ?></span>
 				</div>
 				<div class="detail">
 					<span><?php esc_html_e( 'Price per Ticket (for individual tickets)', 'lccl-de' ); ?></span>
-					<strong><?php echo esc_html( $currency ); ?> <?php echo esc_html( number_format( $ticket_price, 2 ) ); ?></strong>
+					<span><?php echo esc_html( $currency ); ?> <?php echo esc_html( number_format( $ticket_price, 2 ) ); ?></span>
 				</div>
 
 				<div class="detail">
 					<span><?php esc_html_e( 'Individual Seats Available', 'lccl-de' ); ?></span>
-					<strong style="color: #166534; font-weight:600;"><?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'Seats', 'lccl-de' ); ?></strong>
+					<span style="color: #166534; font-weight: 400;"><?php echo esc_html( $available_seats_count ); ?> <?php esc_html_e( 'Seats', 'lccl-de' ); ?></span>
 				</div>
 				<div class="detail">
 					<span><?php esc_html_e( 'Tables Available', 'lccl-de' ); ?></span>
-					<strong style="color: #854d0e; font-weight:600;"><?php echo esc_html( $total_table_pool_free ); ?> <?php esc_html_e( 'Tables', 'lccl-de' ); ?></strong>
+					<span style="color: #854d0e; font-weight: 400;"><?php echo esc_html( $total_table_pool_free ); ?> <?php esc_html_e( 'Tables', 'lccl-de' ); ?></span>
 				</div>
 
 				<!-- Visual Seating Map Layout -->
