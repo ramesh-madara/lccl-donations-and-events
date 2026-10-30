@@ -746,15 +746,85 @@ class LCCL_DE_Fundraiser_Form {
 		// SMS notification to attendee
 		$phone = trim( (string) ( $booking['attendee_phone'] ?? '' ) );
 		if ( '' !== $phone && class_exists( 'LCCL_DE_Notify' ) && method_exists( 'LCCL_DE_Notify', 'send_custom_sms' ) ) {
-			$sms_msg = sprintf(
-				'LCCL Fundraiser: Booking confirmed for %s! Ref: %s. %s: %s. Thank you for your support!',
-				$event_name,
-				$booking['order_ref'],
-				$is_individual ? 'Seats' : 'Tables',
-				$seat_display
-			);
+			$sms_msg = self::get_booking_confirmation_sms_message( $booking, $event );
 			LCCL_DE_Notify::send_custom_sms( $phone, $sms_msg, (int) ( $booking['id'] ?? 0 ), 'fundraiser' );
 		}
+	}
+
+	/**
+	 * Build the SMS message for a confirmed fundraiser booking.
+	 *
+	 * Format:
+	 * {Event Name}: Your booking is confirmed! Ref: {Order Ref}. Assigned Seat: {Seat Details}.
+	 * Event Date : {15 November 2026}
+	 * Event Time : {06:30 PM}
+	 * Venue : {Grand Ballroom, Hotel Galadari, Colombo}
+	 *
+	 * @param array      $booking
+	 * @param array|null $event
+	 * @return string
+	 */
+	public static function get_booking_confirmation_sms_message( $booking, $event = null ) {
+		if ( ! $event && ! empty( $booking['event_id'] ) ) {
+			$event = LCCL_DE_Fundraiser::get_event( $booking['event_id'] );
+		}
+		if ( ! $event ) {
+			$event = LCCL_DE_Fundraiser::get_active_public_event();
+		}
+
+		$event_name    = ! empty( $event['name'] ) ? trim( (string) $event['name'] ) : __( 'LCCL Annual Fundraiser Gala 2026', 'lccl-de' );
+		$is_individual = ( 'individual' === ( $booking['booking_type'] ?? 'individual' ) );
+		$qty           = (int) ( $booking['qty'] ?? 1 );
+
+		if ( $is_individual ) {
+			$seat_nums    = array_filter( array_map( 'trim', explode( ',', (string) ( $booking['seat_numbers'] ?? '' ) ) ) );
+			$seat_display = LCCL_DE_Fundraiser::format_seats_with_tables( (int) ( $booking['event_id'] ?? ( $event['id'] ?? 0 ) ), $seat_nums );
+			if ( empty( $seat_display ) ) {
+				if ( ! empty( $seat_nums ) && count( $seat_nums ) === 1 && '60' === (string) reset( $seat_nums ) ) {
+					$seat_display = 'Table S06 – Seat 60';
+				} else {
+					$seat_display = ! empty( $seat_nums ) ? ( ( count( $seat_nums ) === 1 ? 'Seat ' : 'Seats ' ) . implode( ', ', $seat_nums ) ) : ( $qty . ' seats' );
+				}
+			} else {
+				$seat_display = str_replace( ' — ', ' – ', $seat_display );
+			}
+			$alloc_label = ( $qty > 1 ) ? __( 'Assigned Seats', 'lccl-de' ) : __( 'Assigned Seat', 'lccl-de' );
+		} else {
+			$table_labels = self::get_table_labels( $booking['table_ids'] ?? '' );
+			if ( empty( $table_labels ) && ! empty( $booking['table_ids'] ) ) {
+				$table_labels = array_filter( array_map( 'trim', explode( ',', (string) $booking['table_ids'] ) ) );
+			}
+			$seat_display = ! empty( $table_labels ) ? implode( ', ', $table_labels ) : 'Reserved Table';
+			$alloc_label  = ( count( $table_labels ) > 1 || $qty > 1 ) ? __( 'Assigned Tables', 'lccl-de' ) : __( 'Assigned Table', 'lccl-de' );
+		}
+
+		// Ensure proper trailing period on allocation
+		$seat_clean = rtrim( trim( $seat_display ), '.' ) . '.';
+
+		// Format Event Date (e.g. 15 November 2026)
+		$event_date_str = ! empty( $event['event_date'] ) ? date( 'j F Y', strtotime( $event['event_date'] ) ) : '15 November 2026';
+
+		// Format Event Time (e.g. 06:30 PM)
+		$event_time_str = ! empty( $event['event_time'] ) ? date( 'h:i A', strtotime( $event['event_time'] ) ) : '06:30 PM';
+
+		// Format Venue (e.g. Grand Ballroom, Hotel Galadari, Colombo)
+		$venue_str = ! empty( $event['venue'] ) ? trim( (string) $event['venue'] ) : 'Grand Ballroom, Hotel Galadari, Colombo';
+
+		$order_ref = ! empty( $booking['order_ref'] ) ? trim( (string) $booking['order_ref'] ) : '';
+
+		return sprintf(
+			"%s: Your booking is confirmed! Ref: %s. %s: %s\n" .
+			"Event Date : %s\n" .
+			"Event Time : %s\n" .
+			"Venue : %s",
+			$event_name,
+			$order_ref,
+			$alloc_label,
+			$seat_clean,
+			$event_date_str,
+			$event_time_str,
+			$venue_str
+		);
 	}
 
 	/**
@@ -821,23 +891,23 @@ class LCCL_DE_Fundraiser_Form {
 		if ( $is_indiv ) {
 			$mock_booking = array(
 				'id'             => 999,
-				'order_ref'      => 'FND-65FA38',
+				'order_ref'      => 'FND-0C1151',
 				'attendee_name'  => 'Saman Padukka',
 				'attendee_email' => 'saman@example.com',
 				'attendee_phone' => '+94 77 123 4567',
 				'booking_type'   => 'individual',
-				'qty'            => 2,
-				'seat_numbers'   => '51, 53',
+				'qty'            => 1,
+				'seat_numbers'   => '60',
 				'table_ids'      => '',
 				'notes'          => 'Please arrange vegetarian meal',
-				'amount_lkr'     => 15000.00,
+				'amount_lkr'     => 7500.00,
 				'event_id'       => (int) $active_event['id'],
 			);
 			$mock_receipt = '2026200000437627';
 		} else {
 			$mock_booking = array(
 				'id'             => 999,
-				'order_ref'      => 'FND-TBLE01',
+				'order_ref'      => 'FND-0C1151',
 				'attendee_name'  => 'Dr. Samantha Perera',
 				'attendee_email' => 'samantha.perera@example.com',
 				'attendee_phone' => '+94 71 987 6543',
@@ -863,6 +933,24 @@ class LCCL_DE_Fundraiser_Form {
 			}
 		}
 
+		// Handle live test SMS dispatch
+		if ( ! empty( $_POST['lccl_send_test_sms'] ) && check_admin_referer( 'lccl_dev_preview_send', 'preview_nonce' ) ) {
+			$test_phone = sanitize_text_field( wp_unslash( $_POST['test_phone'] ?? '' ) );
+			if ( $test_phone ) {
+				$mock_booking['attendee_phone'] = $test_phone;
+				$sms_msg = self::get_booking_confirmation_sms_message( $mock_booking, $active_event );
+				$sent = false;
+				if ( class_exists( 'LCCL_DE_Notify' ) && method_exists( 'LCCL_DE_Notify', 'send_custom_sms' ) ) {
+					$sent = LCCL_DE_Notify::send_custom_sms( $test_phone, $sms_msg, 999, 'fundraiser' );
+				}
+				if ( $sent ) {
+					$send_status_msg = '<div style="background:#dcfce7; color:#166534; padding:8px 14px; border-radius:4px; font-size:12px; margin-top:10px; font-weight:600;">✓ Live test SMS successfully dispatched to ' . esc_html( $test_phone ) . ' via Dialog e-SMS</div>';
+				} else {
+					$send_status_msg = '<div style="background:#fef2f2; color:#991b1b; padding:8px 14px; border-radius:4px; font-size:12px; margin-top:10px; font-weight:600;">⚠ Live test SMS could not be sent. Check Dialog e-SMS settings or phone number.</div>';
+				}
+			}
+		}
+
 		ob_start();
 		$current_url = remove_query_arg( array( 'lccl_preview', 'mode' ) );
 		$admin_user  = wp_get_current_user();
@@ -872,7 +960,7 @@ class LCCL_DE_Fundraiser_Form {
 			<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px; border-bottom:1px solid #1e293b; padding-bottom:10px;">
 				<div style="display:flex; align-items:center; gap:8px;">
 					<span style="background:#f59e0b; color:#0f172a; font-weight:700; font-size:11px; padding:2px 8px; border-radius:3px; text-transform:uppercase; letter-spacing:0.04em;">Dev Preview Mode</span>
-					<span style="font-size:12px; color:#94a3b8;">Order Confirmation & Email Template Viewer</span>
+					<span style="font-size:12px; color:#94a3b8;">Order Confirmation, Email & SMS Template Viewer</span>
 				</div>
 				<a href="<?php echo esc_url( $current_url ); ?>" style="color:#94a3b8; text-decoration:none; font-size:12px; font-weight:500;">&larr; Return to Live Form</a>
 			</div>
@@ -895,16 +983,34 @@ class LCCL_DE_Fundraiser_Form {
 					   style="background:<?php echo ( 'email' === $preview_type && ! $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'email' === $preview_type && ! $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
 						Email (Table Booking)
 					</a>
+					<a href="<?php echo esc_url( add_query_arg( array( 'lccl_preview' => 'sms', 'mode' => 'individual' ), $current_url ) ); ?>" 
+					   style="background:<?php echo ( 'sms' === $preview_type && $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'sms' === $preview_type && $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
+						SMS (Individual Seats)
+					</a>
+					<a href="<?php echo esc_url( add_query_arg( array( 'lccl_preview' => 'sms', 'mode' => 'table' ), $current_url ) ); ?>" 
+					   style="background:<?php echo ( 'sms' === $preview_type && ! $is_indiv ? '#2563eb' : '#1e293b' ); ?>; color:#fff; text-decoration:none; font-size:12px; font-weight:600; padding:6px 12px; border-radius:4px; border:1px solid <?php echo ( 'sms' === $preview_type && ! $is_indiv ? '#3b82f6' : '#334155' ); ?>;">
+						SMS (Table Booking)
+					</a>
 				</div>
 			</div>
 
-			<form method="post" style="margin-top:12px; padding-top:10px; border-top:1px dashed #334155; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-				<?php wp_nonce_field( 'lccl_dev_preview_send', 'preview_nonce' ); ?>
-				<input type="hidden" name="lccl_send_test_email" value="1">
-				<label style="font-size:12px; color:#cbd5e1;">Send Test Email to:</label>
-				<input type="email" name="test_recipient" value="<?php echo esc_attr( $admin_email ); ?>" required style="background:#1e293b; color:#fff; border:1px solid #475569; padding:5px 8px; border-radius:4px; font-size:12px; min-width:210px;">
-				<button type="submit" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Send Test Email</button>
-			</form>
+			<?php if ( 'sms' === $preview_type ) : ?>
+				<form method="post" style="margin-top:12px; padding-top:10px; border-top:1px dashed #334155; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+					<?php wp_nonce_field( 'lccl_dev_preview_send', 'preview_nonce' ); ?>
+					<input type="hidden" name="lccl_send_test_sms" value="1">
+					<label style="font-size:12px; color:#cbd5e1;">Send Test SMS to (Dialog e-SMS):</label>
+					<input type="text" name="test_phone" placeholder="+94 77 123 4567" required style="background:#1e293b; color:#fff; border:1px solid #475569; padding:5px 8px; border-radius:4px; font-size:12px; min-width:210px;">
+					<button type="submit" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Send Test SMS</button>
+				</form>
+			<?php else : ?>
+				<form method="post" style="margin-top:12px; padding-top:10px; border-top:1px dashed #334155; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+					<?php wp_nonce_field( 'lccl_dev_preview_send', 'preview_nonce' ); ?>
+					<input type="hidden" name="lccl_send_test_email" value="1">
+					<label style="font-size:12px; color:#cbd5e1;">Send Test Email to:</label>
+					<input type="email" name="test_recipient" value="<?php echo esc_attr( $admin_email ); ?>" required style="background:#1e293b; color:#fff; border:1px solid #475569; padding:5px 8px; border-radius:4px; font-size:12px; min-width:210px;">
+					<button type="submit" style="background:#10b981; color:#fff; border:0; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Send Test Email</button>
+				</form>
+			<?php endif; ?>
 			<?php echo $send_status_msg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 		</div>
 		<?php
@@ -919,6 +1025,24 @@ class LCCL_DE_Fundraiser_Form {
 				$email_data['body'] .
 				'</div>';
 			return $toolbar . $email_preview;
+		}
+
+		if ( 'sms' === $preview_type ) {
+			$sms_text = self::get_booking_confirmation_sms_message( $mock_booking, $active_event );
+			$sms_preview = '<div style="max-width:540px; margin:0 auto 30px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:22px; box-shadow:0 4px 16px rgba(0,0,0,0.06); font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;">' .
+				'<div style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#64748b; font-weight:700; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">' .
+				'<span>SMS Notification Preview (' . ( $is_indiv ? 'Individual Seats' : 'Table Booking' ) . ')</span>' .
+				'<span style="background:#dcfce7; color:#166534; padding:2px 8px; border-radius:999px; font-size:10px; font-weight:700;">Dialog e-SMS</span>' .
+				'</div>' .
+				'<div style="background:#2563eb; color:#ffffff; padding:16px 18px; border-radius:14px 14px 14px 3px; font-size:14px; line-height:1.6; white-space:pre-wrap; word-break:break-word; box-shadow:0 2px 8px rgba(37,99,235,0.25);">' .
+				esc_html( $sms_text ) .
+				'</div>' .
+				'<div style="margin-top:12px; font-size:12px; color:#64748b; display:flex; justify-content:space-between;">' .
+				'<span>Characters: ' . mb_strlen( $sms_text ) . '</span>' .
+				'<span>Encoding: Unicode / UTF-8</span>' .
+				'</div>' .
+				'</div>';
+			return $toolbar . $sms_preview;
 		}
 
 		// Web UI Confirmation View
