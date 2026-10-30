@@ -1353,45 +1353,46 @@ body.lccl-modal-prevent-scroll {
     box-shadow: none !important;
 }
 
-/* Allocated Seats Row & Wrapped Numbers Alignment */
+/* Allocated Seats Table & Alignment */
 #allocatedSeatsText {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    row-gap: 3px;
-    column-gap: 6px;
-    align-items: start;
+    display: block;
 }
 
-#allocatedSeatsText>span:only-child {
-    grid-column: 1 / -1;
+.lccl-fr-allocated-table {
+    display: table;
+    border-collapse: collapse;
+    text-align: left;
+    font-weight: 400 !important;
 }
 
-#allocatedSeatsText .lccl-fr-allocated-row {
-    display: contents;
-}
-
-#allocatedSeatsText .lccl-fr-allocated-row>.lccl-fr-allocated-seats:only-child {
-    grid-column: 1 / -1;
+#allocatedSeatsText .lccl-fr-allocated-table {
+    margin-left: 0;
 }
 
 .lccl-fr-allocated-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 5px;
-}
-
-.lccl-fr-allocated-row+.lccl-fr-allocated-row {
-    margin-top: 3px;
+    display: table-row;
+    font-weight: 400 !important;
 }
 
 .lccl-fr-allocated-tbl {
-    flex-shrink: 0;
+    display: table-cell;
     white-space: nowrap;
+    padding-right: 10px;
+    padding-bottom: 3px;
+    vertical-align: top;
+    text-align: left;
+    color: #0f172a;
+    font-weight: 400 !important;
 }
 
 .lccl-fr-allocated-seats {
-    flex: 1;
-    min-width: 0;
+    display: table-cell;
+    vertical-align: top;
+    text-align: left;
+    padding-bottom: 3px;
+    color: #334155;
+    font-weight: 400 !important;
+    word-break: normal;
 }
 
 /* Table Quantity Read-Only Input & Pulse Animation */
@@ -1456,51 +1457,66 @@ body.lccl-modal-prevent-scroll {
     padding: 10px 0;
     font-size: 15px;
     gap: 12px;
+    font-weight: 400 !important;
+}
+
+.lccl-fr-wrapper .summary-line span,
+.lccl-fr-wrapper .summary-line strong {
+    font-weight: 400 !important;
 }
 
 .lccl-fr-wrapper .summary-line span:first-child {
     color: #475569;
-    font-weight: 500;
 }
 
-.lccl-fr-wrapper .summary-line strong {
+#summaryType,
+#summaryQuantity,
+#summarySelection,
+#summaryTableType,
+#summaryTableSelection {
     color: #0f172a;
-    font-weight: 600;
+    font-weight: 400 !important;
+    text-align: right;
 }
 
 #summarySelection {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: flex-end;
+    display: block;
     text-align: right;
     transition: opacity 0.15s ease-in-out;
 }
 
+#summarySelection .lccl-fr-allocated-table {
+    display: table;
+    border-collapse: collapse;
+    margin-left: auto;
+    text-align: left;
+    font-weight: 400 !important;
+}
+
 #summarySelection .lccl-fr-allocated-row {
-    display: flex;
-    justify-content: flex-end;
-    align-items: baseline;
-    gap: 5px;
-    text-align: right;
-    font-weight: 600;
+    display: table-row;
+    font-weight: 400 !important;
 }
 
 #summarySelection .lccl-fr-allocated-tbl {
-    color: #0f172a;
-    font-weight: 700;
+    display: table-cell;
     white-space: nowrap;
+    padding-right: 10px;
+    padding-bottom: 4px;
+    vertical-align: top;
+    text-align: left;
+    color: #0f172a;
+    font-weight: 400 !important;
 }
 
 #summarySelection .lccl-fr-allocated-seats {
+    display: table-cell;
+    vertical-align: top;
+    text-align: left;
+    padding-bottom: 4px;
     color: #334155;
-    font-weight: 600;
-}
-
-#summaryTableSelection,
-#summaryTableType {
-    text-align: right;
-    color: #0f172a;
-    font-weight: 600;
+    font-weight: 400 !important;
+    word-break: normal;
 }
 
 /* ───────────────────────────────────────────────────────────

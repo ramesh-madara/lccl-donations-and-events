@@ -536,7 +536,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 			<div class="summary" style="margin-top: 25px; border-top: none; padding-top: 0;">
 				<div class="summary-line" style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span><?php esc_html_e( 'Booking Type', 'lccl-de' ); ?></span>
-					<strong id="summaryType">
+					<span id="summaryType">
 						<?php
 						if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							esc_html_e( 'Table Booking (VIP)', 'lccl-de' );
@@ -548,13 +548,13 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							esc_html_e( 'Individual Seats', 'lccl-de' );
 						}
 						?>
-					</strong>
+					</span>
 				</div>
 
 				<!-- INDIVIDUAL SEATS ROWS -->
 				<div id="summaryLineIndivQty" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span><?php esc_html_e( 'Assigned Seat(s)', 'lccl-de' ); ?></span>
-					<strong id="summaryQuantity">
+					<span id="summaryQuantity">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							echo esc_html( (int) ( $vip_details['seat_count'] ?? 1 ) );
@@ -562,11 +562,11 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							echo esc_html( $available_seats_count > 0 ? '1' : '0' );
 						}
 						?>
-					</strong>
+					</span>
 				</div>
 				<div id="summaryLineIndivAlloc" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span style="flex-shrink: 0;"><?php esc_html_e( 'Your allocated seats', 'lccl-de' ); ?></span>
-					<strong id="summarySelection" style="text-align: right; max-width: 65%;">
+					<span id="summarySelection" style="text-align: right; max-width: 75%;">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							$cnt = (int) ( $vip_details['seat_count'] ?? 1 );
@@ -580,13 +580,13 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							}
 						}
 						?>
-					</strong>
+					</span>
 				</div>
 
 				<!-- TABLE BOOKING ROWS -->
 				<div id="summaryLineTableType" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span><?php esc_html_e( 'Table Type', 'lccl-de' ); ?></span>
-					<strong id="summaryTableType">
+					<span id="summaryTableType">
 						<?php
 						if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							echo esc_html( $vip_details['table_type_name'] ?? 'VIP Table' );
@@ -594,11 +594,11 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							esc_html_e( 'None selected', 'lccl-de' );
 						}
 						?>
-					</strong>
+					</span>
 				</div>
 				<div id="summaryLineTableSel" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span style="flex-shrink: 0;"><?php esc_html_e( 'Tables Selected', 'lccl-de' ); ?></span>
-					<strong id="summaryTableSelection" style="text-align: right; max-width: 65%;">
+					<span id="summaryTableSelection" style="text-align: right; max-width: 75%;">
 						<?php
 						if ( $is_vip && 'table' === ( $vip_details['booking_mode'] ?? '' ) ) {
 							$tbl_str = ! empty( $vip_details['table_labels'] ) ? implode( ', ', $vip_details['table_labels'] ) : 'VIP Table';
@@ -607,7 +607,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 							esc_html_e( 'None selected', 'lccl-de' );
 						}
 						?>
-					</strong>
+					</span>
 				</div>
 
 				<div class="total">
@@ -1055,14 +1055,15 @@ document.addEventListener('DOMContentLoaded', function() {
 			var seatStr = seatWord + ' ' + grp.seat_numbers.join(', ');
 			var lbl = grp.table_label || '';
 			if (lbl === 'General') {
-				html += '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-seats">' + seatStr + '</span></div>';
+				html += '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-tbl"></span><span class="lccl-fr-allocated-seats">' + seatStr + '</span></div>';
 			} else {
 				var tblPrefix = (lbl.toLowerCase().indexOf('table') === 0) ? lbl : ('Table ' + lbl);
 				html += '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-tbl">' + tblPrefix + ' —</span><span class="lccl-fr-allocated-seats">' + seatStr + '</span></div>';
 			}
 		}
 
-		allocatedSeatsText.innerHTML = html;
+		var tableHtml = '<div class="lccl-fr-allocated-table">' + html + '</div>';
+		allocatedSeatsText.innerHTML = tableHtml;
 		allocatedSeatsLine.style.display = 'flex';
 
 		// Highlight the allocated tables in the Seat Pool mini-grid
@@ -1089,7 +1090,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 
 		if (sumSel && mode === 'individual') {
-			sumSel.innerHTML = html;
+			sumSel.innerHTML = tableHtml;
 		}
 	}
 

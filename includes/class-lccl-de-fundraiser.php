@@ -907,14 +907,16 @@ class LCCL_DE_Fundraiser {
 			$seat_word  = count( $s_list ) === 1 ? __( 'Seat', 'lccl-de' ) : __( 'Seats', 'lccl-de' );
 			$seats_str  = $seat_word . ' ' . implode( ', ', $s_list );
 			if ( 'General' === $tbl_label ) {
-				$html_rows[] = '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-seats">' . esc_html( $seats_str ) . '</span></div>';
+				$html_rows[] = '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-tbl"></span><span class="lccl-fr-allocated-seats">' . esc_html( $seats_str ) . '</span></div>';
 			} else {
 				$tbl_prefix  = ( stripos( $tbl_label, 'Table' ) === 0 ) ? $tbl_label : 'Table ' . $tbl_label;
 				$html_rows[] = '<div class="lccl-fr-allocated-row"><span class="lccl-fr-allocated-tbl">' . esc_html( $tbl_prefix ) . ' —</span><span class="lccl-fr-allocated-seats">' . esc_html( $seats_str ) . '</span></div>';
 			}
 		}
 
-		$formatted_html = implode( '', $html_rows );
+		$formatted_html = ! empty( $html_rows )
+			? '<div class="lccl-fr-allocated-table">' . implode( '', $html_rows ) . '</div>'
+			: '';
 
 		return array(
 			'qty'            => $qty,
