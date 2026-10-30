@@ -385,9 +385,12 @@
 
 .lccl-fr-wrapper .event-details h2,
 .event-details h2 {
-    margin-bottom: 18px;
-    font-weight: 400 !important;
+    font-family: "CooperHewitt-Book", "Segoe UI", sans-serif !important;
+    font-weight: normal !important;
     font-size: 18px !important;
+    margin-bottom: 18px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .detail {

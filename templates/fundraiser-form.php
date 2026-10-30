@@ -676,7 +676,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 			</div>
 			
 			<div class="event-details">
-				<h2 style="font-weight: 400; font-size: 18px;"><?php echo esc_html( $active_event['name'] ); ?></h2>
+				<h2 style="font-family: 'CooperHewitt-Book', 'Segoe UI', sans-serif; font-weight: normal; font-size: 18px; margin-bottom: 18px; -webkit-font-smoothing: antialiased;"><?php echo esc_html( $active_event['name'] ); ?></h2>
 				<div class="detail">
 					<span><?php esc_html_e( 'Event Date', 'lccl-de' ); ?></span>
 					<span><?php echo esc_html( $active_event['event_date'] ? date( 'j F Y', strtotime( $active_event['event_date'] ) ) : 'TBA' ); ?></span>
