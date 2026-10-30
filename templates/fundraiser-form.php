@@ -1338,6 +1338,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					if (isCurrentlySelected) {
 						chip.classList.remove('is-selected');
+						chip.setAttribute('title', 'Exclusive VIP table reserved for you. Click to select.');
+						statusSpan.textContent = '⭐ VIP Reserved';
 						for (var j = 0; j < selectTable.options.length; j++) {
 							if (selectTable.options[j].value === String(tbl.id)) {
 								selectTable.options[j].selected = false;
@@ -1346,6 +1348,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} else {
 						chip.classList.add('is-selected');
+						chip.setAttribute('title', 'Selected. Click to deselect.');
+						statusSpan.textContent = 'Selected';
 						for (var k = 0; k < selectTable.options.length; k++) {
 							if (selectTable.options[k].value === String(tbl.id)) {
 								selectTable.options[k].selected = true;
@@ -1385,6 +1389,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 					if (isCurrentlySelected) {
 						chip.classList.remove('is-selected');
+						chip.setAttribute('title', 'Available for booking. Click to select.');
+						statusSpan.textContent = 'Available';
 						for (var j = 0; j < selectTable.options.length; j++) {
 							if (selectTable.options[j].value === String(tbl.id)) {
 								selectTable.options[j].selected = false;
@@ -1393,6 +1399,8 @@ document.addEventListener('DOMContentLoaded', function() {
 						}
 					} else {
 						chip.classList.add('is-selected');
+						chip.setAttribute('title', 'Selected. Click to deselect.');
+						statusSpan.textContent = 'Selected';
 						for (var k = 0; k < selectTable.options.length; k++) {
 							if (selectTable.options[k].value === String(tbl.id)) {
 								selectTable.options[k].selected = true;
@@ -1610,7 +1618,11 @@ document.addEventListener('DOMContentLoaded', function() {
 			// Pre-select the VIP tables
 			targetTids.forEach(function(tid) {
 				var chip = chipsContainer.querySelector('.lccl-fr-table-chip[data-id="' + tid + '"]');
-				if (chip) chip.classList.add('is-selected');
+				if (chip) {
+					chip.classList.add('is-selected');
+					var st = chip.querySelector('.chip-status');
+					if (st) st.textContent = 'Selected';
+				}
 				for (var o = 0; o < selectTable.options.length; o++) {
 					if (parseInt(selectTable.options[o].value) === parseInt(tid)) {
 						selectTable.options[o].selected = true;
