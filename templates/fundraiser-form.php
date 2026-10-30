@@ -125,8 +125,8 @@ $initial_allocated_text         = '';
 $initial_allocated_html         = '';
 $initial_badge_text             = '';
 $initial_allocated_table_labels = array();
+$init_qty                       = 1;
 if ( $available_seats_count > 0 ) {
-	$init_qty = 1;
 	if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
 		$init_qty = (int) ( $vip_details['seat_count'] ?? 1 );
 	}
@@ -146,9 +146,9 @@ if ( $available_seats_count > 0 ) {
 		if ( ! empty( $initial_preview['is_vip'] ) ) {
 			$initial_badge_text = __( 'VIP Reserved', 'lccl-de' );
 		} elseif ( ! empty( $initial_preview['is_split'] ) || ( ! empty( $initial_preview['grouped'] ) && count( $initial_preview['grouped'] ) > 1 ) ) {
-			$initial_badge_text = __( 'Adjacent Tables', 'lccl-de' );
+			$initial_badge_text = __( 'Seats Across Multiple Tables', 'lccl-de' );
 		} else {
-			$initial_badge_text = __( 'Seating Together', 'lccl-de' );
+			$initial_badge_text = __( 'Seats Together', 'lccl-de' );
 		}
 	}
 }
@@ -204,9 +204,9 @@ if ( $available_seats_count > 0 ) {
 				<?php esc_html_e( 'Please review the event details and select your preferred booking option below.', 'lccl-de' ); ?>
 			</p>
 
-			<div class="section-title">
+			<label class="booking-type-label">
 				<?php esc_html_e( 'Booking Type', 'lccl-de' ); ?> <span class="required">*</span>
-			</div>
+			</label>
 
 			<div class="booking-type">
 				<label class="type-option <?php echo $available_seats_count > 0 ? 'active' : 'is-disabled'; ?>" id="typeIndividual">
@@ -277,14 +277,14 @@ if ( $available_seats_count > 0 ) {
 						<div style="margin-bottom: 4px; color: #92400e;">
 							<?php esc_html_e( 'These seats have been exclusively held for you and will be confirmed under your name upon payment.', 'lccl-de' ); ?>
 						</div>
-						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #78350f;">
+						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #92400e;">
 							<div style="flex: 0 0 auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;">
-								<span><?php esc_html_e( 'Your allocated seats:', 'lccl-de' ); ?></span>
+								<span id="allocatedSeatsLabel"><?php echo ( 1 === $init_qty ) ? esc_html__( 'Your allocated seat:', 'lccl-de' ) : esc_html__( 'Your allocated seats:', 'lccl-de' ); ?></span>
 								<span id="allocatedSeatsSpinner" style="display: none; line-height: 1;">
 									<svg class="lccl-fr-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #d97706;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
 								</span>
 							</div>
-							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #78350f; font-weight: 400;">
+							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #92400e; font-weight: 400;">
 								<?php echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						</div>
@@ -303,14 +303,14 @@ if ( $available_seats_count > 0 ) {
 						<div style="margin-bottom: 4px; color: #475569;">
 							<?php esc_html_e( 'Your consecutive seat numbers will be sent to your registered email address and mobile number once your payment is successful.', 'lccl-de' ); ?>
 						</div>
-						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #0f172a;">
+						<div id="allocatedSeatsLine" style="display: <?php echo empty( $initial_allocated_html ) ? 'none' : 'flex'; ?>; flex-wrap: wrap; align-items: flex-start; gap: 2px 6px; color: #475569;">
 							<div style="flex: 0 0 auto; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;">
-								<span><?php esc_html_e( 'Your allocated seats:', 'lccl-de' ); ?></span>
+								<span id="allocatedSeatsLabel"><?php echo ( 1 === $init_qty ) ? esc_html__( 'Your allocated seat:', 'lccl-de' ) : esc_html__( 'Your allocated seats:', 'lccl-de' ); ?></span>
 								<span id="allocatedSeatsSpinner" style="display: none; line-height: 1;">
 									<svg class="lccl-fr-spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #2563eb;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
 								</span>
 							</div>
-							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #0f172a; font-weight: 400;">
+							<div id="allocatedSeatsText" data-loaded="<?php echo ! empty( $initial_allocated_html ) ? 'true' : 'false'; ?>" style="flex: 1; min-width: 180px; color: #475569; font-weight: 400;">
 								<?php echo $initial_allocated_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 							</div>
 						</div>
@@ -573,7 +573,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 					</span>
 				</div>
 				<div id="summaryLineIndivAlloc" class="summary-line lccl-fr-sum-indiv <?php echo $is_fr_initial_indiv ? '' : 'is-hidden'; ?>" style="display: <?php echo $is_fr_initial_indiv ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
-					<span style="flex-shrink: 0;"><?php esc_html_e( 'Your allocated seats', 'lccl-de' ); ?></span>
+					<span id="summaryAllocLabel" style="flex-shrink: 0;"><?php echo ( 1 === $init_qty ) ? esc_html__( 'Your allocated seat', 'lccl-de' ) : esc_html__( 'Your allocated seats', 'lccl-de' ); ?></span>
 					<div id="summarySelection" style="margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
 						<?php
 						if ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) {
@@ -627,10 +627,10 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 
 <div class="lccl-bdf lccl-bdf--donation lccl-fr-payment-control">
 				<div class="lccl-bdf__field lccl-terms-checkbox" style="margin-top: 24px;">
-					<label class="lccl-bdf__checkbox" style="align-items: flex-start;">
+					<label class="lccl-bdf__checkbox" style="display: inline-flex; align-items: center; gap: 10px; margin: 0; cursor: pointer;">
 						<input type="checkbox" name="accept_terms" id="terms_agree" class="lccl-accept-terms" required>
-						<span class="lccl-bdf__check" aria-hidden="true"></span>
-						<span style="font-size: 14px; color: #475569;">
+						<span class="lccl-bdf__check" aria-hidden="true" style="margin: 0;"></span>
+						<span style="font-size: 14px; color: #475569; line-height: 1.4; display: inline-block;">
 							<?php
 							printf(
 								/* translators: %s is the link to terms */
@@ -821,15 +821,11 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				// Event-specific seating plan image (fallback to Grand Ballroom default)
 				$sp_image_file = 'Grand_Ballroom_Gala_Seating_Plan.png';
 				$sp_image_url  = LCCL_DE_URL . 'assets/img/' . $sp_image_file;
-				$sp_title      = sprintf(
-					/* translators: %s: event name */
-					__( '%s — Seating Plan', 'lccl-de' ),
-					$active_event['name']
-				);
+				$sp_title      = __( 'Seating Plan', 'lccl-de' );
 				?>
 				<!-- Event Seating Plan Image -->
 				<div class="seating-plan-image-wrap">
-					<h4><?php echo esc_html( $sp_title ); ?></h4>
+					<h4 class="seating-plan-heading" style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; color: #17365D; margin-bottom: 10px; font-weight: 700;"><?php esc_html_e( 'SEATING PLAN', 'lccl-de' ); ?></h4>
 					<div class="seating-plan-trigger" id="openSeatingPlanTrigger" role="button" tabindex="0" title="<?php esc_attr_e( 'Click to view full size seating plan layout', 'lccl-de' ); ?>" aria-label="<?php esc_attr_e( 'Click to view full size seating plan layout', 'lccl-de' ); ?>">
 						<img src="<?php echo esc_url( $sp_image_url ); ?>" alt="<?php echo esc_attr( $sp_title ); ?>" loading="lazy">
 						<span class="seating-plan-hover-badge">
@@ -956,9 +952,11 @@ document.addEventListener('DOMContentLoaded', function() {
 	}
 	
 	var allocatedSeatsLine = document.getElementById('allocatedSeatsLine');
+	var allocatedSeatsLabel = document.getElementById('allocatedSeatsLabel');
 	var allocatedSeatsText = document.getElementById('allocatedSeatsText');
 	var allocatedSeatsSpinner = document.getElementById('allocatedSeatsSpinner');
 	var allocatedSeatsBadge = document.getElementById('allocatedSeatsBadge');
+	var summaryAllocLabel = document.getElementById('summaryAllocLabel');
 	var previewTimer = null;
 	var lastFetchedQty = <?php echo ( $initial_preview && ! is_wp_error( $initial_preview ) ) ? (int) $initial_preview['qty'] : 'null'; ?>;
 
@@ -1090,12 +1088,20 @@ document.addEventListener('DOMContentLoaded', function() {
 				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'VIP Reserved', 'lccl-de' ) ); ?>';
 				allocatedSeatsBadge.style.display = 'inline-flex';
 			} else if (isSplit) {
-				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'Adjacent Tables', 'lccl-de' ) ); ?>';
+				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'Seats Across Multiple Tables', 'lccl-de' ) ); ?>';
 				allocatedSeatsBadge.style.display = 'inline-flex';
 			} else {
-				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'Seating Together', 'lccl-de' ) ); ?>';
+				allocatedSeatsBadge.textContent = '<?php echo esc_js( __( 'Seats Together', 'lccl-de' ) ); ?>';
 				allocatedSeatsBadge.style.display = 'inline-flex';
 			}
+		}
+
+		var allocCount = (data && data.seat_numbers && data.seat_numbers.length) ? data.seat_numbers.length : (data.qty || 0);
+		if (allocatedSeatsLabel && allocCount > 0) {
+			allocatedSeatsLabel.textContent = (allocCount === 1) ? '<?php echo esc_js( __( 'Your allocated seat:', 'lccl-de' ) ); ?>' : '<?php echo esc_js( __( 'Your allocated seats:', 'lccl-de' ) ); ?>';
+		}
+		if (summaryAllocLabel && allocCount > 0) {
+			summaryAllocLabel.textContent = (allocCount === 1) ? '<?php echo esc_js( __( 'Your allocated seat', 'lccl-de' ) ); ?>' : '<?php echo esc_js( __( 'Your allocated seats', 'lccl-de' ) ); ?>';
 		}
 
 		if (sumSel && mode === 'individual') {
@@ -1141,6 +1147,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			sumType.textContent = (fundData.vip && fundData.vip.active) ? 'Individual Seats (VIP)' : 'Individual Seats';
 			if (sumQtyLabel) {
 				sumQtyLabel.textContent = (q > 1) ? '<?php echo esc_js( __( 'Assigned Seats', 'lccl-de' ) ); ?>' : '<?php echo esc_js( __( 'Assigned Seat', 'lccl-de' ) ); ?>';
+			}
+			if (allocatedSeatsLabel) {
+				allocatedSeatsLabel.textContent = (q === 1) ? '<?php echo esc_js( __( 'Your allocated seat:', 'lccl-de' ) ); ?>' : '<?php echo esc_js( __( 'Your allocated seats:', 'lccl-de' ) ); ?>';
+			}
+			if (summaryAllocLabel) {
+				summaryAllocLabel.textContent = (q === 1) ? '<?php echo esc_js( __( 'Your allocated seat', 'lccl-de' ) ); ?>' : '<?php echo esc_js( __( 'Your allocated seats', 'lccl-de' ) ); ?>';
 			}
 			if (sumQty) {
 				sumQty.textContent = q;

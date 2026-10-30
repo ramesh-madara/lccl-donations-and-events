@@ -66,6 +66,32 @@
     border-radius: 3px !important;
 }
 
+/* Terms & Conditions Checkbox Vertical Centering */
+.lccl-fr-wrapper .lccl-terms-checkbox .lccl-bdf__checkbox {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    line-height: normal !important;
+}
+
+.lccl-fr-wrapper .lccl-terms-checkbox .lccl-bdf__check {
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+.lccl-fr-wrapper .lccl-terms-checkbox input[type="checkbox"] {
+    margin: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}
+
+.lccl-fr-wrapper .lccl-terms-checkbox span:last-child {
+    line-height: 1.4 !important;
+    display: inline-block !important;
+}
+
 .lccl-fr-wrapper .total>span:first-of-type {
     display: flex;
     align-items: center;
@@ -157,10 +183,21 @@
     letter-spacing: .3px;
 }
 
-.lccl-fr-wrapper label {
+.lccl-fr-wrapper label:not(.type-option):not(.lccl-bdf__checkbox),
+.lccl-fr-wrapper .booking-type-label,
+.lccl-fr-wrapper .lccl-fr-payment-control .lccl-bdf__label {
     display: block;
     margin-bottom: 7px;
-    font-size: 15px;
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    color: #0f172a !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+}
+
+.lccl-fr-wrapper .booking-type-label {
+    margin-top: 20px;
+    margin-bottom: 10px;
 }
 
 .required {
@@ -294,29 +331,34 @@
     flex-wrap: wrap;
 }
 
+.lccl-fr-wrapper .total,
 .total {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-top: 12px;
     background: #f7f7f7;
-    font-size: 21px;
+    font-size: 18px !important;
     font-weight: bold;
     flex-wrap: wrap;
     border-radius: 3px;
     overflow: hidden;
 }
 
+.lccl-fr-wrapper .total>span:first-of-type,
 .total>span:first-of-type {
     background: #f7c600;
     padding: 16px 20px;
-    font-size: 16px;
+    font-size: 18px !important;
     border-radius: 3px 0 0 3px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
+.lccl-fr-wrapper .total>span:last-of-type,
 .total>span:last-of-type {
     padding: 16px 20px;
+    font-size: 18px !important;
     border-radius: 0 3px 3px 0;
 }
 
@@ -393,17 +435,23 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
+.lccl-fr-wrapper .event-details .detail,
 .detail {
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #eee;
     padding: 10px 0;
     gap: 15px;
+    font-size: 0.94em !important;
+    line-height: 1.45;
     font-weight: 400 !important;
 }
 
+.lccl-fr-wrapper .event-details .detail span,
+.lccl-fr-wrapper .event-details .detail strong,
 .detail span,
 .detail strong {
+    font-size: 1em !important;
     font-weight: 400 !important;
 }
 
@@ -523,13 +571,14 @@
     text-align: center;
 }
 
-.seating-plan-image-wrap h4 {
+.seating-plan-image-wrap h4,
+.seating-plan-heading {
     margin: 0 0 10px 0;
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #334155;
-    font-weight: 600;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.4px !important;
+    color: #17365D !important;
+    font-weight: 700 !important;
 }
 
 .seating-plan-trigger {
@@ -1002,7 +1051,7 @@ body.lccl-modal-prevent-scroll {
     line-height: 1.45;
 }
 
-@media (max-width: 850px) {
+@media (max-width: 991px) {
     .lccl-fr-layout {
         grid-template-columns: 1fr;
     }
@@ -1385,7 +1434,7 @@ body.lccl-modal-prevent-scroll {
     padding-bottom: 3px;
     vertical-align: top;
     text-align: left;
-    color: #0f172a;
+    color: #475569;
     font-weight: 400 !important;
 }
 
@@ -1394,16 +1443,16 @@ body.lccl-modal-prevent-scroll {
     vertical-align: top;
     text-align: left;
     padding-bottom: 3px;
-    color: #0f172a;
+    color: #475569;
     font-weight: 400 !important;
     word-break: normal;
 }
 
 /* Allocated Seats Preview in Seat Info Card */
 #allocatedSeatsLine {
-    font-size: 13.5px !important;
+    font-size: 13px !important;
     font-weight: 400 !important;
-    color: #0f172a !important;
+    color: #475569 !important;
     line-height: 1.5 !important;
 }
 
@@ -1414,9 +1463,9 @@ body.lccl-modal-prevent-scroll {
 #allocatedSeatsText .lccl-fr-allocated-row,
 #allocatedSeatsText .lccl-fr-allocated-tbl,
 #allocatedSeatsText .lccl-fr-allocated-seats {
-    font-size: 13.5px !important;
+    font-size: 13px !important;
     font-weight: 400 !important;
-    color: #0f172a !important;
+    color: #475569 !important;
     line-height: 1.5 !important;
 }
 
@@ -1428,9 +1477,9 @@ body.lccl-modal-prevent-scroll {
 .lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-row,
 .lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-tbl,
 .lccl-fr-seat-info-vip #allocatedSeatsText .lccl-fr-allocated-seats {
-    font-size: 13.5px !important;
+    font-size: 13px !important;
     font-weight: 400 !important;
-    color: #78350f !important;
+    color: #92400e !important;
     line-height: 1.5 !important;
 }
 
@@ -1556,8 +1605,8 @@ body.lccl-modal-prevent-scroll {
     display: none !important;
 }
 
-.lccl-fr-wrapper #summaryLineIndivAlloc > span:first-child,
-.lccl-fr-wrapper #summaryLineTableSel > span:first-child {
+.lccl-fr-wrapper #summaryLineIndivAlloc>span:first-child,
+.lccl-fr-wrapper #summaryLineTableSel>span:first-child {
     flex: 0 0 auto !important;
     color: #0f172a !important;
     font-size: 15px !important;
