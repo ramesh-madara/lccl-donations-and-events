@@ -631,9 +631,7 @@ class LCCL_DE_Fundraiser_Form {
 
 		$subject = sprintf( 'Booking Confirmation – %s (%s)', $event_name, $booking['order_ref'] );
 
-		$logo_url = function_exists( 'content_url' )
-			? content_url( '/uploads/2021/09/Logo-resize-replace-01.png?v=2' )
-			: LCCL_DE_URL . 'assets/img/lccl-logo-email.png';
+		$logo_url = LCCL_DE_URL . 'assets/img/lccl-logo-centered.png';
 
 		// Email HTML body
 		$body = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif; background:#f4f6f8; margin:0; padding:24px;">' .
@@ -641,7 +639,7 @@ class LCCL_DE_Fundraiser_Form {
 			'<tr><td style="background:#1a4a8a; padding:22px 20px 20px; text-align:center; color:#fff;">' .
 			'<div style="text-align:center; margin-bottom:12px;">' .
 			'<table align="center" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto; display:inline-table; border-collapse:collapse;">' .
-			'<tr><td align="center" valign="middle" style="background:#ffffff; padding:4px 5px; border-radius:3px; text-align:center; vertical-align:middle; line-height:0;">' .
+			'<tr><td align="center" valign="middle" style="background:#ffffff; padding:4px 6px; border-radius:3px; text-align:center; vertical-align:middle; line-height:0;">' .
 			'<img src="' . esc_url( $logo_url ) . '" alt="LIONS CLUB OF COLOMBO LEADS" width="105" height="26" style="display:block; margin:0 auto; border:0; max-width:105px; width:105px; height:auto; vertical-align:middle;">' .
 			'</td></tr></table>' .
 			'</div>' . 
