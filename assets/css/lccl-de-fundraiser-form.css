@@ -1483,12 +1483,26 @@ body.lccl-modal-prevent-scroll {
 
 .lccl-fr-wrapper #summaryLineIndivAlloc,
 .lccl-fr-wrapper #summaryLineTableSel {
-    display: flex !important;
+    display: flex;
     justify-content: space-between !important;
     align-items: flex-start !important;
     flex-wrap: wrap !important;
     gap: 8px 16px !important;
     width: 100% !important;
+}
+
+.lccl-fr-wrapper .summary-line[style*="display: none"],
+.lccl-fr-wrapper .summary-line[style*="display:none"],
+.lccl-fr-wrapper #summaryLineIndivQty[style*="display: none"],
+.lccl-fr-wrapper #summaryLineIndivQty[style*="display:none"],
+.lccl-fr-wrapper #summaryLineIndivAlloc[style*="display: none"],
+.lccl-fr-wrapper #summaryLineIndivAlloc[style*="display:none"],
+.lccl-fr-wrapper #summaryLineTableType[style*="display: none"],
+.lccl-fr-wrapper #summaryLineTableType[style*="display:none"],
+.lccl-fr-wrapper #summaryLineTableSel[style*="display: none"],
+.lccl-fr-wrapper #summaryLineTableSel[style*="display:none"],
+.lccl-fr-wrapper .summary-line.is-hidden {
+    display: none !important;
 }
 
 .lccl-fr-wrapper #summaryLineIndivAlloc > span:first-child,

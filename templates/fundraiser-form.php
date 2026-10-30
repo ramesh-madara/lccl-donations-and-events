@@ -551,8 +551,11 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 					</span>
 				</div>
 
+				<?php
+				$is_fr_initial_indiv = ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) );
+				?>
 				<!-- INDIVIDUAL SEATS ROWS -->
-				<div id="summaryLineIndivQty" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+				<div id="summaryLineIndivQty" class="summary-line lccl-fr-sum-indiv <?php echo $is_fr_initial_indiv ? '' : 'is-hidden'; ?>" style="display: <?php echo $is_fr_initial_indiv ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span id="summaryQuantityLabel">
 						<?php
 						$init_qty = ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ? (int) ( $vip_details['seat_count'] ?? 1 ) : ( $available_seats_count > 0 ? 1 : 0 );
@@ -569,7 +572,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 						?>
 					</span>
 				</div>
-				<div id="summaryLineIndivAlloc" class="summary-line lccl-fr-sum-indiv" style="display: <?php echo ( $available_seats_count > 0 || ( $is_vip && 'individual' === ( $vip_details['booking_mode'] ?? '' ) ) ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+				<div id="summaryLineIndivAlloc" class="summary-line lccl-fr-sum-indiv <?php echo $is_fr_initial_indiv ? '' : 'is-hidden'; ?>" style="display: <?php echo $is_fr_initial_indiv ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span style="flex-shrink: 0;"><?php esc_html_e( 'Your allocated seats', 'lccl-de' ); ?></span>
 					<div id="summarySelection" style="margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
 						<?php
@@ -589,7 +592,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 				</div>
 
 				<!-- TABLE BOOKING ROWS -->
-				<div id="summaryLineTableType" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+				<div id="summaryLineTableType" class="summary-line lccl-fr-sum-table <?php echo ! $is_fr_initial_indiv ? '' : 'is-hidden'; ?>" style="display: <?php echo ! $is_fr_initial_indiv ? 'flex' : 'none'; ?>; justify-content: space-between; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span><?php esc_html_e( 'Table Type', 'lccl-de' ); ?></span>
 					<span id="summaryTableType">
 						<?php
@@ -601,7 +604,7 @@ $initial_flag = LCCL_DE_Countries::flag_emoji( 'LK' );
 						?>
 					</span>
 				</div>
-				<div id="summaryLineTableSel" class="summary-line lccl-fr-sum-table" style="display: <?php echo ( $available_seats_count === 0 && $total_table_pool_free > 0 ) ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
+				<div id="summaryLineTableSel" class="summary-line lccl-fr-sum-table <?php echo ! $is_fr_initial_indiv ? '' : 'is-hidden'; ?>" style="display: <?php echo ! $is_fr_initial_indiv ? 'flex' : 'none'; ?>; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding: 10px 0; font-size: 15px;">
 					<span style="flex-shrink: 0;"><?php esc_html_e( 'Tables Selected', 'lccl-de' ); ?></span>
 					<div id="summaryTableSelection" style="margin-left: auto; text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
 						<?php
@@ -1130,10 +1133,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				indivSeatCount.textContent = q;
 			}
 			
-			if (lineIndivQty) lineIndivQty.style.display = 'flex';
-			if (lineIndivAlloc) lineIndivAlloc.style.display = 'flex';
-			if (lineTableType) lineTableType.style.display = 'none';
-			if (lineTableSel) lineTableSel.style.display = 'none';
+			if (lineIndivQty) { lineIndivQty.style.display = 'flex'; lineIndivQty.classList.remove('is-hidden'); }
+			if (lineIndivAlloc) { lineIndivAlloc.style.display = 'flex'; lineIndivAlloc.classList.remove('is-hidden'); }
+			if (lineTableType) { lineTableType.style.display = 'none'; lineTableType.classList.add('is-hidden'); }
+			if (lineTableSel) { lineTableSel.style.display = 'none'; lineTableSel.classList.add('is-hidden'); }
 
 			sumType.textContent = (fundData.vip && fundData.vip.active) ? 'Individual Seats (VIP)' : 'Individual Seats';
 			if (sumQtyLabel) {
@@ -1178,10 +1181,10 @@ document.addEventListener('DOMContentLoaded', function() {
 				tot = selCount * p;
 			}
 			
-			if (lineIndivQty) lineIndivQty.style.display = 'none';
-			if (lineIndivAlloc) lineIndivAlloc.style.display = 'none';
-			if (lineTableType) lineTableType.style.display = 'flex';
-			if (lineTableSel) lineTableSel.style.display = 'flex';
+			if (lineIndivQty) { lineIndivQty.style.display = 'none'; lineIndivQty.classList.add('is-hidden'); }
+			if (lineIndivAlloc) { lineIndivAlloc.style.display = 'none'; lineIndivAlloc.classList.add('is-hidden'); }
+			if (lineTableType) { lineTableType.style.display = 'flex'; lineTableType.classList.remove('is-hidden'); }
+			if (lineTableSel) { lineTableSel.style.display = 'flex'; lineTableSel.classList.remove('is-hidden'); }
 
 			sumType.textContent = (fundData.vip && fundData.vip.active) ? 'Table Booking (VIP)' : 'Table Booking';
 			if (sumTableType) {
@@ -1216,11 +1219,54 @@ document.addEventListener('DOMContentLoaded', function() {
 			panelTable.style.display = 'none';
 			if (poolLayoutSeat) poolLayoutSeat.style.display = 'block';
 			if (poolLayoutTable) poolLayoutTable.style.display = 'none';
-			if (lineIndivQty) lineIndivQty.style.display = 'flex';
-			if (lineIndivAlloc) lineIndivAlloc.style.display = 'flex';
-			if (lineTableType) lineTableType.style.display = 'none';
-			if (lineTableSel) lineTableSel.style.display = 'none';
-			updateSeatPoolTableHighlights(lastAllocatedLabels);
+			if (lineIndivQty) { lineIndivQty.style.display = 'flex'; lineIndivQty.classList.remove('is-hidden'); }
+			if (lineIndivAlloc) { lineIndivAlloc.style.display = 'flex'; lineIndivAlloc.classList.remove('is-hidden'); }
+			if (lineTableType) { lineTableType.style.display = 'none'; lineTableType.classList.add('is-hidden'); }
+			if (lineTableSel) { lineTableSel.style.display = 'none'; lineTableSel.classList.add('is-hidden'); }
+
+			// Deselect all selected tables to avoid mixing modes
+			if (!(fundData.vip && fundData.vip.active && fundData.vip.mode === 'table')) {
+				if (chipsContainer) {
+					var selChips = chipsContainer.querySelectorAll('.lccl-fr-table-chip.is-selected');
+					for (var sc = 0; sc < selChips.length; sc++) {
+						var chip = selChips[sc];
+						chip.classList.remove('is-selected');
+						var statusSpan = chip.querySelector('.chip-status');
+						if (statusSpan) {
+							statusSpan.textContent = chip.classList.contains('is-vip') ? '⭐ VIP Reserved' : 'Available';
+						}
+						chip.setAttribute('title', 'Available for booking. Click to select.');
+					}
+				}
+				if (selectTable) {
+					for (var to = 0; to < selectTable.options.length; to++) {
+						selectTable.options[to].selected = false;
+					}
+				}
+				if (inputTableQty) inputTableQty.value = 0;
+				if (sumTableType) sumTableType.textContent = 'None selected';
+				if (sumTableSel) sumTableSel.textContent = 'None selected';
+				syncMapTableHighlights();
+			}
+
+			// Restore individual seats
+			if (inputQty) {
+				inputQty.disabled = false;
+				var curQ = parseInt(inputQty.value) || 0;
+				if (curQ < 1 && fundData.available_seats_count > 0) {
+					curQ = 1;
+					inputQty.value = 1;
+				}
+				if (indivSeatCount) {
+					indivSeatCount.textContent = curQ;
+				}
+			}
+
+			if (inputQty && parseInt(inputQty.value) > 0) {
+				queueSeatAllocationPreview(parseInt(inputQty.value));
+			} else {
+				updateSeatPoolTableHighlights(lastAllocatedLabels);
+			}
 		} else {
 			typeTable.classList.add('active');
 			typeIndiv.classList.remove('active');
@@ -1228,10 +1274,33 @@ document.addEventListener('DOMContentLoaded', function() {
 			panelIndiv.style.display = 'none';
 			if (poolLayoutTable) poolLayoutTable.style.display = 'block';
 			if (poolLayoutSeat) poolLayoutSeat.style.display = 'none';
-			if (lineIndivQty) lineIndivQty.style.display = 'none';
-			if (lineIndivAlloc) lineIndivAlloc.style.display = 'none';
-			if (lineTableType) lineTableType.style.display = 'flex';
-			if (lineTableSel) lineTableSel.style.display = 'flex';
+			if (lineIndivQty) { lineIndivQty.style.display = 'none'; lineIndivQty.classList.add('is-hidden'); }
+			if (lineIndivAlloc) { lineIndivAlloc.style.display = 'none'; lineIndivAlloc.classList.add('is-hidden'); }
+			if (lineTableType) { lineTableType.style.display = 'flex'; lineTableType.classList.remove('is-hidden'); }
+			if (lineTableSel) { lineTableSel.style.display = 'flex'; lineTableSel.classList.remove('is-hidden'); }
+
+			// Clear individual seats allocation to avoid mixing modes
+			if (!(fundData.vip && fundData.vip.active && fundData.vip.mode === 'individual')) {
+				if (inputQty) {
+					inputQty.value = 0;
+					inputQty.disabled = true;
+				}
+				if (indivSeatCount) {
+					indivSeatCount.textContent = 0;
+				}
+				if (allocatedSeatsText) {
+					allocatedSeatsText.innerHTML = '';
+					allocatedSeatsText.removeAttribute('data-loaded');
+				}
+				if (allocatedSeatsLine) allocatedSeatsLine.style.display = 'none';
+				if (allocatedSeatsBadge) allocatedSeatsBadge.style.display = 'none';
+				if (allocatedSeatsSpinner) allocatedSeatsSpinner.style.display = 'none';
+				if (sumSel) sumSel.textContent = 'None';
+				lastAllocatedLabels = [];
+				lastFetchedQty = null;
+				updateSeatPoolTableHighlights([]);
+			}
+
 			syncMapTableHighlights();
 		}
 		updateTotal();
